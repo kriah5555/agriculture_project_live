@@ -135,7 +135,7 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '13.51.217.17',
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '13.51.217.17', '16.16.167.132'
                  'www.arkashine-innovations.com', 'arkashine-innovations.com']
 
 # Default primary key field type
