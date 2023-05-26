@@ -74,6 +74,7 @@ def add_soil_data(request):
 @api_view(['POST'])
 def get_crops(request):
     try:
+        print('-=========')
         return Response({'message' : 'Soil data received successfully', 'crops' : FertilizerCalculation.get_All_crops()}, status=status.HTTP_200_OK)
     except  Exception as e:
         return Response({'message' : "Something went wrong while fetching data please check the parameters"}, status.HTTP_400_BAD_REQUEST)        

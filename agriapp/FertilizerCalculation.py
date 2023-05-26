@@ -139,7 +139,7 @@ crops = {
         "frequency": "Annual"
     },
     "kusume_or_safflower": {
-        "npk":[ "16:16:05"],
+        "npk":["16:16:05"],
         "target_yield": ["4 to 5 Quintals per acre"],
         "frequency": "Annual"
     },
@@ -323,7 +323,6 @@ def get_All_crops(n, p, k, crop):
                     n_p_k.append({'n' : v[0], 'p' : v[1], 'k' : v[2]})
         else:
             n_p_k.append({'n' : n, 'p' : p, 'k' : k})
-    print(n_p_k,'------------')
     kg = 100
     mop_dose, mop_in_hec, dap_dose, dap_in_hec, urea_dose, urea_in_hec, ssp_dose, ssp_in_hec = calculate_fertilizer_doses(
     npk_recommended, kg)
