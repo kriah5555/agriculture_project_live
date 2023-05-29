@@ -327,7 +327,7 @@ def get_All_crops(n, p, k, ph, ec, oc, crop):
         if 'duration' in dict_crop:
             duration = dict_crop['duration'][index]
             return_data_1.append([
-                "The recommended doses of fertilizer are:",
+                # "The recommended doses of fertilizer are:",
                 f"Urea : {urea_dose} kg/hectare {urea_in_hec} kg/acre for {duration}",
                 f"DAP : {dap_dose} kg/hectare {dap_in_hec} kg/acre for {duration}",
                 f"MOP : {mop_dose} kg/hectare {mop_in_hec} kg/acre for {duration}",
@@ -335,7 +335,7 @@ def get_All_crops(n, p, k, ph, ec, oc, crop):
             ])
         else :
             return_data_1.append([
-                "The recommended doses of fertilizer are:",
+                # "The recommended doses of fertilizer are:",
                 f"Urea : {urea_dose} kg/hectare {urea_in_hec} kg/acre",
                 f"DAP : {dap_dose} kg/hectare {dap_in_hec} kg/acre",
                 f"MOP : {mop_dose} kg/hectare {mop_in_hec} kg/acre",
@@ -361,7 +361,7 @@ def get_All_crops(n, p, k, ph, ec, oc, crop):
                 f"Crop target yeild : {target_yield}"
             ])
 
-    return [return_data_1, return_data_2]
+    return {'crop_fertilizer' : return_data_1, 'fym' : return_data_2}
 
 # npk validations should not be less than 999 or -ve
 

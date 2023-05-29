@@ -57,7 +57,7 @@
 <a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'api-edit' api.device.id %}" >Edit</a> 
 {% endif %}
 <a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#popup1">View chart</a>
-<a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#recomended-crops">View Recomended crops</a>
+<a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#recomended-crops">View Recomendation</a>
 <a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'api-list' api.device.pk %}" >Back</a>
 <a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'download-api-response-pdf' api.pk %}" >Download PDF</a>
 <a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'download-api-response-csv' api.pk %}" >Download CSV</a>
@@ -285,16 +285,12 @@
         <a class="close" href="#">&times;</a>
         <section>
           <!--for demo wrap-->
-          <h1>Recomended crops</h1>
+          <h1>Recomendation</h1>
           <div class="tbl-header" id="#body">
             <table cellpadding="0" cellspacing="0" border="0">
               <thead>
                 <tr>
-                  <th>Code</th>
-                  <th>Company</th>
-                  <th>Price</th>
-                  <th>Change</th>
-                  <th>Change %</th>
+                  <th>The recommended doses of fertilizer are:</th>
                 </tr>
               </thead>
             </table>
@@ -302,230 +298,36 @@
           <div class="tbl-content">
             <table cellpadding="0" cellspacing="0" border="0">
               <tbody>
-                <tr>
-                  <td>AAC</td>
-                  <td>AUSTRALIAN COMPANY </td>
-                  <td>$1.38</td>
-                  <td>+2.01</td>
-                  <td>-0.36%</td>
+                {% for crop_fertilizer_data in crops_data.crop_fertilizer %}
+                  {% for crop_data in crop_fertilizer_data %}
+                    <tr>
+                      <td style="width:100px"></td>
+                      <td>{{crop_data}}</td>
+                    </tr>
+                  {% endfor %}
+                    <tr style="background-color:white">
+                      <td style="background-color:white"></td>
+                      <td style="background-color:white"></td>
+                    </tr>
+                {% endfor %}
+
+                <tr style="background-color:orange">
+                  <td style="background-color:orange"></td>
+                  <td style="background-color:orange"><b> Remedy, Fertility, Fym and Target yield</b></td>
                 </tr>
-                <tr>
-                  <td>AAD</td>
-                  <td>AUSENCO</td>
-                  <td>$2.38</td>
-                  <td>-0.01</td>
-                  <td>-1.36%</td>
-                </tr>
-                <tr>
-                  <td>AAX</td>
-                  <td>ADELAIDE</td>
-                  <td>$3.22</td>
-                  <td>+0.01</td>
-                  <td>+1.36%</td>
-                </tr>
-                <tr>
-                  <td>XXD</td>
-                  <td>ADITYA BIRLA</td>
-                  <td>$1.02</td>
-                  <td>-1.01</td>
-                  <td>+2.36%</td>
-                </tr>
-                <tr>
-                  <td>AAC</td>
-                  <td>AUSTRALIAN COMPANY </td>
-                  <td>$1.38</td>
-                  <td>+2.01</td>
-                  <td>-0.36%</td>
-                </tr>
-                <tr>
-                  <td>AAD</td>
-                  <td>AUSENCO</td>
-                  <td>$2.38</td>
-                  <td>-0.01</td>
-                  <td>-1.36%</td>
-                </tr>
-                <tr>
-                  <td>AAX</td>
-                  <td>ADELAIDE</td>
-                  <td>$3.22</td>
-                  <td>+0.01</td>
-                  <td>+1.36%</td>
-                </tr>
-                <tr>
-                  <td>XXD</td>
-                  <td>ADITYA BIRLA</td>
-                  <td>$1.02</td>
-                  <td>-1.01</td>
-                  <td>+2.36%</td>
-                </tr>
-                <tr>
-                  <td>AAC</td>
-                  <td>AUSTRALIAN COMPANY </td>
-                  <td>$1.38</td>
-                  <td>+2.01</td>
-                  <td>-0.36%</td>
-                </tr>
-                <tr>
-                  <td>AAD</td>
-                  <td>AUSENCO</td>
-                  <td>$2.38</td>
-                  <td>-0.01</td>
-                  <td>-1.36%</td>
-                </tr>
-                <tr>
-                  <td>AAX</td>
-                  <td>ADELAIDE</td>
-                  <td>$3.22</td>
-                  <td>+0.01</td>
-                  <td>+1.36%</td>
-                </tr>
-                <tr>
-                  <td>XXD</td>
-                  <td>ADITYA BIRLA</td>
-                  <td>$1.02</td>
-                  <td>-1.01</td>
-                  <td>+2.36%</td>
-                </tr>
-                <tr>
-                  <td>AAC</td>
-                  <td>AUSTRALIAN COMPANY </td>
-                  <td>$1.38</td>
-                  <td>+2.01</td>
-                  <td>-0.36%</td>
-                </tr>
-                <tr>
-                  <td>AAD</td>
-                  <td>AUSENCO</td>
-                  <td>$2.38</td>
-                  <td>-0.01</td>
-                  <td>-1.36%</td>
-                </tr>
-                <tr>
-                  <td>AAX</td>
-                  <td>ADELAIDE</td>
-                  <td>$3.22</td>
-                  <td>+0.01</td>
-                  <td>+1.36%</td>
-                </tr>
-                <tr>
-                  <td>XXD</td>
-                  <td>ADITYA BIRLA</td>
-                  <td>$1.02</td>
-                  <td>-1.01</td>
-                  <td>+2.36%</td>
-                </tr>
-                <tr>
-                  <td>AAC</td>
-                  <td>AUSTRALIAN COMPANY </td>
-                  <td>$1.38</td>
-                  <td>+2.01</td>
-                  <td>-0.36%</td>
-                </tr>
-                <tr>
-                  <td>AAD</td>
-                  <td>AUSENCO</td>
-                  <td>$2.38</td>
-                  <td>-0.01</td>
-                  <td>-1.36%</td>
-                </tr>
-                <tr>
-                  <td>AAX</td>
-                  <td>ADELAIDE</td>
-                  <td>$3.22</td>
-                  <td>+0.01</td>
-                  <td>+1.36%</td>
-                </tr>
-                <tr>
-                  <td>XXD</td>
-                  <td>ADITYA BIRLA</td>
-                  <td>$1.02</td>
-                  <td>-1.01</td>
-                  <td>+2.36%</td>
-                </tr>
-                <tr>
-                  <td>AAC</td>
-                  <td>AUSTRALIAN COMPANY </td>
-                  <td>$1.38</td>
-                  <td>+2.01</td>
-                  <td>-0.36%</td>
-                </tr>
-                <tr>
-                  <td>AAD</td>
-                  <td>AUSENCO</td>
-                  <td>$2.38</td>
-                  <td>-0.01</td>
-                  <td>-1.36%</td>
-                </tr>
-                <tr>
-                  <td>AAX</td>
-                  <td>ADELAIDE</td>
-                  <td>$3.22</td>
-                  <td>+0.01</td>
-                  <td>+1.36%</td>
-                </tr>
-                <tr>
-                  <td>XXD</td>
-                  <td>ADITYA BIRLA</td>
-                  <td>$1.02</td>
-                  <td>-1.01</td>
-                  <td>+2.36%</td>
-                </tr>
-                <tr>
-                  <td>AAC</td>
-                  <td>AUSTRALIAN COMPANY </td>
-                  <td>$1.38</td>
-                  <td>+2.01</td>
-                  <td>-0.36%</td>
-                </tr>
-                <tr>
-                  <td>AAD</td>
-                  <td>AUSENCO</td>
-                  <td>$2.38</td>
-                  <td>-0.01</td>
-                  <td>-1.36%</td>
-                </tr>
-                <tr>
-                  <td>AAX</td>
-                  <td>ADELAIDE</td>
-                  <td>$3.22</td>
-                  <td>+0.01</td>
-                  <td>+1.36%</td>
-                </tr>
-                <tr>
-                  <td>XXD</td>
-                  <td>ADITYA BIRLA</td>
-                  <td>$1.02</td>
-                  <td>-1.01</td>
-                  <td>+2.36%</td>
-                </tr>
-                <tr>
-                  <td>AAC</td>
-                  <td>AUSTRALIAN COMPANY </td>
-                  <td>$1.38</td>
-                  <td>+2.01</td>
-                  <td>-0.36%</td>
-                </tr>
-                <tr>
-                  <td>AAD</td>
-                  <td>AUSENCO</td>
-                  <td>$2.38</td>
-                  <td>-0.01</td>
-                  <td>-1.36%</td>
-                </tr>
-                <tr>
-                  <td>AAX</td>
-                  <td>ADELAIDE</td>
-                  <td>$3.22</td>
-                  <td>+0.01</td>
-                  <td>+1.36%</td>
-                </tr>
-                <tr>
-                  <td>XXD</td>
-                  <td>ADITYA BIRLA</td>
-                  <td>$1.02</td>
-                  <td>-1.01</td>
-                  <td>+2.36%</td>
-                </tr>
+
+                {% for crop_fym_data in crops_data.fym %}
+                  {% for fym in crop_fym_data %}
+                    <tr>
+                      <td style="width:100px"></td>
+                      <td>{{fym}}</td>
+                    </tr>
+                  {% endfor %}
+                    <tr style="background-color:white">
+                      <td style="background-color:white"></td>
+                      <td style="background-color:white"></td>
+                    </tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>
