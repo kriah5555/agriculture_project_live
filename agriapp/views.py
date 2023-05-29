@@ -309,11 +309,14 @@ def api_overview(request, **kwargs):
     template_name = "api_details.html"
     all_dynamic_fields = UserFuncrtions.get_all_dynamic_fields()
     dynamic_field_data = {field.field_name : (UserFuncrtions.get_all_dynamic_field_value(api, field).field_value if UserFuncrtions.get_all_dynamic_field_value(api, field) else 0.0) for field in all_dynamic_fields}
-    crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.crop_type)
+    # crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
+    crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
+    print(crops_data)
     context = {
         'api' : api,
         'devise_name' : api.device.name,
-        'dynamuc_fields' : dynamic_field_data
+        'dynamuc_fields' : dynamic_field_data,
+        'crops_data' : crops_data
     }
     return render(request, template_name = template_name, context=context)
 

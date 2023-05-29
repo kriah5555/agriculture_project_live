@@ -54,6 +54,9 @@ class DeviseApis(models.Model):
     chlorine              = models.FloatField(default=0.0)
     nickel                = models.FloatField(default=0.0)
     organic_carboa        = models.FloatField(default=0.0)
+    ph                    = models.FloatField(default=0.0)
+    ec                    = models.FloatField(default=0.0)
+    oc                    = models.FloatField(default=0.0)
     crop_type             = models.CharField(max_length=255)
     created_at            = models.DateTimeField(auto_now_add=True)
 

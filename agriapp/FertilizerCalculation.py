@@ -9,16 +9,16 @@ crops = {
         "npk": ["40:30:20"],
         "target_yield": ["10 to 15 Quintals per acre"],
     },
-    "jowar": {
-        "frequency": "Annual",
-        "npk": [],
-        "target_yield": [""],
-    },
-    "bajra": {
-        "frequency": "Annual",
-        "npk": [],
-        "target_yield": [""],
-    },
+    # "jowar": {
+    #     "frequency": "Annual",
+    #     "npk": [],
+    #     "target_yield": [""],
+    # },
+    # "bajra": {
+    #     "frequency": "Annual",
+    #     "npk": [],
+    #     "target_yield": [""],
+    # },
     "ginger": {
         "frequency": "Annual",
         "npk": ["40:20:20"],
@@ -168,7 +168,7 @@ crops = {
 
 def calculate_fertilizer_doses(npk_recommended, kg):
     # Assume the npk_recommended value is in the format of "120:60:60"
-    n, p, k = map(int, npk_recommended.split(":"))
+    n, p, k = map(float, npk_recommended.split(":"))
 
     # Constants
     # MOP_recommended = 60
@@ -199,6 +199,8 @@ def calculate_fertilizer_doses(npk_recommended, kg):
 def convert_to_acre(hectre_value):
     return round(hectre_value/2.5, 2)
 
+def convert_to_hector(acre_value):
+    return round(acre_value*2.5, 2)
 
 def calc_soil_parameters(pH, EC, OC):
     if pH < 6.5 and EC < 4:
@@ -220,118 +222,146 @@ def calc_soil_parameters(pH, EC, OC):
     return remedy, fertility
 
 
-def calc_fymanure(crop_type):
-    if crop_type == "Kharif and Rabi":
-        fym = 25
+def calc_fymanure(frequency):
+    if frequency == "Annual":
+        fym = convert_to_hector(4)
     else:
-        fym = 10
+        fym = convert_to_hector(10)
 
     return fym
 
+# crop_type = "Annual crops" # form API
 
-''' case 1 
+# npk_recommended = "30:60:30" # from API
+# kg = 100
 
-if n or p or k value is missing then get npk from crop name dict above
+# mop_dose, mop_in_hec, dap_dose, dap_in_hec, urea_dose, urea_in_hec, ssp_dose, ssp_in_hec = calculate_fertilizer_doses(
+#     npk_recommended, kg)
 
+# # from API
+# pH = 7.2
+# EC = 3.8
+# OC = 0.6
 
-case 2
+# remedy, fertility = calc_soil_parameters(pH, EC, OC)
+# fym               = calc_fymanure(crop_type)
 
-N P AND k valuer are proper
-incoming values in hector
-
--- n --
-n < 250 
-n = n + (25% * n)
-
-n_dict = 60
-
-n_input < 250 :
-  n = n_dict + (25% * n_dict)
-            60 + (25% * 60)
-
-n_input (250-560):
-    n = n_dict
-
-n_input > 560):
-    n = n_dict - (25% * n_dict)
+# print("The recommended doses of fertilizer are:")
+# print("Urea:", urea_dose, "kg/hectare", urea_in_hec, "kg/acre")
+# print("DAP:", dap_dose, "kg/hectare", dap_in_hec, "kg/acre")
+# print("MOP:", mop_dose, "kg/hectare", mop_in_hec, "kg/acre")
+# print("SSP:", ssp_dose, "kg/hectare", ssp_in_hec, "kg/acre")
 
 
-
--- p --
-
-p_input < 22:
-    p = p_dict - (25% * p_dict)
-
-p_input (22-56):
-    p = p_dict
-
-p_input > 56:
-    p = p_dict - (25% * p_dict)
+# print(f"Soil remedy: {remedy}")
+# print(f"Soil fertility: {fertility}")
+# print(f"FYM: {fym} tons/hectare")
+# print("Crop target yeild given in object : target yield from the dict for given crop in API")
 
 
--- k --
 
-k_input < 141:
-    p
-    k = k_dict - (25% * k_dict)
+# if all npk values are given properly then conditions
+def get_n_value(n_input, n_dict):
+    n_dict = float(n_dict)
+    n = 0
+    if n_input < 250:
+        n = n_input + ( (25/100) * n_dict)
+    if n_input >= 250 and n_input <= 560:
+        n = n
+    if n_input > 560 :
+        n = n_input - ( (25/100) * n_dict)
+    return n
 
-k_input (141-336):
-    k = k_dict
+def get_p_value(p_input, p_dict):
+    p_dict = float(p_dict)
+    p = 0
+    if p_input < 22:
+        p = p_input + ( (25/100) * p_dict)
+    if p_input >= 22 and p_input <= 56:
+        p = p
+    if p_input > 56 :
+        p = p_input - ( (25/100) * p_dict)
+    return p
 
-k_input > 336:
-    k = k_dict - (25% * k_dict)
+def get_k_value(k_input, k_dict):
+    k_dict = float(k_dict)
+    k = 0
+    if k_input < 144:
+        k = k_input + ( (25/100) * k_dict)
+    if k_input >= 144 and k_input <= 336:
+        k = k
+    if k_input > 336 :
+        k = k_input - ( (25/100) * k_dict)
+    return k
 
-
-'''
-
-crop_type = "Annual crops" # form API
-
-npk_recommended = "30:60:30" # from API
-kg = 100
-
-mop_dose, mop_in_hec, dap_dose, dap_in_hec, urea_dose, urea_in_hec, ssp_dose, ssp_in_hec = calculate_fertilizer_doses(
-    npk_recommended, kg)
-
-# from API
-pH = 7.2
-EC = 3.8
-OC = 0.6
-
-remedy, fertility = calc_soil_parameters(pH, EC, OC)
-fym               = calc_fymanure(crop_type)
-
-print("The recommended doses of fertilizer are:")
-print("Urea:", urea_dose, "kg/hectare", urea_in_hec, "kg/acre")
-print("DAP:", dap_dose, "kg/hectare", dap_in_hec, "kg/acre")
-print("MOP:", mop_dose, "kg/hectare", mop_in_hec, "kg/acre")
-print("SSP:", ssp_dose, "kg/hectare", ssp_in_hec, "kg/acre")
-
-
-print(f"Soil remedy: {remedy}")
-print(f"Soil fertility: {fertility}")
-print(f"FYM: {fym} tons/hectare")
-print("Crop target yeild given in object : target yield from the dict for given crop in API")
-
-def get_All_crops(n, p, k, crop):
+def npk_is_valid(n,p,k):
+    if n > 1000 or n < 1 or p > 1000 or p < 1 or k > 1000 or k < 1:
+        return False
+    else:
+        return True 
+        
+def get_All_crops(n, p, k, ph, ec, oc, crop):
+    return_data_1 = []
+    return_data_2 = []
+    remedy        = ''
+    fertility     = ''
+    n_p_k         = []
     if crop in crops: # check if crop is valid
-        n_p_k = []
-        if not n or not p or not k: # if any one of the parms are not present the fetch values from the crops table
-            if crop in crops:
-                crop_n_p_ks = crops[crop]['npk']
+        dict_crop = crops[crop]
+        crop_n_p_ks = dict_crop['npk']
+        if not npk_is_valid(n,p,k): # if any one of the parms are not present the fetch values from the crops table
                 for values in crop_n_p_ks:
                     v = values.split(':')
-                    n_p_k.append({'n' : v[0], 'p' : v[1], 'k' : v[2]})
+                    n_p_k.append(f"{v[0]}:{v[1]}:{v[2]}")
         else:
-            n_p_k.append({'n' : n, 'p' : p, 'k' : k})
+            for values in crop_n_p_ks:
+                v = values.split(':')
+                n_p_k.append(f"{get_n_value(n, v[0])}:{get_p_value(p, v[1])}:{get_k_value(k, v[2])}")
+    else:
+        return "send valid crop"
     kg = 100
-    mop_dose, mop_in_hec, dap_dose, dap_in_hec, urea_dose, urea_in_hec, ssp_dose, ssp_in_hec = calculate_fertilizer_doses(
-    npk_recommended, kg)
+    for index, vals in enumerate(n_p_k):
+        mop_dose, mop_in_hec, dap_dose, dap_in_hec, urea_dose, urea_in_hec, ssp_dose, ssp_in_hec = calculate_fertilizer_doses(
+        vals, kg)
 
-    print("The recommended doses of fertilizer are:")
-    print("Urea:", urea_dose, "kg/hectare", urea_in_hec, "kg/acre")
-    print("DAP:", dap_dose, "kg/hectare", dap_in_hec, "kg/acre")
-    print("MOP:", mop_dose, "kg/hectare", mop_in_hec, "kg/acre")
-    print("SSP:", ssp_dose, "kg/hectare", ssp_in_hec, "kg/acre")
+        if 'duration' in dict_crop:
+            duration = dict_crop['duration'][index]
+            return_data_1.append([
+                "The recommended doses of fertilizer are:",
+                f"Urea : {urea_dose} kg/hectare {urea_in_hec} kg/acre for {duration}",
+                f"DAP : {dap_dose} kg/hectare {dap_in_hec} kg/acre for {duration}",
+                f"MOP : {mop_dose} kg/hectare {mop_in_hec} kg/acre for {duration}",
+                f"SSP : {ssp_dose} kg/hectare {ssp_in_hec} kg/acre for {duration}",
+            ])
+        else :
+            return_data_1.append([
+                "The recommended doses of fertilizer are:",
+                f"Urea : {urea_dose} kg/hectare {urea_in_hec} kg/acre",
+                f"DAP : {dap_dose} kg/hectare {dap_in_hec} kg/acre",
+                f"MOP : {mop_dose} kg/hectare {mop_in_hec} kg/acre",
+                f"SSP : {ssp_dose} kg/hectare {ssp_in_hec} kg/acre",
+            ])
+    
+    if (ph and ec and oc):
+        remedy, fertility = calc_soil_parameters(ph, ec, oc)
+        
+    fym = calc_fymanure(dict_crop['frequency'])
 
+    for target_yield in dict_crop['target_yield']:
+        if (ph and ec and oc):
+            return_data_2.append([
+                f"Soil remedy: {remedy}",
+                f"Soil fertility: {fertility}",
+                f"FYM: {fym} tons/hectare",
+                f"Crop target yeild : {target_yield}"
+            ])
+        else :
+            return_data_2.append([
+                f"FYM: {fym} tons/hectare",
+                f"Crop target yeild : {target_yield}"
+            ])
 
-    return crops.keys()
+    return [return_data_1, return_data_2]
+
+# npk validations should not be less than 999 or -ve
+
