@@ -421,6 +421,19 @@ class Dashboard(TemplateView):
         }
         return context
 
+def get_downloadable_data_format(crops_data):
+    rows = [['THE RECOMMENDED DOSES OF FERTILIZER ARE:']]
+    for crop_fertilizer_data in crops_data['crop_fertilizer']:
+        for crop_data in crop_fertilizer_data:
+            rows.append(['', crop_data])
+        rows.append([''])
+    
+    rows.append(['Remedy, Fertility, Fym and Target yield'])
+    for crop_fym_data in crops_data['fym']:
+        for fym in crop_fym_data:
+            rows.append(['', fym])
+    return rows
+    
 def download_api_response_pdf(request, **kwargs):
     from django.http import FileResponse
     import io
@@ -442,15 +455,31 @@ def download_api_response_pdf(request, **kwargs):
     textob.setFont('Helvetica', 14)
 
     # add some lines to text
-    lines = [
-        'Line1',
-        'Line1',
-        'Line1',
-        'Line1',
-    ]
+    
 
-    for line in lines:
-        textob.textLine(line)
+    # lines = [
+    #     'Line1',
+    #     'Line1',
+    #     'Line1',
+    #     'Line1',
+    # ]
+    # for line in lines:
+    #     textob.textLine(line)
+    if 'pk' in  kwargs:
+        api = DeviseApis.objects.get(pk=kwargs['pk'])
+        crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
+        lines = get_downloadable_data_format(crops_data)
+        textob.textLine('THE RECOMMENDED DOSES OF FERTILIZER ARE:')
+        for crop_fertilizer_data in crops_data['crop_fertilizer']:
+            for crop_data in crop_fertilizer_data:
+                textob.textLine('---->'+crop_data)
+            textob.textLine(' ')
+        textob.textLine('Remedy, Fertility, Fym and Target yield')
+        for crop_fym_data in crops_data['fym']:
+            for fym in crop_fym_data:
+                textob.textLine('---->'+fym)
+    else:
+        textob.textLine('no data available')
     
     c.drawText(textob)
     c.showPage()
@@ -467,8 +496,12 @@ def download_api_response_csv(request, **kwargs):
     response = HttpResponse(content_type = 'text/csv')
     response['Content-Disposition'] = 'attachment; filename = response.csv'
     writer = csv.writer(response)
-    rows = [[1, 2, 3, 4],[1, 2, 3, 4],[1, 2, 3, 4]]
-
+    if 'pk' in  kwargs:
+        api = DeviseApis.objects.get(pk=kwargs['pk'])
+        crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
+        rows = get_downloadable_data_format(crops_data)
+    else:
+        rows = [['no data available']]
     writer.writerows(rows)
     return response
 
