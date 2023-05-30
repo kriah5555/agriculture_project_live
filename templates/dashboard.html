@@ -49,7 +49,7 @@
                 <div class="content">
                   <span class="stars"></span>
                   <h2 class="java"><a href="{% url 'device-list' %}">Devises</h2>
-                  <p class="java">Total devises currently in use : {{devise_counts}}.</p></a>
+                  <p class="java">Total devices currently in use : {{devise_counts}}.</p></a>
                 </div>
               </div>
               <div class="face face2">
@@ -61,12 +61,12 @@
               <div class="face face1">
                 <div class="content">
                   <span class="stars"></span>
-                  <h2 class="python"><a href="{% url 'add-devise' %}">Add devise</h2>
+                  <h2 class="python"><a href="{% url 'add-devise' %}">Add device</h2>
                   <p class="python">Click to add devise.</p></a>
                 </div>
               </div>
               <div class="face face2">
-                <h4>Add devise</h4>
+                <h4>Add device</h4>
               </div>
             </div>
           
@@ -127,9 +127,9 @@
         <div class="row m-1">
             <div class="col d-flex justify-content-center">
                 <form class="" style="width: 100%;"> 
-                    <h4 >Select devise to view the API call counts</h4>
+                    <h4 >Select device to view the API call counts</h4>
                     <select class="form-control select2" name="pk" style="width: 33%; float: left;">
-                        <option value="">Selct devise</option>
+                        <option value="">Selct device</option>
                         {% for devise in devises %}
                             <option value="{{devise.pk}}">{{devise.name}}</option> 
                         {% endfor %}

@@ -96,7 +96,7 @@
                         <a class="nav-link" href="{% url 'notifications' %}">Notifications</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'add-devise' %}">Add devise</a>
+                        <a class="nav-link" href="{% url 'add-devise' %}">Add device</a>
                     </li>
                      <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Logout</a>
@@ -121,7 +121,7 @@
         <div class="">
                 <h5 class="" style="float: left;margin-right: 300px;">Devise List <span class="text-muted fw-normal ms-2">({{devise_count}})</span></h5>
                     <form class="" method="POST" style="float: right;"> {% csrf_token %}
-                        <label>Search devise</label>
+                        <label>Search device</label>
                         <select class="form-control select2" name="pk">
                             <option value=""> All</option>
                             {% for devise in devices %}
