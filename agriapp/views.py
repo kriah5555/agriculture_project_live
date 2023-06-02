@@ -421,8 +421,8 @@ class Dashboard(TemplateView):
         }
         return context
 
-def get_downloadable_data_format(crops_data):
-    rows = [['THE RECOMMENDED DOSES OF FERTILIZER ARE:']]
+def get_downloadable_data_format(crops_data, crop, time):
+    rows = [[f'API call at {time}', f'THE RECOMMENDED DOSES OF FERTILIZER FOR CROP "{crop}" ARE:']]
     for crop_fertilizer_data in crops_data['crop_fertilizer']:
         for crop_data in crop_fertilizer_data:
             rows.append(['', crop_data])
@@ -468,8 +468,8 @@ def download_api_response_pdf(request, **kwargs):
     if 'pk' in  kwargs:
         api = DeviseApis.objects.get(pk=kwargs['pk'])
         crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
-        lines = get_downloadable_data_format(crops_data)
-        textob.textLine('THE RECOMMENDED DOSES OF FERTILIZER ARE:')
+        textob.textLine(f'API call at {api.created_at}')
+        textob.textLine(f'THE RECOMMENDED DOSES OF FERTILIZER FOR CROP "{api.crop_type}" ARE:')
         for crop_fertilizer_data in crops_data['crop_fertilizer']:
             for crop_data in crop_fertilizer_data:
                 textob.textLine('---->'+crop_data)
@@ -499,7 +499,7 @@ def download_api_response_csv(request, **kwargs):
     if 'pk' in  kwargs:
         api = DeviseApis.objects.get(pk=kwargs['pk'])
         crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
-        rows = get_downloadable_data_format(crops_data)
+        rows = get_downloadable_data_format(crops_data, api.crop_type, api.created_at)
     else:
         rows = [['no data available']]
     writer.writerows(rows)
