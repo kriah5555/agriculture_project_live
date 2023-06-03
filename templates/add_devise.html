@@ -202,11 +202,14 @@
                 {% endif %}
                 <label class="form-label">Warrenty</label>
                 <input type="date" class="form-control" name="warrenty" required value="{{ warrenty }}">
-                {% if field_errors.land %}
-                  <span style="color: red;"> {{ field_errors.land }}</span>
+                {% if field_errors.warrenty %}
+                  <span style="color: red;"> {{ field_errors.warrenty }}</span>
                 {% endif %}
                 <label class="form-label">Land</label>
                 <input type="input" class="form-control" name="land" required value="{{ devise.land }}">
+                {% if field_errors.land %}
+                  <span style="color: red;"> {{ field_errors.land }}</span>
+                {% endif %}
             </div>
             <script>
                 
@@ -226,11 +229,14 @@
                 {% endif %}
                 <label class="form-label">Amount paid</label>
                 <input type="text" class="form-control" name="amount_paid" required value="{{ devise.amount_paid }}">
-                {% if field_errors.balance_amount %}
-                  <span style="color: red;"> {{ field_errors.balance_amount }}</span>
+                {% if field_errors.amount_paid %}
+                  <span style="color: red;"> {{ field_errors.amount_paid }}</span>
                 {% endif %}
                 <label class="form-label">Balance amount</label>
                 <input type="text" class="form-control" name="balance_amount" required value="{{ devise.balance_amount }}">
+                {% if field_errors.balance_amount %}
+                  <span style="color: red;"> {{ field_errors.balance_amount }}</span>
+                {% endif %}
             </div>
           </div>
           <!-- Notes -->
