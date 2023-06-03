@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'agriculture_project_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'myproject',
+        'NAME': 'myproject1',
                 'USER': 'myprojectuser',
                 'PASSWORD': 'password',
                 'HOST': 'localhost',
