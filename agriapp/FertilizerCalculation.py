@@ -328,18 +328,19 @@ def get_All_crops(n, p, k, ph, ec, oc, crop):
             duration = dict_crop['duration'][index]
             return_data_1.append([
                 # "The recommended doses of fertilizer are:",
-                f"Urea : {urea_in_hec} kg/hectare {urea_dose} kg/acre for {duration}",
-                f"DAP : {dap_in_hec} kg/hectare {dap_dose} kg/acre for {duration}",
-                f"MOP : {mop_in_hec} kg/hectare {mop_dose} kg/acre for {duration}",
-                f"SSP : {ssp_in_hec} kg/hectare {ssp_dose} kg/acre for {duration}",
+                f"For {duration}",
+                f"Urea : {urea_dose} kg/acre {urea_in_hec} kg/hectare",
+                f"DAP : {dap_dose} kg/acre {dap_in_hec} kg/hectare",
+                f"MOP : {mop_dose} kg/acre {mop_in_hec} kg/hectare",
+                f"SSP : {ssp_dose} kg/acre {ssp_in_hec} kg/hectare",
             ])
         else :
             return_data_1.append([
                 # "The recommended doses of fertilizer are:",
-                f"Urea : {urea_in_hec} kg/hectare {urea_dose} kg/acre",
-                f"DAP : {dap_in_hec} kg/hectare {dap_dose} kg/acre",
-                f"MOP : {mop_in_hec} kg/hectare {mop_dose} kg/acre",
-                f"SSP : {ssp_in_hec} kg/hectare {ssp_dose} kg/acre",
+                f"Urea : {urea_dose} kg/acre {urea_in_hec} kg/hectare ",
+                f"DAP : {dap_dose} kg/acre {dap_in_hec} kg/hectare ",
+                f"MOP : {mop_dose} kg/acre {mop_in_hec} kg/hectare ",
+                f"SSP : {ssp_dose} kg/acre {ssp_in_hec} kg/hectare ",
             ])
     if (ph and ec and oc):
         remedy, fertility = calc_soil_parameters(ph, ec, oc)

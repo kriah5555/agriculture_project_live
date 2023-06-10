@@ -29,7 +29,10 @@
 			<div class="inner">
 				<a href="{% url 'dashboard' %}"><img src="{% static '/register/images/image-1.png' %}" alt="" class="image-1"></a>
 				<form action="">
-					<h3>Fields ({{columns_count}})</h3>
+					<h3>Fields ({{columns_count}})
+					<a href="{% url 'welcome' %}" style="float:righ"> Back</a>
+
+					</h3>
 					<a href="{% url 'add_field' %}">Add Field</a>
 					<br>
 					{% if columns %}

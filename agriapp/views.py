@@ -5,14 +5,13 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 
 from .forms import ContactForm, DeviseForm
-from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName
+from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation
 
 from . import UserFuncrtions
-from django.views.generic import UpdateView, TemplateView
+from django.views.generic import UpdateView, TemplateView, CreateView
 from django.urls import reverse
 from django.contrib import messages #import messages
 from datetime import datetime
-from django.views.generic import CreateView, UpdateView
 from map.views import get_marker_color
 from django.contrib.auth.models import User
 from .devise_details import *
@@ -115,7 +114,7 @@ def add_devise(request):
             form.save()
             UserFuncrtions.create_user(request.POST['devise_id'], request.POST['email'])
             template_name = 'device_list.html'
-            messages.success(request,"Devise added successfully")
+            messages.success(request,"Device added successfully")
             return redirect("/device-list/")
         else:
             errors  = form.errors
@@ -162,7 +161,7 @@ def edit_devise(request, **kwargs):
         form = DeviseForm(request.POST or None, instance=devise)
         if form.is_valid():
             form.save()
-            messages.success(request,"Devise updated successfully")
+            messages.success(request,"Device updated successfully")
             return redirect("/device-list/")
         else:
             errors  = form.errors
@@ -298,6 +297,7 @@ def devise_details(request, **kwargs):
         'used'          : used,
         'color'         : get_marker_color(devise),
         'remaining'     : remaining,
+        'location'      : DeviseLocation.objects.filter(devise=devise)
     }
     return render(request, template_name = template_name, context=context)
 
@@ -311,13 +311,18 @@ def api_overview(request, **kwargs):
     dynamic_field_data = {field.field_name : (UserFuncrtions.get_all_dynamic_field_value(api, field).field_value if UserFuncrtions.get_all_dynamic_field_value(api, field) else 0.0) for field in all_dynamic_fields}
     # crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
     crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
+    fields = [f.name for f in DeviseApis._meta.get_fields() if f.name not in ['columndata', 'id', 'device', 'serial_no', 'created_at', 'crop_type', 'area_name', 'devise_id']]
+    fields_data = [getattr(api, i) for i in fields]
+    import random
 
-    import pandas as pd
     context = {
         'api' : api,
         'devise_name' : api.device.name,
         'dynamuc_fields' : dynamic_field_data,
-        'crops_data' : crops_data
+        'crops_data' : crops_data,
+        'fields'      : ','.join(fields),
+        'fields_data'      : ','.join(map(str, fields_data)),
+        'fields_data_colors' : ','.join([f"rgba({random.randint(100,255)}, 0, 0, 0.5)" for i in fields_data]),
     }
     return render(request, template_name = template_name, context=context)
 
@@ -335,6 +340,13 @@ class UpdateApi(UpdateView):
     def get_success_url(self):
         return reverse('api-overview', kwargs={'pk': self.kwargs['pk']})
 
+def api_thresholds_validation(data):
+    red, orange, blue, green = data['red'], data['orange'], data['blue'], data['green']
+    if (green >= blue) or (blue <= green or blue >= orange) or (orange >= red or orange <= blue) or (red <= orange):
+        return False
+    else :
+        return True
+
 class APIThresholdForm(CreateView):
     template_name = 'api_threshold_form.html'
     model         = APICountThreshold
@@ -351,6 +363,13 @@ class APIThresholdForm(CreateView):
         devise = Devise.objects.get(pk = self.kwargs['pk'])
         return {'devise' : devise}
 
+    def form_valid(self, form):
+        if api_thresholds_validation(form.cleaned_data):
+            return super().form_valid(form)
+        else:
+            form.add_error(None, "Please add valid thresholds.)")
+            return self.form_invalid(form)
+
 class APIThresholdFormUpdate(UpdateView):
     template_name = 'api_threshold_form.html'
     model         = APICountThreshold
@@ -363,6 +382,13 @@ class APIThresholdFormUpdate(UpdateView):
 
     def get_success_url(self):
         return reverse('device-details', kwargs={'pk': self.kwargs['devise_pk']})
+
+    def form_valid(self, form):
+        if api_thresholds_validation(form.cleaned_data):
+            return super().form_valid(form)
+        else:
+            form.add_error(None, "Please add valid thresholds.)")
+            return self.form_invalid(form)
 
 def change_password(request, **kwargs):
     resp = user_login_access(request)
@@ -441,6 +467,7 @@ def download_api_response_pdf(request, **kwargs):
     from reportlab.lib.units import inch
     from reportlab.lib.pagesizes import letter
     from django.http import FileResponse
+    import os
 
     api = DeviseApis.objects.get(pk = kwargs['pk'])
     lines = []
@@ -448,7 +475,9 @@ def download_api_response_pdf(request, **kwargs):
     # craete byte streem buffer
     beffer = io.BytesIO()
     # create canvas
-    c = canvas.Canvas(beffer, pagesize = letter, bottomup = 0)
+    c = canvas.Canvas(beffer, pagesize = (595.27,841.89), bottomup = 0)
+    image = os.path.join(os.getcwd()) + '\static\logo3.PNG'
+    c.drawImage(image, 450, 50, 100, 40) # adding image x, y, width, eight
     # create a text object
     textob = c.beginText()
     textob.setTextOrigin(inch, inch)
@@ -465,10 +494,26 @@ def download_api_response_pdf(request, **kwargs):
     # ]
     # for line in lines:
     #     textob.textLine(line)
+    textob.textLine(f'                 ArkaShine Innovations Pvt Ltd')
+    textob.setFont('Helvetica', 10)
     if 'pk' in  kwargs:
         api = DeviseApis.objects.get(pk=kwargs['pk'])
         crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
-        textob.textLine(f'API call at {api.created_at}')
+        device_location = DeviseLocation.objects.filter(devise=api.device)
+        textob.textLine(f'API call time :  {api.created_at}')
+        textob.textLine(f'Crop          :  {api.crop_type}')
+        textob.textLine(f'N             :  {api.nitrogen}')
+        textob.textLine(f'P             :  {api.phosphorous}')
+        textob.textLine(f'K             :  {api.potassium}')
+        textob.textLine(f'PH            :  {api.ph}')
+        textob.textLine(f'EC            :  {api.ec}')
+        textob.textLine(f'OC            :  {api.oc}')
+        if (device_location) : 
+            device_location = device_location.first()
+            textob.textLine(f'latitude          :  {device_location.latitude}')
+            textob.textLine(f'longitude          :  {device_location.longitude}')
+        textob.textLine(f'Phone         :  +91 9611297893')
+        textob.textLine(f'Area name     :  {api.area_name}')
         textob.textLine(f'THE RECOMMENDED DOSES OF FERTILIZER FOR CROP "{api.crop_type}" ARE:')
         for crop_fertilizer_data in crops_data['crop_fertilizer']:
             for crop_data in crop_fertilizer_data:
@@ -480,7 +525,11 @@ def download_api_response_pdf(request, **kwargs):
                 textob.textLine('---->'+fym)
     else:
         textob.textLine('no data available')
-    
+
+    textob.setFillColorCMYK(0.8,0,0,0.3)
+    textob.textLine(' ')
+    textob.textLine('Address : H. NO.9.1 2-226, 11th Cross, Bhawani Rice Mill Road')
+    textob.textLine('Vidyanagar colony, Bidar, Karnataka, lndia, 585403')
     c.drawText(textob)
     c.showPage()
     c.save()
@@ -539,3 +588,31 @@ def add_field(request):
         else :
             messages.error(request, "Please enter valid field name.")
             return redirect('/add_field/')
+
+
+class UpdateDeviceLocation(UpdateView):
+    model = DeviseLocation
+    fields = ['latitude', 'longitude']
+    template_name = 'update_location.html'
+
+    def get_success_url(self):
+        return reverse('device-details', kwargs={'pk': self.request.POST['success']})
+
+class AddDeviceLocation(CreateView):
+    model = DeviseLocation
+    fields = ['devise', 'latitude', 'longitude']
+    template_name = 'update_location.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(AddDeviceLocation, self).get_context_data(**kwargs)
+        pk = self.kwargs['pk']
+        messages.success(self.request, "Location updated successfully")
+        return context
+
+    def get_success_url(self):
+        return reverse('device-details', kwargs={'pk': self.request.POST['success']})
+
+    def get_initial(self):
+        return {
+        'devise':self.kwargs['pk'],
+    }

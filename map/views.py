@@ -1,6 +1,6 @@
 from django.shortcuts import render
 import folium as fol
-import geocoder as geo
+# import geocoder as geo
 import os
 from django.contrib.auth.decorators import login_required
 from agriapp.models import DeviseLocation, Devise, DeviseApis, APICountThreshold

@@ -10,7 +10,7 @@
 
 <style>
   body {
-    background: linear-gradient(40deg, #fc00ff 0%, #00fffc 45%, #fffc00 100%);
+   background-size: 200% 100%;background-image: url({% static 'dashboard/bg2.jpg' %});
   }
  </style>
 <!------ Include the above in your HEAD tag ---------->
@@ -18,7 +18,7 @@
  <nav class="navbar fixed-top navbar-expand navbar-dark" style="background-color: #55779f;">
      <div class="container-fluid">
          <a class="navbar-brand" href="{% url 'dashboard' %}">
-             <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations Pvt Ltd</h3>
+             <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations</h3>
          </a>
              <ul class="navbar-nav ml-auto">
                   <li class="nav-item">
@@ -41,8 +41,8 @@
               <h5 class="my-3">{{request.session.name}}</h5>
               <p class="=mb-1">{{request.session.phone}}</p>
               <p class="mb-4">{{request.session.email}}</p>
-              <p  style="color: {{request.session.color}};">Devise api usage ({{request.session.api_usage}})  </p>
-              <p  style="color: {{request.session.color}};">Devise api remaining ({{request.session.remaining}})  </p>
+              <p  style="color: {{request.session.color}};">Device api usage ({{request.session.api_usage}})  </p>
+              <p  style="color: {{request.session.color}};">Device api remaining ({{request.session.remaining}})  </p>
               
               <div class="d-flex justify-content-center mb-2">
                 <!-- <button type="button" class="btn btn-outline-primary ms-1">Message</button> -->
@@ -193,7 +193,7 @@
                   <p class="mb-0">Curent location</p>
                 </div>
                 <div class="col-sm-9">
-                  <p class="mb-0"><a href="{% url 'map-devise' request.session.pk %}" style="color: white;">Devise current location</a></p>
+                  <p class="mb-0"><a href="{% url 'map-devise' request.session.pk %}">Device current location</a></p>
                 </div>
               </div>
               <hr>
@@ -202,7 +202,7 @@
                   <p class="mb-0">API calls</p>
                 </div>
                 <div class="col-sm-9">
-                  <p class="mb-0"><a href="{% url 'api-list' request.session.pk %}" style="color:white">Devise API calls</a></p>
+                  <p class="mb-0"><a href="{% url 'api-list' request.session.pk %}">Device API calls</a></p>
                 </div>
               </div>
             </div>

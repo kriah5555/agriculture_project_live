@@ -1,0 +1,21 @@
+
+
+<form action="" method="POST">
+    {% csrf_token %}
+    {{ form.devise.errors }}
+
+    {{ form.as_p }}
+<button onclick="history.back()">Go Back</button>
+<input type="hidden" name="success" id='success'>
+<input type="submit">
+{{ form.devise.errors }}
+
+<script>
+    let str = "{{ request.path }}";
+    let numbers = str.match(/\d+/g);
+    document.getElementById("success").setAttribute("value", numbers);
+
+    
+ </script>
+</form>
+

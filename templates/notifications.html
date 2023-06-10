@@ -13,7 +13,9 @@
 </head>
  <style>
   body {
-    background: linear-gradient(40deg, #fc00ff 0%, #00fffc 45%, #fffc00 100%);
+        background-size: 100% 100%;background-image: url({% static 'dashboard/bg1.jpeg' %});
+        color:white;
+    /* background: linear-gradient(40deg, #fc00ff 0%, #00fffc 45%, #fffc00 100%); */
   }
  </style>
 
@@ -22,7 +24,7 @@
 <nav class="navbar fixed-top navbar-expand navbar-dark" style="background-color: #55779f;">
     <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'dashboard' %}">
-            <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations Pvt Ltd</h3>
+            <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations</h3>
         </a>
             <ul class="navbar-nav ml-auto">
                  <li class="nav-item">

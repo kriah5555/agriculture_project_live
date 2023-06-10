@@ -1,3 +1,5 @@
+{% load static %}
+
 <head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
@@ -5,7 +7,8 @@
     <style>
        
        body{
-        background: linear-gradient(to right, #fc00ff 0%, #00fffc 45%, #fffc00 100%);
+        background-size: 100% 100%;background-image: url({% static 'dashboard/bg1.jpeg' %});
+        /* background: linear-gradient(to right, #fc00ff 0%, #00fffc 45%, #fffc00 100%); */
         }
         .project-list-table {
             border-collapse: separate;
@@ -89,15 +92,15 @@
     <nav class="navbar fixed-top navbar-expand navbar-dark" style="background-color: #55779f;">
         <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'dashboard' %}">
-                <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations Pvt Ltd</h3>
+                <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations</h3>
             </a>
                 <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a class="nav-link" href="{% url 'notifications' %}">Notifications</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'add-devise' %}">Add device</a>
-                    </li>
+                    </li> -->
                      <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                     </li>
@@ -119,7 +122,7 @@
     {% endif %}
     <div class="row align-items-center">
         <div class="">
-                <h5 class="" style="float: left;margin-right: 300px;">Devise List <span class="text-muted fw-normal ms-2">({{devise_count}})</span></h5>
+                <h5 class="" style="float: left;margin-right: 300px;">Device List <span class="text-muted fw-normal ms-2">({{devise_count}})</span></h5>
                     <form class="" method="POST" style="float: right;"> {% csrf_token %}
                         <label>Search device</label>
                         <select class="form-control select2" name="pk">
@@ -182,7 +185,7 @@
                         <thead>
                             <tr>
                                 <th scope="col">Name of individual or organization</th>
-                                <th scope="col">Devise id</th>
+                                <th scope="col">Device id</th>
                                 <th scope="col">Serial no</th>
                                 <th scope="col">Email</th>
                                 <th scope="col">Phone</th>
@@ -209,7 +212,7 @@
                                         <ul class="list-inline mb-0">
                                             <li class="list-inline-item">
                                                 <a href="{% url 'change-password' devise.pk %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Change password" class="px-2 text-white"><i class="bx bx-lock font-size-18"></i></a>
-                                                <a href="{% url 'map-devise' devise.pk %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Devise location" class="px-2 text-white"><i class="bx bx-map font-size-18"></i></a>
+                                                <a href="{% url 'map-devise' devise.pk %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Device location" class="px-2 text-white"><i class="bx bx-map font-size-18"></i></a>
                                                 <a href="{% url 'device-details' devise.pk %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Details" class="px-2 text-white"><i class="bx bx-detail font-size-18"></i></a>
                                                 <a href="{% url 'edit-devise' devise.pk %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit" class="px-2 text-white"><i class="bx bx-pencil font-size-18"></i></a>
                                             </li>

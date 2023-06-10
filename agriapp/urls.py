@@ -3,13 +3,14 @@
 from django.urls import path
 from django.views.generic import TemplateView
 from . import views as v
-from .views import APIThresholdForm, APIThresholdFormUpdate, Dashboard
+from .views import APIThresholdForm, APIThresholdFormUpdate, Dashboard, UpdateDeviceLocation, AddDeviceLocation
 from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
     path('',  v.home, name = "home"),
     path('login/', TemplateView.as_view(template_name="login.html"), name = "login"),
     path('login1/', v.login, name = "login1"),
+    path('login2/', v.login, name = "login2"),
     path('logout/', v.logout, name = "logout"),
     path('acess_denied/', TemplateView.as_view(template_name="acess_denied.html"), name = "acess_denied"),
     path('add_field/', login_required(v.add_field), name = "add_field"),
@@ -34,5 +35,7 @@ urlpatterns = [
     path('download_api_response_csv/<int:pk>/', login_required(v.download_api_response_csv), name = "download-api-response-csv"),
     path('dynamic_fields/', login_required(v.dynamic_fields), name = "dynamic_fields"),
     path('delete_field/<int:id>/', login_required(v.delete_field), name = "delete_field"),
+    path('update-location/<int:pk>/', login_required(UpdateDeviceLocation.as_view()), name = "update-location"),
+    path('add-location/<int:pk>/', login_required(AddDeviceLocation.as_view()), name = "add-location"),
 ]
 

@@ -20,7 +20,7 @@
         <nav class="navbar fixed-top navbar-expand navbar-dark">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{% url 'dashboard' %}">
-                    <h3 class="my-heading">ArkaShine Innovations Pvt Ltd</h3>
+                    <h3 class="my-heading">ArkaShine Innovations</h3>
                 </a>
                 <!-- <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation" onclick="console.log('fghjk')">
                     <span class="fa fa-bars mfa-white"></span>
@@ -29,9 +29,10 @@
                     <ul class="navbar-nav">
                          <li class="nav-item">
                             {% if user.is_authenticated %}
-                                <a class="nav-link" href="{% url 'logout' %}">Welcome {{ user.get_username }} Logout</a>
+                                <a class="nav-link" href="{% url 'logout' %}">Welcome, {{ user.get_username }} Logout</a>
                             {% else %}
-                                <a class="nav-link" href="{% url 'login1' %}">Login</a>
+                                <a class="nav-link" href="#login">Login</a>
+                                <!-- <a class="nav-link" href="{% url 'login1' %}">Login</a> -->
                             {% endif %}
                             </a>
                         </li>
@@ -54,7 +55,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-6">
-                        <h1 class="title-main wow fadeInLeft" data-wow-duration="1.5s">ArkaShine Innovations Pvt Ltd</h1>
+                        <!-- <h1 class="title-main wow fadeInLeft" data-wow-duration="1.5s">ArkaShine Innovations</h1> -->
                         <h3 class="subtitle-main wow fadeInUp" data-wow-duration="1.1s">
                             Compact portable soil testing machines that are easy to carry, easy to operate, easy to refill and reuse, provide results on palm, requiring less skilled labor in providing timely soil test results as fertilizer and crop recommend to farmers through use of technology towards a greener footprint for climate change.
                         </h3>
@@ -84,7 +85,8 @@
                         
  <!-- ai details  popup -->
  <div id="ai_popup" class="overlay1">
-    <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/automation.jpg' %});">
+    <div class="popup" id="feature-css" style="width:500px;height:250px">
+        <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/automation.jpg' %});"> -->
         <center>
             <h2 style="color: #4b2711;">complete automation</h2>
             <hr>
@@ -99,7 +101,8 @@
 
  <!-- ai ai_popup1 -->
  <div id="ai_popup1" class="overlay1">
-    <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/integration.PNG' %});">
+    <div class="popup" id="feature-css" style="width:500px;height:250px">
+        <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/integration.PNG' %});"> -->
         <center>
             <h2 style="color: #4b2711;">Integration of technologies</h2>
             <hr>
@@ -112,9 +115,28 @@
 </div>   
 <!-- end ai_popup1  -->
 
+<!-- login popup -->
+<div id="login" class="overlay1">
+    <div class="popup" id="feature-css" style="width:500px;height:200px">
+        <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/integration.PNG' %});"> -->
+        <center>
+            <h2 style="color: #4b2711;">Select login</h2>
+            <hr>
+            <a class="close" href="#">&times;</a>
+            <!-- <h4 class="content"> -->
+                <a class="btn btn-success" href="{% url 'login1' %}">Login as admin</a>
+                <!-- <br> -->
+                <a class="btn btn-success" href="{% url 'login2' %}">Login as user</a>
+            <!-- </h4> -->
+        </center>
+    </div>
+</div>   
+<!-- end login popup  -->
+
  <!-- soil_popup -->
  <div id="soil_popup" class="overlay1">
-    <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/soilonchip.PNG' %});">
+    <div class="popup" id="feature-css" style="width:500px;height:250px">
+    <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/soilonchip.PNG' %});"> -->
         <center>
             <h2 style="color: #4b2711;">complete automation</h2>
             <hr>
@@ -129,7 +151,8 @@
 
  <!-- soil_popup1 -->
  <div id="soil_popup1" class="overlay1">
-    <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/tracking.PNG' %});">
+    <div class="popup" id="feature-css" style="width:500px;height:250px">
+    <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/tracking.PNG' %});"> -->
         <center>
             <h2 style="color: #4b2711;">Location tracking</h2>
             <hr>
@@ -144,7 +167,8 @@
 
  <!-- map_popup -->
  <div id="map_popup" class="overlay1">
-    <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/map.PNG' %});">
+    <div class="popup" id="feature-css" style="width:500px;height:250px">
+    <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/map.PNG' %});"> -->
         <center>
             <h2 style="color: #4b2711;">A Mapped Recommendation Unit</h2>
             <hr>
@@ -159,7 +183,8 @@
 
  <!-- ml_popup -->
  <div id="ml_popup" class="overlay1">
-    <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/AIML.PNG' %});">
+    <div class="popup" id="feature-css" style="width:500px;height:300px">
+    <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/AIML.PNG' %});"> -->
         <center>
             <h2 style="color: #4b2711;">AI and ML based prediction models for fertilizer and crop recommendations</h2>
             <hr>

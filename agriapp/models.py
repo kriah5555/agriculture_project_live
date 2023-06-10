@@ -66,8 +66,8 @@ class DeviseApis(models.Model):
 
 class DeviseLocation(models.Model):
     devise     = models.ForeignKey(to='Devise', on_delete=models.CASCADE, unique=True)
-    latitude   = models.FloatField(default=0)
-    longitude  = models.FloatField(default=0)
+    latitude   = models.FloatField(default=15.3173)
+    longitude  = models.FloatField(default=75.7139)
     status     = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -76,10 +76,10 @@ class DeviseLocation(models.Model):
 
 class APICountThreshold(models.Model):
     devise = models.ForeignKey(to='Devise', on_delete=models.CASCADE, unique=True)
-    red    = models.IntegerField()
-    orange = models.IntegerField()
-    blue   = models.IntegerField()
-    green  = models.IntegerField()
+    red    = models.IntegerField(default=100)
+    orange = models.IntegerField(default=80)
+    blue   = models.IntegerField(default=50)
+    green  = models.IntegerField(default=20)
 
     def __str__(self):
         return self.devise.name

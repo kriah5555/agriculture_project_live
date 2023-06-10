@@ -14,8 +14,10 @@
 
 <style>
   body{
-        background: linear-gradient(to right, #fc00ff 0%, #00fffc 45%, #fffc00 100%);
+    background-size: 100% 100%;background-image: url({% static 'dashboard/bg1.jpeg' %});
+        /* background: linear-gradient(to right, #fc00ff 0%, #00fffc 45%, #fffc00 100%); */
         }
+
 </style>
 
 <!------ Include the above in your HEAD tag ---------->
@@ -23,16 +25,16 @@
  <nav class="navbar fixed-top navbar-expand navbar-dark" style="background-color: #55779f;">
      <div class="container-fluid">
          <a class="navbar-brand" href="{% url 'dashboard' %}">
-             <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations Pvt Ltd</h3>
+             <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations</h3>
          </a>
              <ul class="navbar-nav ml-auto">
               {% if request.user.is_staff %}
-                 <li class="nav-item">
+                 <!-- <li class="nav-item">
                      <a class="nav-link" href="{% url 'notifications' %}">Notifications</a>
-                 </li>
-                 <li class="nav-item">
+                 </li> -->
+                 <!-- <li class="nav-item">
                      <a class="nav-link" href="{% url 'add-devise' %}">Add Device</a>
-                 </li>
+                 </li> -->
               {% endif %}
                   <li class="nav-item">
                      <a class="nav-link" href="{% url 'logout' %}">Logout</a>
@@ -56,11 +58,12 @@
 {% if request.user.is_staff %}
 <a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'api-edit' api.device.id %}" >Edit</a> 
 {% endif %}
-<a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#popup1">View chart</a>
+<a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#popup1">View NPK chart</a>
+<a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#popup2">View chart</a>
 <a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#recomended-crops">View Recomendation</a>
-<a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'api-list' api.device.pk %}" >Back</a>
 <a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'download-api-response-pdf' api.pk %}" >Download PDF</a>
 <a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'download-api-response-csv' api.pk %}" >Download CSV</a>
+<a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'api-list' api.device.pk %}" >Back</a>
 <div class="row mt-2 m-1">
   <div class="col-md-6">
     <div class="card mb-4 mb-md-0" style="background: #a97e7e94; color: white;">
@@ -200,7 +203,6 @@
 
 
 
-
 {% if dynamuc_fields %}
   <div class="row mt-2 m-1">
     <div class="col-md-6">
@@ -220,7 +222,6 @@
     </div>
   </div>
 {% endif %}
-
 
 <!-- pichart -->
 <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
@@ -247,6 +248,53 @@
 </script>
 <!-- pichart -->
 
+<!-- pichart1 -->
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
+<script>
+    $(document).ready(function() {
+      console.log("{{fields_data_colors}}".split(','))
+        var ctx = $("#chart-line1");
+        var myLineChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: "{{fields}}".split(','),
+                datasets: [{
+                    data: "{{fields_data}}".split(','),
+                    backgroundColor : [
+                      "rgba(255, 0, 0, 0.5)", 
+                      "rgba(100, 255, 0, 0.5)", 
+                      "rgba(200, 50, 255, 0.5)", 
+                      "rgba(255, 0, 0, 0.5)", 
+                      "rgba(100, 255, 0, 0.5)", 
+                      "rgba(200, 50, 255, 0.5)", 
+                      "rgba(255, 0, 0, 0.5)", 
+                      "rgba(100, 255, 0, 0.5)", 
+                      "rgba(200, 50, 255, 0.5)",
+                      "rgba(255, 0, 0, 0.5)", 
+                      "rgba(100, 255, 0, 0.5)", 
+                      "rgba(200, 50, 255, 0.5)",
+                      "rgba(255, 0, 0, 0.5)", 
+                      "rgba(100, 255, 0, 0.5)", 
+                      "rgba(200, 50, 255, 0.5)",
+                      "rgba(255, 0, 0, 0.5)", 
+                      "rgba(100, 255, 0, 0.5)", 
+                      "rgba(200, 50, 255, 0.5)", 
+                      "rgba(220,  0,  0,  0.5)"
+                    ]
+                    // backgroundColor: "{{fields_data_colors}}".split(',')
+                }]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: ''
+                }
+            }
+        });
+    });
+</script>
+<!-- pichart -->
+
 <div id="popup1" class="overlay1">
   <div class="popup" style="width: 70%;">
       <center>
@@ -257,7 +305,7 @@
                   <div class="container-fluid d-flex justify-content-center">
                       <div class="col-sm-8 col-md-6">
                           <div class="card">
-                              <div class="card-header" style="color: #4b2711;">Pie chart</div>
+                              <div class="card-header" style="color: #4b2711;">NPK values</div>
                               <div class="card-body" style="height: 420px">
                                   <div class="chartjs-size-monitor" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
                                       <div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
@@ -267,6 +315,42 @@
                                           <div style="position:absolute;width:200%;height:200%;left:0; top:0"></div>
                                       </div>
                                   </div> <canvas id="chart-line" width="299" height="200" class="chartjs-render-monitor" style="display: block; width: 299px; height: 200px;"></canvas>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      </center>
+  </div>
+</div>
+
+<!-- end pie chart -->
+
+
+<!-- pichart1 -->
+
+<div id="popup2" class="overlay1">
+  <div class="popup" style="width: 70%;">
+      <center>
+        <a class="close" href="#">&times;</a>
+        <div class="page-content page-container mt-5" id="page-content">
+          <div class="padding">
+              <div class="row">
+                  <div class="container-fluid d-flex justify-content-center">
+                      <div class="col-sm-8 col-md-6">
+                          <div class="card">
+                              <div class="card-header" style="color: #4b2711;">Values</div>
+                              <div class="card-body" style="height: 420px">
+                                  <div class="chartjs-size-monitor" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
+                                      <div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                                          <div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div>
+                                      </div>
+                                      <div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                                          <div style="position:absolute;width:200%;height:200%;left:0; top:0"></div>
+                                      </div>
+                                  </div> <canvas id="chart-line1" width="299" height="200" class="chartjs-render-monitor" style="display: block; width: 299px; height: 200px;"></canvas>
                               </div>
                           </div>
                       </div>
@@ -313,9 +397,9 @@
                     </tr>
                 {% endfor %}
 
-                <tr style="background-color:orange">
-                  <td style="background-color:orange"></td>
-                  <td style="background-color:orange"><b> Remedy, Fertility, Fym and Target yield</b></td>
+                <tr style="background-color:rgba(233, 21, 17, 0.88)">
+                  <td style="background-color:rgb(233, 21, 17, 0.88)"></td>
+                  <td style="background-color:rgb(233, 21, 17, 0.88)"><b> Remedy, Fertility, Fym and Target yield</b></td>
                 </tr>
 
                 {% for crop_fym_data in crops_data.fym %}

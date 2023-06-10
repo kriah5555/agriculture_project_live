@@ -74,7 +74,8 @@
 
 
  body {
-    background: linear-gradient(40deg, #fc00ff 0%, #00fffc 45%, #fffc00 100%);
+    background-size: 100% 100%;background-image: url({% static 'dashboard/bg1.jpeg' %});
+    /* background: linear-gradient(40deg, #fc00ff 0%, #00fffc 45%, #fffc00 100%); */
  }
  
 
@@ -148,19 +149,19 @@
                 <ul class="navbar-nav ml-auto">
                     {% if request.user.is_staff %}
 
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a class="nav-link" href="{% url 'notifications' %}">Notifications</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'add-devise' %}">Add device</a>
-                    </li>
+                    </li> -->
                     {% endif %}
                      <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                     </li>
                 </ul>
         </div>
-    </nav>
+    </nav>  
   <!-- end navbar -->
 <input type="hidden" name="" id="locs" value="{% for devise in devises.values %}-{{devise.name}},{{devise.latitude}},{{devise.longitude}},{{devise.devise_pk}},{{devise.color}}{% endfor %}">
 <input type="hidden" name="" id="zoom" value="{{zoom}}">

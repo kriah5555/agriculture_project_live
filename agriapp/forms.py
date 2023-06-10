@@ -22,5 +22,6 @@ class DeviseForm(forms.ModelForm):
             'time_of_sale', 
             'warrenty', 
             'amount_paid',
+            'balance_amount',
             'land',
             ]
