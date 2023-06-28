@@ -263,36 +263,30 @@ def calc_fymanure(frequency):
 # if all npk values are given properly then conditions
 def get_n_value(n_input, n_dict):
     n_dict = float(n_dict)
-    n = 0
-    if n_input < 250:
-        n = n_input + ( (25/100) * n_dict)
-    if n_input >= 250 and n_input <= 560:
-        n = n
+    if n_input < 280:
+        return n_dict + ( (25/100) * n_dict)
+    if n_input >= 280 and n_input <= 560:
+        return n_input
     if n_input > 560 :
-        n = n_input - ( (25/100) * n_dict)
-    return n
+        return n_dict - ( (25/100) * n_dict)
 
 def get_p_value(p_input, p_dict):
     p_dict = float(p_dict)
-    p = 0
     if p_input < 22:
-        p = p_input + ( (25/100) * p_dict)
+        return p_dict + ( (25/100) * p_dict)
     if p_input >= 22 and p_input <= 56:
-        p = p
+        return p_input
     if p_input > 56 :
-        p = p_input - ( (25/100) * p_dict)
-    return p
+        return p_dict - ( (25/100) * p_dict)
 
 def get_k_value(k_input, k_dict):
     k_dict = float(k_dict)
-    k = 0
     if k_input < 144:
-        k = k_input + ( (25/100) * k_dict)
+        return k_dict + ( (25/100) * k_dict)
     if k_input >= 144 and k_input <= 336:
-        k = k
+        return k_input
     if k_input > 336 :
-        k = k_input - ( (25/100) * k_dict)
-    return k
+        return k_dict - ( (25/100) * k_dict)
 
 def npk_is_valid(n,p,k):
     if n > 1000 or n < 1 or p > 1000 or p < 1 or k > 1000 or k < 1:
@@ -364,4 +358,7 @@ def get_All_crops(n, p, k, ph, ec, oc, crop):
     return {'crop_fertilizer' : return_data_1, 'fym' : return_data_2}
 
 # npk validations should not be less than 999 or -ve
+
+def get_available_crops():
+    return crops.keys()
 
