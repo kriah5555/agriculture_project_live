@@ -2,6 +2,9 @@ from django.db import models
 
 # Create your models here.
 
+from . import FertilizerCalculation as f
+
+CROP_LIST = ((crop , crop)  for crop in f.crops)
 class ContactDetails(models.Model):
     name       = models.CharField(max_length=255)
     phone      = models.CharField(max_length=255, unique=True)
@@ -57,7 +60,7 @@ class DeviseApis(models.Model):
     ph                    = models.FloatField(default=0.0)
     ec                    = models.FloatField(default=0.0)
     oc                    = models.FloatField(default=0.0)
-    crop_type             = models.CharField(max_length=255)
+    crop_type             = models.CharField(max_length=255, choices = CROP_LIST)
     created_at            = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

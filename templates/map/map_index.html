@@ -243,7 +243,7 @@
     {% if request.user.is_staff %}
     <center  >
         <form class="col-md-4" style="margin-top: 100px;" method="POST"> {% csrf_token %}
-            <label>Search devise {{ request.user.is_staff}}</label>
+            <label>Search device {{ request.user.is_staff}}</label>
             <select class="form-control select2" name="pk">
                 <option value=""> All</option>
                 {% for devise in filter_devise_list %}

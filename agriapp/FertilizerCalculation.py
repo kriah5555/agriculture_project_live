@@ -172,26 +172,30 @@ def calculate_fertilizer_doses(npk_recommended, kg):
 
     # Constants
     # MOP_recommended = 60
-    DAP_p2o5 = 46
-    DAP_n    = 18
-    UREA_n   = 46
+    # DAP_p2o5 = 46
+    # DAP_n    = 18
+    # UREA_n   = 46
 
-    # Calculate the DAP doses
-    p2o5_required = p
-    dap_dose = (p2o5_required / DAP_p2o5) * kg
-    dap_n_supplied = (dap_dose / kg) * DAP_n
+    # # Calculate the DAP doses
+    # p2o5_required = p
+    # dap_dose = (p2o5_required / DAP_p2o5) * kg
+    # dap_n_supplied = (dap_dose / kg) * DAP_n
 
-    # Calculate the Urea doses
-    urea_n_required = n - dap_n_supplied
-    urea_dose = (urea_n_required / UREA_n) * kg
+    # # Calculate the Urea doses
+    # urea_n_required = n - dap_n_supplied
+    # urea_dose = (urea_n_required / UREA_n) * kg
 
-    # Calculate the MOP doses
-    mop_dose = (k/60) * kg
+    # # Calculate the MOP doses
+    # mop_dose = (k/60) * kg
+    mop_dose = (kg/60) * k
+
+    dap_dose = (kg/46) * p
+
+    urea_dose = (kg/46) * (n - ((18/100) * dap_dose))
 
     # Calculate the SSP doses
     ssp_dose = (p/16) * kg
 
-    round(mop_dose, 2)
 
     return round(mop_dose, 2), convert_to_acre(mop_dose), round(dap_dose, 2), convert_to_acre(dap_dose), round(urea_dose, 2), convert_to_acre(urea_dose), round(ssp_dose, 2), convert_to_acre(ssp_dose),
 
@@ -264,11 +268,11 @@ def calc_fymanure(frequency):
 def get_n_value(n_input, n_dict):
     n_dict = float(n_dict)
     if n_input < 280:
-        return n_dict + ( (25/100) * n_dict)
+        return n_dict + ((25/100) * n_dict)
     if n_input >= 280 and n_input <= 560:
         return n_input
     if n_input > 560 :
-        return n_dict - ( (25/100) * n_dict)
+        return n_dict - ((25/100) * n_dict)
 
 def get_p_value(p_input, p_dict):
     p_dict = float(p_dict)
@@ -289,7 +293,7 @@ def get_k_value(k_input, k_dict):
         return k_dict - ( (25/100) * k_dict)
 
 def npk_is_valid(n,p,k):
-    if n > 1000 or n < 1 or p > 1000 or p < 1 or k > 1000 or k < 1:
+    if (n > 1000 or n < 1) and (p > 1000 or p < 1) and (k > 1000 or k < 1):
         return False
     else:
         return True 
@@ -300,7 +304,7 @@ def get_All_crops(n, p, k, ph, ec, oc, crop):
     remedy        = ''
     fertility     = ''
     n_p_k         = []
-    if crop in crops: # check if crop is valid
+    if crop in crops: # check if crop`` is valid
         dict_crop = crops[crop]
         crop_n_p_ks = dict_crop['npk']
         if not npk_is_valid(n,p,k): # if any one of the parms are not present the fetch values from the crops table
