@@ -20,6 +20,7 @@ urlpatterns = [
     path('device-details/<int:pk>/', login_required(v.devise_details), name = "device-details"),
     path('api-overview/<int:pk>/', login_required(v.api_overview), name = "api-overview"),
     path('api-edit/<int:pk>/', login_required(v.UpdateApi.as_view()), name = "api-edit"),
+    path('add-api/', login_required(v.CreateApi.as_view()), name = "add-api"),
     path('api-list/<int:pk>/', login_required(v.api_list), name = "api-list"),
     path('users/',v.users, name = "users"),
     path('forgot_password/', TemplateView.as_view(template_name="forgot_password.html"), name = "forgot_password"),

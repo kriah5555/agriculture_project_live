@@ -340,6 +340,20 @@ class UpdateApi(UpdateView):
     def get_success_url(self):
         return reverse('api-overview', kwargs={'pk': self.kwargs['pk']})
 
+class CreateApi(CreateView):
+    model = DeviseApis
+    fields = '__all__'
+    template_name = 'updaet-api.html'
+    
+    # def get_context_data(self, **kwargs):
+    #     context = super(UpdateApi, self).get_context_data(**kwargs)
+    #     pk = self.kwargs['pk']
+    #     messages.success(self.request, "API updated successfully")
+    #     return context
+
+    # def get_success_url(self):
+    #     return reverse('api-overview', kwargs={'pk': self.kwargs['pk']})
+
 def api_thresholds_validation(data):
     red, orange, blue, green = data['red'], data['orange'], data['blue'], data['green']
     if (green >= blue) or (blue <= green or blue >= orange) or (orange >= red or orange <= blue) or (red <= orange):
