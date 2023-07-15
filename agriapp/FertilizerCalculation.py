@@ -170,26 +170,11 @@ def calculate_fertilizer_doses(npk_recommended, kg):
     # Assume the npk_recommended value is in the format of "120:60:60"
     n, p, k = map(float, npk_recommended.split(":"))
 
-    # Constants
-    # MOP_recommended = 60
-    # DAP_p2o5 = 46
-    # DAP_n    = 18
-    # UREA_n   = 46
+    # mop_dose = (kg/60) * k
+    mop_dose = k / 0.6
 
-    # # Calculate the DAP doses
-    # p2o5_required = p
-    # dap_dose = (p2o5_required / DAP_p2o5) * kg
-    # dap_n_supplied = (dap_dose / kg) * DAP_n
-
-    # # Calculate the Urea doses
-    # urea_n_required = n - dap_n_supplied
-    # urea_dose = (urea_n_required / UREA_n) * kg
-
-    # # Calculate the MOP doses
-    # mop_dose = (k/60) * kg
-    mop_dose = (kg/60) * k
-
-    dap_dose = (kg/46) * p
+    # dap_dose = (kg/46) * p
+    dap_dose = p / 0.46
 
     urea_dose = (kg/46) * (n - ((18/100) * dap_dose))
 
