@@ -344,6 +344,7 @@ class CreateApi(CreateView):
     model = DeviseApis
     fields = '__all__'
     template_name = 'updaet-api.html'
+    success_url = '/add-api'
     
     # def get_context_data(self, **kwargs):
     #     context = super(UpdateApi, self).get_context_data(**kwargs)
@@ -352,7 +353,7 @@ class CreateApi(CreateView):
     #     return context
 
     # def get_success_url(self):
-    #     return reverse('api-overview', kwargs={'pk': self.kwargs['pk']})
+    #     return reverse('welcome')
 
 def api_thresholds_validation(data):
     red, orange, blue, green = data['red'], data['orange'], data['blue'], data['green']

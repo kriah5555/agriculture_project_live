@@ -22,13 +22,13 @@ crops = {
     "ginger": {
         "frequency": "Annual",
         "npk": ["40:20:20"],
-        "target_yield": ["15-20 tons per acre"],
+        "target_yield": ["15-20 tons per acre h"],
     },
     "tomato": {
         "frequency": "Annual",
         "npk": ["100:100:100"],
         # "npk": "hybrid- 100:100:100",
-        "target_yield": ["24 - 30 tons per acre"],
+        "target_yield": ["24 - 30 tons per acre hybrid"],
     },
     "tomato_improved_varieties": {
         "frequency": "Annual",
@@ -115,7 +115,7 @@ crops = {
         "frequency": "Annual"
     },
     "arecanut": {
-        "npk": ["100:42:20"],
+        "npk": ["100:40:140"],
         "target_yield": ["500 to 600 kg per acre"],
         "frequency": "Annual"
     },
@@ -159,7 +159,7 @@ crops = {
         "frequency": "Annual"
     },
     "turmeric": {
-        "npk": ["60:51:40"],
+        "npk": ["60:50:100"],
         "target_yield":[ "8 to 10 tonns per acre"],
         "frequency": "Annual"
     }
@@ -167,16 +167,20 @@ crops = {
 
 
 def calculate_fertilizer_doses(npk_recommended, kg):
+    print(npk_recommended)
     # Assume the npk_recommended value is in the format of "120:60:60"
     n, p, k = map(float, npk_recommended.split(":"))
 
-    # mop_dose = (kg/60) * k
-    mop_dose = k / 0.6
+    mop_dose = (kg/60) * k
+    # mop_dose = k / 0.6
 
-    # dap_dose = (kg/46) * p
-    dap_dose = p / 0.46
+    dap_dose = (kg/46) * p
+    # dap_dose = p / 0.46
 
-    urea_dose = (kg/46) * (n - ((18/100) * dap_dose))
+    urea_dose = (100/46) * (((180/100) * dap_dose) - n)
+    # ans = 180/100 * dap_dose
+    # ans2 = n - ans
+    # urea_dose = 100/46 * ans2
 
     # Calculate the SSP doses
     ssp_dose = (p/16) * kg
@@ -270,9 +274,9 @@ def get_p_value(p_input, p_dict):
 
 def get_k_value(k_input, k_dict):
     k_dict = float(k_dict)
-    if k_input < 144:
+    if k_input < 141:
         return k_dict + ( (25/100) * k_dict)
-    if k_input >= 144 and k_input <= 336:
+    if k_input >= 141 and k_input <= 336:
         return k_input
     if k_input > 336 :
         return k_dict - ( (25/100) * k_dict)
