@@ -1,3 +1,4 @@
+
 crops = {
     "rice_or_paddy": {
         "frequency": "Quarterly",
@@ -177,7 +178,7 @@ def calculate_fertilizer_doses(npk_recommended, kg):
     dap_dose = (kg/46) * p
     # dap_dose = p / 0.46
 
-    urea_dose = (100/46) * (((180/100) * dap_dose) - n)
+    urea_dose = (100/46) * (n-((18/100) * dap_dose))
     # ans = 180/100 * dap_dose
     # ans2 = n - ans
     # urea_dose = 100/46 * ans2
@@ -259,7 +260,7 @@ def get_n_value(n_input, n_dict):
     if n_input < 280:
         return n_dict + ((25/100) * n_dict)
     if n_input >= 280 and n_input <= 560:
-        return n_input
+        return n_dict
     if n_input > 560 :
         return n_dict - ((25/100) * n_dict)
 
@@ -268,7 +269,7 @@ def get_p_value(p_input, p_dict):
     if p_input < 22:
         return p_dict + ( (25/100) * p_dict)
     if p_input >= 22 and p_input <= 56:
-        return p_input
+        return p_dict
     if p_input > 56 :
         return p_dict - ( (25/100) * p_dict)
 
@@ -277,7 +278,7 @@ def get_k_value(k_input, k_dict):
     if k_input < 141:
         return k_dict + ( (25/100) * k_dict)
     if k_input >= 141 and k_input <= 336:
-        return k_input
+        return k_dict
     if k_input > 336 :
         return k_dict - ( (25/100) * k_dict)
 
@@ -287,7 +288,7 @@ def npk_is_valid(n,p,k):
     else:
         return True 
         
-def get_All_crops(n, p, k, ph, ec, oc, crop):
+def get_crop_urea_dap_mop_dose(n, p, k, ph, ec, oc, crop):
     return_data_1 = []
     return_data_2 = []
     remedy        = ''
@@ -352,6 +353,6 @@ def get_All_crops(n, p, k, ph, ec, oc, crop):
 
 # npk validations should not be less than 999 or -ve
 
-def get_available_crops():
-    return crops.keys()
-
+def get_crop_list():
+    sorted_crops = sorted(crops)
+    return ((crop, crop) for crop in sorted_crops)

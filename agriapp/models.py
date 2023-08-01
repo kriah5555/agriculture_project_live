@@ -4,7 +4,7 @@ from django.db import models
 
 from . import FertilizerCalculation as f
 
-CROP_LIST = ((crop , crop)  for crop in f.crops)
+CROP_LIST = f.get_crop_list()
 class ContactDetails(models.Model):
     name       = models.CharField(max_length=255)
     phone      = models.CharField(max_length=255, unique=True)

@@ -5,13 +5,14 @@ from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
-from agriapp import UserFuncrtions, FertilizerCalculation
+from agriapp import UserFuncrtions, FertilizerCalculation as f
+from .encryption_utils import encrypt_device_id, decrypt_device_id
 
 # Create your views here.
 
 @api_view(['GET', 'POST'])
 def get_api_list(request):
-    all_apis = DeviseApis.objects.all()
+    all_apis   = DeviseApis.objects.all()
     serializer = DeviseApiSerializer(all_apis, many=True)
     return JsonResponse({'data':serializer.data})
 
@@ -22,7 +23,7 @@ def get_devise_by_devise_id(request):
             devise_id = request.POST['devise_id']
             if devise_id:
                 devise = Devise.objects.filter(devise_id=devise_id).first()
-                return Response({'device' : devise.pk}, status.HTTP_200_OK)
+                return Response({'device_key' : encrypt_device_id(devise.pk)}, status.HTTP_200_OK)
             else:
                 return Response({'message' : 'Please send valid devse id'}, status.HTTP_400_BAD_REQUEST)
         else:
@@ -35,11 +36,11 @@ def get_devise_by_devise_id(request):
 def add_location(request):
     try:
         if 'devise' in request.POST and 'latitude' in request.POST and 'longitude' in request.POST:
-            devise =  request.POST['devise']
-            latitude =  request.POST['latitude']
-            longitude =  request.POST['longitude']
+            device_key =  request.POST['device_key']
+            latitude   =  request.POST['latitude']
+            longitude  =  request.POST['longitude']
             if devise and longitude and longitude:
-                location = DeviseLocation.objects.filter(devise__pk = devise)
+                location = DeviseLocation.objects.filter(devise__pk = decrypt_device_id(device_key))
                 if location:
                     location.update(latitude= latitude, longitude= longitude)
                 else :
@@ -55,10 +56,13 @@ def add_location(request):
 @api_view(['POST'])
 def add_soil_data(request):
     try:
-        serializer = DeviseApiSerializer(data = request.data)
+        modified_data           = request.data.copy()
+        device                  = decrypt_device_id(modified_data['device_key'])
+        modified_data['device'] = device
+        serializer              = DeviseApiSerializer(data = request.data)
         if serializer.is_valid():
             serializer.save()
-            api_id = serializer.data['id']
+            api_id         = serializer.data['id']
             dynamic_fields = UserFuncrtions.get_all_dynamic_fields()
             if (dynamic_fields):
                 for dynamic_field in dynamic_fields:
@@ -74,7 +78,7 @@ def add_soil_data(request):
 @api_view(['POST'])
 def get_crops(request):
     try:
-        return Response({'message' : 'Soil data received successfully', 'crops' : FertilizerCalculation.get_available_crops()}, status=status.HTTP_200_OK)
+        return Response({'message' : 'available crops', 'crops' : f.get_crop_list()}, status=status.HTTP_200_OK)
     except  Exception as e:
         return Response({'message' : "Something went wrong while fetching data please check the parameters"}, status.HTTP_400_BAD_REQUEST)        
 

@@ -78,7 +78,7 @@ def login(request):
     elif request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
-        user = auth.authenticate(username = username, password = password)
+        user     = auth.authenticate(username = username, password = password)
         if user is not None:
             auth.login(request,user)
             resp = user_login_access(request)
@@ -199,7 +199,7 @@ def notifications(request, **kwargs):
     
     notifications_all = ContactDetails.objects.all()
     template_name     = 'notifications.html'
-    context = {
+    context           = {
         'notification_active'   : notifications_all.filter(status=True),
         'notification_inactive' : notifications_all.filter(status=False),
     }
@@ -305,35 +305,34 @@ def api_overview(request, **kwargs):
     # resp = user_login_access(request)
     # if  resp:
     #     return resp
-    api = DeviseApis.objects.get(pk=kwargs['pk'])
-    template_name = "api_details.html"
+    api                = DeviseApis.objects.get(pk=kwargs['pk'])
+    template_name      = "api_details.html"
     all_dynamic_fields = UserFuncrtions.get_all_dynamic_fields()
     dynamic_field_data = {field.field_name : (UserFuncrtions.get_all_dynamic_field_value(api, field).field_value if UserFuncrtions.get_all_dynamic_field_value(api, field) else 0.0) for field in all_dynamic_fields}
-    # crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
-    crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
-    fields = [f.name for f in DeviseApis._meta.get_fields() if f.name not in ['columndata', 'id', 'device', 'serial_no', 'created_at', 'crop_type', 'area_name', 'devise_id']]
-    fields_data = [getattr(api, i) for i in fields]
+    crops_data         = FertilizerCalculation.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
+    fields             = [f.name for f in DeviseApis._meta.get_fields() if f.name not in ['columndata', 'id', 'device', 'serial_no', 'created_at', 'crop_type', 'area_name', 'devise_id']]
+    fields_data        = [getattr(api, i) for i in fields]
     import random
 
     context = {
-        'api' : api,
-        'devise_name' : api.device.name,
-        'dynamuc_fields' : dynamic_field_data,
-        'crops_data' : crops_data,
-        'fields'      : ','.join(fields),
-        'fields_data'      : ','.join(map(str, fields_data)),
+        'api'                : api,
+        'devise_name'        : api.device.name,
+        'dynamuc_fields'     : dynamic_field_data,
+        'crops_data'         : crops_data,
+        'fields'             : ','.join(fields),
+        'fields_data'        : ','.join(map(str, fields_data)),
         'fields_data_colors' : ','.join([f"rgba({random.randint(100,255)}, 0, 0, 0.5)" for i in fields_data]),
     }
     return render(request, template_name = template_name, context=context)
 
 class UpdateApi(UpdateView):
-    model = DeviseApis
-    fields = '__all__'
+    model         = DeviseApis
+    fields        = '__all__'
     template_name = 'updaet-api.html'
     
     def get_context_data(self, **kwargs):
         context = super(UpdateApi, self).get_context_data(**kwargs)
-        pk = self.kwargs['pk']
+        pk      = self.kwargs['pk']
         messages.success(self.request, "API updated successfully")
         return context
 
@@ -341,10 +340,10 @@ class UpdateApi(UpdateView):
         return reverse('api-overview', kwargs={'pk': self.kwargs['pk']})
 
 class CreateApi(CreateView):
-    model = DeviseApis
-    fields = '__all__'
+    model         = DeviseApis
+    fields        = '__all__'
     template_name = 'updaet-api.html'
-    success_url = '/add-api'
+    success_url   = '/add-api'
     
     # def get_context_data(self, **kwargs):
     #     context = super(UpdateApi, self).get_context_data(**kwargs)
@@ -368,7 +367,7 @@ class APIThresholdForm(CreateView):
     fields        = '__all__'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        context       = super().get_context_data(**kwargs)
         context['pk'] = self.kwargs['pk']
         return context
     def get_success_url(self):
@@ -391,7 +390,7 @@ class APIThresholdFormUpdate(UpdateView):
     fields        = '__all__'   
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        context       = super().get_context_data(**kwargs)
         context['pk'] = self.kwargs['devise_pk']
         return context
 
@@ -484,13 +483,13 @@ def download_api_response_pdf(request, **kwargs):
     from django.http import FileResponse
     import os
 
-    api = DeviseApis.objects.get(pk = kwargs['pk'])
+    api   = DeviseApis.objects.get(pk = kwargs['pk'])
     lines = []
 
     # craete byte streem buffer
     beffer = io.BytesIO()
     # create canvas
-    c = canvas.Canvas(beffer, pagesize = (595.27,841.89), bottomup = 0)
+    c     = canvas.Canvas(beffer, pagesize = (595.27,841.89), bottomup = 0)
     image = os.path.join(os.getcwd()) + '\static\logo3.PNG'
     c.drawImage(image, 450, 50, 100, 40) # adding image x, y, width, eight
     # create a text object
@@ -513,7 +512,7 @@ def download_api_response_pdf(request, **kwargs):
     textob.setFont('Helvetica', 10)
     if 'pk' in  kwargs:
         api = DeviseApis.objects.get(pk=kwargs['pk'])
-        crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
+        crops_data = FertilizerCalculation.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
         device_location = DeviseLocation.objects.filter(devise=api.device)
         textob.textLine(f'API call time :  {api.created_at}')
         textob.textLine(f'Crop          :  {api.crop_type}')
@@ -557,13 +556,13 @@ def download_api_response_csv(request, **kwargs):
     import csv
     from django.http import HttpResponse
 
-    response = HttpResponse(content_type = 'text/csv')
+    response                        = HttpResponse(content_type = 'text/csv')
     response['Content-Disposition'] = 'attachment; filename = response.csv'
-    writer = csv.writer(response)
+    writer                          = csv.writer(response)
     if 'pk' in  kwargs:
-        api = DeviseApis.objects.get(pk=kwargs['pk'])
-        crops_data = FertilizerCalculation.get_All_crops(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
-        rows = get_downloadable_data_format(crops_data, api.crop_type, api.created_at)
+        api        = DeviseApis.objects.get(pk=kwargs['pk'])
+        crops_data = FertilizerCalculation.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
+        rows       = get_downloadable_data_format(crops_data, api.crop_type, api.created_at)
     else:
         rows = [['no data available']]
     writer.writerows(rows)
@@ -574,8 +573,8 @@ def dynamic_fields(request, **kwargs):
     if  resp:
         return resp
     template_name = 'dynamic_fields.html'
-    columns = UserFuncrtions.get_all_dynamic_fields()
-    context = {
+    columns       = UserFuncrtions.get_all_dynamic_fields()
+    context       = {
         'columns' : columns,
         'columns_count' : len(columns),
     }
@@ -606,21 +605,21 @@ def add_field(request):
 
 
 class UpdateDeviceLocation(UpdateView):
-    model = DeviseLocation
-    fields = ['latitude', 'longitude']
+    model         = DeviseLocation
+    fields        = ['latitude', 'longitude']
     template_name = 'update_location.html'
 
     def get_success_url(self):
         return reverse('device-details', kwargs={'pk': self.request.POST['success']})
 
 class AddDeviceLocation(CreateView):
-    model = DeviseLocation
-    fields = ['devise', 'latitude', 'longitude']
+    model         = DeviseLocation
+    fields        = ['devise', 'latitude', 'longitude']
     template_name = 'update_location.html'
 
     def get_context_data(self, **kwargs):
         context = super(AddDeviceLocation, self).get_context_data(**kwargs)
-        pk = self.kwargs['pk']
+        pk      = self.kwargs['pk']
         messages.success(self.request, "Location updated successfully")
         return context
 
