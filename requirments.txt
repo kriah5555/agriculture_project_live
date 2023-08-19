@@ -3,4 +3,3 @@ pip install geocoder
 pip install countryinfo
 pip install geopy
 pip install reportlab
-pip install cryptography

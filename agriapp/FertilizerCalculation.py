@@ -25,7 +25,7 @@ crops = {
         "npk": ["40:20:20"],
         "target_yield": ["15-20 tons per acre h"],
     },
-    "tomato": {
+    "tomato_hybrid": {
         "frequency": "Annual",
         "npk": ["100:100:100"],
         # "npk": "hybrid- 100:100:100",
@@ -98,11 +98,18 @@ crops = {
         "target_yield": ["800 tonns per acre"],
         "frequency": "Annual"
     },
-    "maize": {
-        "npk": ["40:30:16", "60:30:15"],
-        "duration": ["Dry land", "Irrigated"],
+    "maize_dry_land": {
+        "npk": ["40:30:16"],
+        "duration": ["Dry land"],
         # "npk": "Dry land-40:30:16\nIrrigated 60:30:15",
-        "target_yield": ["32- 35 tonns per acre", "30-33 tonns per acre"],
+        "target_yield": ["32- 35 tonns per acre"],
+        "frequency": "Annual"
+    },
+    "maize_irrigated": {
+        "npk": ["60:30:15"],
+        "duration": ["Irrigated"],
+        # "npk": "Dry land-40:30:16\nIrrigated 60:30:15",
+        "target_yield": ["30-33 tonns per acre"],
         "frequency": "Annual"
     },
     "groundnut": {
@@ -127,11 +134,25 @@ crops = {
         "target_yield": ["300-400 kg/acre"],
         "frequency": "Annual"
     },
-    "banana": {
-        "npk": ["260:130:270", "175:105:220", "160:96:200"],
-        "duration": ["pache variety", "kandu variety", "other varieties"],
+    "banana_pache_variety": {
+        "npk": ["260:130:270"],
+        "duration": ["pache variety"],
         # "npk": "pache variety- 260:130:270, kandu variety- 175:105:220, other varieties- 160:96:200",
-        "target_yield": ["8-12 tonns per acre for pache variety", "12-14 tonns per acre for kandu variety", "12-16 tonns per acre for other varieties"],
+        "target_yield": ["8-12 tonns per acre for pache variety"],
+        "frequency": "Annual"
+    },
+    "banana_kandu_variety": {
+        "npk":["175:105:220"],
+        "duration": ["kandu variety"],
+        # "npk": "pache variety- 260:130:270, kandu variety- 175:105:220, other varieties- 160:96:200",
+        "target_yield": ["12-14 tonns per acre for kandu variety"],
+        "frequency": "Annual"
+    },
+    "banana_other_varieties": {
+        "npk": ["160:96:200"],
+        "duration": ["other varieties"],
+        # "npk": "pache variety- 260:130:270, kandu variety- 175:105:220, other varieties- 160:96:200",
+        "target_yield": ["12-16 tonns per acre for other varieties"],
         "frequency": "Annual"
     },
     "cow_pea_or_aldisandi": {
@@ -184,6 +205,9 @@ def calculate_fertilizer_doses(npk_recommended, kg):
     # urea_dose = 100/46 * ans2
 
     # Calculate the SSP doses
+
+    urea_dose = 0 if ( urea_dose < 0) else urea_dose
+
     ssp_dose = (p/16) * kg
 
 
