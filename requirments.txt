@@ -3,3 +3,7 @@ pip install geocoder
 pip install countryinfo
 pip install geopy
 pip install reportlab
+pip install Django
+pip install djangorestframework
+pip install cryptography
+pip install django-google-maps

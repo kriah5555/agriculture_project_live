@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 import datetime
 
 import os
-from twilio.rest import Client
+# from twilio.rest import Client
 from . models import ColumnName, ColumnData
 
 
