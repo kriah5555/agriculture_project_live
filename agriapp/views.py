@@ -490,7 +490,7 @@ def download_api_response_pdf(request, **kwargs):
     beffer = io.BytesIO()
     # create canvas
     c     = canvas.Canvas(beffer, pagesize = (595.27,841.89), bottomup = 0)
-    image = os.path.join(os.getcwd()) + '\static\logo3.PNG'
+    image = os.path.join(os.getcwd(), 'static/logo3.PNG')
     c.drawImage(image, 450, 50, 100, 40) # adding image x, y, width, eight
     # create a text object
     textob = c.beginText()
