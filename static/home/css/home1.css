@@ -785,3 +785,11 @@ input.btn-login {
     background-positon-x: 0px;
   }
 }
+.Agriculture-btn {
+    background-color: #4b2711;
+    padding: 12px;
+    border-radius: 6px;
+    margin:10px 10px 20px 10px;
+    font-size: x-large;
+    color: white;
+  }

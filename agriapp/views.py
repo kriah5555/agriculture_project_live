@@ -18,6 +18,7 @@ from .devise_details import *
 from .import FertilizerCalculation
 
 from django.shortcuts import get_object_or_404
+from django.templatetags.static import static
 
 # Create your views here.
 
@@ -631,3 +632,34 @@ class AddDeviceLocation(CreateView):
         return {
         'devise':self.kwargs['pk'],
     }
+
+
+
+def know_more_about_arkashine(request):
+    videos = [
+        {
+            'title': 'Introduction to Agriculture',
+            'videos': [
+                {'title': 'Video 1', 'link': static('videos/v1.mp4')},
+                {'title': 'Video 2', 'link': static('videos/v2.mp4')},
+                {'title': 'Video 3', 'link': static('videos/v3.mp4')},
+            ],
+        },
+        {
+            'title': 'Soil Test Procedure',
+            'videos': [
+                {'title': 'Video 4', 'link': static('videos/v4.mp4')},
+                {'title': 'Video 5', 'link': static('videos/v5.mp4')},
+                {'title': 'Video 6', 'link': static('videos/v6.mp4')},
+            ],
+        },
+        {
+            'title': 'Usage and Advantages of Soil Test',
+            'videos': [
+                {'title': 'Video 7', 'link': static('videos/v7.mp4')},
+                {'title': 'Video 8', 'link': static('videos/v8.mp4')},
+                {'title': 'Video 9', 'link': static('videos/v9.mp4')},
+            ],
+        },
+    ]
+    return render(request, 'know_more_about_arkashine.html', {'videos': videos})

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Dynamic Tabs</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        max-height: 110vh;
+        background-image: url("https://img.freepik.com/premium-photo/beautiful-green-cornfield-with-sunset-sky_29332-1559.jpg?w=1380");
+        background-size: cover;
+        background-position: center;
+      }
+
+      .category-buttons {
+        display: flex;
+        margin-bottom: 20px;
+      }
+
+      .navbar {
+        background: #4b2711 !important;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+        padding: 10px;
+        color: white;
+        padding: 18px 0px 18px 0px;
+      }
+
+      .navbar h1 {
+        margin: 0;
+        font-size: 24px;
+        text-align: left;
+        margin-left: 14rem;
+      }
+
+      .category-button {
+        flex: 1;
+        background-color: #7cbb7c;
+        margin-top: 20px;
+        padding: 10px;
+        border-radius: 5px;
+        margin-right: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s;
+        cursor: pointer;
+        text-align: center;
+      }
+      .category-button:hover {
+        background-color: #8ccd8c;
+      }
+
+      .category-button.active {
+        background-color: #30a130;
+      }
+
+      .category-button-title {
+        font-size: 16px;
+        color: #fff;
+      }
+
+      .video-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-left: 20px;
+        margin-top: 20px;
+        overflow-y: auto;
+      }
+
+      .video-item {
+        flex: 0 0 calc(25% - 10px);
+        margin-bottom: 10px;
+      }
+
+      .video-item h4 {
+        font-size: 16px;
+        margin-bottom: 5px;
+      }
+
+      .video-item video {
+        width: 100%;
+        width: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <h1>ArkaShine Innovations Pvt Ltd</h1>
+    </nav>
+    <div class="category-buttons">
+      {% for tab in videos %}
+      <div class="category-button" onclick="showCategory('{{ tab.title }}')">
+        <h2 class="category-button-title">{{ tab.title }}</h2>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div id="videoCategories">
+      {% for tab in videos %}
+      <div class="video-container" id="{{ tab.title }}" style="display: none">
+        {% for video in tab.videos %}
+        <div class="video-item">
+          <h4>{{ video.title }}</h4>
+          <video src="{{ video.link }}" controls  width="400" height="400"></video>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <script>
+      function showCategory(category) {
+        const videoCategories =
+          document.getElementById("videoCategories").children;
+        for (let i = 0; i < videoCategories.length; i++) {
+          videoCategories[i].style.display = "none"; // Hide all video categories
+        }
+
+        const selectedCategory = document.getElementById(category);
+        selectedCategory.style.display = "block"; // Show the selected video category
+
+        const categoryButtons = document.querySelectorAll(".category-button");
+        categoryButtons.forEach((button) => {
+          if (
+            button.querySelector(".category-button-title").textContent ===
+            category
+          ) {
+            button.classList.add("active");
+          } else {
+            button.classList.remove("active");
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

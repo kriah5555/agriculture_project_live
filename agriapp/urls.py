@@ -38,5 +38,7 @@ urlpatterns = [
     path('delete_field/<int:id>/', login_required(v.delete_field), name = "delete_field"),
     path('update-location/<int:pk>/', login_required(UpdateDeviceLocation.as_view()), name = "update-location"),
     path('add-location/<int:pk>/', login_required(AddDeviceLocation.as_view()), name = "add-location"),
+    path('know_more_about_arkashine/', v.know_more_about_arkashine,
+         name='know_more_about_arkashine'),
 ]
 
