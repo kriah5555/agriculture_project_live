@@ -377,6 +377,6 @@ def get_crop_urea_dap_mop_dose(n, p, k, ph, ec, oc, crop):
 
 # npk validations should not be less than 999 or -ve
 
-def get_crop_list():
+def get_crop_list(api = False):
     sorted_crops = sorted(crops)
-    return ((crop, crop) for crop in sorted_crops)
+    return ((crop, crop) if not api else crop for crop in sorted_crops)

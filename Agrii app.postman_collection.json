@@ -1,0 +1,303 @@
+{
+	"info": {
+		"_postman_id": "131a44ed-545c-4d6c-b2db-634dd064d8bf",
+		"name": "Agrii app",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21827059"
+	},
+	"item": [
+		{
+			"name": "List available apis",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/list_all_apis/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"list_all_apis",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get crops",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/get_crops/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"get_crops",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "authenticate",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "javascript"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/authenticate/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"authenticate",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add locaytion",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "device_key",
+							"value": "Mw==",
+							"type": "text"
+						},
+						{
+							"key": "latitude",
+							"value": "19.91298",
+							"type": "text"
+						},
+						{
+							"key": "longitude",
+							"value": "79.7400",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/add_location/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"add_location",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add api",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "area_name",
+							"value": "my call",
+							"type": "text"
+						},
+						{
+							"key": "devise_id",
+							"value": "007",
+							"type": "text"
+						},
+						{
+							"key": "serial_no",
+							"value": "007",
+							"type": "text"
+						},
+						{
+							"key": "electrical_conduction",
+							"value": "6.0",
+							"type": "text"
+						},
+						{
+							"key": "nitrogen",
+							"value": "21.0",
+							"type": "text"
+						},
+						{
+							"key": "phosphorous",
+							"value": "50.0",
+							"type": "text"
+						},
+						{
+							"key": "potassium",
+							"value": "27.9",
+							"type": "text"
+						},
+						{
+							"key": "calcium",
+							"value": "24.68",
+							"type": "text"
+						},
+						{
+							"key": "magnesium",
+							"value": "30.0",
+							"type": "text"
+						},
+						{
+							"key": "sulphur",
+							"value": "24.98",
+							"type": "text"
+						},
+						{
+							"key": "zinc",
+							"value": "20.99",
+							"type": "text"
+						},
+						{
+							"key": "manganese",
+							"value": "33.12",
+							"type": "text"
+						},
+						{
+							"key": "iron",
+							"value": "21.08",
+							"type": "text"
+						},
+						{
+							"key": "copper",
+							"value": "21.08",
+							"type": "text"
+						},
+						{
+							"key": "boron",
+							"value": "21.08",
+							"type": "text"
+						},
+						{
+							"key": "molybdenum",
+							"value": "21.08",
+							"type": "text"
+						},
+						{
+							"key": "chlorine",
+							"value": "21.08",
+							"type": "text"
+						},
+						{
+							"key": "nickel",
+							"value": "18.0",
+							"type": "text"
+						},
+						{
+							"key": "organic_carboa",
+							"value": "21.08",
+							"type": "text"
+						},
+						{
+							"key": "device",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "field_1",
+							"value": "33",
+							"type": "text"
+						},
+						{
+							"key": "device_key",
+							"value": "Mw==",
+							"type": "text"
+						},
+						{
+							"key": "crop_type",
+							"value": "arabica_coffee",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/add_soil_data/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"add_soil_data",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List all api data",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/list/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"list",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

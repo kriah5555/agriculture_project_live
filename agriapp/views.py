@@ -17,45 +17,46 @@ from django.contrib.auth.models import User
 from .devise_details import *
 from .import FertilizerCalculation
 
+from django.shortcuts import get_object_or_404
+
 # Create your views here.
 
 def user_login_access(request):
     user = request.user
-    if not user.is_staff and user.is_authenticated:
-        devise    = Devise.objects.filter(devise_id=user.username).first()
-        apis      = DeviseApis.objects.filter(device=devise)
-        used      = 0
-        remaining = 0
-        if (len(apis)):
-            api_thresholds = APICountThreshold.objects.filter(devise=devise).first()
-            if api_thresholds:
-                val       = api_thresholds.red - len(apis)
-                used      = len(apis)
-                remaining = 0 if (val < 0) else api_thresholds.red - len(apis)
 
-        request.session['pk']             = devise.pk
-        request.session['name']           = devise.name
-        request.session['serial_no']      = devise.serial_no
-        request.session['devise_id']      = devise.devise_id
-        request.session['chipset_no']     = devise.chipset_no
-        request.session['email']          = devise.email
-        request.session['phone']          = devise.phone
-        request.session['address1']       = devise.address1
-        request.session['address2']       = devise.address2
-        request.session['land']           = devise.land
-        request.session['purchase_date']  = str(devise.purchase_date)
-        request.session['time_of_sale']   = str(devise.time_of_sale)
-        request.session['warrenty']       = str(devise.warrenty)
-        request.session['amount_paid']    = devise.amount_paid
-        request.session['balance_amount'] = devise.balance_amount
-        request.session['api_usage']      = len(apis)
-        request.session['api_threshold']  = True if (api_thresholds) else False
-        request.session['used']           = used
-        request.session['color']          = get_marker_color(devise)
-        request.session['remaining']      = remaining
+    if not user.is_staff and user.is_authenticated:
+        devise = get_object_or_404(Devise, devise_id=user.username)
+        apis = DeviseApis.objects.filter(device=devise).count()
+
+        api_thresholds = APICountThreshold.objects.filter(devise=devise).first()
+        remaining = max(0, api_thresholds.red - apis) if api_thresholds else 0
+
+        session_data = {
+            'pk': devise.pk,
+            'name': devise.name,
+            'serial_no': devise.serial_no,
+            'devise_id': devise.devise_id,
+            'chipset_no': devise.chipset_no,
+            'email': devise.email,
+            'phone': devise.phone,
+            'address1': devise.address1,
+            'address2': devise.address2,
+            'land': devise.land,
+            'purchase_date': str(devise.purchase_date),
+            'time_of_sale': str(devise.time_of_sale),
+            'warrenty': str(devise.warrenty),
+            'amount_paid': devise.amount_paid,
+            'balance_amount': devise.balance_amount,
+            'api_usage': apis,
+            'api_threshold': bool(api_thresholds),
+            'used': apis,
+            'color': get_marker_color(devise),
+            'remaining': remaining,
+        }
+
+        request.session.update(session_data)
 
         return redirect('/devise_user_details/')
-
 def home(request):
     if request.method == 'GET':
         template_name = 'home1.html'
