@@ -2,7 +2,7 @@ Step 1: Clone the Project
 
 Clone the project repository using the following command:
 
-git clone -b krish_19_08_2023 https://github.com/kriah5555/agriculture_project_backend.git
+git clone -b production_11_10_2023 https://github.com/kriah5555/agriculture_project_backend.git
 Step 2: Install Requirements
 
 Once the project is cloned, navigate to the project directory:

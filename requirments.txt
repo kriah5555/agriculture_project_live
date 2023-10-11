@@ -1,9 +1,9 @@
-pip install folium 
-pip install geocoder
-pip install countryinfo
-pip install geopy
-pip install reportlab
-pip install Django
-pip install djangorestframework
-pip install cryptography
-pip install django-google-maps
+folium==0.13.0
+geocoder==1.38.1
+countryinfo==0.1.2
+geopy==2.3.0
+reportlab==3.6.12
+Django==4.0.4
+djangorestframework==3.13.1
+cryptography==38.0.1
+django-google-maps==0.13.0
