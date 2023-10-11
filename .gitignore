@@ -5,3 +5,6 @@
 # Ignore specific files
 /db.sqlite3
 /devise_apis/views.py
+
+**/__pycache__/
+**/migrations/
