@@ -31,3 +31,9 @@ Follow the prompts to provide a username, email, and password for the superuser/
 By following these steps, you'll have the project cloned, required packages installed, the database set up for the agriapp application, and a superuser/admin account created.
 
 Make sure to execute these commands in the terminal or command prompt, within the root directory of the cloned project. This sequence of steps will help you get the project up and running and create a superuser/admin for managing the Django admin panel.
+
+
+commands to refresh server
+1. sudo systemctl daemon-reload
+2. sudo systemctl restart gunicorn
+3. sudo systemctl restart nginx
