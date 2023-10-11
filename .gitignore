@@ -1,8 +1,7 @@
-# Ignore Python bytecode files
-__pycache__/
+# Ignore these target folders
+/agriapp/migrations/
+/map/migrations/
 
-# Ignore database file
-db.sqlite3
-
-# Ignore migration files
-**/migrations/
+# Ignore specific files
+/db.sqlite3
+/devise_apis/views.py

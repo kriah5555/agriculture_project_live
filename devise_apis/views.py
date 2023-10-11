@@ -9,6 +9,7 @@ from agriapp import UserFuncrtions, FertilizerCalculation as f
 from .encryption_utils import encrypt_device_id, decrypt_device_id
 from django.contrib import auth
 import base64
+from map.views import get_marker_color
 
 
 def encode_to_base64(value):
@@ -108,7 +109,7 @@ def add_location(request):
     except  Exception as e:
         error_message = f'Something went wrong: {str(e)}'
         return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
-        
+"""    
 @api_view(['POST'])
 def add_soil_data(request):
     try:
@@ -129,6 +130,50 @@ def add_soil_data(request):
         else:
             return Response({'errors' : serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     except  Exception as e:
+        error_message = f'Something went wrong: {str(e)}'
+        return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
+"""
+
+@api_view(['POST'])
+def add_soil_data(request):
+    try:
+        # Get the device_key from the POST data and decode if needed
+        device_key = request.POST.get('device_key', '')
+        devise_pk = decode_from_base64(device_key)
+
+
+        devise     = Devise.objects.get(pk = devise_pk)
+        api_limit  = get_marker_color(devise)
+        if (api_limit == 'red'):
+            return Response({'message': 'You have exceeded the limit of api calls please contact the admin for more clarification'}, status=status.HTTP_200_OK)
+
+
+        # Modify request.data to include the Devise object
+        modified_data = request.data.copy()
+        modified_data['device'] = devise_pk
+
+        serializer = DeviseApiSerializer(data=modified_data)
+
+        if serializer.is_valid():
+            serializer.save()
+            api_id = serializer.data['id']
+            dynamic_fields = UserFuncrtions.get_all_dynamic_fields()
+            if dynamic_fields:
+                for dynamic_field in dynamic_fields:
+                    field_name = dynamic_field.field_name
+                    if field_name in modified_data:
+                        ColumnData.objects.create(
+                            api=DeviseApis.objects.get(pk=api_id),
+                            field=dynamic_field,
+                            field_value=modified_data[field_name]
+                        )
+
+            api        = DeviseApis.objects.get(pk=api_id)
+            crops_data = f.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
+            return Response({'message': 'Soil data added successfully', 'data':crops_data }, status=status.HTTP_200_OK)
+        else:
+            return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
         error_message = f'Something went wrong: {str(e)}'
         return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
 
