@@ -19,5 +19,8 @@ urlpatterns = [
     path('add_soil_data/',  v.add_soil_data, name = "add_soil_data"),  
     path('get_crops/',  v.get_crops, name = "get_crops"),  
     path('list_all_apis/', get_api_endpoints, name='list_all_apis'),
+
+    path('add_data/',  v.add_soil_data_open, name = "add_data"),  
+
 ]
 

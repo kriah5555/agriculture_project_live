@@ -10,6 +10,7 @@ from .encryption_utils import encrypt_device_id, decrypt_device_id
 from django.contrib import auth
 import base64
 from map.views import get_marker_color
+import copy
 
 
 def encode_to_base64(value):
@@ -83,7 +84,7 @@ def authenticate(request):
     except Exception as e:
         error_message = f'Something went wrong: {str(e)}'
         return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
-        
+   
 @api_view(['POST'])
 def add_location(request):
     try:
@@ -109,30 +110,6 @@ def add_location(request):
     except  Exception as e:
         error_message = f'Something went wrong: {str(e)}'
         return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
-"""    
-@api_view(['POST'])
-def add_soil_data(request):
-    try:
-        modified_data           = request.data.copy()
-        device                  = decode_from_base64(modified_data['device_key'])
-        modified_data['device'] = device
-        serializer              = DeviseApiSerializer(data = request.data)
-        if serializer.is_valid():
-            serializer.save()
-            api_id         = serializer.data['id']
-            dynamic_fields = UserFuncrtions.get_all_dynamic_fields()
-            if (dynamic_fields):
-                for dynamic_field in dynamic_fields:
-                    field_name = dynamic_field.field_name
-                    if field_name in request.data.keys():
-                        ColumnData.objects.create(api = DeviseApis.objects.get(pk=api_id), field = dynamic_field, field_value = request.data[field_name])
-            return Response({'message' : 'Soil data added successfully'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'errors' : serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    except  Exception as e:
-        error_message = f'Something went wrong: {str(e)}'
-        return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
-"""
 
 @api_view(['POST'])
 def add_soil_data(request):
@@ -182,5 +159,49 @@ def get_crops(request):
     try:
         return Response({'message' : 'available crops', 'data' : f.get_crop_list(True)}, status=status.HTTP_200_OK)
     except  Exception as e:
+        error_message = f'Something went wrong: {str(e)}'
+        return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def add_soil_data_open(request):
+    try:
+        device_id = request.GET.get('devise_id', '')
+        devise = Devise.objects.filter(devise_id=device_id).first()
+
+        api_limit  = get_marker_color(devise)
+        if (not devise):
+            return Response({'message': 'Invslid devise ID'}, status=status.HTTP_200_OK)
+
+        if (api_limit == 'red'):
+            return Response({'message': 'You have exceeded the limit of api calls please contact the admin for more clarification'}, status=status.HTTP_200_OK)
+
+
+        # Modify request.data to include the Devise object
+        modified_data = copy.deepcopy(request.GET)
+        modified_data['device'] = devise.pk
+
+        
+        serializer = DeviseApiSerializer(data=modified_data)
+
+        if serializer.is_valid():
+            serializer.save()
+            api_id = serializer.data['id']
+            dynamic_fields = UserFuncrtions.get_all_dynamic_fields()
+            if dynamic_fields:
+                for dynamic_field in dynamic_fields:
+                    field_name = dynamic_field.field_name
+                    if field_name in modified_data:
+                        ColumnData.objects.create(
+                            api=DeviseApis.objects.get(pk=api_id),
+                            field=dynamic_field,
+                            field_value=modified_data[field_name]
+                        )
+
+            api        = DeviseApis.objects.get(pk=api_id)
+            crops_data = f.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
+            return Response({'message': 'Soil data added successfully', 'data':crops_data }, status=status.HTTP_200_OK)
+        else:
+            return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
         error_message = f'Something went wrong: {str(e)}'
         return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
