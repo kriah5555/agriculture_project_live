@@ -37,3 +37,7 @@ commands to refresh server
 1. sudo systemctl daemon-reload
 2. sudo systemctl restart gunicorn
 3. sudo systemctl restart nginx
+
+
+open api for adding the soil database
+https://www.arkashine-innovations.com/add_data/?area_name=gsf&devise_id=007&serial_no=007&electrical_conduction=6.0&nitrogen=21.0&phosphorous=50.0&potassium=27.9&calcium=24.68&magnesium=30.0&sulphur=24.98&zinc=20.99&manganese=33.12&iron=21.08&copper=21.08&boron=21.08&molybdenum=21.08&chlorine=21.08&nickel=18.0&organic_carboa=21.08&device=1&field_1=33&crop_type=arabica_coffee
