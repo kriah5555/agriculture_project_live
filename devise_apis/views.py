@@ -205,3 +205,29 @@ def add_soil_data_open(request):
     except Exception as e:
         error_message = f'Something went wrong: {str(e)}'
         return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def add_location_data(request):
+    try:
+        if all(key in request.GET for key in ['devise_id', 'latitude', 'longitude']):
+            devise_id  =  request.GET['devise_id']
+            latitude   =  request.GET['latitude']
+            longitude  =  request.GET['longitude']
+            if devise_id and longitude and longitude:
+                 # Check if the Devise object with the given device_key exists
+                devise = Devise.objects.filter(devise_id=devise_id).first()
+                if devise:
+                    # Update the location if the devise exists
+                    location, created = DeviseLocation.objects.get_or_create(devise=devise)
+                    location.latitude = latitude
+                    location.longitude = longitude
+                    location.save()
+                    return Response({'message': "Location updated successfully"}, status=status.HTTP_200_OK)
+                else:
+                    return Response({'message': "Inaveld Devise id"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({'message' : "Please pass all parameters"}, status=status.HTTP_400_BAD_REQUEST)
+    except  Exception as e:
+        error_message = f'Something went wrong: {str(e)}'
+        return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
