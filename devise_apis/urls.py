@@ -21,6 +21,7 @@ urlpatterns = [
     path('list_all_apis/', get_api_endpoints, name='list_all_apis'),
 
     path('add_data/',  v.add_soil_data_open, name = "add_data"),  
+    path('add_location_data/',  v.add_location_data, name = "add_location_data"),  
 
 ]
 
