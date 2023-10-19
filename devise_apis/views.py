@@ -168,11 +168,11 @@ def add_soil_data_open(request):
         device_id = request.GET.get('devise_id', '')
         devise = Devise.objects.filter(devise_id=device_id).first()
         if (not devise):
-            return Response({'message': 'Invslid devise ID'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Invslid devise ID'}, status=status.HTTP_400_BAD_REQUEST)
 
         api_limit  = get_marker_color(devise)
         if (api_limit == 'red'):
-            return Response({'message': 'You have exceeded the limit of api calls please contact the admin for more clarification'}, status=status.HTTP_200_OK)
+            return Response({'message': 'You have exceeded the limit of api calls please contact the admin for more clarification'}, status=status.HTTP_400_BAD_REQUEST)
 
 
         # Modify request.data to include the Devise object
