@@ -213,6 +213,23 @@ def add_location_data(request):
             devise_id  =  request.GET['devise_id']
             latitude   =  request.GET['latitude']
             longitude  =  request.GET['longitude']
+
+             # Validate latitude and longitude
+            if not (latitude and longitude):
+                return Response({'message': "Latitude and longitude are required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                latitude = float(latitude)
+                longitude = float(longitude)
+                
+                # Add additional validation for latitude and longitude range if needed
+                if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
+                    return Response({'message': "Invalid latitude or longitude values"}, status=status.HTTP_400_BAD_REQUEST)
+                
+            except ValueError:
+                return Response({'message': "Invalid latitude or longitude format"}, status=status.HTTP_400_BAD_REQUEST)
+
+                
             if devise_id and longitude and longitude:
                  # Check if the Devise object with the given device_key exists
                 devise = Devise.objects.filter(devise_id=devise_id).first()
