@@ -10,7 +10,7 @@ Once the project is cloned, navigate to the project directory:
 cd agriculture_project_backend
 Install all the required packages using the requirements.txt file located in the root of the repository:
 
-pip install -r requirements.txt
+pip install -r requirments.txt
 Step 3: Set Up the Database
 
 To set up the database, run the following commands:
