@@ -3,7 +3,7 @@
 from django.urls import path
 from django.views.generic import TemplateView
 from . import views as v
-from .views import APIThresholdForm, APIThresholdFormUpdate, Dashboard, UpdateDeviceLocation, AddDeviceLocation
+from .views import APIThresholdForm, APIThresholdFormUpdate, Dashboard, UpdateDeviceLocation, AddDeviceLocation, AtmoSSenseDashboard
 from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
@@ -38,5 +38,8 @@ urlpatterns = [
     path('delete_field/<int:id>/', login_required(v.delete_field), name = "delete_field"),
     path('update-location/<int:pk>/', login_required(UpdateDeviceLocation.as_view()), name = "update-location"),
     path('add-location/<int:pk>/', login_required(AddDeviceLocation.as_view()), name = "add-location"),
+
+    path('admin-panne/', login_required(v.dashboard), name = "dashboard"),
+    path('atmos-sense-devise-overview/', login_required(AtmoSSenseDashboard.as_view()), name = "atmos-sense-devise-overview"),
 ]
 

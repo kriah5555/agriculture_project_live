@@ -5,6 +5,7 @@ from django.db import models
 from . import FertilizerCalculation as f
 
 CROP_LIST = f.get_crop_list()
+DEVICE_CHOICES = [('soilsaathi', 'Soil Saathi'),('atmo_sense', 'Atmo Sense')]
 class ContactDetails(models.Model):
     name       = models.CharField(max_length=255)
     phone      = models.CharField(max_length=255, unique=True)
@@ -32,6 +33,7 @@ class Devise(models.Model):
     balance_amount = models.FloatField(default=0)
     land           = models.FloatField(default=0.0)
     created_at     = models.DateTimeField(auto_now_add=True)
+    devise         = models.CharField(max_length=255, choices = DEVICE_CHOICES, default='soilsaathi')
 
     def __str__(self):
         return self.name + ' ' + self.devise_id
@@ -66,6 +68,23 @@ class DeviseApis(models.Model):
     def __str__(self):
         return self.device.name + ' ' + self.area_name
 
+class DeviseApisFields(models.Model):
+    device     = models.ForeignKey(to='Devise', on_delete=models.CASCADE)
+    image_path = models.CharField(max_length=255)
+    field1     = models.FloatField(default=0.0) # Soil Temp
+    field2     = models.FloatField(default=0.0) # soil Moisture
+    field3     = models.FloatField(default=0.0) # Atmos Temp
+    field4     = models.FloatField(default=0.0) # Atmos Humidity
+    field5     = models.FloatField(default=0.0) # Light Intensity
+    field6     = models.FloatField(default=0.0)
+    field7     = models.FloatField(default=0.0)
+    field8     = models.FloatField(default=0.0)
+    field9     = models.FloatField(default=0.0)
+    field10    = models.FloatField(default=0.0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.device.name
 
 class DeviseLocation(models.Model):
     devise     = models.ForeignKey(to='Devise', on_delete=models.CASCADE, unique=True)

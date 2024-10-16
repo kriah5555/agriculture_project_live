@@ -23,5 +23,7 @@ urlpatterns = [
     path('add_data/',  v.add_soil_data_open, name = "add_data"),  
     path('add_location_data/',  v.add_location_data, name = "add_location_data"),  
 
+    path('create-atmos-sense-data/',  v.add_atmos_sense_data, name = "add-atmos-sense-data"),  
+
 ]
 

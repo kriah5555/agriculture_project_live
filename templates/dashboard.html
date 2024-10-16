@@ -33,7 +33,13 @@
                 </ul>
         </div>
     </nav>
-  <!-- end navbar -->   
+  <!-- end navbar -->  
+   
+        <div style="display: flex; justify-content: center; align-items: center; height: 30vh;">
+          <button class="rounded text-dark" style="width: auto;  text-align: center;" onclick="window.location='{% url 'atmos-sense-devise-overview' %}'">
+              AtmosSense Devise Overview
+          </button>
+        </div>
         <!-- <div style="margin-top:100px;float: left;width: 100%;">
             <button class="rounded bg-dark text-white" id="dashboard-buttons" style="width: 50%;float: left;" onclick="window.location={% url 'device-list' %}">Devices</button>
             <button class="rounded bg-dark text-white" id="dashboard-buttons" style="width: 50%;float: left;" onclick="window.location={% url 'map' %}">Map</button>

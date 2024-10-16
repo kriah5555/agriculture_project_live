@@ -1,0 +1,73 @@
+{% load static %}
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<body style="background-size: 100%;">
+    <div class="container">
+        <h2 class="text-center my-4">Atmospheric and Soil Data</h2>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="field-container">
+                    <span class="field-icon"><img src="{% static 'icons/temperature.png' %}" alt="Soil Temperature" style="width: 24px; height: 24px;"></span>
+                    <span>Soil Temperature</span>
+                </div>
+                <div class="field-container">
+                    <span class="field-icon"><img src="{% static 'icons/moisture.png' %}" alt="Soil Moisture" style="width: 24px; height: 24px;"></span>
+                    <span>Soil Moisture</span>
+                </div>
+                <div class="field-container">
+                    <span class="field-icon"><img src="{% static 'icons/atmospheric_temperature.png' %}" alt="Atmospheric Temperature" style="width: 24px; height: 24px;"></span>
+                    <span>Atmospheric Temperature</span>
+                </div>
+                <div class="field-container">
+                    <span class="field-icon"><img src="{% static 'icons/humidity.png' %}" alt="Atmospheric Humidity" style="width: 24px; height: 24px;"></span>
+                    <span>Atmospheric Humidity</span>
+                </div>
+                <div class="field-container">
+                    <span class="field-icon"><img src="{% static 'icons/light_intensity.png' %}" alt="Light Intensity" style="width: 24px; height: 24px;"></span>
+                    <span>Light Intensity</span>
+                </div>
+                <div class="field-container">
+                    <span class="field-icon"><img src="{% static 'icons/latitude.png' %}" alt="Latitude" style="width: 24px; height: 24px;"></span>
+                    <span>Latitude: <span id="latitude-value"></span></span>
+                </div>
+                <div class="field-container">
+                    <span class="field-icon"><img src="{% static 'icons/longitude.png' %}" alt="Longitude" style="width: 24px; height: 24px;"></span>
+                    <span>Longitude: <span id="longitude-value"></span></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <h4 class="text-center">Location Map</h4>
+                <div id="map" class="map-container" style="height: 300px;"></div> <!-- Placeholder for the map -->
+            </div>
+        </div>
+
+        <div class="image-container text-center">
+            <img src="{% static 'path/to/your/image.jpg' %}" alt="Descriptive Image" class="img-fluid">
+        </div>
+    </div>
+
+    <script>
+        // Initialize map (you can use Google Maps API or Leaflet)
+        function initMap() {
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 8,
+                center: {lat: 0, lng: 0}, // Set to your desired location
+            });
+
+            var marker = new google.maps.Marker({
+                position: {lat: 0, lng: 0}, // Update with actual lat/lng values
+                map: map,
+                title: 'Location',
+            });
+
+            document.getElementById('latitude-value').innerText = marker.getPosition().lat();
+            document.getElementById('longitude-value').innerText = marker.getPosition().lng();
+        }
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
+</body>
+

@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .serializers import DeviseApiSerializer
-from agriapp.models import DeviseApis, Devise, DeviseLocation, ColumnData
+from .serializers import DeviseApiSerializer, DeviseFieldsApiSerializer
+from agriapp.models import DeviseApis, Devise, DeviseLocation, ColumnData, DeviseApisFields
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,7 +11,8 @@ from django.contrib import auth
 import base64
 from map.views import get_marker_color
 import copy
-
+from django.core.files.storage import FileSystemStorage
+from django.core.files.base import ContentFile
 
 def encode_to_base64(value):
     """
@@ -68,8 +69,8 @@ def authenticate(request):
     try:
         if request.method == 'POST':
             devise_id = request.POST['devise_id']
-            password = request.POST['password']
-            user = auth.authenticate(username=devise_id, password=password)
+            password  = request.POST['password']
+            user      = auth.authenticate(username=devise_id, password=password)
             if user is not None:
                 devise = Devise.objects.filter(devise_id=devise_id).first()
 
@@ -148,6 +149,50 @@ def add_soil_data(request):
             api        = DeviseApis.objects.get(pk=api_id)
             crops_data = f.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
             return Response({'message': 'Soil data added successfully', 'data':crops_data }, status=status.HTTP_200_OK)
+        else:
+            return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        error_message = f'Something went wrong: {str(e)}'
+        return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def add_atmos_sense_data(request):
+    try:
+        # uploaded_file = request.FILES.get('file')
+        # file_url      = ''
+        # if uploaded_file:
+        #     fs = FileSystemStorage()
+        #     filename = fs.save(uploaded_file.name, uploaded_file)
+        #     file_url = fs.url(filename)
+        # Get the device_key from the POST data and decode if needed
+
+        file_data_base64 = request.data.get('file_data', '')
+        file_url = ''
+        if file_data_base64:
+            try:
+                file_data = base64.b64decode(file_data_base64)
+                # Save the decoded data as a file using Django's FileSystemStorage
+                fs = FileSystemStorage()
+                content_file = ContentFile(file_data)
+                file_name = fs.save('your_image_name.jpg', content_file)
+                file_url = fs.url(file_name)
+            except base64.binascii.Error as e:
+                return Response({'error': f'Invalid base64-encoded data: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Modify request.data to include the Devise object
+        random_devise = Devise.objects.order_by('?').first()
+        if not random_devise:
+            return Response({'message': 'No Devise found in the database.'}, status=status.HTTP_404_NOT_FOUND)
+            
+        modified_data               = request.data.copy()
+        modified_data['image_path'] = file_url
+        modified_data['device']     = random_devise.pk
+
+        serializer = DeviseFieldsApiSerializer(data=modified_data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'AtmosSense data added successfully'}, status=status.HTTP_200_OK)
         else:
             return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
