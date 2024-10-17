@@ -5,7 +5,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 
 from .forms import ContactForm, DeviseForm
-from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation
+from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields
 
 from . import UserFuncrtions
 from django.views.generic import UpdateView, TemplateView, CreateView
@@ -18,6 +18,7 @@ from .devise_details import *
 from .import FertilizerCalculation
 
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 
 # Create your views here.
 
@@ -446,13 +447,26 @@ class AtmoSSenseDashboard(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        notifications_all = ContactDetails.objects.all()
-        context.update({
-            'devise_soilsaathi': Devise.objects.filter(devise='soilsaathi'),
-            'devises_atmo_sense': Devise.objects.filter(devise='atmo_sense'),
-            'notification_active': notifications_all.filter(status=True),
-            'notification_inactive': notifications_all.filter(status=False),
-        })
+        # Fetch all device data
+        api_call = DeviseApisFields.objects.all()
+        
+        # Convert to a list of dictionaries
+        context['api_call'] = [
+            {
+                'device': api.device.name,
+                'image': api.image_path,
+                'soilTemperature': api.field1,
+                'soilMoisture': api.field2,
+                'atmosphericTemperature': api.field3,
+                'atmosphericHumidity': api.field4,
+                'lightIntensity': api.field5,
+                'latitude': api.field6,
+                'longitude': api.field7,
+                # Add more fields as necessary
+            }
+            for api in api_call
+        ]
+        
         return context
 
 class Dashboard(TemplateView):

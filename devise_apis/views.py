@@ -172,10 +172,10 @@ def add_atmos_sense_data(request):
             try:
                 file_data = base64.b64decode(file_data_base64)
                 # Save the decoded data as a file using Django's FileSystemStorage
-                fs = FileSystemStorage()
+                fs           = FileSystemStorage()
                 content_file = ContentFile(file_data)
-                file_name = fs.save('your_image_name.jpg', content_file)
-                file_url = fs.url(file_name)
+                file_name    = fs.save('img.jpg', content_file)
+                file_url     = fs.url(file_name)
             except base64.binascii.Error as e:
                 return Response({'error': f'Invalid base64-encoded data: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
         

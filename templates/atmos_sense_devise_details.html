@@ -2,72 +2,173 @@
 <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-<body style="background-size: 100%;">
-    <div class="container">
-        <h2 class="text-center my-4">Atmospheric and Soil Data</h2>
-
+<body style="background-color: #d9f1ff; background-size: 100%;">
+    <h2 class="text-center my-4">Atmos Sense Live Data</h2>
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-md-6">
-                <div class="field-container">
-                    <span class="field-icon"><img src="{% static 'icons/temperature.png' %}" alt="Soil Temperature" style="width: 24px; height: 24px;"></span>
-                    <span>Soil Temperature</span>
-                </div>
-                <div class="field-container">
-                    <span class="field-icon"><img src="{% static 'icons/moisture.png' %}" alt="Soil Moisture" style="width: 24px; height: 24px;"></span>
-                    <span>Soil Moisture</span>
-                </div>
-                <div class="field-container">
-                    <span class="field-icon"><img src="{% static 'icons/atmospheric_temperature.png' %}" alt="Atmospheric Temperature" style="width: 24px; height: 24px;"></span>
-                    <span>Atmospheric Temperature</span>
-                </div>
-                <div class="field-container">
-                    <span class="field-icon"><img src="{% static 'icons/humidity.png' %}" alt="Atmospheric Humidity" style="width: 24px; height: 24px;"></span>
-                    <span>Atmospheric Humidity</span>
-                </div>
-                <div class="field-container">
-                    <span class="field-icon"><img src="{% static 'icons/light_intensity.png' %}" alt="Light Intensity" style="width: 24px; height: 24px;"></span>
-                    <span>Light Intensity</span>
-                </div>
-                <div class="field-container">
-                    <span class="field-icon"><img src="{% static 'icons/latitude.png' %}" alt="Latitude" style="width: 24px; height: 24px;"></span>
-                    <span>Latitude: <span id="latitude-value"></span></span>
-                </div>
-                <div class="field-container">
-                    <span class="field-icon"><img src="{% static 'icons/longitude.png' %}" alt="Longitude" style="width: 24px; height: 24px;"></span>
-                    <span>Longitude: <span id="longitude-value"></span></span>
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <div class="container mt-4">
+                    <div class="row">
+                        <!-- Temperature Card -->
+                        <div class="col-md-3">
+                            <div class="card text-center h-100" style="border-radius: 15px; background-color: #ffa07a;">
+                                <div class="card-body">
+                                    <h5 class="card-title">Soil and Atmospheric</h5>
+                                    <div class="d-flex justify-content-center align-items-center mt-2">
+                                        <i class="fas fa-thermometer-half small-icon me-2"></i>
+                                        <p class="card-text" id="temperature">24°C - 94°C</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Humidity Card -->
+                        <div class="col-md-3">
+                            <div class="card text-center h-100" style="border-radius: 15px; background-color: #87ceeb;">
+                                <div class="card-body">
+                                    <h5 class="card-title">Soil Moisture</h5>
+                                    <div class="d-flex justify-content-center align-items-center mt-2">
+                                        <i class="fas fa-tint small-icon me-2"></i>
+                                        <p class="card-text" id="humidity">60%</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Occupancy Card -->
+                        <div class="col-md-3">
+                            <div class="card text-center h-100" style="border-radius: 15px; background-color: #f4a460;">
+                                <div class="card-body">
+                                    <h5 class="card-title">Atmospheric Humidity</h5>
+                                    <div class="d-flex justify-content-center align-items-center mt-2">
+                                        <i class="fas fa-cloud small-icon me-2"></i>
+                                        <p class="card-text" id="occupancy">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Light Intensity Card -->
+                        <div class="col-md-3">
+                            <div class="card text-center h-100" style="border-radius: 15px; background-color: #fffacd;">
+                                <div class="card-body">
+                                    <h5 class="card-title">Light Intensity</h5>
+                                    <div class="d-flex justify-content-center align-items-center mt-2">
+                                        <i class="fas fa-sun small-icon me-2"></i>
+                                        <p class="card-text" id="lightIntensity">300 lum</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- New row for Image and Map Cards -->
+                    <div class="row mt-4">
+                        <!-- Image Card -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <img class="card-img-top" src="https://www.pradan.net/sampark/wp-content/uploads/2023/03/Picture1-1.jpg" alt="Card image" id="deviceImage" style="height: 350px; object-fit: cover;">
+                                <!-- <img class="card-img-top" src="{{ request.scheme }}://{{ request.get_host }}/media/img_PF4nb1i.jpg" alt="Card image" id="deviceImage" style="height: 300px; object-fit: cover;"> -->
+                                <div class="card-body">
+                                    <h5 class="card-title">Device Image</h5>
+                                    <!-- <p class="card-text">Current image of the device</p> -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Map Card -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body" style="padding: 0;">
+                                    <h5 class="card-title">Location Map</h5>
+                                    <div id="map" style="height: 350px; width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div class="col-md-6">
-                <h4 class="text-center">Location Map</h4>
-                <div id="map" class="map-container" style="height: 300px;"></div> <!-- Placeholder for the map -->
+            <!-- Device List Sidebar -->
+            <div class="col-md-3">
+                <div class="list-group mt-4" style="background-color: #e0f7fa;">
+                    <h5 class="text-center">Devices</h5>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="loadDeviceData('Device 1')">Device 1</a>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="loadDeviceData('Device 2')">Device 2</a>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="loadDeviceData('Device 3')">Device 3</a>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="loadDeviceData('Device 4')">Device 4</a>
+                </div>
             </div>
-        </div>
-
-        <div class="image-container text-center">
-            <img src="{% static 'path/to/your/image.jpg' %}" alt="Descriptive Image" class="img-fluid">
         </div>
     </div>
-
-    <script>
-        // Initialize map (you can use Google Maps API or Leaflet)
-        function initMap() {
-            var map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 8,
-                center: {lat: 0, lng: 0}, // Set to your desired location
-            });
-
-            var marker = new google.maps.Marker({
-                position: {lat: 0, lng: 0}, // Update with actual lat/lng values
-                map: map,
-                title: 'Location',
-            });
-
-            document.getElementById('latitude-value').innerText = marker.getPosition().lat();
-            document.getElementById('longitude-value').innerText = marker.getPosition().lng();
-        }
-    </script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
 </body>
 
+<!-- Font Awesome for Icons -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+<!-- Leaflet.js for Map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<script>
+    // Simulate device data
+    const base_url = `${window.location.protocol}//${window.location.host}`
+    const deviceData = {
+        'Device 1': { temperature: '22°C', humidity: '55%', occupancy: 'Absent', lightIntensity: '250 lum', image: `https://img.freepik.com/premium-photo/dedicated-cotton-female-picker-india-carefully-gathering-cotton-crops-from-fields-highlighting-close-connection-nature-agriculture-industry_984126-12093.jpg?w=1380`, location: [12.9767, 77.5713] },
+        'Device 2': { temperature: '24°C', humidity: '60%', occupancy: 'Present', lightIntensity: '300 lum', image: `https://republicaimg.nagariknewscdn.com/shared/web/uploads/media/Capture_20240408091206.JPG`, location: [12.9698, 77.7500] },
+        'Device 3': { temperature: '26°C', humidity: '65%', occupancy: 'Present', lightIntensity: '350 lum', image: `https://im.rediff.com/money/2015/mar/27crop3.jpg?w=450&h=450`, location: [16.2160, 77.3566] },
+        'Device 4': { temperature: '28°C', humidity: '70%', occupancy: 'Absent', lightIntensity: '400 lum', image: `https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgh-079BFiRNNJ-vsL0zXho0b78yqG3Q8Ltg&s`, location: [16.1691, 75.6615] }
+    };
+
+    // Function to load device data
+    function loadDeviceData(device) {
+        const data = deviceData[device];
+        if (data) {
+            document.getElementById('temperature').innerText = data.temperature;
+            document.getElementById('humidity').innerText = data.humidity;
+            document.getElementById('occupancy').innerText = data.occupancy;
+            document.getElementById('lightIntensity').innerText = data.lightIntensity;
+            document.getElementById('deviceImage').src = data.image;
+            updateMap(data.location);
+        }
+    }
+
+    // Initialize the map
+    var map;
+    function initMap() {
+        map = L.map('map').setView([15.3647, 75.1240], 13); // Default coordinates
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+    }
+
+    // Update map location
+    function updateMap(coordinates) {
+        map.setView(coordinates, 13);
+        if (window.currentMarker) {
+            map.removeLayer(window.currentMarker);
+        }
+        window.currentMarker = L.marker(coordinates).addTo(map);
+    }
+
+    // Call initMap when the page loads
+    window.onload = initMap;
+</script>
+
+<style>
+    .card {
+        border-radius: 10px;
+    }
+    .card .card-body {
+        display: flex;
+        flex-direction: column; /* Stack items vertically */
+        align-items: center;
+    }
+    .card .card-body h5 {
+        margin-bottom: 0;
+    }
+    .small-icon {
+        font-size: 1.2rem; /* Adjust the size as needed */
+    }
+    .card-text {
+        margin-left: 10px; /* Adjust this value to increase or decrease the space */
+    }
+</style>
