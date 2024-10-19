@@ -8,7 +8,7 @@ from .forms import ContactForm, DeviseForm
 from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields
 
 from . import UserFuncrtions
-from django.views.generic import UpdateView, TemplateView, CreateView
+from django.views.generic import UpdateView, TemplateView, CreateView, View
 from django.urls import reverse
 from django.contrib import messages #import messages
 from datetime import datetime
@@ -19,6 +19,8 @@ from .import FertilizerCalculation
 
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -468,6 +470,13 @@ class AtmoSSenseDashboard(TemplateView):
         ]
         
         return context
+
+class GetAtmoSSenseJsonData(View):
+
+    def get(self, *args, **kwargs):
+        api_call = list(DeviseApisFields.objects.order_by('-created_at').values())
+        
+        return JsonResponse({'data' : api_call})
 
 class Dashboard(TemplateView):
     template_name = "dashboard.html"

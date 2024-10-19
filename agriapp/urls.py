@@ -3,7 +3,7 @@
 from django.urls import path
 from django.views.generic import TemplateView
 from . import views as v
-from .views import APIThresholdForm, APIThresholdFormUpdate, Dashboard, UpdateDeviceLocation, AddDeviceLocation, AtmoSSenseDashboard
+from .views import APIThresholdForm, APIThresholdFormUpdate, Dashboard, UpdateDeviceLocation, AddDeviceLocation, AtmoSSenseDashboard, GetAtmoSSenseJsonData
 from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
@@ -41,5 +41,6 @@ urlpatterns = [
 
     path('admin-panne/', login_required(v.dashboard), name = "dashboard"),
     path('atmos-sense-devise-overview/', login_required(AtmoSSenseDashboard.as_view()), name = "atmos-sense-devise-overview"),
+    path('atmos-sense-devise-overview-data/', GetAtmoSSenseJsonData.as_view(), name = "atmos-sense-devise-overview-data"),
 ]
 

@@ -16,7 +16,7 @@
                         <div class="col-md-3">
                             <div class="card text-center h-100" style="border-radius: 15px; background-color: #ffa07a;">
                                 <div class="card-body">
-                                    <h5 class="card-title">Soil and Atmospheric</h5>
+                                    <h5 class="card-title">Soil and Atmospheric Tmp</h5>
                                     <div class="d-flex justify-content-center align-items-center mt-2">
                                         <i class="fas fa-thermometer-half small-icon me-2"></i>
                                         <p class="card-text" id="temperature">24°C - 94°C</p>
@@ -31,7 +31,7 @@
                                     <h5 class="card-title">Soil Moisture</h5>
                                     <div class="d-flex justify-content-center align-items-center mt-2">
                                         <i class="fas fa-tint small-icon me-2"></i>
-                                        <p class="card-text" id="humidity">60%</p>
+                                        <p class="card-text" id="moisture">60%</p>
                                     </div>
                                 </div>
                             </div>
@@ -43,7 +43,7 @@
                                     <h5 class="card-title">Atmospheric Humidity</h5>
                                     <div class="d-flex justify-content-center align-items-center mt-2">
                                         <i class="fas fa-cloud small-icon me-2"></i>
-                                        <p class="card-text" id="occupancy">0</p>
+                                        <p class="card-text" id="atmosHumidity">0</p>
                                     </div>
                                 </div>
                             </div>
@@ -66,11 +66,11 @@
                         <!-- Image Card -->
                         <div class="col-md-6">
                             <div class="card h-100">
-                                <img class="card-img-top" src="https://www.pradan.net/sampark/wp-content/uploads/2023/03/Picture1-1.jpg" alt="Card image" id="deviceImage" style="height: 350px; object-fit: cover;">
-                                <!-- <img class="card-img-top" src="{{ request.scheme }}://{{ request.get_host }}/media/img_PF4nb1i.jpg" alt="Card image" id="deviceImage" style="height: 300px; object-fit: cover;"> -->
+                                <img class="card-img-top" src="https://www.pradan.net/sampark/wp-content/uploads/2023/03/Picture1-1.jpg" alt="Card image" id="deviseImage" style="height: 350px; object-fit: cover;">
+                                <!-- <img class="card-img-top" src="{{ request.scheme }}://{{ request.get_host }}/media/img_PF4nb1i.jpg" alt="Card image" id="deviseImage" style="height: 300px; object-fit: cover;"> -->
                                 <div class="card-body">
                                     <h5 class="card-title">Device Image</h5>
-                                    <!-- <p class="card-text">Current image of the device</p> -->
+                                    <!-- <p class="card-text">Current image of the devise</p> -->
                                 </div>
                             </div>
                         </div>
@@ -88,47 +88,101 @@
             </div>
             <!-- Device List Sidebar -->
             <div class="col-md-3">
-                <div class="list-group mt-4" style="background-color: #e0f7fa;">
-                    <h5 class="text-center">Devices</h5>
-                    <a href="#" class="list-group-item list-group-item-action" onclick="loadDeviceData('Device 1')">Device 1</a>
-                    <a href="#" class="list-group-item list-group-item-action" onclick="loadDeviceData('Device 2')">Device 2</a>
-                    <a href="#" class="list-group-item list-group-item-action" onclick="loadDeviceData('Device 3')">Device 3</a>
-                    <a href="#" class="list-group-item list-group-item-action" onclick="loadDeviceData('Device 4')">Device 4</a>
+                <div id="deviseList" class="list-group mt-4" style="background-color: #e0f7fa;">
+                    <h5 class="text-center">Devise APIs</h5>
                 </div>
             </div>
         </div>
     </div>
 </body>
 
-<!-- Font Awesome for Icons -->
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
 <!-- Leaflet.js for Map -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
 <script>
-    // Simulate device data
-    const base_url = `${window.location.protocol}//${window.location.host}`
-    const deviceData = {
-        'Device 1': { temperature: '22°C', humidity: '55%', occupancy: 'Absent', lightIntensity: '250 lum', image: `https://img.freepik.com/premium-photo/dedicated-cotton-female-picker-india-carefully-gathering-cotton-crops-from-fields-highlighting-close-connection-nature-agriculture-industry_984126-12093.jpg?w=1380`, location: [12.9767, 77.5713] },
-        'Device 2': { temperature: '24°C', humidity: '60%', occupancy: 'Present', lightIntensity: '300 lum', image: `https://republicaimg.nagariknewscdn.com/shared/web/uploads/media/Capture_20240408091206.JPG`, location: [12.9698, 77.7500] },
-        'Device 3': { temperature: '26°C', humidity: '65%', occupancy: 'Present', lightIntensity: '350 lum', image: `https://im.rediff.com/money/2015/mar/27crop3.jpg?w=450&h=450`, location: [16.2160, 77.3566] },
-        'Device 4': { temperature: '28°C', humidity: '70%', occupancy: 'Absent', lightIntensity: '400 lum', image: `https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgh-079BFiRNNJ-vsL0zXho0b78yqG3Q8Ltg&s`, location: [16.1691, 75.6615] }
-    };
 
-    // Function to load device data
-    function loadDeviceData(device) {
-        const data = deviceData[device];
-        if (data) {
-            document.getElementById('temperature').innerText = data.temperature;
-            document.getElementById('humidity').innerText = data.humidity;
-            document.getElementById('occupancy').innerText = data.occupancy;
-            document.getElementById('lightIntensity').innerText = data.lightIntensity;
-            document.getElementById('deviceImage').src = data.image;
-            updateMap(data.location);
+    const base_url   = `${window.location.protocol}//${window.location.host}`;
+    const url        = `${base_url}/atmos-sense-devise-overview-data/`;
+    let deviseData   = {}; // Declare 'data' outside so it can be accessed later
+    const deviseList = document.getElementById('deviseList');
+
+    async function fetchData() {
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            // Parse the JSON data
+            deviseData = await response.json();
+
+            return deviseData.data;
+
+        } catch (error) {
+            console.error('Error:', error);
         }
     }
+
+    function updateDeviseList(deviseData) {
+        // Check if the deviseData is valid before proceeding
+        if (!deviseData || deviseData.length === 0) {
+            console.error('No data available to display');
+            return;
+        }
+
+        // Reset the content of 'deviseList'
+        deviseList.innerHTML = '<h5 class="text-center">Devices</h5>';
+        
+        // Iterate over the keys of 'deviseData'
+        deviseData.forEach((devise, index) => {
+            const apiName = `API ${index + 1}`; // Prefix each with 'API' and index
+            const listItem = document.createElement('a');
+            listItem.href = '#';
+            listItem.className = 'list-group-item list-group-item-action';
+            listItem.textContent = apiName;
+            
+            // Onclick function that passes the 'index' to the function
+            listItem.onclick = () => loadDeviceData(index);
+
+            // Append the created list item to the 'deviseList' container
+            deviseList.appendChild(listItem);
+        });
+
+        // Load the first device's data by default
+        loadDeviceData(0);
+    }
+
+    // Function to load device data based on index
+    function loadDeviceData(index) {
+        const data = deviseData.data[index];
+        if (data) {
+            document.getElementById('temperature').innerText = `${data.field1} °C - ${data.field3} °C`;
+            document.getElementById('moisture').innerText = data.field3;
+            document.getElementById('atmosHumidity').innerText = data.field4;
+            document.getElementById('lightIntensity').innerText = data.field5;
+            document.getElementById('deviseImage').src = `${base_url}/${data.image_path}`;
+            updateMap([data.field6, data.field7]);
+        }
+    }
+
+    // Call the fetchData and update every 5 seconds
+    setInterval(() => {
+        fetchData().then(deviseData => {
+            if (deviseData) {
+                console.log('-----');
+                
+                updateDeviseList(deviseData);
+            }
+        });
+    }, 5000);
+
+    // Initial call to load data when the page loads
+    fetchData().then(deviseData => {
+        if (deviseData) {
+            updateDeviseList(deviseData);
+        }
+    });
 
     // Initialize the map
     var map;
