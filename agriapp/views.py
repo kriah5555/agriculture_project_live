@@ -431,19 +431,6 @@ def dashboard(request):
         return resp
     return redirect('/welcome/')
 
-# class Dashboard(TemplateView):
-#     template_name = "admin_panel.html"
-#     def get_context_data(self, **kwargs):
-#         context           = super().get_context_data(**kwargs)
-#         notifications_all = ContactDetails.objects.all()
-#         context = {
-#             'devise_soilsaathi'     : Devise.objects.filter(devise='soilsaathi'),
-#             'devises_atmo_sense'    : Devise.objects.filter(devise='atmo_sense'),
-#             'notification_active'   : notifications_all.filter(status=True),
-#             'notification_inactive' : notifications_all.filter(status=False),
-#         }
-#         return context
-
 class AtmoSSenseDashboard(TemplateView):
     template_name = "atmos_sense_devise_details.html"
     
@@ -479,6 +466,19 @@ class GetAtmoSSenseJsonData(View):
         return JsonResponse({'data' : api_call})
 
 class Dashboard(TemplateView):
+    template_name = "admin_panel.html"
+    def get_context_data(self, **kwargs):
+        context           = super().get_context_data(**kwargs)
+        notifications_all = ContactDetails.objects.all()
+        context = {
+            'devise_soilsaathi'     : Devise.objects.filter(devise='soilsaathi'),
+            'devises_atmo_sense'    : Devise.objects.filter(devise='atmo_sense'),
+            'notification_active'   : notifications_all.filter(status=True),
+            'notification_inactive' : notifications_all.filter(status=False),
+        }
+        return context
+
+class SoilSaathiDashboard(TemplateView):
     template_name = "dashboard.html"
     def get_context_data(self, **kwargs):
         devise_name = ''

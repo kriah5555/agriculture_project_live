@@ -3,7 +3,7 @@
 from django.urls import path
 from django.views.generic import TemplateView
 from . import views as v
-from .views import APIThresholdForm, APIThresholdFormUpdate, Dashboard, UpdateDeviceLocation, AddDeviceLocation, AtmoSSenseDashboard, GetAtmoSSenseJsonData
+from .views import APIThresholdForm, APIThresholdFormUpdate, Dashboard, UpdateDeviceLocation, AddDeviceLocation, AtmoSSenseDashboard, GetAtmoSSenseJsonData, SoilSaathiDashboard
 from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
@@ -25,7 +25,8 @@ urlpatterns = [
     path('users/',v.users, name = "users"),
     path('forgot_password/', TemplateView.as_view(template_name="forgot_password.html"), name = "forgot_password"),
     path('change_password/<int:pk>', login_required(v.change_password), name = "change-password"),
-    path('welcome/', login_required(Dashboard.as_view(  )), name = "welcome"),
+    path('welcome/', login_required(Dashboard.as_view()), name = "welcome"),
+    path('soil-saathi-dashboard/', login_required(SoilSaathiDashboard.as_view()), name = "soil-saathi-dashboard"),
     path('dashboard/', login_required(v.dashboard), name = "dashboard"),
     path('devise_user_details/', login_required(TemplateView.as_view(template_name="devise_user_details.html")), name = "devise_user_details"),
     path('notifications/', login_required(v.notifications), name = "notifications"),

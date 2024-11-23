@@ -170,8 +170,6 @@
     setInterval(() => {
         fetchData().then(deviseData => {
             if (deviseData) {
-                console.log('-----');
-                
                 updateDeviseList(deviseData);
             }
         });
