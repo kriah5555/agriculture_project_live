@@ -7,13 +7,13 @@ from django.contrib.auth.decorators import login_required
 from .forms import ContactForm, DeviseForm
 from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields
 
-from . import UserFuncrtions
+from . import UserFunctions
 from django.views.generic import UpdateView, TemplateView, CreateView, View
 from django.urls import reverse
 from django.contrib import messages #import messages
 from datetime import datetime
 from map.views import get_marker_color
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from .devise_details import *
 from .import FertilizerCalculation
 
@@ -22,6 +22,9 @@ from django.conf import settings
 
 from django.http import JsonResponse
 
+from django.urls import reverse_lazy
+from django import forms
+
 # Create your views here.
 
 def user_login_access(request):
@@ -29,7 +32,7 @@ def user_login_access(request):
 
     if not user.is_staff and user.is_authenticated:
         devise = get_object_or_404(Devise, devise_id=user.username)
-        apis = DeviseApis.objects.filter(device=devise).count()
+        apis   = DeviseApis.objects.filter(device=devise).count()
 
         api_thresholds = APICountThreshold.objects.filter(devise=devise).first()
         remaining = max(0, api_thresholds.red - apis) if api_thresholds else 0
@@ -60,6 +63,7 @@ def user_login_access(request):
         request.session.update(session_data)
 
         return redirect('/devise_user_details/')
+        
 def home(request):
     if request.method == 'GET':
         template_name = 'home1.html'
@@ -98,12 +102,63 @@ def logout(request):
     auth.logout(request)
     return redirect('/')
 
-def users(request):
-    resp = user_login_access(request)
-    if  resp:
-        return resp
+class Users(TemplateView):
     template_name = "users.html"
-    return render(request, template_name)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get the group 'deviseowner'
+        group = Group.objects.get(name='deviseowner')
+        
+        # Get all users in the 'deviseowner' group
+        users_in_group = User.objects.filter(groups=group)
+        
+        # Add users to context
+        context['active_page'] = "users"
+        context['users']       = users_in_group
+        
+        return context
+
+class UserForm(forms.Form):
+    first_name = forms.CharField(max_length=30)
+    last_name = forms.CharField(max_length=30)
+    username = forms.CharField(max_length=150)
+    email = forms.EmailField()
+    password = forms.CharField(max_length=15)
+
+def create_user(request):
+    if request.method == "POST":
+        form = UserForm(request.POST)
+
+        if form.is_valid():
+            # Extract cleaned data
+            first_name = form.cleaned_data['first_name']
+            last_name  = form.cleaned_data['last_name']
+            username   = form.cleaned_data['username']
+            email      = form.cleaned_data['email']
+            password   = form.cleaned_data['password']
+
+            # Check if the username already exists
+            if User.objects.filter(username=username).exists():
+                form.add_error('username', 'Username already exists')
+                return render(request, 'create-user.html', {'form': form})
+
+            # Check if the email already exists
+            if User.objects.filter(email=email).exists():
+                form.add_error('email', 'Email already exists')
+                return render(request, 'create-user.html', {'form': form})
+            UserFunctions.create_user(username, email, first_name, last_name, password)
+            messages.success(request,"User created successfully")
+
+            # Redirect to the users list page (or success page)
+            return redirect('/users')
+        else:
+            # If the form is invalid, render the form again with errors
+            return render(request, 'create-user.html', {'form': form})
+    else:
+        form = UserForm()  # Empty form for GET request
+        return render(request, 'create-user.html', {'form': form})
 
 def add_devise(request):
     resp = user_login_access(request)
@@ -116,7 +171,7 @@ def add_devise(request):
         form = DeviseForm(request.POST)
         if form.is_valid():
             form.save()
-            UserFuncrtions.create_user(request.POST['devise_id'], request.POST['email'])
+            UserFunctions.create_user(request.POST['devise_id'], request.POST['email'])
             template_name = 'device_list.html'
             messages.success(request,"Device added successfully")
             return redirect("/device-list/")
@@ -259,30 +314,6 @@ def devise_details(request, **kwargs):
         return resp
     devise  = Devise.objects.get(pk = kwargs['pk'])
 
-    # for i in range(56):
-    #     DeviseApis.objects.create(
-    #         device=devise,
-    #         area_name='bond'+str(i),
-    #         devise_id=70099+i,
-    #         serial_no=1208827+i,
-    #         electrical_conduction=89,
-    #         nitrogen=13,
-    #         phosphorous=45,
-    #         potassium=98,
-    #         calcium=43,
-    #         magnesium=23,
-    #         zinc=55,
-    #         manganese=78,
-    #         iron=89,
-    #         copper=65,
-    #         boron=12,
-    #         molybdenum=49,
-    #         chlorine=23,
-    #         nickel=44,
-    #         organic_carboa=12,
-    #         )
-
-
     apis          = DeviseApis.objects.filter(device=devise)
     template_name = "devise_details1.html"
     used          = 0
@@ -305,14 +336,27 @@ def devise_details(request, **kwargs):
     }
     return render(request, template_name = template_name, context=context)
 
+def user_details(request, **kwargs):
+    resp = user_login_access(request)
+    if resp:
+        return resp
+    username = kwargs.get('uid')
+    user     = get_object_or_404(User, username=username)
+    context = {
+        "user": user
+    }
+
+    template_name = "user_details.html"
+    return render(request, template_name=template_name, context=context)
+
 def api_overview(request, **kwargs):
     # resp = user_login_access(request)
     # if  resp:
     #     return resp
     api                = DeviseApis.objects.get(pk=kwargs['pk'])
     template_name      = "api_details.html"
-    all_dynamic_fields = UserFuncrtions.get_all_dynamic_fields()
-    dynamic_field_data = {field.field_name : (UserFuncrtions.get_all_dynamic_field_value(api, field).field_value if UserFuncrtions.get_all_dynamic_field_value(api, field) else 0.0) for field in all_dynamic_fields}
+    all_dynamic_fields = UserFunctions.get_all_dynamic_fields()
+    dynamic_field_data = {field.field_name : (UserFunctions.get_all_dynamic_field_value(api, field).field_value if UserFunctions.get_all_dynamic_field_value(api, field) else 0.0) for field in all_dynamic_fields}
     crops_data         = FertilizerCalculation.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
     fields             = [f.name for f in DeviseApis._meta.get_fields() if f.name not in ['columndata', 'id', 'device', 'serial_no', 'created_at', 'crop_type', 'area_name', 'devise_id']]
     fields_data        = [getattr(api, i) for i in fields]
@@ -420,9 +464,9 @@ def change_password(request, **kwargs):
             'devise' : devise
         }
     elif request.method == 'POST':
-        UserFuncrtions.change_password(devise.devise_id, request.POST['password'])
+        UserFunctions.change_password(devise.devise_id, request.POST['password'])
         messages.success(request, "password changes successfully")
-        return redirect('/device-list/')
+        return redirect('/user-details//')
     return render(request, template_name = template_name, context=context)
 
 def dashboard(request):
@@ -442,15 +486,16 @@ class AtmoSSenseDashboard(TemplateView):
         # Convert to a list of dictionaries
         context['api_call'] = [
             {
-                'device': api.device.name,
-                'image': api.image_path,
-                'soilTemperature': api.field1,
-                'soilMoisture': api.field2,
+                'device'                : api.device.name,
+                'image'                 : api.image_path,
+                'soilTemperature'       : api.field1,
+                'soilMoisture'          : api.field2,
                 'atmosphericTemperature': api.field3,
-                'atmosphericHumidity': api.field4,
-                'lightIntensity': api.field5,
-                'latitude': api.field6,
-                'longitude': api.field7,
+                'atmosphericHumidity'   : api.field4,
+                'lightIntensity'        : api.field5,
+                'latitude'              : api.field6,
+                'longitude'             : api.field7,
+                'active_page'           : 'soil-saathi'
                 # Add more fields as necessary
             }
             for api in api_call
@@ -465,21 +510,23 @@ class GetAtmoSSenseJsonData(View):
         
         return JsonResponse({'data' : api_call})
 
-class Dashboard(TemplateView):
-    template_name = "admin_panel.html"
+class SoilSaathiDashboard(TemplateView):
+    template_name = "soil-saathi-dashboard.html"
     def get_context_data(self, **kwargs):
         context           = super().get_context_data(**kwargs)
         notifications_all = ContactDetails.objects.all()
         context = {
-            'devise_soilsaathi'     : Devise.objects.filter(devise='soilsaathi'),
-            'devises_atmo_sense'    : Devise.objects.filter(devise='atmo_sense'),
+            'devise_soilsaathi'     : Devise.objects.filter(devise_type='soilsaathi'),
+            'devises_atmo_sense'    : Devise.objects.filter(devise_type='atmo_sense'),
             'notification_active'   : notifications_all.filter(status=True),
             'notification_inactive' : notifications_all.filter(status=False),
+            'notification_inactive' : notifications_all.filter(status=False),
+            'active_page'           : 'soil-saathi'
         }
         return context
 
-class SoilSaathiDashboard(TemplateView):
-    template_name = "dashboard.html"
+class Dashboard(TemplateView):
+    template_name = "admin_panel.html"
     def get_context_data(self, **kwargs):
         devise_name = ''
         chart_date  = []
@@ -509,6 +556,7 @@ class SoilSaathiDashboard(TemplateView):
             'notification_inactive' : notifications_all.filter(status=False),
             'years'                 : years,
             'states'                : states,
+            'active_page'           : 'dashboard'
         }
         return context
 
@@ -624,7 +672,7 @@ def dynamic_fields(request, **kwargs):
     if  resp:
         return resp
     template_name = 'dynamic_fields.html'
-    columns       = UserFuncrtions.get_all_dynamic_fields()
+    columns       = UserFunctions.get_all_dynamic_fields()
     context       = {
         'columns' : columns,
         'columns_count' : len(columns),

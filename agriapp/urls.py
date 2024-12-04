@@ -3,7 +3,7 @@
 from django.urls import path
 from django.views.generic import TemplateView
 from . import views as v
-from .views import APIThresholdForm, APIThresholdFormUpdate, Dashboard, UpdateDeviceLocation, AddDeviceLocation, AtmoSSenseDashboard, GetAtmoSSenseJsonData, SoilSaathiDashboard
+from .views import *
 from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
@@ -22,11 +22,9 @@ urlpatterns = [
     path('api-edit/<int:pk>/', login_required(v.UpdateApi.as_view()), name = "api-edit"),
     path('add-api/', login_required(v.CreateApi.as_view()), name = "add-api"),
     path('api-list/<int:pk>/', login_required(v.api_list), name = "api-list"),
-    path('users/',v.users, name = "users"),
     path('forgot_password/', TemplateView.as_view(template_name="forgot_password.html"), name = "forgot_password"),
     path('change_password/<int:pk>', login_required(v.change_password), name = "change-password"),
     path('welcome/', login_required(Dashboard.as_view()), name = "welcome"),
-    path('soil-saathi-dashboard/', login_required(SoilSaathiDashboard.as_view()), name = "soil-saathi-dashboard"),
     path('dashboard/', login_required(v.dashboard), name = "dashboard"),
     path('devise_user_details/', login_required(TemplateView.as_view(template_name="devise_user_details.html")), name = "devise_user_details"),
     path('notifications/', login_required(v.notifications), name = "notifications"),
@@ -40,8 +38,14 @@ urlpatterns = [
     path('update-location/<int:pk>/', login_required(UpdateDeviceLocation.as_view()), name = "update-location"),
     path('add-location/<int:pk>/', login_required(AddDeviceLocation.as_view()), name = "add-location"),
 
+    # New development
+    path('users/', login_required(Users.as_view()), name = "users"),
     path('admin-panne/', login_required(v.dashboard), name = "dashboard"),
+    path('create-user/', login_required(v.create_user), name = "create-user"),
+    path('user-details/<str:uid>/', login_required(v.user_details), name = "user-details"),
+    path('soil-saathi-dashboard/', login_required(SoilSaathiDashboard.as_view()), name = "soil-saathi-dashboard"),
     path('atmos-sense-devise-overview/', login_required(AtmoSSenseDashboard.as_view()), name = "atmos-sense-devise-overview"),
-    path('atmos-sense-devise-overview-data/', GetAtmoSSenseJsonData.as_view(), name = "atmos-sense-devise-overview-data"),
+    path('atmos-sense-devise-overview-data/', GetAtmoSSenseJsonData.as_view(), name = "atmos-sense-devise-overview-data"), # api data for page
 ]
 
+user_details

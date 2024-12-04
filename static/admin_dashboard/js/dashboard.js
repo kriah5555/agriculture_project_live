@@ -1,47 +1,10 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const sidebar = document.getElementById("sidebar");
-    const content = document.getElementById("content");
-    const toggleIcon = document.getElementById("toggleIcon");
-  
-    document
-      .getElementById("sidebarCollapse")
-      .addEventListener("click", function () {
-        sidebar.classList.toggle("collapsed");
-        content.classList.toggle("sidebar-collapsed");
-  
-        if (sidebar.classList.contains("collapsed")) {
-          toggleIcon.classList.remove("fa-times");
-          toggleIcon.classList.add("fa-bars");
-        } else {
-          toggleIcon.classList.remove("fa-bars");
-          toggleIcon.classList.add("fa-times");
-        }
-      });
-  
-    // Render the dashboard
-    renderDashboard();
-  });
-  
-  // Function to adjust content width based on sidebar state
-  function adjustContentWidth() {
-    const sidebar = document.getElementById("sidebar");
-    const content = document.getElementById("content");
-    
-    if (sidebar.classList.contains("collapsed")) {
-      content.style.marginLeft = "var(--sidebar-collapsed-width)";
-    } else {
-      content.style.marginLeft = "var(--sidebar-width)";
-    }
-  }
-  
-  // Call adjustContentWidth on window resize
-  window.addEventListener("resize", adjustContentWidth);
+
   
   // Simulated API data
   const apiData = {
     infoCards: [
       { title: "Notifications 10", icon: "fas fa-bell" },
-      { title: "June 20th", subtitle: "SoilSaathi", value: "9 times called" },
+      { title: "June 20th", subtitle: "SoilSaathi", value: "9 times called", icon:"" },
       { title: "22nd June", subtitle: "AtmoSense", value: "11 times called" },
       { title: "13th June", subtitle: "SoiLIFE", value: "2 items called" },
     ],

@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
-from agriapp import UserFuncrtions, FertilizerCalculation as f
+from agriapp import UserFunctions, FertilizerCalculation as f
 from .encryption_utils import encrypt_device_id, decrypt_device_id
 from django.contrib import auth
 import base64
@@ -135,7 +135,7 @@ def add_soil_data(request):
         if serializer.is_valid():
             serializer.save()
             api_id = serializer.data['id']
-            dynamic_fields = UserFuncrtions.get_all_dynamic_fields()
+            dynamic_fields = UserFunctions.get_all_dynamic_fields()
             if dynamic_fields:
                 for dynamic_field in dynamic_fields:
                     field_name = dynamic_field.field_name
@@ -230,7 +230,7 @@ def add_soil_data_open(request):
         if serializer.is_valid():
             serializer.save()
             api_id = serializer.data['id']
-            dynamic_fields = UserFuncrtions.get_all_dynamic_fields()
+            dynamic_fields = UserFunctions.get_all_dynamic_fields()
             if dynamic_fields:
                 for dynamic_field in dynamic_fields:
                     field_name = dynamic_field.field_name

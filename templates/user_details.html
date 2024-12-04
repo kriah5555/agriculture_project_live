@@ -1,0 +1,230 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+<div>
+    <div class="row" style="display: flex;">
+
+        <!-- Left Column (User Details and Device List) -->
+        <div class="col-lg-4 d-flex flex-column">
+            <!-- User Details Card -->
+            <div class="card mb-4 bg-light flex-fill" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <div class="card-body text-center">
+                    <!-- Centering the image -->
+                    <div class="d-flex justify-content-center mb-3">
+                        <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar"
+                            class="rounded-circle img-fluid" style="width: 120px; height: 120px; object-fit: cover;">
+                    </div>
+
+                    <!-- User Details -->
+                    <div class="text-left mb-3" id="user-details">
+                        <ul class="list-unstyled">
+                            <li>
+                                <h5 class="text-primary font-weight-bold" id="username-display">{{ user.username }}</h5> <!-- Bold username -->
+                                <input type="text" id="username-edit" class="form-control" value="{{ user.username }}" style="display:none;">
+                            </li>
+                            <li class="text-muted" style="font-size: 16px;" id="name-display">
+                                {{ user.first_name }} {{ user.last_name }} <!-- Name with smaller text -->
+                                <input type="text" id="name-edit" class="form-control" value="{{ user.first_name }} {{ user.last_name }}" style="display:none;">
+                            </li>
+                            <li class="text-muted" style="font-size: 14px;" id="email-display">
+                                {{ user.email }} <!-- Email with smaller text -->
+                                <input type="email" id="email-edit" class="form-control" value="{{ user.email }}" style="display:none;">
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Icons for Edit and Reset Password -->
+                    <div class="mt-3" id="action-icons">
+                        <a href="javascript:void(0);" class="text-primary mr-3" style="font-size: 18px;" title="Edit Profile" onclick="editUserDetails()">
+                            <i class="fas fa-pencil" title="Edit details"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="text-danger" style="font-size: 18px;" title="Reset Password" onclick="resetPassword()">
+                            <i class="fas fa-key" title="Reset password"></i>
+                        </a>
+                    </div>
+
+                    <!-- Reset Password Form -->
+                    <div id="reset-password-form" style="display:none; margin-top: 20px;">
+                        <div class="form-group">
+                            <input type="password" id="new-password" class="form-control" placeholder="Enter new password">
+                        </div>
+                        <div>
+                            <a href="javascript:void(0);" onclick="savePassword()" class="text-primary mr-3" style="font-size: 20px;" title="Save">
+                                <i class="fas fa-check-circle"></i> <!-- Save icon -->
+                            </a>
+                            <a href="javascript:void(0);" onclick="cancelReset()" class="text-danger" style="font-size: 20px;" title="Cancel">
+                                <i class="fas fa-times-circle"></i> <!-- Cancel icon -->
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Edit User Details Form -->
+                    <div id="edit-user-form" style="display:none; margin-top: 20px;">
+                        <div class="form-group">
+                            <input type="text" id="edit-username" class="form-control" placeholder="Enter username" value="{{ user.username }}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="edit-name" class="form-control" placeholder="Enter full name" value="{{ user.first_name }} {{ user.last_name }}">
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="edit-email" class="form-control" placeholder="Enter email" value="{{ user.email }}">
+                        </div>
+                        <div>
+                            <a href="javascript:void(0);" onclick="saveUserDetails()" class="text-primary mr-3" style="font-size: 20px;" title="Save">
+                                <i class="fas fa-check-circle"></i> <!-- Save icon -->
+                            </a>
+                            <a href="javascript:void(0);" onclick="cancelEdit()" class="text-danger" style="font-size: 20px;" title="Cancel">
+                                <i class="fas fa-times-circle"></i> <!-- Cancel icon -->
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <!-- Device List Card -->
+            <div class="card bg-light flex-fill" style="border-radius: 1%; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <div class="card-body">
+                    <h5 class="text-primary">Devices linked</h5>
+                    <ul class="list-group">
+                        <!-- List of devices, these can be dynamically generated -->
+                        <li class="list-group-item" style="cursor: pointer;" onclick="showDeviceDetails('SoilSaathi')">SoilSaathi</li>
+                        <li class="list-group-item" style="cursor: pointer;" onclick="showDeviceDetails('AtmoSense')">AtmoSense</li>
+                        <li class="list-group-item" style="cursor: pointer;" onclick="showDeviceDetails('SoilLife')">SoilLife</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column (Device Details) -->
+        <div class="col-lg-8 d-flex flex-column">
+            <div id="device-details-card" class="card mb-4 flex-fill" style="border-radius: 1%; background-color: #a97e7e94; color: white;">
+                <div class="card-body">
+                    <h5 id="device-name" class="mb-4">Select a device to view details</h5>
+                    <div id="device-info">
+                        <!-- Device details will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<!-- Add Hover Effects for Icons -->
+<style>
+    .fa-pencil-alt:hover, .fa-key:hover {
+        transform: scale(1.2); /* Increase icon size on hover */
+    }
+
+    .fa-pencil-alt {
+        transition: transform 0.3s ease; /* Smooth transition for hover effect */
+    }
+
+    .fa-key {
+        transition: transform 0.3s ease; /* Smooth transition for hover effect */
+    }
+</style>
+
+<!-- script  for  saving changes -->
+<script>
+    // Function to show the Edit User Details form
+    function editUserDetails() {
+        document.getElementById('username-display').style.display = 'none';
+        document.getElementById('name-display').style.display = 'none';
+        document.getElementById('email-display').style.display = 'none';
+        document.getElementById('action-icons').style.display = 'none';
+        
+        document.getElementById('edit-user-form').style.display = 'block';
+    }
+
+    // Function to save the updated user details
+    function saveUserDetails() {
+        const username = document.getElementById('edit-username').value;
+        const name = document.getElementById('edit-name').value;
+        const email = document.getElementById('edit-email').value;
+
+        // API call here to update user details (replace with real API endpoint)
+        console.log("Saving User Details:", { username, name, email });
+
+        // Update the UI
+        document.getElementById('username-display').textContent = username;
+        document.getElementById('name-display').textContent = name;
+        document.getElementById('email-display').textContent = email;
+
+        cancelEdit();
+    }
+
+    // Function to cancel editing user details
+    function cancelEdit() {
+        document.getElementById('username-display').style.display = 'block';
+        document.getElementById('name-display').style.display = 'block';
+        document.getElementById('email-display').style.display = 'block';
+        document.getElementById('action-icons').style.display = 'block';
+
+        document.getElementById('edit-user-form').style.display = 'none';
+    }
+
+    // Function to show the Reset Password form
+    function resetPassword() {
+        document.getElementById('reset-password-form').style.display = 'block';
+    }
+
+    // Function to save the new password
+    function savePassword() {
+        const newPassword = document.getElementById('new-password').value;
+        const securityKey = document.getElementById('security-key').value;
+
+        // API call here to reset the password (replace with real API endpoint)
+        console.log("Saving New Password:", { newPassword, securityKey });
+
+        cancelReset();
+    }
+
+    // Function to cancel the reset password process
+    function cancelReset() {
+        document.getElementById('reset-password-form').style.display = 'none';
+    }
+</script>
+
+<!-- script to show devise details -->
+<script>
+    // Function to dynamically change the device details based on selected device
+    function showDeviceDetails(device) {
+        let deviceDetails = {
+            'SoilSaathi': {
+                name: 'SoilSaathi',
+                description: 'A smart soil monitoring device for agriculture.',
+                purchaseDate: '2023-05-14',
+                serialNo: 'SS123456',
+                warranty: '2 years'
+            },
+            'AtmoSense': {
+                name: 'AtmoSense',
+                description: 'A device for monitoring atmospheric conditions.',
+                purchaseDate: '2023-08-22',
+                serialNo: 'AS654321',
+                warranty: '1 year'
+            },
+            'SoilLife': {
+                name: 'SoilLife',
+                description: 'A device designed to monitor soil health and nutrients.',
+                purchaseDate: '2023-02-10',
+                serialNo: 'SL987654',
+                warranty: '3 years'
+            }
+        };
+
+        const details = deviceDetails[device];
+        document.getElementById('device-name').textContent = details.name;
+        document.getElementById('device-info').innerHTML = `
+            <p><strong>Description:</strong> ${details.description}</p>
+            <p><strong>Purchase Date:</strong> ${details.purchaseDate}</p>
+            <p><strong>Serial No:</strong> ${details.serialNo}</p>
+            <p><strong>Warranty:</strong> ${details.warranty}</p>
+        `;
+    }
+</script>
+
+{% endblock %}

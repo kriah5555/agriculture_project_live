@@ -1,11 +1,13 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
 from . import FertilizerCalculation as f
 
-CROP_LIST = f.get_crop_list()
+CROP_LIST      = f.get_crop_list()
 DEVICE_CHOICES = [('soilsaathi', 'Soil Saathi'),('atmo_sense', 'Atmo Sense')]
+
 class ContactDetails(models.Model):
     name       = models.CharField(max_length=255)
     phone      = models.CharField(max_length=255, unique=True)
@@ -33,7 +35,8 @@ class Devise(models.Model):
     balance_amount = models.FloatField(default=0)
     land           = models.FloatField(default=0.0)
     created_at     = models.DateTimeField(auto_now_add=True)
-    devise         = models.CharField(max_length=255, choices = DEVICE_CHOICES, default='soilsaathi')
+    devise_type    = models.CharField(max_length=255, choices = DEVICE_CHOICES, default='soilsaathi')
+    user           = models.ForeignKey(User, on_delete=models.CASCADE, related_name='devices', null=True, blank=True)
 
     def __str__(self):
         return self.name + ' ' + self.devise_id

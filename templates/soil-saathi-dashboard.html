@@ -1,0 +1,74 @@
+{% extends "navbar.html" %}
+{% block content %}
+
+        <div class="container" style="margin-top:100px;">
+
+            <div class="card">
+              <div class="face face1">
+                <div class="content">
+                  <span class="stars"></span>
+                  <h2 class="java"><a href="{% url 'device-list' %}">Devices</h2>
+                  <p class="java">Total devices currently in use : {{devise_counts}}.</p></a>
+                </div>
+              </div>
+              <div class="face face2">
+                <h4>Devices</h4>
+              </div>
+            </div>
+          
+            <div class="card">
+              <div class="face face1">
+                <div class="content">
+                  <span class="stars"></span>
+                  <h2 class="java"><a href="{% url 'map' %}">Map</h2>
+                  <p class="java">Click to check devices locations.</p></a>
+                </div>
+              </div>
+              <div class="face face2">
+                <h4>Map</h4>
+              </div>
+            </div>
+          
+            <div class="card">
+              <div class="face face1">
+                <div class="content">
+                  <span class="stars"></span>
+                  <h2 class="cSharp"><a href="{% url 'notifications' %}"> Notifications</h2>
+                  <p class="cSharp">Total notifications : {{notification_counts}}.</p></a>
+                </div>
+              </div>
+              <div class="face face2">
+                <h4>Notifications</h4>
+              </div>
+            </div>
+
+
+              <div class="card">
+                <div class="face face1">
+                  <div class="content">
+                    <span class="stars"></span>
+                    <h2 class="cSharp"><a href="{% url 'dynamic_fields' %}">Dynamic fields</h2>
+                    <p class="cSharp">Total fields : {{dynamic_fields}}.</p></a>
+                  </div>
+                </div>
+                <div class="face face2">
+                  <h4>Dynamic fields</h4>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="face face1">
+                  <div class="content">
+                    <span class="stars"></span>
+                    <h2 class="cSharp">API calls</h2>
+                    <p class="cSharp">Total API called till date : {{api_counts}}.</p>
+                  </div>
+                </div>
+                <div class="face face2">
+                  <h4>API calls</h4>
+                </div>
+            </div>
+          </div>
+        <!-- end devise counts -->
+{% endblock %}
+
