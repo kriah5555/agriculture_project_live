@@ -160,45 +160,53 @@ def create_user(request):
         form = UserForm()  # Empty form for GET request
         return render(request, 'create-user.html', {'form': form})
 
-def add_devise(request):
-    resp = user_login_access(request)
-    if  resp:
+@login_required
+def add_devise(request, uid=None):
+    resp = user_login_access(request)  # Assuming you have a function for user access check
+    if resp:
         return resp
-    context = {'message' : ''}
+        
+    context = {'message': ''}
+    user    = UserFunctions.get_user_by_username(uid)
+
     if request.method == 'GET':
         template_name = "add_devise.html"
     elif request.method == 'POST':
         form = DeviseForm(request.POST)
         if form.is_valid():
-            form.save()
-            UserFunctions.create_user(request.POST['devise_id'], request.POST['email'])
-            template_name = 'device_list.html'
-            messages.success(request,"Device added successfully")
-            return redirect("/device-list/")
+            # Save the devise with the user
+            devise      = form.save(commit=False)  # Don't commit yet to set the user
+            devise.user = user  # Assign the logged-in user
+            devise.save()
+            messages.success(request, "Device added successfully")
+            return redirect(f"/user-details/{uid}")  # Redirect to device list page after saving
         else:
-            errors  = form.errors
+            errors = form.errors
             field_errors = dict()
             for error in errors:
                 field_errors[error] = errors[error]
 
+            # Keep the form values and field errors if the form is invalid
             default_values = {
-                'name'           : request.POST['name'],
-                'devise_id'      : request.POST['devise_id'],
-                'serial_no'      : request.POST['serial_no'],
-                'chipset_no'     : request.POST['chipset_no'],
-                'email'          : request.POST['email'],
-                'address1'       : request.POST['address1'],
-                'address2'       : request.POST['address2'],
-                'purchase_date'  : request.POST['purchase_date'],
-                'time_of_sale'   : request.POST['time_of_sale'],
-                'warrenty'       : request.POST['warrenty'],
-                'amount_paid'    : request.POST['amount_paid'],
-                'balance_amount' : request.POST['balance_amount'],
-                'phone'          : request.POST['phone'],
-                'land'           : request.POST['land'],
+                'name'          : request.POST['name'],
+                'devise_id'     : request.POST['devise_id'],
+                'serial_no'     : request.POST['serial_no'],
+                'chipset_no'    : request.POST['chipset_no'],
+                'email'         : request.POST['email'],
+                'address1'      : request.POST['address1'],
+                'address2'      : request.POST['address2'],
+                'purchase_date' : request.POST['purchase_date'],
+                'time_of_sale'  : request.POST['time_of_sale'],
+                'warrenty'      : request.POST['warrenty'],
+                'amount_paid'   : request.POST['amount_paid'],
+                'balance_amount': request.POST['balance_amount'],
+                'phone'         : request.POST['phone'],
+                'land'          : request.POST['land'],
+                'devise_type'   : request.POST['devise_type'],
             }
-            return render(request, 'add_devise.html', {'devise' : default_values, 'field_errors' : field_errors})
-    return render(request, template_name = template_name, context=context)
+            return render(request, 'add_devise.html', {'devise': default_values, 'field_errors': field_errors})
+
+    return render(request, template_name, context)
 
 def edit_devise(request, **kwargs):
     resp = user_login_access(request)
@@ -243,6 +251,7 @@ def edit_devise(request, **kwargs):
                 'balance_amount' : request.POST['balance_amount'],
                 'phone'          : request.POST['phone'],
                 'land'           : request.POST['land'],
+                'devise_type'    : request.POST['devise_type'],
             }
             return render(request, 'add_devise.html', {'field_errors': field_errors, 'devise' : devise, })
     return render(request, template_name = template_name, context=context)
@@ -338,12 +347,15 @@ def devise_details(request, **kwargs):
 
 def user_details(request, **kwargs):
     resp = user_login_access(request)
-    if resp:
+    if resp: 
         return resp
-    username = kwargs.get('uid')
-    user     = get_object_or_404(User, username=username)
+    username       = kwargs.get('uid')
+    user           = get_object_or_404(User, username=username)
+    linked_devices = Devise.objects.filter(user=user)  # Fetch all devices linked to the user
+    
     context = {
-        "user": user
+        "user"          : user,
+        "linked_devices": linked_devices, # Add linked devices to the context
     }
 
     template_name = "user_details.html"
@@ -452,21 +464,21 @@ class APIThresholdFormUpdate(UpdateView):
             form.add_error(None, "Please add valid thresholds.)")
             return self.form_invalid(form)
 
-def change_password(request, **kwargs):
+def change_password(request, uid):
     resp = user_login_access(request)
     if  resp:
         return resp
+        
     template_name = 'change_password.html'
     context       = dict()
-    devise        = Devise.objects.filter(pk=kwargs['pk']).first()
     if request.method == 'GET':
         context = {
-            'devise' : devise
+            'username' : uid
         }
     elif request.method == 'POST':
-        UserFunctions.change_password(devise.devise_id, request.POST['password'])
+        UserFunctions.change_password(uid, request.POST['password'])
         messages.success(request, "password changes successfully")
-        return redirect('/user-details//')
+        return redirect(f"/user-details/{uid}/")
     return render(request, template_name = template_name, context=context)
 
 def dashboard(request):

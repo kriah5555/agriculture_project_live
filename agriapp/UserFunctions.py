@@ -5,6 +5,15 @@ import os
 # from twilio.rest import Client
 from . models import ColumnName, ColumnData
 
+def get_user_by_username(username):
+    try:
+        # Fetch the user by the given username
+        user = User.objects.get(username=username)
+        return user
+    except User.DoesNotExist:
+        # If user does not exist, return None or you could raise a custom exception
+        return None
+
 
 def create_user(username, email, first_name='', last_name='', password=None):
     x            = datetime.datetime.now()

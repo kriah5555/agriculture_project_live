@@ -38,10 +38,11 @@
                         <a href="javascript:void(0);" class="text-primary mr-3" style="font-size: 18px;" title="Edit Profile" onclick="editUserDetails()">
                             <i class="fas fa-pencil" title="Edit details"></i>
                         </a>
-                        <a href="javascript:void(0);" class="text-danger" style="font-size: 18px;" title="Reset Password" onclick="resetPassword()">
+                        <a href="{% url 'change-password' user.username %}" class="text-danger" style="font-size: 18px;" title="Reset Password" >
                             <i class="fas fa-key" title="Reset password"></i>
                         </a>
                     </div>
+                    
 
                     <!-- Reset Password Form -->
                     <div id="reset-password-form" style="display:none; margin-top: 20px;">
@@ -86,29 +87,88 @@
             <!-- Device List Card -->
             <div class="card bg-light flex-fill" style="border-radius: 1%; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                 <div class="card-body">
-                    <h5 class="text-primary">Devices linked</h5>
+            
+                    <h5 class="text-primary">Devices linked 
+                        <a href="{% url 'add-devise' user.username %}" onclick="saveUserDetails()" class="text-primary mr-3" style="font-size: 20px;" title="Save">
+                            <i class="fas fas fa-plus"></i> 
+                        </a>
+                    </h5>
                     <ul class="list-group">
-                        <!-- List of devices, these can be dynamically generated -->
-                        <li class="list-group-item" style="cursor: pointer;" onclick="showDeviceDetails('SoilSaathi')">SoilSaathi</li>
-                        <li class="list-group-item" style="cursor: pointer;" onclick="showDeviceDetails('AtmoSense')">AtmoSense</li>
-                        <li class="list-group-item" style="cursor: pointer;" onclick="showDeviceDetails('SoilLife')">SoilLife</li>
+                        {% for device in linked_devices %}
+                        <li class="list-group-item" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="showDeviceDetails({
+                            id: '{{ device.devise_id }}',
+                            name: '{{ device.name }}',
+                            serialNo: '{{ device.serial_no }}',
+                            chipsetNo: '{{ device.chipset_no }}',
+                            email: '{{ device.email }}',
+                            phone: '{{ device.phone }}',
+                            address1: '{{ device.address1 }}',
+                            address2: '{{ device.address2 }}',
+                            purchaseDate: '{{ device.purchase_date }}',
+                            warranty: '{{ device.warrenty }}',
+                            amountPaid: '{{ device.amount_paid }}',
+                            balanceAmount: '{{ device.balance_amount }}',
+                            land: '{{ device.land }} acres'
+                        })">
+                            <span>{{ device.name }} ({{device.devise_type}})</span>
+                            <i class="fas fa-pencil" title="Edit details"></i>
+                        </li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>
+
         </div>
+            <!-- <div id="device-details-card" class="card mb-4 flex-fill" style="border-radius: 1%; background-color: #a97e7e94; color: white;"> -->
+
+        
 
         <!-- Right Column (Device Details) -->
-        <div class="col-lg-8 d-flex flex-column">
-            <div id="device-details-card" class="card mb-4 flex-fill" style="border-radius: 1%; background-color: #a97e7e94; color: white;">
-                <div class="card-body">
-                    <h5 id="device-name" class="mb-4">Select a device to view details</h5>
-                    <div id="device-info">
-                        <!-- Device details will be dynamically inserted here -->
+        <div class="col-lg-8 d-flex flex-column bg-white rounded-3 shadow-sm" style="padding: 20px;">
+            <div class="container mt-4">
+                <div class="row">
+                    <!-- Device Name Section -->
+                    <div class="col-12">
+                        <h4 id="device-name" class="display-4 text-center mb-4">Pease select devise to view details</h4>
+                    </div>
+                </div>
+                <div class="row">
+                    <!-- Device Info Section -->
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 shadow-sm border-0 rounded-3" style="background-color: #ffffff; height: 100%;">
+                            <div class="card-header bg-primary text-white rounded-3">
+                                <h4 class="mb-0">Device Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Serial No:</strong> <span id="serialNo"></span></p>
+                                <p><strong>Chipset No:</strong> <span id="chipsetNo"></span></p>
+                                <p><strong>Email:</strong> <span id="email"></span></p>
+                                <p><strong>Phone:</strong> <span id="phone"></span></p>
+                                <p><strong>Address Line 1:</strong> <span id="address1"></span></p>
+                                <p><strong>Address Line 2:</strong> <span id="address2"></span></p>
+                                <p><strong>Purchase Date:</strong> <span id="purchaseDate"></span></p>
+                                <p><strong>Warranty:</strong> <span id="warranty"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Financial Details Section -->
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 shadow-sm border-0 rounded-3" style="background-color: #ffffff; height: 100%;">
+                            <div class="card-header bg-secondary text-white rounded-3">
+                                <h4 class="mb-0">Financial Details</h4>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Amount Paid:</strong> $<span id="amountPaid"></span></p>
+                                <p><strong>Balance Amount:</strong> $<span id="balanceAmount"></span></p>
+                                <p><strong>Land:</strong> <span id="land"></span></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        
+         
     </div>
 </div>
 
@@ -192,38 +252,23 @@
 <script>
     // Function to dynamically change the device details based on selected device
     function showDeviceDetails(device) {
-        let deviceDetails = {
-            'SoilSaathi': {
-                name: 'SoilSaathi',
-                description: 'A smart soil monitoring device for agriculture.',
-                purchaseDate: '2023-05-14',
-                serialNo: 'SS123456',
-                warranty: '2 years'
-            },
-            'AtmoSense': {
-                name: 'AtmoSense',
-                description: 'A device for monitoring atmospheric conditions.',
-                purchaseDate: '2023-08-22',
-                serialNo: 'AS654321',
-                warranty: '1 year'
-            },
-            'SoilLife': {
-                name: 'SoilLife',
-                description: 'A device designed to monitor soil health and nutrients.',
-                purchaseDate: '2023-02-10',
-                serialNo: 'SL987654',
-                warranty: '3 years'
-            }
-        };
-
-        const details = deviceDetails[device];
-        document.getElementById('device-name').textContent = details.name;
-        document.getElementById('device-info').innerHTML = `
-            <p><strong>Description:</strong> ${details.description}</p>
-            <p><strong>Purchase Date:</strong> ${details.purchaseDate}</p>
-            <p><strong>Serial No:</strong> ${details.serialNo}</p>
-            <p><strong>Warranty:</strong> ${details.warranty}</p>
-        `;
+        if (device) {
+            document.getElementById('device-name').textContent = device.name;
+            document.getElementById('serialNo').textContent = device.serialNo;
+            document.getElementById('chipsetNo').textContent = device.chipsetNo;
+            document.getElementById('email').textContent = device.email;
+            document.getElementById('phone').textContent = device.phone;
+            document.getElementById('address1').textContent = device.address1;
+            document.getElementById('address2').textContent = device.address2;
+            document.getElementById('purchaseDate').textContent = device.purchaseDate;
+            document.getElementById('warranty').textContent = device.warranty;
+            document.getElementById('amountPaid').textContent = device.amountPaid;
+            document.getElementById('balanceAmount').textContent = device.balanceAmount;
+            document.getElementById('land').textContent = device.land;
+        } else {
+            document.getElementById('device-name').textContent = 'Device not found';
+            document.getElementById('device-info').innerHTML = '';
+        }
     }
 </script>
 
