@@ -15,7 +15,6 @@ from agriapp.models import DeviseLocation, Devise, DeviseApis, APICountThreshold
 #     country   = location.country
 #     map = fol.Map(location=[latitude, longitude], zoom_start = 6)
 #     fol.Marker([latitude, longitude], tooltip = f'India', popup = f'{country}', icon=fol.Icon(color="blue"),).add_to(map)
-#     print(latitude,longitude,'---------')
 #     if kwargs:
 #         devise_id = kwargs['pk']
 #         location = DeviseLocation.objects.filter(status=True, devise__pk = devise_id)

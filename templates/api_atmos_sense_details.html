@@ -1,0 +1,81 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+<div style="display: flex; flex-direction: row; gap: 2rem; margin-bottom: 2rem;">
+    <!-- Go Back Button -->
+    <div style="flex: 1; padding-left: 1rem;">
+        <a href="javascript:history.back()" style="display: inline-block; padding: 0.75rem 1.5rem; background-color: #007bff; color: white; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3); transition: background-color 0.3s, transform 0.2s;">
+            Go Back
+        </a>
+    </div>
+</div>
+
+<div style="display: flex; flex-direction: row; gap: 2rem;">
+    <!-- Left Side: Field Values -->
+    <div style="flex: 1; border-right: 1px solid #ddd; padding-right: 2rem; background-color: #f9f9f9; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <h3 style="font-size: 24px; color: #333; margin-bottom: 1rem;">Device: {{ device }}</h3>
+        <ul style="list-style-type: none; padding: 0;">
+            {% for field, value in fields.items %}
+                <li style="margin-bottom: 1rem; font-size: 16px; color: #555;">
+                    <strong style="color: #007bff;">{{ field|capfirst }}:</strong> <span style="font-weight: 600;">{{ value }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Right Side: Circular Chart -->
+    <div style="flex: 1; padding-left: 2rem; background-color: #f9f9f9; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <h3 style="font-size: 24px; color: #333; margin-bottom: 1rem;">Field Values Distribution</h3>
+        <canvas id="circleChart" style="max-width: 100%;"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const fieldData = {{ fields|safe }};
+
+        // Extract keys and values for the chart
+        const labels = Object.keys(fieldData);
+        const data = Object.values(fieldData);
+
+        // Generate random colors for the chart
+        const colors = labels.map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.5)`);
+
+        const ctx = document.getElementById('circleChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: '#fff',
+                    borderWidth: 2,
+                }],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                return `${tooltipItem.label}: ${tooltipItem.raw}`;
+                            }
+                        }
+                    }
+                },
+            },
+        });
+    });
+</script>
+{% endblock %}

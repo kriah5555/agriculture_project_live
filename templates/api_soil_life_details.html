@@ -1,0 +1,116 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+<div style="display: flex; flex-direction: row; gap: 2rem; margin-bottom: 2rem;">
+    <!-- Go Back Button -->
+    <div style="flex: 1; padding-left: 1rem;">
+        <a href="javascript:history.back()" style="display: inline-block; padding: 0.75rem 1.5rem; background-color: #007bff; color: white; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3); transition: background-color 0.3s, transform 0.2s;">
+            Go Back
+        </a>
+    </div>
+</div>
+
+<div style="display: flex; flex-direction: row; gap: 2rem;">
+    <!-- Left Side: Data and Map -->
+    <div style="flex: 1; padding-right: 2rem; background-color: #f9f9f9; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <h3 style="font-size: 24px; color: #333; margin-bottom: 1rem;">Device: {{ device }}</h3>
+        
+        <!-- Device Data -->
+        <div style="margin-bottom: 2rem;">
+            <h4 style="font-size: 20px; color: #333; margin-bottom: 1rem;">Device Data</h4>
+            <ul style="list-style-type: none; padding: 0;">
+                {% for field, data in api_data.items %}
+                    <li style="margin-bottom: 1rem; font-size: 16px; color: #555;">
+                        <strong style="color: #007bff;">{{ field }}:</strong> <span style="font-weight: 600;">{{ data }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Map -->
+        <div style="margin-top: 2rem;">
+            <h4 style="font-size: 20px; color: #333; margin-bottom: 1rem;">Location:</h4>
+            <div id="map" style="height: 300px;"></div>
+        </div>
+    </div>
+
+    <!-- Right Side: Graph and Image -->
+    <div style="flex: 1; padding-left: 2rem; background-color: #f9f9f9; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <h3 style="font-size: 24px; color: #333; margin-bottom: 1rem;">Field Values Distribution</h3>
+        
+        <!-- Chart -->
+        <canvas id="circleChart" style="max-width: 100%; margin-bottom: 2rem;"></canvas>
+        
+        <!-- Image -->
+        <h4 style="font-size: 20px; color: #333; margin-bottom: 1rem;">Image:</h4>
+        <img src="{{ api_data.image_path }}" alt="Device Image" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Prepare the data for the pie chart
+        const fieldData = {{ api_data|safe }};
+
+        // Extract keys and values for the chart
+        const labels = Object.keys(fieldData);
+        const data = Object.values(fieldData);
+
+        // Filter out any non-numeric values from the data (if any)
+        const numericData = data.filter(val => !isNaN(val));
+
+        // Ensure that labels and data are in sync for the chart
+        const chartData = {
+            labels: labels.slice(0, numericData.length),
+            datasets: [{
+                data: numericData,
+                backgroundColor: labels.slice(0, numericData.length).map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.5)`),
+                borderColor: '#fff',
+                borderWidth: 2,
+            }],
+        };
+
+        const ctx = document.getElementById('circleChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: chartData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                return `${tooltipItem.label}: ${tooltipItem.raw}`;
+                            }
+                        }
+                    }
+                },
+            },
+        });
+
+        // Initialize the map
+        const map = L.map('map').setView([{{ latitude }}, {{ longitude }}], 13);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Add a marker to the map
+        L.marker([{{ latitude }}, {{ longitude }}]).addTo(map)
+            .bindPopup('<b>Device Location</b>')
+            .openPopup();
+    });
+</script>
+{% endblock %}

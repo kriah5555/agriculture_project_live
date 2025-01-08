@@ -96,7 +96,9 @@
                     <ul class="list-group">
                         {% for device in linked_devices %}
                         <li class="list-group-item" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="showDeviceDetails({
+                            pk: '{{ device.pk }}',
                             id: '{{ device.devise_id }}',
+                            devise_type: '{{ device.devise_type }}',
                             name: '{{ device.name }}',
                             serialNo: '{{ device.serial_no }}',
                             chipsetNo: '{{ device.chipset_no }}',
@@ -111,8 +113,17 @@
                             land: '{{ device.land }} acres'
                         })">
                             <span>{{ device.name }} ({{device.devise_type}})</span>
-                            <i class="fas fa-pencil" title="Edit details"></i>
+                            <a href="{% url 'edit-devise' device.pk %}" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                title="Edit details" 
+                                onclick="event.stopPropagation();" 
+                                class="px-2"
+                            >
+                                <i class="fas fa-pencil" title="Edit details"></i>
+                            </a>
                         </li>
+                        
                         {% endfor %}
                     </ul>
                 </div>
@@ -121,17 +132,19 @@
         </div>
             <!-- <div id="device-details-card" class="card mb-4 flex-fill" style="border-radius: 1%; background-color: #a97e7e94; color: white;"> -->
 
-        
-
         <!-- Right Column (Device Details) -->
         <div class="col-lg-8 d-flex flex-column bg-white rounded-3 shadow-sm" style="padding: 20px;">
             <div class="container mt-4">
                 <div class="row">
                     <!-- Device Name Section -->
-                    <div class="col-12">
-                        <h4 id="device-name" class="display-4 text-center mb-4">Pease select devise to view details</h4>
+                    <div class="col-10">
+                        <h4 id="device-name" class="display-4 text-center mb-0">Please select device to view details</h4>
                     </div>
-                </div>
+                    <div class="col-2">
+                        <a href="javascript:history.back()" class="text-decoration-none">
+                            <i class="fas fa-arrow-left fs-3"></i>
+                        </a>
+                    </div>
                 <div class="row">
                     <!-- Device Info Section -->
                     <div class="col-md-6 mb-3">
@@ -155,7 +168,7 @@
                     <!-- Financial Details Section -->
                     <div class="col-md-6 mb-3">
                         <div class="card h-100 shadow-sm border-0 rounded-3" style="background-color: #ffffff; height: 100%;">
-                            <div class="card-header bg-secondary text-white rounded-3">
+                            <div class="card-header bg-primary text-white rounded-3">
                                 <h4 class="mb-0">Financial Details</h4>
                             </div>
                             <div class="card-body">
@@ -170,6 +183,28 @@
         </div>
          
     </div>
+
+    <!-- Bottom Division for API Call Details -->
+<div id="api-details-container" class="mt-4" style="display: none;">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5>API Calls for Selected Device</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr id="api-details-headers">
+                        <!-- Headers will be dynamically inserted here -->
+                    </tr>
+                </thead>
+                <tbody id="api-details-table">
+                    <!-- Rows will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 </div>
 
 <!-- Add Hover Effects for Icons -->
@@ -206,8 +241,6 @@
         const email = document.getElementById('edit-email').value;
 
         // API call here to update user details (replace with real API endpoint)
-        console.log("Saving User Details:", { username, name, email });
-
         // Update the UI
         document.getElementById('username-display').textContent = username;
         document.getElementById('name-display').textContent = name;
@@ -237,8 +270,6 @@
         const securityKey = document.getElementById('security-key').value;
 
         // API call here to reset the password (replace with real API endpoint)
-        console.log("Saving New Password:", { newPassword, securityKey });
-
         cancelReset();
     }
 
@@ -251,8 +282,13 @@
 <!-- script to show devise details -->
 <script>
     // Function to dynamically change the device details based on selected device
+    const base_url        = `${window.location.protocol}//${window.location.host}`;
+    const url             = `${base_url}/devise-api-calls`;
+    let selected_devise   = {};                                                      // Use 'let' to clearly define scope and allow reassignment
+
     function showDeviceDetails(device) {
         if (device) {
+            selected_devise = device; 
             document.getElementById('device-name').textContent = device.name;
             document.getElementById('serialNo').textContent = device.serialNo;
             document.getElementById('chipsetNo').textContent = device.chipsetNo;
@@ -265,11 +301,115 @@
             document.getElementById('amountPaid').textContent = device.amountPaid;
             document.getElementById('balanceAmount').textContent = device.balanceAmount;
             document.getElementById('land').textContent = device.land;
+
+            // Display the API details container
+            const apiDetailsContainer         = document.getElementById('api-details-container');
+            apiDetailsContainer.style.display = 'block';
+
+            // Clear previous API data
+            const apiDetailsHeaders     = document.getElementById('api-details-headers');
+            apiDetailsHeaders.innerHTML = "";
+            const apiDetailsTable       = document.getElementById('api-details-table');
+            apiDetailsTable.innerHTML   = "";
+
+            // Fetch the device API data
+            fetchData(device.pk);
         } else {
             document.getElementById('device-name').textContent = 'Device not found';
             document.getElementById('device-info').innerHTML = '';
         }
     }
+
+    async function fetchData(id) {
+        try {
+            const response = await fetch(`${url}/${id}`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // Parse the JSON data
+            const deviseData = await response.json();
+
+            // Update the headers dynamically
+            const apiDetailsHeaders = document.getElementById('api-details-headers');
+            apiDetailsHeaders.innerHTML = ""; // Clear existing headers
+            for (const [key, value] of Object.entries(deviseData.headers)) {
+                const th = document.createElement('th');
+                th.textContent = value;
+                apiDetailsHeaders.appendChild(th);
+            }
+
+            // Populate the API details table rows
+            const apiDetailsTable = document.getElementById('api-details-table');
+            apiDetailsTable.innerHTML = ""; // Clear existing rows
+            deviseData.data.forEach(api => {
+                const row = document.createElement('tr');
+                let rowContent = '';
+
+                // Dynamically create table cells based on the headers
+                for (const headerKey in deviseData.headers) {
+                    const cellValue = api[headerKey] !== undefined ? api[headerKey] : '';
+
+                    // Check if the header is for an image, if so, generate image HTML
+                    
+                    if (headerKey === 'image_path') {
+                        rowContent += `<td>${api.image_path ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />` : ''}</td>`;
+                    } else {
+                        rowContent += `<td>${cellValue}</td>`;
+                    }
+                }
+
+                rowContent += `<td><span class="edit-btn" onclick="redirectToEdit(${api.id})">✏️</span></td>`;
+
+                // Insert the row into the table
+                row.innerHTML = rowContent;
+                apiDetailsTable.appendChild(row);
+            });
+
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function redirectToEdit(id) {
+        let endpoint = ''; 
+        
+        if (selected_devise.devise_type === 'soilsaathi') {
+            endpoint = '/api-overview';
+        } else if (selected_devise.devise_type === 'atmo_sense') {
+            endpoint = '/atmos-sense-api-overview';
+        } else if (selected_devise.devise_type === 'soil_life') {
+            endpoint = '/soil-life-api-overview';
+        }
+        
+        if (endpoint) {
+            window.location.href = `${endpoint}/${id}/`;
+        } else {
+            console.error('Unknown device type for redirection');
+        }
+    }
+
+    // CSS for the image hover effect
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .small-img {
+            width: 50px;
+            height: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .big-img {
+            width: 150px;
+            height: 150px;
+        }
+
+        .edit-btn {
+            cursor: pointer;
+        }
+    `;
+    document.head.appendChild(style);
+
 </script>
 
 {% endblock %}

@@ -5,7 +5,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 
 from .forms import ContactForm, DeviseForm
-from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields
+from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS
 
 from . import UserFunctions
 from django.views.generic import UpdateView, TemplateView, CreateView, View
@@ -223,13 +223,14 @@ def edit_devise(request, **kwargs):
             'warrenty'      : str(devise.warrenty.date()),
             'purchase_date' : str(devise.purchase_date.date()),
             'time_of_sale'  : str(devise.time_of_sale),
+            'disabled'      : 'disabled'
         }
     elif request.method == 'POST':
         form = DeviseForm(request.POST or None, instance=devise)
         if form.is_valid():
             form.save()
             messages.success(request,"Device updated successfully")
-            return redirect("/device-list/")
+            return redirect(f"/user-details/{devise.user.username}")
         else:
             errors  = form.errors
             field_errors = dict()
@@ -253,7 +254,7 @@ def edit_devise(request, **kwargs):
                 'land'           : request.POST['land'],
                 'devise_type'    : request.POST['devise_type'],
             }
-            return render(request, 'add_devise.html', {'field_errors': field_errors, 'devise' : devise, })
+            return render(request, 'add_devise.html', {'field_errors': field_errors, 'devise' : devise, 'disabled' : 'disabled'})
     return render(request, template_name = template_name, context=context)
 
 def notifications(request, **kwargs):
@@ -292,7 +293,6 @@ def devise_list(request, **kwargs):
     context = {
         'devise_count' :len(devises),
         'devises'      : devises,
-        'devices'      : devices,
     }
     return render(request, template_name = template_name, context = context)
 
@@ -362,33 +362,55 @@ def user_details(request, **kwargs):
     return render(request, template_name=template_name, context=context)
 
 def api_overview(request, **kwargs):
-    # resp = user_login_access(request)
-    # if  resp:
-    #     return resp
-    api                = DeviseApis.objects.get(pk=kwargs['pk'])
-    template_name      = "api_details.html"
-    all_dynamic_fields = UserFunctions.get_all_dynamic_fields()
-    dynamic_field_data = {field.field_name : (UserFunctions.get_all_dynamic_field_value(api, field).field_value if UserFunctions.get_all_dynamic_field_value(api, field) else 0.0) for field in all_dynamic_fields}
-    crops_data         = FertilizerCalculation.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
-    fields             = [f.name for f in DeviseApis._meta.get_fields() if f.name not in ['columndata', 'id', 'device', 'serial_no', 'created_at', 'crop_type', 'area_name', 'devise_id']]
-    fields_data        = [getattr(api, i) for i in fields]
-    import random
+    template_name = ''
+    context       = dict()
+    if "soil-life-api-overview" in request.path:
+        template_name = 'api_soil_life_details.html'
+        device_data   = DeviseApisFields.objects.get(pk=kwargs['pk'])
+        api_data = {SOIL_LIFE_FIELDS[field]: getattr(device_data, field, None) for field, label in SOIL_LIFE_FIELDS.items()}
 
-    context = {
-        'api'                : api,
-        'devise_name'        : api.device.name,
-        'dynamuc_fields'     : dynamic_field_data,
-        'crops_data'         : crops_data,
-        'fields'             : ','.join(fields),
-        'fields_data'        : ','.join(map(str, fields_data)),
-        'fields_data_colors' : ','.join([f"rgba({random.randint(100,255)}, 0, 0, 0.5)" for i in fields_data]),
-    }
+        context = {
+            'device'   : device_data.device.name,
+            'api_data' : api_data,                # Map of field names to values
+            'latitude' : 10,                      # Replace with actual latitude if needed
+            'longitude': 0,                       # Replace with actual longitude if needed
+        }
+
+
+    elif "atmos-sense-api-overview" in request.path:
+        template_name = 'api_atmos_sense_details.html'
+        device_data   = DeviseApisFields.objects.get(pk=kwargs['pk'])
+        fields        = {field.name: getattr(device_data, field.name) for field in DeviseApisFields._meta.get_fields() if 'field' in field.name}
+        context       = {
+            'device': device_data.device.name,
+            'fields': fields,
+        }
+    else :
+        api                = DeviseApis.objects.get(pk=kwargs['pk'])
+        template_name      = "api_soil_sathi_details.html"
+        all_dynamic_fields = UserFunctions.get_all_dynamic_fields()
+        dynamic_field_data = {field.field_name : (UserFunctions.get_all_dynamic_field_value(api, field).field_value if UserFunctions.get_all_dynamic_field_value(api, field) else 0.0) for field in all_dynamic_fields}
+        crops_data         = FertilizerCalculation.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
+        fields             = [f.name for f in DeviseApis._meta.get_fields() if f.name not in ['columndata', 'id', 'device', 'serial_no', 'created_at', 'crop_type', 'area_name', 'devise_id']]
+        fields_data        = [getattr(api, i) for i in fields]
+        import random
+
+        context = {
+            'api'                : api,
+            'devise_name'        : api.device.name,
+            'dynamuc_fields'     : dynamic_field_data,
+            'crops_data'         : crops_data,
+            'fields'             : ','.join(fields),
+            'fields_data'        : ','.join(map(str, fields_data)),
+            'fields_data_colors' : ','.join([f"rgba({random.randint(100,255)}, 0, 0, 0.5)" for i in fields_data]),
+        }
+
     return render(request, template_name = template_name, context=context)
 
 class UpdateApi(UpdateView):
     model         = DeviseApis
     fields        = '__all__'
-    template_name = 'updaet-api.html'
+    template_name = 'update-api.html'
     
     def get_context_data(self, **kwargs):
         context = super(UpdateApi, self).get_context_data(**kwargs)
@@ -402,7 +424,7 @@ class UpdateApi(UpdateView):
 class CreateApi(CreateView):
     model         = DeviseApis
     fields        = '__all__'
-    template_name = 'updaet-api.html'
+    template_name = 'update-api.html'
     success_url   = '/add-api'
     
     # def get_context_data(self, **kwargs):
@@ -514,13 +536,6 @@ class AtmoSSenseDashboard(TemplateView):
         ]
         
         return context
-
-class GetAtmoSSenseJsonData(View):
-
-    def get(self, *args, **kwargs):
-        api_call = list(DeviseApisFields.objects.order_by('-created_at').values())
-        
-        return JsonResponse({'data' : api_call})
 
 class SoilSaathiDashboard(TemplateView):
     template_name = "soil-saathi-dashboard.html"
@@ -741,3 +756,36 @@ class AddDeviceLocation(CreateView):
         return {
         'devise':self.kwargs['pk'],
     }
+
+class getAtmoSenseJsonData(View):
+
+    def get(self, *args, **kwargs):
+        api_call = list(DeviseApisFields.objects.order_by('-created_at').values())
+        
+        return JsonResponse({'data' : api_call})
+
+class getDeviseApiCallsJsonData(View):
+
+    def get(self, *args, **kwargs):
+        id = kwargs.get('id')  # Use 'id' instead of 'pk'
+        headers = {}
+        api_calls_data = []  # Initialize the list for api calls data
+        try:
+            devise = Devise.objects.get(pk=id)  # Use 'id' to fetch the Devise object
+            match devise.devise_type:
+                case "soilsaathi":
+                    headers        = SOIL_SAATHI_FIELDS
+                    api_calls_data = list(DeviseApis.objects.filter(device=devise).values())
+                case "atmo_sense":
+                    headers        = ATMO_SENSE_FIELDS
+                    api_calls_data = list(DeviseApisFields.objects.filter(device=devise).values())
+                case "soil_life":
+                    headers        = SOIL_LIFE_FIELDS
+                    api_calls_data = list(DeviseApisFields.objects.filter(device=devise).values())
+                case _:
+                    headers = []
+
+        except Devise.DoesNotExist:
+            return JsonResponse({'error': 'Devise not found'}, status=404)
+        
+        return JsonResponse({'headers': headers, 'data': api_calls_data})

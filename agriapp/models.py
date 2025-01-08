@@ -5,8 +5,57 @@ from django.contrib.auth.models import User
 
 from . import FertilizerCalculation as f
 
-CROP_LIST      = f.get_crop_list()
-DEVICE_CHOICES = [('soilsaathi', 'Soil Saathi'),('atmo_sense', 'Atmo Sense'), ('soil_life', 'SoilLIFE')]
+CROP_LIST        = f.get_crop_list()
+DEVICE_CHOICES   = [('soilsaathi', 'Soil Saathi'),('atmo_sense', 'Atmo Sense'), ('soil_life', 'SoilLIFE')]
+
+SOIL_SAATHI_FIELDS  = {
+    'id'                   : 'ID',
+    'electrical_conduction': 'Electrical Conduction',
+    'nitrogen'             : 'Nitrogen',
+    'phosphorous'          : 'Phosphorous',
+    'potassium'            : 'Potassium',
+    'calcium'              : 'Calcium',
+    'magnesium'            : 'Magnesium',
+    'sulphur'              : 'Sulphur',
+    'zinc'                 : 'Zinc',
+    'manganese'            : 'Manganese',
+    'iron'                 : 'Iron',
+    'copper'               : 'Copper',
+    'boron'                : 'Boron',
+    'molybdenum'           : 'Molybdenum',
+    'chlorine'             : 'Chlorine',
+    'nickel'               : 'Nickel',
+    'organic_carboa'       : 'Organic Carbon',
+    'ph'                   : 'Ph',
+    'ec'                   : 'Ec',
+    'oc'                   : 'Oc',
+    'crop_type'            : 'Crop Type',
+    'created_at'           : 'Requested At',
+}
+
+ATMO_SENSE_FIELDS = {
+    'id'        : 'ID',
+    'image_path': 'Image',
+    'field1'    : "Soil Temp",
+    'field2'    : "soil Moisture",
+    'field3'    : "Atmos Temp",
+    'field4'    : "Atmos Humidity",
+    'field5'    : "Light Intensity",
+    'created_at': 'Requested At',
+}
+
+SOIL_LIFE_FIELDS  = {
+    'id'        : 'ID',
+    'image_path': 'Image',
+    'field1'    : "Co2",
+    'field2'    : "Methane",
+    'field3'    : "Ammonia",
+    'field4'    : "Nitrous Oxide",
+    'field5'    : "Soil Temperature",
+    'field6'    : "Soil Moisture",
+    'field7'    : "Atmospheric Pressure",
+    'created_at': 'Requested At',
+}
 
 class ContactDetails(models.Model):
     name       = models.CharField(max_length=255)
@@ -69,11 +118,11 @@ class DeviseApis(models.Model):
     created_at            = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.device.name + ' ' + self.area_name
+        return f"{self.device.devise_type}-{self.device.user.username}-{self.device.name}"
 
 class DeviseApisFields(models.Model):
     device     = models.ForeignKey(to='Devise', on_delete=models.CASCADE)
-    image_path = models.CharField(max_length=255)
+    image_path = models.CharField(max_length=255, null=True, blank=True)
     field1     = models.FloatField(default=0.0) # Soil Temp
     field2     = models.FloatField(default=0.0) # soil Moisture
     field3     = models.FloatField(default=0.0) # Atmos Temp
@@ -84,10 +133,20 @@ class DeviseApisFields(models.Model):
     field8     = models.FloatField(default=0.0)
     field9     = models.FloatField(default=0.0)
     field10    = models.FloatField(default=0.0)
+    field11    = models.FloatField(default=0.0)
+    field12    = models.FloatField(default=0.0)
+    field13    = models.FloatField(default=0.0)
+    field14    = models.FloatField(default=0.0)
+    field15    = models.FloatField(default=0.0)
+    field16    = models.FloatField(default=0.0)
+    field17    = models.FloatField(default=0.0)
+    field18    = models.FloatField(default=0.0)
+    field19    = models.FloatField(default=0.0)
+    crop_type = models.CharField(max_length=255, choices=CROP_LIST, null=True, blank=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.device.name
+        return f"{self.device.devise_type}-{self.device.user.username}-{self.device.name}"
 
 class DeviseLocation(models.Model):
     devise     = models.ForeignKey(to='Devise', on_delete=models.CASCADE, unique=True)

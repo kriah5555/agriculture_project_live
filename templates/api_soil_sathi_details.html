@@ -57,7 +57,7 @@
 <a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#recomended-crops">View Recomendation</a>
 <a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'download-api-response-pdf' api.pk %}" >Download PDF</a>
 <a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'download-api-response-csv' api.pk %}" >Download CSV</a>
-<a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'api-list' api.device.pk %}" >Back</a>
+<a class="btn btn-primary btn-sm btn-icon-text" href="javascript:history.back()" >Back</a>
 <div class="row mt-2 m-1">
   <div class="col-md-6">
     <div class="card mb-4 mb-md-0" style="background: #a97e7e94; color: white;">
@@ -246,7 +246,6 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
 <script>
     $(document).ready(function() {
-      console.log("{{fields_data_colors}}".split(','))
         var ctx = $("#chart-line1");
         var myLineChart = new Chart(ctx, {
             type: 'pie',
