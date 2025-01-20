@@ -24,6 +24,7 @@ urlpatterns = [
     path('add_location_data/',  v.add_location_data, name = "add_location_data"),  
 
     path('create-atmos-sense-data/',  v.add_atmos_sense_data, name = "add-atmos-sense-data"),  
+    path('create-soil-life-data/',  v.add_soil_life_data, name = "add-soil-life-data"),  
 
 ]
 

@@ -155,49 +155,62 @@ def add_soil_data(request):
         error_message = f'Something went wrong: {str(e)}'
         return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-def add_atmos_sense_data(request):
-    try:
-        # uploaded_file = request.FILES.get('file')
-        # file_url      = ''
-        # if uploaded_file:
-        #     fs = FileSystemStorage()
-        #     filename = fs.save(uploaded_file.name, uploaded_file)
-        #     file_url = fs.url(filename)
-        # Get the device_key from the POST data and decode if needed
+from django.core.files.storage import FileSystemStorage
+from django.core.files.base import ContentFile
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+import base64
 
+def process_device_data(request, device_type, success_message):
+    try:
+        # Get device ID from request
+        devise_id = request.data.get('devise_id', '')
+        if not devise_id:
+            return Response({'message': 'Please provide a valid device ID.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get file data (if any) and process it
+        file_url         = ''
         file_data_base64 = request.data.get('file_data', '')
-        file_url = ''
         if file_data_base64:
             try:
-                file_data = base64.b64decode(file_data_base64)
-                # Save the decoded data as a file using Django's FileSystemStorage
+                file_data    = base64.b64decode(file_data_base64)
                 fs           = FileSystemStorage()
                 content_file = ContentFile(file_data)
                 file_name    = fs.save('img.jpg', content_file)
                 file_url     = fs.url(file_name)
-            except base64.binascii.Error as e:
-                return Response({'error': f'Invalid base64-encoded data: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Modify request.data to include the Devise object
-        random_devise = Devise.objects.order_by('?').first()
-        if not random_devise:
-            return Response({'message': 'No Devise found in the database.'}, status=status.HTTP_404_NOT_FOUND)
-            
+            except base64.binascii.Error:
+                return Response({'error': 'Invalid base64-encoded file data.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fetch device based on `devise_id` and `device_type`
+        devise = Devise.objects.filter(devise_id=devise_id, devise_type=device_type).first()
+        if not devise:
+            return Response({'message': 'No device found with the provided ID.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Modify request data to include `device` foreign key and `image_path`
         modified_data               = request.data.copy()
         modified_data['image_path'] = file_url
-        modified_data['device']     = random_devise.pk
+        modified_data['device']     = devise.pk
 
+        # Serialize and save data
         serializer = DeviseFieldsApiSerializer(data=modified_data)
-
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'AtmosSense data added successfully'}, status=status.HTTP_200_OK)
+            return Response({'message': success_message}, status=status.HTTP_200_OK)
         else:
             return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
     except Exception as e:
-        error_message = f'Something went wrong: {str(e)}'
-        return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': f'Something went wrong: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def add_atmos_sense_data(request):
+    return process_device_data(request, device_type='atmo_sense', success_message='AtmosSense data added successfully')
+
+@api_view(['POST'])
+def add_soil_life_data(request):
+    return process_device_data(request, device_type='soil_life', success_message='SoilLife data added successfully')
 
 @api_view(['POST'])
 def get_crops(request):

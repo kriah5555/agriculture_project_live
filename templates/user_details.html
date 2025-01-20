@@ -155,6 +155,7 @@
                             <div class="card-body">
                                 <p><strong>Serial No:</strong> <span id="serialNo"></span></p>
                                 <p><strong>Chipset No:</strong> <span id="chipsetNo"></span></p>
+                                <p><strong>Devise ID:</strong> <span id="deviseId"></span></p>
                                 <p><strong>Email:</strong> <span id="email"></span></p>
                                 <p><strong>Phone:</strong> <span id="phone"></span></p>
                                 <p><strong>Address Line 1:</strong> <span id="address1"></span></p>
@@ -289,18 +290,19 @@
     function showDeviceDetails(device) {
         if (device) {
             selected_devise = device; 
-            document.getElementById('device-name').textContent = device.name;
-            document.getElementById('serialNo').textContent = device.serialNo;
-            document.getElementById('chipsetNo').textContent = device.chipsetNo;
-            document.getElementById('email').textContent = device.email;
-            document.getElementById('phone').textContent = device.phone;
-            document.getElementById('address1').textContent = device.address1;
-            document.getElementById('address2').textContent = device.address2;
-            document.getElementById('purchaseDate').textContent = device.purchaseDate;
-            document.getElementById('warranty').textContent = device.warranty;
-            document.getElementById('amountPaid').textContent = device.amountPaid;
+            document.getElementById('device-name').textContent   = device.name;
+            document.getElementById('serialNo').textContent      = device.serialNo;
+            document.getElementById('chipsetNo').textContent     = device.chipsetNo;
+            document.getElementById('deviseId').textContent      = device.id;
+            document.getElementById('email').textContent         = device.email;
+            document.getElementById('phone').textContent         = device.phone;
+            document.getElementById('address1').textContent      = device.address1;
+            document.getElementById('address2').textContent      = device.address2;
+            document.getElementById('purchaseDate').textContent  = device.purchaseDate;
+            document.getElementById('warranty').textContent      = device.warranty;
+            document.getElementById('amountPaid').textContent    = device.amountPaid;
             document.getElementById('balanceAmount').textContent = device.balanceAmount;
-            document.getElementById('land').textContent = device.land;
+            document.getElementById('land').textContent          = device.land;
 
             // Display the API details container
             const apiDetailsContainer         = document.getElementById('api-details-container');

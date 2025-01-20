@@ -509,32 +509,92 @@ def dashboard(request):
         return resp
     return redirect('/welcome/')
 
+from django.utils.timezone import localtime
+import json
+
+import json
+
 class AtmoSSenseDashboard(TemplateView):
+    template_name = "atmos_sense_dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        context           = super().get_context_data(**kwargs)
+        devices           = Devise.objects.filter(devise_type='atmo_sense')
+        device_apis       = {}
+        device_api_counts = {}
+        for device in devices:
+            api_fields             = DeviseApisFields.objects.filter(device=device)
+            device_apis[device.id] = [
+                {
+                    'field1'    : field.field1,
+                    'field2'    : field.field2,
+                    'field3'    : field.field3,
+                    'field4'    : field.field4,
+                    'field5'    : field.field5,
+                    'field6'    : field.field6,
+                    'field7'    : field.field7,
+                    'field8'    : field.field8,
+                    'field9'    : field.field9,
+                    'field10'   : field.field10,
+                    'crop_type' : field.crop_type,
+                    'created_at': field.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                }
+                for field in api_fields
+            ]
+            device_api_counts[device.id] = api_fields.count()
+
+
+        # Serialize both headers and APIs to JSON
+        context['devices']           = devices
+        context['api_headers_json']  = json.dumps(ATMO_SENSE_FIELDS)  # Convert headers to JSON
+        context['api_headers']       = ATMO_SENSE_FIELDS  # Pass the dictionary directly
+        context['device_apis']       = json.dumps(device_apis)  # Convert API data to JSON
+        context['device_api_counts'] = device_api_counts  # Pass the device API counts to the template
+        device_api_counts_json = json.dumps(device_api_counts)
+
+        return context
+
+class SoilLifeDashboard(TemplateView):
+    template_name = "soil_life_dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        context     = super().get_context_data(**kwargs)
+        devices     = Devise.objects.filter(devise_type='atmo_sense')
+        device_apis = {}
+        for device in devices:
+            api_fields = DeviseApisFields.objects.filter(device=device)
+            device_apis[device.id] = [
+                {
+                    'field1': field.field1,
+                    'field2': field.field2,
+                    'field3': field.field3,
+                    'field4': field.field4,
+                    'field5': field.field5,
+                    'field6': field.field6,
+                    'field7': field.field7,
+                    'field8': field.field8,
+                    'field9': field.field9,
+                    'field10': field.field10,
+                    'crop_type': field.crop_type,
+                    'created_at': field.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                }
+                for field in api_fields
+            ]
+
+        # Serialize both headers and APIs to JSON
+        context['devices']          = devices
+        context['api_headers_json'] = json.dumps(ATMO_SENSE_FIELDS)  # Convert headers to JSON
+        context['api_headers']      = ATMO_SENSE_FIELDS  # Pass the dictionary directly
+        context['device_apis']      = json.dumps(device_apis)  # Convert API data to JSON
+        return context
+
+class AtmoSSenseDeviseOverviewDetails(TemplateView):
     template_name = "atmos_sense_devise_details.html"
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Fetch all device data
-        api_call = DeviseApisFields.objects.all()
-        
-        # Convert to a list of dictionaries
-        context['api_call'] = [
-            {
-                'device'                : api.device.name,
-                'image'                 : api.image_path,
-                'soilTemperature'       : api.field1,
-                'soilMoisture'          : api.field2,
-                'atmosphericTemperature': api.field3,
-                'atmosphericHumidity'   : api.field4,
-                'lightIntensity'        : api.field5,
-                'latitude'              : api.field6,
-                'longitude'             : api.field7,
-                'active_page'           : 'soil-saathi'
-                # Add more fields as necessary
-            }
-            for api in api_call
-        ]
-        
+        devises = Devise.objects.filter(devise_type='atmo_sense')
+        context['devises'] = devises
         return context
 
 class SoilSaathiDashboard(TemplateView):
