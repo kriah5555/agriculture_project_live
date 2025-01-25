@@ -3,20 +3,22 @@
 {% block content %}
 
 <div class="header">
-  <h2 class="bg-primary" style="    color:white; text-align: center; padding: 10px;">AtmoSense</h2>
+  <h2 class="bg-primary" style=" color:white; text-align: center; padding: 10px;">AtmoSense</h2>
 </div>
 
-<div class="content-wrapper" style="display: flex; gap: 20px; padding: 20px;">
+<div class="content-wrapper" style="display: flex; gap: 20px; padding: 20px; height: 80vh; overflow: hidden;">
   <!-- Left Section: Device List -->
-  <div class="device-list" style="width: 30%; background-color: #ffffff; padding: 15px; border-radius: 8px; overflow-y: auto;">
+  <div class="device-list" style="width: 30%; background-color: #ffffff; padding: 15px; border-radius: 8px; overflow-y: auto; height: 100%;">
     <h3>Devices</h3>
     <input type="text" id="device-search" placeholder="Search Devices" style="width: 100%; margin-bottom: 10px; padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
-    <ul id="device-list" style="list-style-type: none; padding: 0;">
-        {{ device_api_counts.2 }}
+    <ul id="device-list" style="list-style-type: none; padding: 0; max-height: 65vh; overflow-y: auto;">
       {% for device in devices %}
         <li style="margin-bottom: 10px; cursor: pointer;" class="device-item" data-device-id="{{ device.id }}">
-          <button style="width: 100%; text-align: left; padding: 10px; border: none; border-radius: 5px;">
-            {{ device.name }} (Serial: {{ device.serial_no }})
+          <button style="width: 100%; text-align: left; padding: 10px; border: none; border-radius: 5px; position: relative;">
+            <span>{{ device.name }} | Devise ID: {{ device.devise_id }}</span>
+            <span style="position: absolute; bottom: 5px; right: 10px; font-size: 12px; color: gray;">
+              API count: {{ device.api_count }}
+            </span>
           </button>
         </li>
       {% endfor %}
@@ -24,21 +26,23 @@
   </div>
 
   <!-- Right Section: API Table -->
-  <div class="device-api-list" style="width: 70%; background-color: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-    <h3>API Fields</h3>
+  <div class="device-api-list" style="width: 70%; background-color: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); overflow-y: auto; height: 100%;">
+    <h3>API Call's</h3>
     <input type="text" id="api-search" placeholder="Search API Fields" style="width: 100%; margin-bottom: 10px; padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          {% for key, header in api_headers.items %}
-            <th>{{ header }}</th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody id="api-details">
-        <!-- API details will be dynamically loaded -->
-      </tbody>
-    </table>
+    <div style="max-height: 65vh; overflow-y: auto; padding: 1rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            {% for key, header in api_headers.items %}
+              <th>{{ header }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody id="api-details">
+          <!-- API details will be dynamically loaded -->
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -46,8 +50,8 @@
   document.addEventListener("DOMContentLoaded", function () {
     // Device List Search
     const deviceSearch = document.getElementById("device-search");
-    const deviceList = document.getElementById("device-list");
-    const deviceItems = document.querySelectorAll(".device-item");
+    const deviceList   = document.getElementById("device-list");
+    const deviceItems  = document.querySelectorAll(".device-item");
 
     deviceSearch.addEventListener("input", function () {
       const query = this.value.toLowerCase();
@@ -62,12 +66,12 @@
     });
 
     // API Table Search
-    const apiSearch = document.getElementById("api-search");
+    const apiSearch           = document.getElementById("api-search");
     const apiDetailsContainer = document.getElementById("api-details");
 
     apiSearch.addEventListener("input", function () {
       const query = this.value.toLowerCase();
-      const rows = apiDetailsContainer.querySelectorAll("tr");
+      const rows  = apiDetailsContainer.querySelectorAll("tr");
       rows.forEach((row) => {
         const rowText = row.textContent.toLowerCase();
         if (rowText.includes(query)) {
@@ -81,14 +85,15 @@
     // Click event for loading API data
     const deviceApis = JSON.parse(`{{ device_apis|escapejs }}`);
     const apiHeaders = JSON.parse(`{{ api_headers_json|escapejs }}`);
+
     deviceItems.forEach((item) => {
       item.addEventListener("click", function () {
         const deviceId = this.dataset.deviceId;
-        const apiData = deviceApis[deviceId] || [];
+        const apiData  = deviceApis[deviceId] || [];
 
         apiDetailsContainer.innerHTML = "";
         apiData.forEach((api) => {
-          let row = "<tr>";
+          let row = `<tr onclick="redirectToEdit('${api.id}')" style="cursor: pointer;">`;
           Object.keys(apiHeaders).forEach((key) => {
             if (key === "image_path") {
               row += `<td>${api[key] ? `<img src="${api[key]}" alt="Image" style="width: 50px; height: 50px; object-fit: cover;">` : "No image"}</td>`;
@@ -102,6 +107,10 @@
       });
     });
   });
+
+  function redirectToEdit(id) {
+    window.location.href = `/atmos-sense-api-overview/${id}/`;
+  }
 </script>
 
 {% endblock %}

@@ -24,6 +24,8 @@ from django.http import JsonResponse
 
 from django.urls import reverse_lazy
 from django import forms
+from django.utils.timezone import localtime
+import json
 
 # Create your views here.
 
@@ -223,7 +225,7 @@ def edit_devise(request, **kwargs):
             'warrenty'      : str(devise.warrenty.date()),
             'purchase_date' : str(devise.purchase_date.date()),
             'time_of_sale'  : str(devise.time_of_sale),
-            'disabled'      : 'disabled'
+            'disabled'      : 'readonly'
         }
     elif request.method == 'POST':
         form = DeviseForm(request.POST or None, instance=devise)
@@ -352,6 +354,11 @@ def user_details(request, **kwargs):
     username       = kwargs.get('uid')
     user           = get_object_or_404(User, username=username)
     linked_devices = Devise.objects.filter(user=user)  # Fetch all devices linked to the user
+
+    for devise in linked_devices:
+        devise_location  = DeviseLocation.objects.filter(devise=devise).first()
+        devise.latitude  = devise_location.latitude if devise_location else 0
+        devise.longitude = devise_location.longitude if devise_location else 0
     
     context = {
         "user"          : user,
@@ -365,26 +372,33 @@ def api_overview(request, **kwargs):
     template_name = ''
     context       = dict()
     if "soil-life-api-overview" in request.path:
-        template_name = 'api_soil_life_details.html'
-        device_data   = DeviseApisFields.objects.get(pk=kwargs['pk'])
-        api_data = {SOIL_LIFE_FIELDS[field]: getattr(device_data, field, None) for field, label in SOIL_LIFE_FIELDS.items()}
+        template_name = 'soil_life_api_details.html'
+        devise_data   = DeviseApisFields.objects.get(pk=kwargs['pk'])
+        api_data = {SOIL_LIFE_FIELDS[field]: getattr(devise_data, field, None) for field, label in SOIL_LIFE_FIELDS.items()}
 
         context = {
-            'device'   : device_data.device.name,
+            'device'   : devise_data.device.name,
             'api_data' : api_data,                # Map of field names to values
             'latitude' : 10,                      # Replace with actual latitude if needed
             'longitude': 0,                       # Replace with actual longitude if needed
         }
 
-
     elif "atmos-sense-api-overview" in request.path:
-        template_name = 'api_atmos_sense_details.html'
-        device_data   = DeviseApisFields.objects.get(pk=kwargs['pk'])
-        fields        = {field.name: getattr(device_data, field.name) for field in DeviseApisFields._meta.get_fields() if 'field' in field.name}
-        context       = {
-            'device': device_data.device.name,
-            'fields': fields,
+        template_name   = 'atmos_sense_api_details.html'
+        devise_data     = DeviseApisFields.objects.get(pk=kwargs['pk'])
+        fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
+        devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
+        fields.pop('device', None)
+        fields.pop('created_at', None)
+        context         = {
+            'device'          : devise_data.device,
+            'fields_api_data' : fields,
+            'fields_data_json': json.dumps(fields),
+            'fields'          : json.dumps(ATMO_SENSE_FIELDS),
+            'latitude'        : devise_location.latitude if devise_location else '',
+            'longitude'       : devise_location.longitude if devise_location else '',
         }
+
     else :
         api                = DeviseApis.objects.get(pk=kwargs['pk'])
         template_name      = "api_soil_sathi_details.html"
@@ -398,7 +412,7 @@ def api_overview(request, **kwargs):
         context = {
             'api'                : api,
             'devise_name'        : api.device.name,
-            'dynamuc_fields'     : dynamic_field_data,
+            'dynamic_fields'     : dynamic_field_data,
             'crops_data'         : crops_data,
             'fields'             : ','.join(fields),
             'fields_data'        : ','.join(map(str, fields_data)),
@@ -509,11 +523,6 @@ def dashboard(request):
         return resp
     return redirect('/welcome/')
 
-from django.utils.timezone import localtime
-import json
-
-import json
-
 class AtmoSSenseDashboard(TemplateView):
     template_name = "atmos_sense_dashboard.html"
 
@@ -526,6 +535,8 @@ class AtmoSSenseDashboard(TemplateView):
             api_fields             = DeviseApisFields.objects.filter(device=device)
             device_apis[device.id] = [
                 {
+                    'id'        : field.pk,
+                    'image_path': field.image_path,
                     'field1'    : field.field1,
                     'field2'    : field.field2,
                     'field3'    : field.field3,
@@ -541,6 +552,7 @@ class AtmoSSenseDashboard(TemplateView):
                 }
                 for field in api_fields
             ]
+            device.api_count = api_fields.count()  # Add count directly to device object
             device_api_counts[device.id] = api_fields.count()
 
 
@@ -550,8 +562,49 @@ class AtmoSSenseDashboard(TemplateView):
         context['api_headers']       = ATMO_SENSE_FIELDS  # Pass the dictionary directly
         context['device_apis']       = json.dumps(device_apis)  # Convert API data to JSON
         context['device_api_counts'] = device_api_counts  # Pass the device API counts to the template
-        device_api_counts_json = json.dumps(device_api_counts)
+        device_api_counts_json       = json.dumps(device_api_counts)
+        return context
 
+class AtmoSSenseAPIDetails(TemplateView):
+    template_name = "atmos_sense_api_details.html"
+
+    def get_context_data(self, **kwargs):
+        context           = super().get_context_data(**kwargs)
+        devices           = Devise.objects.filter(devise_type='atmo_sense')
+        device_apis       = {}
+        device_api_counts = {}
+        for device in devices:
+            api_fields             = DeviseApisFields.objects.filter(device=device)
+            device_apis[device.id] = [
+                {
+                    'id'        : field.pk,
+                    'image_path': field.image_path,
+                    'field1'    : field.field1,
+                    'field2'    : field.field2,
+                    'field3'    : field.field3,
+                    'field4'    : field.field4,
+                    'field5'    : field.field5,
+                    'field6'    : field.field6,
+                    'field7'    : field.field7,
+                    'field8'    : field.field8,
+                    'field9'    : field.field9,
+                    'field10'   : field.field10,
+                    'crop_type' : field.crop_type,
+                    'created_at': field.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                }
+                for field in api_fields
+            ]
+            device.api_count = api_fields.count()  # Add count directly to device object
+            device_api_counts[device.id] = api_fields.count()
+
+
+        # Serialize both headers and APIs to JSON
+        context['devices']           = devices
+        context['api_headers_json']  = json.dumps(ATMO_SENSE_FIELDS)  # Convert headers to JSON
+        context['api_headers']       = ATMO_SENSE_FIELDS  # Pass the dictionary directly
+        context['device_apis']       = json.dumps(device_apis)  # Convert API data to JSON
+        context['device_api_counts'] = device_api_counts  # Pass the device API counts to the template
+        device_api_counts_json       = json.dumps(device_api_counts)
         return context
 
 class SoilLifeDashboard(TemplateView):
@@ -565,6 +618,7 @@ class SoilLifeDashboard(TemplateView):
             api_fields = DeviseApisFields.objects.filter(device=device)
             device_apis[device.id] = [
                 {
+                    'id'    : field.pk,
                     'field1': field.field1,
                     'field2': field.field2,
                     'field3': field.field3,
@@ -592,8 +646,8 @@ class AtmoSSenseDeviseOverviewDetails(TemplateView):
     template_name = "atmos_sense_devise_details.html"
     
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        devises = Devise.objects.filter(devise_type='atmo_sense')
+        context            = super().get_context_data(**kwargs)
+        devises            = Devise.objects.filter(devise_type='atmo_sense')
         context['devises'] = devises
         return context
 
@@ -816,13 +870,6 @@ class AddDeviceLocation(CreateView):
         return {
         'devise':self.kwargs['pk'],
     }
-
-class getAtmoSenseJsonData(View):
-
-    def get(self, *args, **kwargs):
-        api_call = list(DeviseApisFields.objects.order_by('-created_at').values())
-        
-        return JsonResponse({'data' : api_call})
 
 class getDeviseApiCallsJsonData(View):
 
