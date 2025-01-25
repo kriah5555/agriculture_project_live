@@ -46,12 +46,12 @@ urlpatterns = [
     path('soil-saathi-dashboard/', login_required(SoilSaathiDashboard.as_view()), name = "soil-saathi-dashboard"),
 
     path('atmos-sense-dashboard/', login_required(AtmoSSenseDashboard.as_view()), name = "atmos-sense-dashboard"),
-    path('atmos-sense-devise-overview/<int:pk>', login_required(AtmoSSenseDeviseOverviewDetails.as_view()), name = "atmos-sense-devise-overview"),
     path('atmos-sense-api-overview/<int:pk>/', login_required(v.api_overview), name = "atmos-sense-api-overview"),
 
-    path('devise-api-calls/<int:id>/', getDeviseApiCallsJsonData.as_view(), name = "devise-api-calls"), # api data for page
     path('soil-life-dashboard/', login_required(SoilLifeDashboard.as_view()), name = "soil-life-dashboard"),
     path('soil-life-api-overview/<int:pk>/', login_required(v.api_overview), name = "soil-life-api-overview"),
+
+    path('devise-api-calls/<int:id>/', getDeviseApiCallsJsonData.as_view(), name = "devise-api-calls"), # api data for page
 
 ]
 

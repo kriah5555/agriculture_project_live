@@ -44,3 +44,6 @@ https://www.arkashine-innovations.com/api/add_data/?area_name=gsf&devise_id=007&
 
 for adding location
 https://www.arkashine-innovations.com/api/add_location_data/?devise_id=007&latitude=19.91298&longitude=79.7400
+
+
+create group called deviseowner

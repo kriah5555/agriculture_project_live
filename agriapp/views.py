@@ -372,15 +372,19 @@ def api_overview(request, **kwargs):
     template_name = ''
     context       = dict()
     if "soil-life-api-overview" in request.path:
-        template_name = 'soil_life_api_details.html'
-        devise_data   = DeviseApisFields.objects.get(pk=kwargs['pk'])
-        api_data = {SOIL_LIFE_FIELDS[field]: getattr(devise_data, field, None) for field, label in SOIL_LIFE_FIELDS.items()}
-
-        context = {
-            'device'   : devise_data.device.name,
-            'api_data' : api_data,                # Map of field names to values
-            'latitude' : 10,                      # Replace with actual latitude if needed
-            'longitude': 0,                       # Replace with actual longitude if needed
+        template_name   = 'soil_life_api_details.html'
+        devise_data     = DeviseApisFields.objects.get(pk=kwargs['pk'])
+        fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
+        devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
+        fields.pop('device', None)
+        fields.pop('created_at', None)
+        context         = {
+            'device'          : devise_data.device,
+            'fields_api_data' : fields,
+            'fields_data_json': json.dumps(fields),
+            'fields'          : json.dumps(SOIL_LIFE_FIELDS),
+            'latitude'        : devise_location.latitude if devise_location else '',
+            'longitude'       : devise_location.longitude if devise_location else '',
         }
 
     elif "atmos-sense-api-overview" in request.path:
@@ -594,9 +598,8 @@ class AtmoSSenseAPIDetails(TemplateView):
                 }
                 for field in api_fields
             ]
-            device.api_count = api_fields.count()  # Add count directly to device object
+            device.api_count             = api_fields.count()  # Add count directly to device object
             device_api_counts[device.id] = api_fields.count()
-
 
         # Serialize both headers and APIs to JSON
         context['devices']           = devices
@@ -611,44 +614,41 @@ class SoilLifeDashboard(TemplateView):
     template_name = "soil_life_dashboard.html"
 
     def get_context_data(self, **kwargs):
-        context     = super().get_context_data(**kwargs)
-        devices     = Devise.objects.filter(devise_type='atmo_sense')
-        device_apis = {}
+        context           = super().get_context_data(**kwargs)
+        devices           = Devise.objects.filter(devise_type='soil_life')
+        device_apis       = {}
+        device_api_counts = {}
         for device in devices:
-            api_fields = DeviseApisFields.objects.filter(device=device)
+            api_fields             = DeviseApisFields.objects.filter(device=device)
             device_apis[device.id] = [
                 {
-                    'id'    : field.pk,
-                    'field1': field.field1,
-                    'field2': field.field2,
-                    'field3': field.field3,
-                    'field4': field.field4,
-                    'field5': field.field5,
-                    'field6': field.field6,
-                    'field7': field.field7,
-                    'field8': field.field8,
-                    'field9': field.field9,
-                    'field10': field.field10,
-                    'crop_type': field.crop_type,
+                    'id'        : field.pk,
+                    'image_path': field.image_path,
+                    'field1'    : field.field1,
+                    'field2'    : field.field2,
+                    'field3'    : field.field3,
+                    'field4'    : field.field4,
+                    'field5'    : field.field5,
+                    'field6'    : field.field6,
+                    'field7'    : field.field7,
+                    'field8'    : field.field8,
+                    'field9'    : field.field9,
+                    'field10'   : field.field10,
+                    'crop_type' : field.crop_type,
                     'created_at': field.created_at.strftime('%Y-%m-%d %H:%M:%S')
                 }
                 for field in api_fields
             ]
+            device.api_count             = api_fields.count()  # Add count directly to device object
+            device_api_counts[device.id] = api_fields.count()
 
         # Serialize both headers and APIs to JSON
-        context['devices']          = devices
-        context['api_headers_json'] = json.dumps(ATMO_SENSE_FIELDS)  # Convert headers to JSON
-        context['api_headers']      = ATMO_SENSE_FIELDS  # Pass the dictionary directly
-        context['device_apis']      = json.dumps(device_apis)  # Convert API data to JSON
-        return context
-
-class AtmoSSenseDeviseOverviewDetails(TemplateView):
-    template_name = "atmos_sense_devise_details.html"
-    
-    def get_context_data(self, **kwargs):
-        context            = super().get_context_data(**kwargs)
-        devises            = Devise.objects.filter(devise_type='atmo_sense')
-        context['devises'] = devises
+        context['devices']           = devices
+        context['api_headers_json']  = json.dumps(SOIL_LIFE_FIELDS)  # Convert headers to JSON
+        context['api_headers']       = SOIL_LIFE_FIELDS  # Pass the dictionary directly
+        context['device_apis']       = json.dumps(device_apis)  # Convert API data to JSON
+        context['device_api_counts'] = device_api_counts  # Pass the device API counts to the template
+        device_api_counts_json       = json.dumps(device_api_counts)
         return context
 
 class SoilSaathiDashboard(TemplateView):
