@@ -683,7 +683,7 @@ class Dashboard(TemplateView):
         devises           = Devise.objects.all()
         notifications_all = ContactDetails.objects.all()
         years             = list(set(get_years_for_filter()))
-        states            = get_all_states()
+        # states            = get_all_states()
         years.sort()
         context = {
             'devises'               : devises,
@@ -696,7 +696,7 @@ class Dashboard(TemplateView):
             'notification_active'   : notifications_all.filter(status=True),
             'notification_inactive' : notifications_all.filter(status=False),
             'years'                 : years,
-            'states'                : states,
+            # 'states'                : states,
             'active_page'           : 'dashboard'
         }
         return context
