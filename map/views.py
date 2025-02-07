@@ -7,7 +7,7 @@ from agriapp.models import DeviseLocation, Devise, DeviseApis, APICountThreshold
 
 # Create your views here.
 
-# @login_required(login_url='/login1/')    
+# @login_required(login_url='/admin-login/')    
 # def map_view(request, **kwargs):
 #     location  = geo.osm('IN')
 #     latitude   = location.lat
@@ -15,7 +15,7 @@ from agriapp.models import DeviseLocation, Devise, DeviseApis, APICountThreshold
 #     country   = location.country
 #     map = fol.Map(location=[latitude, longitude], zoom_start = 6)
 #     fol.Marker([latitude, longitude], tooltip = f'India', popup = f'{country}', icon=fol.Icon(color="blue"),).add_to(map)
-#     if kwargs:
+#     if kwargs:login1
 #         devise_id = kwargs['pk']
 #         location = DeviseLocation.objects.filter(status=True, devise__pk = devise_id)
 #         if location:
@@ -52,7 +52,7 @@ def get_marker_color(devise):
                 color = 'pink'
     return color
 
-@login_required(login_url='/login1/')    
+@login_required(login_url='/admin-login/')    
 def map_view(request, **kwargs):
     zoom = 0
     pk = ''

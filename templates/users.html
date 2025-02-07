@@ -40,7 +40,6 @@
                         <th>Last Name</th>
                         <th>Username</th>
                         <th>Email</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,11 +49,6 @@
                         <td>{{ user.last_name }}</td>
                         <td>{{ user.username }}</td>
                         <td>{{ user.email }}</td>
-                        <td>
-                            <a href="{% url 'create-user' %}" data-toggle="modal">
-                                <i class="fa fa-pencil"></i> 
-                            </a>
-                        </td>
                     </tr>
                     {% empty %}
                     <tr>

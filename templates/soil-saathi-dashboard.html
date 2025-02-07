@@ -1,74 +1,125 @@
 {% extends "navbar.html" %}
 {% block content %}
 
-        <div class="container" style="margin-top:100px;">
+<div class="header">
+  <h2 class="bg-primary" style=" color:white; text-align: center; padding: 10px;">SoilSaathi</h2>
+</div>
 
-            <div class="card">
-              <div class="face face1">
-                <div class="content">
-                  <span class="stars"></span>
-                  <h2 class="java"><a href="{% url 'device-list' %}">Devices</h2>
-                  <p class="java">Total devices currently in use : {{devise_counts}}.</p></a>
-                </div>
-              </div>
-              <div class="face face2">
-                <h4>Devices</h4>
-              </div>
-            </div>
-          
-            <div class="card">
-              <div class="face face1">
-                <div class="content">
-                  <span class="stars"></span>
-                  <h2 class="java"><a href="{% url 'map' %}">Map</h2>
-                  <p class="java">Click to check devices locations.</p></a>
-                </div>
-              </div>
-              <div class="face face2">
-                <h4>Map</h4>
-              </div>
-            </div>
-          
-            <div class="card">
-              <div class="face face1">
-                <div class="content">
-                  <span class="stars"></span>
-                  <h2 class="cSharp"><a href="{% url 'notifications' %}"> Notifications</h2>
-                  <p class="cSharp">Total notifications : {{notification_counts}}.</p></a>
-                </div>
-              </div>
-              <div class="face face2">
-                <h4>Notifications</h4>
-              </div>
-            </div>
-
-
-              <div class="card">
-                <div class="face face1">
-                  <div class="content">
-                    <span class="stars"></span>
-                    <h2 class="cSharp"><a href="{% url 'dynamic_fields' %}">Dynamic fields</h2>
-                    <p class="cSharp">Total fields : {{dynamic_fields}}.</p></a>
-                  </div>
-                </div>
-                <div class="face face2">
-                  <h4>Dynamic fields</h4>
-                </div>
-              </div>
-
-              <div class="card">
-                <div class="face face1">
-                  <div class="content">
-                    <span class="stars"></span>
-                    <h2 class="cSharp">API calls</h2>
-                    <p class="cSharp">Total API called till date : {{api_counts}}.</p>
-                  </div>
-                </div>
-                <div class="face face2">
-                  <h4>API calls</h4>
-                </div>
-            </div>
+<div class="container-fluid" style="height: 100vh; padding: 10px;">
+  <div class="row" style="height: 100%;">
+    <!-- Left Side -->
+    <div class="col-md-3 d-flex flex-column gap-3">
+      <a href="{% url 'device-list' %}" style="text-decoration: none; color: inherit;">
+        <div class="card" style="height: 30vh; cursor: pointer;">
+          <div class="card-body">
+            <h5 class="card-title">Devices</h5>
+            <canvas id="devicesChart" style="max-height: 20vh;"></canvas>
           </div>
-        <!-- end devise counts -->
-{% endblock %}
+        </div>
+      </a>
 
+      <!-- Dynamic Fields Card -->
+      <a href="{% url 'dynamic-fields' %}" style="text-decoration: none; color: inherit;">
+        <div class="card" style="height: 30vh;">
+          <div class="card-body">
+            <h5 class="card-title">Dynamic Fields</h5>
+            <canvas id="fieldsChart" style="max-height: 20vh;"></canvas>
+          </div>
+        </div>
+      </a>
+
+      <!-- API Calls Card -->
+      <div class="card" style="height: 30vh;">
+        <div class="card-body">
+          <h5 class="card-title">API Calls</h5>
+          <canvas id="apiCallsChart" style="max-height: 20vh;"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side -->
+    <div class="col-md-9 d-flex flex-column gap-3" style="height: 100%;">
+      <!-- Devices List -->
+      <div class="card" style="height: 45vh;overflow-y: auto">
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">Device List</h5>
+          <ul id="deviceList" class="list-group flex-grow-1 overflow-auto"></ul>
+        </div>
+      </div>
+
+      <!-- Map Section -->
+      <div class="card" style="height: 45vh;">
+        <div class="card-body">
+          <h5 class="card-title">Map</h5>
+          <div id="map" style="width: 90%; height: 90%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Dummy data for donut charts
+    const data = {
+      devices : {{ devise_count }},
+      fields  : {{ dynamic_fields_count}},
+      apiCalls: {{ api_counts }},
+    };
+
+    function createDonutChart(id, label, count) {
+      new Chart(document.getElementById(id), {
+        type: 'doughnut',
+        data: {
+          labels: [label],
+          datasets: [{
+            data: [count],
+            backgroundColor: getDonutColors(id),
+          }],
+        },
+      });
+    }
+
+    function getDonutColors(chartId) {
+      switch (chartId) {
+        case "devicesChart":
+          return ['#FF5733', '#e9ecef']; // Red
+        case "fieldsChart":
+          return ['#28A745', '#e9ecef']; // Green
+        case "apiCallsChart":
+          return ['#FFC107', '#e9ecef']; // Yellow
+        default:
+          return ['#007bff', '#e9ecef']; // Default Blue
+      }
+    }
+    
+    createDonutChart("devicesChart", "Devices", data.devices);
+    createDonutChart("fieldsChart", "Fields", data.fields);
+    createDonutChart("apiCallsChart", "API Calls", data.apiCalls);
+
+    // Initialize Map
+    var map = L.map('map').setView([20.5937, 78.9629], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    
+    // Dummy Device List with Coordinates
+    const devises = JSON.parse(`{{ devises|escapejs }}`);
+
+    devises.forEach(device => {
+      // Add marker to the map with one-line popup
+      const marker = L.marker([device.latitude, device.longitude])
+                      .addTo(map)
+                      .bindPopup(`${device.name} | Devise: ${device.devise_id} | Land: ${device.land} acres`);
+
+      // Create list item with one-line display
+      const listItem = document.createElement("li");
+      listItem.classList.add("list-group-item");
+      listItem.textContent = `${device.name} | Devise  Id: ${device.devise_id} | Land: ${device.land} acres`;
+      listItem.onclick = () => map.setView([device.latitude, device.longitude], 10);
+      
+      document.getElementById("deviceList").appendChild(listItem);
+    });
+  });
+</script>
+
+{% endblock %}

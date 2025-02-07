@@ -26,45 +26,53 @@ from django.urls import reverse_lazy
 from django import forms
 from django.utils.timezone import localtime
 import json
+from django.core.serializers.json import DjangoJSONEncoder
+
+# Admin access only decorator
+def admin_required(function):
+    return user_passes_test(lambda user: user.is_superuser)(function)
+
+# Staff access only decorator
+def staff_required(function):
+    return user_passes_test(lambda user: user.is_staff)(function)
 
 # Create your views here.
+# def user_login_access(request):
+#     user = request.user
 
-def user_login_access(request):
-    user = request.user
+#     if not user.is_staff and user.is_authenticated:
+        # devise = get_object_or_404(Devise, devise_id=user.username)
+        # apis   = DeviseApis.objects.filter(device=devise).count()
 
-    if not user.is_staff and user.is_authenticated:
-        devise = get_object_or_404(Devise, devise_id=user.username)
-        apis   = DeviseApis.objects.filter(device=devise).count()
+        # api_thresholds = APICountThreshold.objects.filter(devise=devise).first()
+        # remaining = max(0, api_thresholds.red - apis) if api_thresholds else 0
 
-        api_thresholds = APICountThreshold.objects.filter(devise=devise).first()
-        remaining = max(0, api_thresholds.red - apis) if api_thresholds else 0
+        # session_data = {
+        #     'pk'            : devise.pk,
+        #     'name'          : devise.name,
+        #     'serial_no'     : devise.serial_no,
+        #     'devise_id'     : devise.devise_id,
+        #     'chipset_no'    : devise.chipset_no,
+        #     'email'         : devise.email,
+        #     'phone'         : devise.phone,
+        #     'address1'      : devise.address1,
+        #     'address2'      : devise.address2,
+        #     'land'          : devise.land,
+        #     'purchase_date' : str(devise.purchase_date),
+        #     'time_of_sale'  : str(devise.time_of_sale),
+        #     'warrenty'      : str(devise.warrenty),
+        #     'amount_paid'   : devise.amount_paid,
+        #     'balance_amount': devise.balance_amount,
+        #     'api_usage'     : apis,
+        #     'api_threshold' : bool(api_thresholds),
+        #     'used'          : apis,
+        #     'color'         : get_marker_color(devise),
+        #     'remaining'     : remaining,
+        # }
 
-        session_data = {
-            'pk': devise.pk,
-            'name': devise.name,
-            'serial_no': devise.serial_no,
-            'devise_id': devise.devise_id,
-            'chipset_no': devise.chipset_no,
-            'email': devise.email,
-            'phone': devise.phone,
-            'address1': devise.address1,
-            'address2': devise.address2,
-            'land': devise.land,
-            'purchase_date': str(devise.purchase_date),
-            'time_of_sale': str(devise.time_of_sale),
-            'warrenty': str(devise.warrenty),
-            'amount_paid': devise.amount_paid,
-            'balance_amount': devise.balance_amount,
-            'api_usage': apis,
-            'api_threshold': bool(api_thresholds),
-            'used': apis,
-            'color': get_marker_color(devise),
-            'remaining': remaining,
-        }
+        # request.session.update(session_data)
 
-        request.session.update(session_data)
-
-        return redirect('/devise_user_details/')
+        # return redirect('/devise_user_details/')
         
 def home(request):
     if request.method == 'GET':
@@ -81,24 +89,80 @@ def home(request):
         template_name = 'home1.html'
         return render(request, template_name, {'message' : 'Contact details has been added successfully'})
 
+# def login(request):
+#     context = dict()
+#     if request.method == 'GET':
+#         template_name = 'login1.html'
+#     elif request.method == 'POST':
+#         username = request.POST['username']
+#         password = request.POST['password']
+#         user     = auth.authenticate(username = username, password = password)
+#         if user is not None:
+#             auth.login(request,user)
+#             resp = user_login_access(request)
+#             if  resp:
+#                 return resp
+#             return redirect('/dashboard/')
+#         else:
+#             template_name = 'login1.html'
+#             context       =  {'error' : 'Invalid username or password'}
+#     return render(request, template_name, context = context)
+
+def dashboard(request):
+    return redirect('/welcome/')
+
+def userPage(request):
+    linked_devices = Devise.objects.filter(user__username=request.user.username)  # Fetch all devices linked to the user
+    for devise in linked_devices:
+        devise_location  = DeviseLocation.objects.filter(devise=devise).first()
+        devise.latitude  = devise_location.latitude if devise_location else 0
+        devise.longitude = devise_location.longitude if devise_location else 0
+    
+    context = {
+        "linked_devices": linked_devices, # Add linked devices to the context
+    }
+    return render(request, 'devise_user_details.html', context)
+
+from django.shortcuts import render, redirect
+from django.contrib import auth
+
 def login(request):
-    context = dict()
+    template_mapping = {
+        'user-login': 'login.html',
+        'admin-login': 'login1.html'
+    }
+
+    template_name = 'home1.html'  # Default template for errors
+    context = {}
+
     if request.method == 'GET':
-        template_name = 'login1.html'
+        for key, template in template_mapping.items():
+            if key in request.path:
+                template_name = template
+                break
+
     elif request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user     = auth.authenticate(username = username, password = password)
-        if user is not None:
-            auth.login(request,user)
-            resp = user_login_access(request)
-            if  resp:
-                return resp
-            return redirect('/dashboard/')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        if not username or not password:
+            context['error'] = 'Both username and password are required'
         else:
-            template_name = 'login1.html'
-            context       =  {'error' : 'Invalid username or password'}
-    return render(request, template_name, context = context)
+            user = auth.authenticate(username=username, password=password)
+            if user:
+                auth.login(request, user)
+                return redirect('/user-page/' if 'user-login' in request.path else '/dashboard/')
+            else:
+                context['error'] = 'Invalid username or password'
+
+        # Ensure the correct template is used for errors
+        for key, template in template_mapping.items():
+            if key in request.path:
+                template_name = template
+                break
+
+    return render(request, template_name, context)
+
     
 def logout(request):
     auth.logout(request)
@@ -108,15 +172,9 @@ class Users(TemplateView):
     template_name = "users.html"
     
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        # Get the group 'deviseowner'
-        group = Group.objects.get(name='deviseowner')
-        
-        # Get all users in the 'deviseowner' group
-        users_in_group = User.objects.filter(groups=group)
-        
-        # Add users to context
+        context                = super().get_context_data(**kwargs)
+        group                  = Group.objects.get(name='deviseowner')
+        users_in_group         = User.objects.filter(groups=group)
         context['active_page'] = "users"
         context['users']       = users_in_group
         
@@ -164,9 +222,9 @@ def create_user(request):
 
 @login_required
 def add_devise(request, uid=None):
-    resp = user_login_access(request)  # Assuming you have a function for user access check
-    if resp:
-        return resp
+    # resp = user_login_access(request)  
+    # if resp:
+    #     return resp
         
     context = {'message': ''}
     user    = UserFunctions.get_user_by_username(uid)
@@ -211,9 +269,9 @@ def add_devise(request, uid=None):
     return render(request, template_name, context)
 
 def edit_devise(request, **kwargs):
-    resp = user_login_access(request)
-    if  resp:
-        return resp
+    # resp = user_login_access(request)
+    # if  resp:
+    #     return resp
     context              = {'message' : ''}
     devise               = Devise.objects.get(pk = kwargs['pk'])
     devise.purchase_date = datetime.strptime(str(devise.purchase_date), '%Y-%m-%d')
@@ -260,9 +318,6 @@ def edit_devise(request, **kwargs):
     return render(request, template_name = template_name, context=context)
 
 def notifications(request, **kwargs):
-    resp = user_login_access(request)
-    if  resp:
-        return resp
     if (kwargs):
        data = ContactDetails.objects.get(pk = kwargs['pk'])
        data.status = False
@@ -277,9 +332,9 @@ def notifications(request, **kwargs):
     return render(request, template_name = template_name, context = context)
 
 def devise_list(request, **kwargs):
-    resp = user_login_access(request)
-    if  resp:
-        return resp
+    # resp = user_login_access(request)
+    # if  resp:
+    #     return resp
     if request.method == 'POST':
         pk = request.POST['pk']
         if pk:
@@ -320,9 +375,9 @@ def api_list(request, **kwargs):
     return render(request, template_name = template_name, context = context)
 
 def devise_details(request, **kwargs):
-    resp = user_login_access(request)
-    if  resp:
-        return resp
+    # resp = user_login_access(request)
+    # if  resp:
+    #     return resp
     devise  = Devise.objects.get(pk = kwargs['pk'])
 
     apis          = DeviseApis.objects.filter(device=devise)
@@ -348,9 +403,9 @@ def devise_details(request, **kwargs):
     return render(request, template_name = template_name, context=context)
 
 def user_details(request, **kwargs):
-    resp = user_login_access(request)
-    if resp: 
-        return resp
+    # resp = user_login_access(request)
+    # if resp: 
+    #     return resp
     username       = kwargs.get('uid')
     user           = get_object_or_404(User, username=username)
     linked_devices = Devise.objects.filter(user=user)  # Fetch all devices linked to the user
@@ -505,9 +560,9 @@ class APIThresholdFormUpdate(UpdateView):
             return self.form_invalid(form)
 
 def change_password(request, uid):
-    resp = user_login_access(request)
-    if  resp:
-        return resp
+    # resp = user_login_access(request)
+    # if  resp:
+    #     return resp
         
     template_name = 'change_password.html'
     context       = dict()
@@ -520,12 +575,6 @@ def change_password(request, uid):
         messages.success(request, "password changes successfully")
         return redirect(f"/user-details/{uid}/")
     return render(request, template_name = template_name, context=context)
-
-def dashboard(request):
-    resp = user_login_access(request)
-    if  resp:
-        return resp
-    return redirect('/welcome/')
 
 class AtmoSSenseDashboard(TemplateView):
     template_name = "atmos_sense_dashboard.html"
@@ -656,13 +705,21 @@ class SoilSaathiDashboard(TemplateView):
     def get_context_data(self, **kwargs):
         context           = super().get_context_data(**kwargs)
         notifications_all = ContactDetails.objects.all()
+        devices           = list(Devise.objects.filter(devise_type='soilsaathi').values())
+        locations         = {loc.devise_id: (loc.latitude, loc.longitude) for loc in DeviseLocation.objects.all()}
+
+        for device in devices:
+            device_id           = device.get("id")
+            lat, lng            = locations.get(device_id, (0.0, 0.0))  # Default to (0.0, 0.0) if no location
+            device["latitude"]  = lat
+            device["longitude"] = lng
+
         context = {
-            'devise_soilsaathi'     : Devise.objects.filter(devise_type='soilsaathi'),
-            'devises_atmo_sense'    : Devise.objects.filter(devise_type='atmo_sense'),
-            'notification_active'   : notifications_all.filter(status=True),
-            'notification_inactive' : notifications_all.filter(status=False),
-            'notification_inactive' : notifications_all.filter(status=False),
-            'active_page'           : 'soil-saathi'
+            'devises'             : json.dumps(devices, cls=DjangoJSONEncoder),
+            'devise_count'        : len(devices),
+            'api_counts'          : DeviseApis.objects.filter(device__devise_type="soilsaathi").count(),
+            'active_page'         : 'soil-saathi',
+            'dynamic_fields_count': ColumnName.objects.all().count()
         }
         return context
 
@@ -683,21 +740,38 @@ class Dashboard(TemplateView):
         devises           = Devise.objects.all()
         notifications_all = ContactDetails.objects.all()
         years             = list(set(get_years_for_filter()))
-        # states            = get_all_states()
         years.sort()
+        
+        ss_api_counts = DeviseApis.objects.filter(device__devise_type="soilsaathi").count()
+        sl_api_counts = DeviseApisFields.objects.filter(device__devise_type="soil_life").count()
+        as_api_counts = DeviseApisFields.objects.filter(device__devise_type="atmo_sense").count()
+        devices       = list(Devise.objects.filter(devise_type='soilsaathi').values())
+        locations     = {loc.devise_id: (loc.latitude, loc.longitude) for loc in DeviseLocation.objects.all()}
+
+        for device in devices:
+            device_id           = device.get("id")
+            lat, lng            = locations.get(device_id, (0.0, 0.0))  # Default to (0.0, 0.0) if no location
+            device["latitude"]  = lat
+            device["longitude"] = lng
+
         context = {
-            'devises'               : devises,
-            'chart_data'            : chart_date,
-            'devise_name'           : devise_name,
-            'devise_counts'         : len(devises),
-            'api_counts'            : len(DeviseApis.objects.all()),
-            'dynamic_fields'        : len(ColumnName.objects.all()),
-            'notification_counts'   : len(ContactDetails.objects.all()),
-            'notification_active'   : notifications_all.filter(status=True),
-            'notification_inactive' : notifications_all.filter(status=False),
-            'years'                 : years,
+            'devises'            : json.dumps(devices, cls=DjangoJSONEncoder),
+            'ss_api_counts'      : ss_api_counts,
+            'sl_api_counts'      : sl_api_counts,
+            'as_api_counts'      : as_api_counts,
+            'api_counts'         : ss_api_counts + sl_api_counts + as_api_counts,
+            'active_notification': ContactDetails.objects.filter(status=True).exists(),
+            # 'chart_data'            : chart_date,
+            # 'devise_name'           : devise_name,
+            # 'devise_counts'         : len(devises),
+            # 'api_counts'            : len(DeviseApis.objects.all()),
+            # 'dynamic_fields'        : len(ColumnName.objects.all()),
+            # 'notification_counts'   : len(ContactDetails.objects.all()),
+            # 'notification_inactive' : notifications_all.filter(status=False),
+            # 'years'                 : years,
             # 'states'                : states,
-            'active_page'           : 'dashboard'
+            'active_page'           : 'dashboard',
+
         }
         return context
 
@@ -809,9 +883,9 @@ def download_api_response_csv(request, **kwargs):
     return response
 
 def dynamic_fields(request, **kwargs):
-    resp = user_login_access(request)
-    if  resp:
-        return resp
+    # resp = user_login_access(request)
+    # if  resp:
+    #     return resp
     template_name = 'dynamic_fields.html'
     columns       = UserFunctions.get_all_dynamic_fields()
     context       = {
@@ -824,12 +898,12 @@ def delete_field(request, id):
     field = ColumnName.objects.get(id=id)
     field.delete()
     messages.success(request, "Field deleted successfully.")
-    return redirect('/dynamic_fields/')
+    return redirect('/dynamic-fields/')
 
 def add_field(request):
-    resp = user_login_access(request)
-    if  resp:
-        return resp
+    # resp = user_login_access(request)
+    # if  resp:
+    #     return resp
     template_name = "add_field.html"
     if request.method== 'GET':
         return render(request, template_name = template_name)
@@ -838,7 +912,7 @@ def add_field(request):
         if field_name:
             ColumnName.objects.create(field_name=field_name)
             messages.success(request, "Field added successfully.")
-            return redirect('/dynamic_fields/')
+            return redirect('/dynamic-fields/')
         else :
             messages.error(request, "Please enter valid field name.")
             return redirect('/add_field/')

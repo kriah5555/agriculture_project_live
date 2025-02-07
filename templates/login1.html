@@ -13,7 +13,7 @@
 	<link rel="stylesheet" href="{% static '/login1/css/style.css' %}">
 
 	</head>
-	{% if request.path == '/login1/' %}
+	{% if request.path == '/admin-login/' %}
 	<body class="img js-fullheight" style="background-image: url({% static '/login1/images/login2.jpg' %});">
 	{% else %}
 	<body class="img js-fullheight" style="background-image: url({% static '/login1/images/login3.jpg' %});">
@@ -22,7 +22,7 @@
 		<div class="container">
 			<div class="row justify-content-center">
 				<div class="col-md-6 text-center mb-5">
-					<h2 class="heading-section">{% if request.path == '/login1/' %} Login as admin {% else %} Login as user {% endif %}<i class="bi bi-person"></i></h2>
+					<h2 class="heading-section">{% if request.path == '/admin-login/' %} Login as admin {% else %} Login as user {% endif %}<i class="bi bi-person"></i></h2>
 				</div>
 			</div>
 			<div class="row justify-content-center">

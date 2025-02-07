@@ -9,8 +9,8 @@ from django.contrib.auth.decorators import login_required
 urlpatterns = [
     path('',  v.home, name = "home"),
     path('login/', TemplateView.as_view(template_name="login.html"), name = "login"),
-    path('login1/', v.login, name = "login1"),
-    path('login2/', v.login, name = "login2"),
+    path('admin-login/', v.login, name = "admin-login"),
+    path('user-login/', v.login, name = "user-login"),
     path('logout/', v.logout, name = "logout"),
     path('acess_denied/', TemplateView.as_view(template_name="acess_denied.html"), name = "acess_denied"),
     path('add_field/', login_required(v.add_field), name = "add_field"),
@@ -33,7 +33,7 @@ urlpatterns = [
     path('update-api-threshold/<int:pk>/<int:devise_pk>/', APIThresholdFormUpdate.as_view(), name = "update-api-threshold"),
     path('download_api_response_pdf/<int:pk>/', login_required(v.download_api_response_pdf), name = "download-api-response-pdf"),
     path('download_api_response_csv/<int:pk>/', login_required(v.download_api_response_csv), name = "download-api-response-csv"),
-    path('dynamic_fields/', login_required(v.dynamic_fields), name = "dynamic_fields"),
+    path('dynamic-fields/', login_required(v.dynamic_fields), name = "dynamic-fields"),
     path('delete_field/<int:id>/', login_required(v.delete_field), name = "delete_field"),
     path('update-location/<int:pk>/', login_required(UpdateDeviceLocation.as_view()), name = "update-location"),
     path('add-location/<int:pk>/', login_required(AddDeviceLocation.as_view()), name = "add-location"),
@@ -53,6 +53,6 @@ urlpatterns = [
 
     path('devise-api-calls/<int:id>/', getDeviseApiCallsJsonData.as_view(), name = "devise-api-calls"), # api data for page
 
-]
+    path('user-page/', login_required(v.userPage), name = "user-page"),
 
-user_details
+]

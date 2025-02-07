@@ -14,17 +14,20 @@
     <input type="text" id="device-search" placeholder="Search Devices" style="width: 100%; margin-bottom: 10px; padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
     <ul id="device-list" style="list-style-type: none; padding: 0; max-height: 65vh; overflow-y: auto;">
       {% for device in devices %}
-        <li style="margin-bottom: 10px; cursor: pointer;" class="device-item" data-device-id="{{ device.id }}">
-          <button style="width: 100%; text-align: left; padding: 10px; border: none; border-radius: 5px; position: relative;">
-            <span>{{ device.name }} | Devise ID: {{ device.devise_id }}</span>
-            <span style="position: absolute; bottom: 5px; right: 10px; font-size: 12px; color: gray;">
-              API count: {{ device.api_count }}
-            </span>
-          </button>
-        </li>
+      <li style="margin-bottom: 10px; cursor: pointer; display: flex; align-items: center;" class="device-item" data-device-id="{{ device.id }}">
+        <button style="width: 100%; text-align: left; padding: 10px; border: none; border-radius: 5px; position: relative; display: flex; align-items: center;">
+          <span>{{ device.name }} | Device ID: {{ device.devise_id }}</span>
+          <span style="position: absolute; bottom: 5px; right: 10px; font-size: 12px; color: gray;">
+            API count: {{ device.api_count }}
+          </span>
+  
+          <!-- Add a canvas for the donut chart here -->
+          <!-- <canvas id="device-donut-{{ device.id }}" style="height: 30px; flex-shrink: 0; margin-left: 10px;"></canvas> -->
+  
+        </button>
+      </li>
       {% endfor %}
     </ul>
-
   </div>
 
   <!-- Right Section: API Table -->
@@ -52,69 +55,92 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    // Device List Search
-    const deviceSearch = document.getElementById("device-search");
-    const deviceList   = document.getElementById("device-list");
-    const deviceItems  = document.querySelectorAll(".device-item");
+  // Device List Search
+  const deviceSearch = document.getElementById("device-search");
+  const deviceList = document.getElementById("device-list");
+  const deviceItems = document.querySelectorAll(".device-item");
 
-    deviceSearch.addEventListener("input", function () {
-      const query = this.value.toLowerCase();
-      deviceItems.forEach((item) => {
-        const deviceName = item.textContent.toLowerCase();
-        if (deviceName.includes(query)) {
-          item.style.display = "";
-        } else {
-          item.style.display = "none";
-        }
-      });
-    });
-
-    // API Table Search
-    const apiSearch           = document.getElementById("api-search");
-    const apiDetailsContainer = document.getElementById("api-details");
-
-    apiSearch.addEventListener("input", function () {
-      const query = this.value.toLowerCase();
-      const rows  = apiDetailsContainer.querySelectorAll("tr");
-      rows.forEach((row) => {
-        const rowText = row.textContent.toLowerCase();
-        if (rowText.includes(query)) {
-          row.style.display = "";
-        } else {
-          row.style.display = "none";
-        }
-      });
-    });
-
-    // Click event for loading API data
-    const deviceApis = JSON.parse(`{{ device_apis|escapejs }}`);
-    const apiHeaders = JSON.parse(`{{ api_headers_json|escapejs }}`);
-
+  deviceSearch.addEventListener("input", function () {
+    const query = this.value.toLowerCase();
     deviceItems.forEach((item) => {
-      item.addEventListener("click", function () {
-        const deviceId = this.dataset.deviceId;
-        const apiData  = deviceApis[deviceId] || [];
-
-        apiDetailsContainer.innerHTML = "";
-        apiData.forEach((api) => {
-          let row = `<tr onclick="redirectToEdit('${api.id}')" style="cursor: pointer;">`;
-          Object.keys(apiHeaders).forEach((key) => {
-            if (key === "image_path") {
-              row += `<td>${api[key] ? `<img src="${api[key]}" alt="Image" style="width: 50px; height: 50px; object-fit: cover;">` : "No image"}</td>`;
-            } else {
-              row += `<td>${api[key] || ""}</td>`;
-            }
-          });
-          row += "</tr>";
-          apiDetailsContainer.innerHTML += row;
-        });
-      });
+      const deviceName = item.textContent.toLowerCase();
+      if (deviceName.includes(query)) {
+        item.style.display = "";
+      } else {
+        item.style.display = "none";
+      }
     });
   });
 
-  function redirectToEdit(id) {
-    window.location.href = `/soil-life-api-overview/${id}/`;
-  }
+  // API Table Search
+  const apiSearch = document.getElementById("api-search");
+  const apiDetailsContainer = document.getElementById("api-details");
+
+  apiSearch.addEventListener("input", function () {
+    const query = this.value.toLowerCase();
+    const rows = apiDetailsContainer.querySelectorAll("tr");
+    rows.forEach((row) => {
+      const rowText = row.textContent.toLowerCase();
+      if (rowText.includes(query)) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
+  });
+
+  // Click event for loading API data
+  const deviceApis = JSON.parse(`{{ device_apis|escapejs }}`);
+  const apiHeaders = JSON.parse(`{{ api_headers_json|escapejs }}`);
+
+  deviceItems.forEach((item) => {
+    const deviceId = item.dataset.deviceId;
+    const apiCount = item.querySelector("span").textContent.split(":")[1].trim(); // Correctly get the API count
+
+    // Add donut chart for each device based on the API count when the page loads
+    createDonutChart(`device-donut-${deviceId}`, apiCount);
+
+    item.addEventListener("click", function () {
+      const apiData = deviceApis[deviceId] || [];
+
+      apiDetailsContainer.innerHTML = "";
+      apiData.forEach((api) => {
+        let row = `<tr onclick="redirectToEdit('${api.id}')" style="cursor: pointer;">`;
+        Object.keys(apiHeaders).forEach((key) => {
+          if (key === "image_path") {
+            row += `<td>${api[key] ? `<img src="${api[key]}" alt="Image" style="width: 50px; height: 50px; object-fit: cover;">` : "No image"}</td>`;
+          } else {
+            row += `<td>${api[key] || ""}</td>`;
+          }
+        });
+        row += "</tr>";
+        apiDetailsContainer.innerHTML += row;
+      });
+    });
+  });
+});
+
+// Function to create donut chart for each device
+function createDonutChart(id, count) {
+  new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: {
+      labels: ['API Count'],
+      datasets: [{
+        data: [count,],  // Show API count and the remaining space
+        backgroundColor: ['#007bff', '#e9ecef'],
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+    }
+  });
+}
+
+function redirectToEdit(id) {
+  window.location.href = `/soil-life-api-overview/${id}/`;
+}
 </script>
 
 {% endblock %}
