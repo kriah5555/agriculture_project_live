@@ -490,33 +490,6 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
 
 </script>
 
-
-<style>
-    .table {
-    width: 100%;
-    table-layout: auto; /* Allows flexible column widths */
-    }
-
-    .table th, .table td {
-        overflow: visible; /* Shows full content */
-        white-space: normal; /* Wraps text */
-        word-break: break-word; /* Allows breaking long words */
-    }
-
-    .table-container {
-        max-height: 800px; /* Set the maximum height for scrolling */
-        overflow-y: auto; /* Enable vertical scrolling */
-        position: relative;
-    }
-
-    .sticky-header {
-        position: sticky;
-        top: 0;
-        background-color: white; /* Ensure background is visible when scrolling */
-        z-index: 10;
-    }
-</style>
-
  <!-- popup script -->
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -574,7 +547,7 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
         }, 100);
 
         // Show popup
-        document.getElementById("overlay").style.display = "block";
+        document.getElementById("overlay").style.display     = "block";
         document.getElementById("logoutPopup").style.display = "block";
         document.getElementById("leaflet-map").style.display = "none";
     }
@@ -591,10 +564,10 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
     {
         let input = document.getElementById("searchInput").value.toLowerCase();
         let table = document.getElementById("api-details-table");
-        let rows = table.getElementsByTagName("tr");
+        let rows  = table.getElementsByTagName("tr");
 
         for (let i = 0; i < rows.length; i++) {
-            let cells = rows[i].getElementsByTagName("td");
+            let cells      = rows[i].getElementsByTagName("td");
             let rowMatches = false;
 
             for (let j = 0; j < cells.length; j++) {
@@ -609,3 +582,31 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
     }
     
 </script>
+
+
+
+<style>
+    .table {
+    width: 100%;
+    table-layout: auto; /* Allows flexible column widths */
+    }
+
+    .table th, .table td {
+        overflow: visible; /* Shows full content */
+        white-space: normal; /* Wraps text */
+        word-break: break-word; /* Allows breaking long words */
+    }
+
+    .table-container {
+        max-height: 800px; /* Set the maximum height for scrolling */
+        overflow-y: auto; /* Enable vertical scrolling */
+        position: relative;
+    }
+
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: white; /* Ensure background is visible when scrolling */
+        z-index: 10;
+    }
+</style>

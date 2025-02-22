@@ -198,20 +198,24 @@
     <!-- Bottom Division for API Call Details -->
     <div id="api-details-container" class="mt-4" style="display: none;">
         <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5>API Calls for Selected Device</h5>
+            <div class="card-header bg-primary text-white d-flex align-items-center">
+                <h5 class="mb-0 flex-grow-1">API Calls for Selected Device</h5>
+                <input type="text" id="searchInput" class="form-control w-50" placeholder="Search..." onkeyup="searchTable()">
             </div>
+            
             <div class="card-body">
-                <table class="table table-striped table-bordered">
-                    <thead>
-                        <tr id="api-details-headers">
-                            <!-- Headers will be dynamically inserted here -->
-                        </tr>
-                    </thead>
-                    <tbody id="api-details-table">
-                        <!-- Rows will be dynamically inserted here -->
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table class="table table-striped table-bordered">
+                        <thead class="sticky-header">
+                            <tr id="api-details-headers">
+                                <!-- Headers will be dynamically inserted here -->
+                            </tr>
+                        </thead>
+                        <tbody id="api-details-table">
+                            <!-- Rows will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -291,6 +295,27 @@
     // Function to cancel the reset password process
     function cancelReset() {
         document.getElementById('reset-password-form').style.display = 'none';
+    }
+
+    function searchTable() 
+    {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let table = document.getElementById("api-details-table");
+        let rows = table.getElementsByTagName("tr");
+
+        for (let i = 0; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName("td");
+            let rowMatches = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].textContent.toLowerCase().includes(input)) {
+                    rowMatches = true;
+                    break;
+                }
+            }
+
+            rows[i].style.display = rowMatches ? "" : "none";
+        }
     }
 </script>
 
@@ -467,6 +492,19 @@
     overflow: visible; /* Shows full content */
     white-space: normal; /* Wraps text */
     word-break: break-word; /* Allows breaking long words */
+}
+
+.table-container {
+    max-height: 800px; /* Set the maximum height for scrolling */
+    overflow-y: auto; /* Enable vertical scrolling */
+    position: relative;
+}
+
+.sticky-header {
+    position: sticky;
+    top: 0;
+    background-color: white; /* Ensure background is visible when scrolling */
+    z-index: 10;
 }
 </style>
 {% endblock %}
