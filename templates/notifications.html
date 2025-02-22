@@ -4,8 +4,11 @@
 {% block content %}
 <body style="background-color: #f8f9fa;">  <!-- Light gray background -->
 
+    <div class="header">
+        <h2 class="bg-primary" style=" color:white; text-align: center; padding: 10px;"><i class="fa fa-bell"></i> Notifications</h2>
+    </div>
+
   <div class="container mt-4">
-      <h3 class="text-center"><i class="fa fa-bell"></i> Notifications</h3>
 
       <div class="row justify-content-center">
           <!-- Left Column (Notification List & Filters) -->
@@ -22,6 +25,9 @@
 
               <!-- Notifications List -->
               <div id="notificationsList">
+                    {% if notification_active %}
+                        <span>Unread notification</span>
+                    {% endif %}
                   {% for notif in notification_active %}
                   <div class="alert alert-info notification d-flex justify-content-between align-items-center" style="cursor: pointer;" 
                        onclick="showDetails('{{ notif.pk }}', '{{ notif.name }}', '{{ notif.phone }}', '{{ notif.mail }}', '{{ notif.message }}', true)">
@@ -34,6 +40,9 @@
                   </div>
                   {% endfor %}
 
+                  {% if notification_inactive %}
+                        <span>Notification</span>
+                    {% endif %}
                   {% for notif in notification_inactive %}
                   <div class="alert alert-success notification" style="cursor: pointer;" 
                        onclick="showDetails('{{ notif.pk }}', '{{ notif.name }}', '{{ notif.phone }}', '{{ notif.mail }}', '{{ notif.message }}', false)">

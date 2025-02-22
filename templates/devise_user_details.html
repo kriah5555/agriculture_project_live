@@ -11,24 +11,37 @@
 
     <!-- Popup code -->
     <div>
-        <div class="header" style="display: flex; justify-content: flex-end; padding: 10px;">
-            <i class="fas fa-sign-out-alt" title="popup" onclick="showPopup()" style="font-size: 24px; cursor: pointer;"></i>
+        <!-- Background Overlay -->
+<div id="overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
+</div>
+
+    <!-- Popup -->
+    <div id="logoutPopup" 
+        style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: white; padding: 20px; box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+        border-radius: 8px; text-align: center; z-index: 1000; width: 60%;">
+
+        <div id="popupContent" style="display: flex; align-items: center; justify-content: space-around;">
+        <!-- Left Side: Image + Data Fields -->
+        <div id="popupLeft" style="flex: 1; text-align: left; padding: 10px;">
+        <div id="popupImage" style="margin-bottom: 10px;"></div>
+        <div id="popupData"></div> <!-- Field names & values go here -->
         </div>
-        
-        <!-- Popup -->
-        <div id="logoutPopup" 
-             style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                    background: white; padding: 20px; box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
-                    border-radius: 8px; text-align: center; z-index: 1000;">
-            <p>Are you sure you want to logout?</p>
-            <a href="{% url 'logout' %}" style="padding: 10px 20px; background: red; color: white; text-decoration: none; border-radius: 5px;">Yes</a>
-            <button onclick="hidePopup()" style="padding: 10px 20px; background: gray; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                No
-            </button>
+
+        <!-- Right Side: Pie Chart -->
+        <div id="popupChart" style="flex: 1;">
+        <canvas id="dataPieChart"></canvas>
         </div>
-        
+        </div>
+
+        <button onclick="hidePopup()" style="margin-top: 10px; padding: 10px 20px; background: gray; color: white; border: none; border-radius: 5px; cursor: pointer;">
+        Close
+        </button>
+
         <!-- Overlay blur effect-->
         <div id="overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999;" onclick="hidePopup()"></div>
+
     </div>
 
    
@@ -141,15 +154,7 @@
                                 longitude: '{{ device.longitude }} '
                             })">
                                 <span>{{ device.name }} ({{device.devise_type}})</span>
-                                <a href="{% url 'edit-devise' device.pk %}" 
-                                    data-bs-toggle="tooltip" 
-                                    data-bs-placement="top" 
-                                    title="Edit details" 
-                                    onclick="event.stopPropagation();" 
-                                    class="px-2"
-                                >
-                                    <i class="fas fa-pencil" title="Edit details"></i>
-                                </a>
+                                
                             </li>
                             
                             {% endfor %}
@@ -214,27 +219,32 @@
              
         </div>
     
+       
         <!-- Bottom Division for API Call Details -->
         <div id="api-details-container" class="mt-4" style="display: none;">
             <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5>API Calls for Selected Device</h5>
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <h5 class="mb-0 flex-grow-1">API Calls for Selected Device</h5>
+                    <input type="text" id="searchInput" class="form-control w-50" placeholder="Search..." onkeyup="searchTable()">
                 </div>
+                
                 <div class="card-body">
-                    <table class="table table-striped table-bordered">
-                        <thead>
-                            <tr id="api-details-headers">
-                                <!-- Headers will be dynamically inserted here -->
-                            </tr>
-                        </thead>
-                        <tbody id="api-details-table">
-                            <!-- Rows will be dynamically inserted here -->
-                        </tbody>
-                    </table>
+                    <div class="table-container">
+                        <table class="table table-striped table-bordered">
+                            <thead class="sticky-header">
+                                <tr id="api-details-headers">
+                                    <!-- Headers will be dynamically inserted here -->
+                                </tr>
+                            </thead>
+                            <tbody id="api-details-table">
+                                <!-- Rows will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    
+
     </div>
 </body>
 
@@ -317,16 +327,17 @@
 <!-- script to show devise details -->
 <script>
     // Function to dynamically change the device details based on selected device
-    const base_url        = `${window.location.protocol}//${window.location.host}`;
-    const url             = `${base_url}/devise-api-calls`;
-    let selected_devise   = {};                                                      // Use 'let' to clearly define scope and allow reassignment
+    const base_url                = `${window.location.protocol}//${window.location.host}`;
+    const url                     = `${base_url}/devise-api-calls`;
+    let   selected_devise         = {};                                                      // Use 'let' to clearly define scope and allow reassignment
+    let   selected_devise_headers = {};                                                      // Use 'let' to clearly define scope and allow reassignment
 
     // Initialize a map variable to store the map instance
     let mapInstance = null;
 
     function showDeviceDetails(device) {
         if (device) {
-            selected_devise = device; 
+            selected_devise = device;
             document.getElementById('device-name').textContent   = device.name;
             document.getElementById('serialNo').textContent      = device.serialNo;
             document.getElementById('chipsetNo').textContent     = device.chipsetNo;
@@ -396,10 +407,12 @@
             const deviseData = await response.json();
 
             // Update the headers dynamically
-            const apiDetailsHeaders = document.getElementById('api-details-headers');
+            const apiDetailsHeaders     = document.getElementById('api-details-headers');
             apiDetailsHeaders.innerHTML = ""; // Clear existing headers
+            selected_devise_headers     = deviseData.headers
+
             for (const [key, value] of Object.entries(deviseData.headers)) {
-                const th = document.createElement('th');
+                const th       = document.createElement('th');
                 th.textContent = value;
                 apiDetailsHeaders.appendChild(th);
             }
@@ -424,7 +437,8 @@
                     }
                 }
 
-                rowContent += `<td><span class="edit-btn" onclick="redirectToEdit(${api.id})">👁️</span></td>`;
+                // rowContent += `<td><span class="edit-btn" onclick="showPopup(${api.id})">👁️</span></td>`;
+                rowContent += `<td><span class="edit-btn" onclick='showPopup("${encodeURIComponent(JSON.stringify(api))}")'>👁️</span></td>`;
 
                 // Insert the row into the table
                 row.innerHTML = rowContent;
@@ -481,24 +495,117 @@
     .table {
     width: 100%;
     table-layout: auto; /* Allows flexible column widths */
-}
+    }
 
-.table th, .table td {
-    overflow: visible; /* Shows full content */
-    white-space: normal; /* Wraps text */
-    word-break: break-word; /* Allows breaking long words */
-}
+    .table th, .table td {
+        overflow: visible; /* Shows full content */
+        white-space: normal; /* Wraps text */
+        word-break: break-word; /* Allows breaking long words */
+    }
+
+    .table-container {
+        max-height: 800px; /* Set the maximum height for scrolling */
+        overflow-y: auto; /* Enable vertical scrolling */
+        position: relative;
+    }
+
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: white; /* Ensure background is visible when scrolling */
+        z-index: 10;
+    }
 </style>
 
  <!-- popup script -->
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-    function showPopup() {
-        document.getElementById("logoutPopup").style.display = "block";
+    function showPopup(apiString) 
+    {
+        const api           = JSON.parse(decodeURIComponent(apiString));
+        const popupImageDiv = document.getElementById("popupImage");
+        const popupDataDiv  = document.getElementById("popupData");
+        const popupChartDiv = document.getElementById("popupChart");
+
+        // Clear previous content
+        popupImageDiv.innerHTML = "";
+        popupDataDiv.innerHTML  = "";
+        popupChartDiv.innerHTML = '<canvas id="dataPieChart"></canvas>';
+
+        // 🔹 **Show Image if Needed**
+        if (selected_devise.devise_type === 'atmo_sense' && api.image_path) {
+            popupImageDiv.innerHTML = `<img src="${api.image_path}" style="width: 400px; height: 400px; border-radius: 8px;">`;
+        }
+
+        // 🔹 **Filter Data (Only Fields in Headers & Exclude Certain Fields)**
+        let filteredLabels = [];
+        let filteredValues = [];
+        let dataHtml       = "<ul style='list-style: none; padding: 0;'>";
+
+        for (const [key, value] of Object.entries(api)) {
+            if (key in selected_devise_headers && !["id", "image_path", "created_at", "crop_type"].includes(key)) {  
+                let fieldName = selected_devise_headers[key];  
+                filteredLabels.push(fieldName);
+                filteredValues.push(value);
+                dataHtml += `<li><strong>${fieldName}:</strong> ${value}</li>`;
+            }
+        }
+
+        dataHtml += "</ul>";
+        popupDataDiv.innerHTML = dataHtml;
+
+        // 🔹 **Prepare Data for Pie Chart**
+        const chartData = {
+            labels  : filteredLabels,
+            datasets: [{
+                data           : filteredValues,
+                backgroundColor: ["#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff", "#ff9f40", "#ffcd56"]
+            }]
+        };
+
+        // 🔹 **Render Pie Chart**
+        setTimeout(() => {
+            const ctx = document.getElementById("dataPieChart").getContext("2d");
+            new Chart(ctx, {
+                type: "pie",
+                data: chartData
+            });
+        }, 100);
+
+        // Show popup
         document.getElementById("overlay").style.display = "block";
+        document.getElementById("logoutPopup").style.display = "block";
+        document.getElementById("leaflet-map").style.display = "none";
     }
 
-    function hidePopup() {
+
+    function hidePopup() 
+    {
         document.getElementById("logoutPopup").style.display = "none";
-        document.getElementById("overlay").style.display = "none";
+        document.getElementById("overlay").style.display     = "none";
+        document.getElementById("leaflet-map").style.display = "block";
     }
+
+    function searchTable() 
+    {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let table = document.getElementById("api-details-table");
+        let rows = table.getElementsByTagName("tr");
+
+        for (let i = 0; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName("td");
+            let rowMatches = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].textContent.toLowerCase().includes(input)) {
+                    rowMatches = true;
+                    break;
+                }
+            }
+
+            rows[i].style.display = rowMatches ? "" : "none";
+        }
+    }
+    
 </script>
