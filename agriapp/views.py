@@ -615,6 +615,7 @@ class AtmoSSenseDashboard(TemplateView):
         context['api_headers']       = ATMO_SENSE_FIELDS  # Pass the dictionary directly
         context['device_apis']       = json.dumps(device_apis)  # Convert API data to JSON
         context['device_api_counts'] = device_api_counts  # Pass the device API counts to the template
+        context['active_page']       = 'atmos-sense'  # Pass the device API counts to the template
         device_api_counts_json       = json.dumps(device_api_counts)
         return context
 
@@ -697,6 +698,7 @@ class SoilLifeDashboard(TemplateView):
         context['api_headers']       = SOIL_LIFE_FIELDS  # Pass the dictionary directly
         context['device_apis']       = json.dumps(device_apis)  # Convert API data to JSON
         context['device_api_counts'] = device_api_counts  # Pass the device API counts to the template
+        context['active_page']       = 'soil-life'  # Pass the device API counts to the template
         device_api_counts_json       = json.dumps(device_api_counts)
         return context
 
@@ -745,7 +747,7 @@ class Dashboard(TemplateView):
         ss_api_counts = DeviseApis.objects.filter(device__devise_type="soilsaathi").count()
         sl_api_counts = DeviseApisFields.objects.filter(device__devise_type="soil_life").count()
         as_api_counts = DeviseApisFields.objects.filter(device__devise_type="atmo_sense").count()
-        devices       = list(Devise.objects.filter(devise_type='soilsaathi').values())
+        devices = list(Devise.objects.values())
         locations     = {loc.devise_id: (loc.latitude, loc.longitude) for loc in DeviseLocation.objects.all()}
 
         for device in devices:
@@ -761,6 +763,7 @@ class Dashboard(TemplateView):
             'as_api_counts'      : as_api_counts,
             'api_counts'         : ss_api_counts + sl_api_counts + as_api_counts,
             'active_notification': ContactDetails.objects.filter(status=True).exists(),
+            'devise_locations'   : json.dumps(locations),
             # 'chart_data'            : chart_date,
             # 'devise_name'           : devise_name,
             # 'devise_counts'         : len(devises),
@@ -771,7 +774,6 @@ class Dashboard(TemplateView):
             # 'years'                 : years,
             # 'states'                : states,
             'active_page'           : 'dashboard',
-
         }
         return context
 
