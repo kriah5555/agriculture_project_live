@@ -950,8 +950,8 @@ class AddDeviceLocation(CreateView):
 class getDeviseApiCallsJsonData(View):
 
     def get(self, *args, **kwargs):
-        id = kwargs.get('id')  # Use 'id' instead of 'pk'
-        headers = {}
+        id             = kwargs.get('id')  # Use 'id' instead of 'pk'
+        headers        = {}
         api_calls_data = []  # Initialize the list for api calls data
         try:
             devise = Devise.objects.get(pk=id)  # Use 'id' to fetch the Devise object

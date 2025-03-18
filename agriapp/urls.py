@@ -4,6 +4,7 @@ from django.urls import path
 from django.views.generic import TemplateView
 from . import views as v
 from .views import *
+from .exportInfo import *
 from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
@@ -40,6 +41,10 @@ urlpatterns = [
 
     # New development
     path('users/', login_required(Users.as_view()), name = "users"),
+    path('users/export/', ExportUsersView.as_view(), name='export-users'),
+    path('users-devices/export/', ExportUsersAndDevicesView.as_view(), name='export-users-devices'),
+    path('user-devices/export/<str:username>/', ExportUsersAndDevicesView.as_view(), name='export-user-devices'),
+    path('export/device-apis/<int:device_id>/', ExportDeviceApisView.as_view(), name='export-device-apis'),
     path('admin-panne/', login_required(v.dashboard), name = "dashboard"),
     path('create-user/', login_required(v.create_user), name = "create-user"),
     path('user-details/<str:uid>/', login_required(v.user_details), name = "user-details"),
@@ -54,5 +59,6 @@ urlpatterns = [
     path('devise-api-calls/<int:id>/', getDeviseApiCallsJsonData.as_view(), name = "devise-api-calls"), # api data for page
 
     path('user-page/', login_required(v.userPage), name = "user-page"),
+    
 
 ]

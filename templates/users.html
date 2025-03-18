@@ -12,7 +12,13 @@
                     <div class="col-sm-6">
                         <a href="{% url 'create-user' %}" class="btn" data-toggle="modal">
                             <i class="fa fa-plus" title="Add user"></i> 
-                        </a>					
+                        </a>
+                        <a href="{% url 'export-users' %}" class="btn">
+                            <i class="fa fa-download" title="Export users"></i> Export
+                        </a>
+                        <a href="{% url 'export-users-devices' %}" class="btn">
+                            <i class="fa fa-file-excel" title="Export users with details"></i> Export with Details
+                        </a>
                     </div>
                 </div>
             </div>

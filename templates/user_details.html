@@ -90,7 +90,10 @@
             
                     <h5 class="text-primary">Devices linked 
                         <a href="{% url 'add-devise' user.username %}" onclick="saveUserDetails()" class="text-primary mr-3" style="font-size: 20px;" title="Save">
-                            <i class="fas fas fa-plus"></i> 
+                            <i class="fas fa-plus"></i> 
+                        </a>
+                        <a href="{% url 'export-user-devices' user.username %}" class="text-primary" style="font-size: 20px;float: right;" title="Export Devices">
+                            <i class="fas fa-file-excel"></i>
                         </a>
                     </h5>
                     <ul class="list-group">
@@ -116,15 +119,27 @@
                             longitude: '{{ device.longitude }} '
                         })">
                             <span>{{ device.name }} ({{device.devise_type}})</span>
-                            <a href="{% url 'edit-devise' device.pk %}" 
-                                data-bs-toggle="tooltip" 
-                                data-bs-placement="top" 
-                                title="Edit details" 
-                                onclick="event.stopPropagation();" 
-                                class="px-2"
-                            >
-                                <i class="fas fa-pencil" title="Edit details"></i>
-                            </a>
+                            <div>
+                                <!-- Edit Device Icon -->
+                                <a href="{% url 'edit-devise' device.pk %}" 
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="top" 
+                                   title="Edit details" 
+                                   onclick="event.stopPropagation();" 
+                                   class="px-2">
+                                    <i class="fas fa-pencil" title="Edit details"></i>
+                                </a>
+                        
+                                <!-- Export Device APIs Icon -->
+                                <a href="{% url 'export-device-apis' device.pk %}" 
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="top" 
+                                   title="Export Device APIs" 
+                                   onclick="event.stopPropagation();" 
+                                   class="px-2">
+                                    <i class="fas fa-file-export" title="Export Device APIs"></i>
+                                </a>
+                            </div>
                         </li>
                         
                         {% endfor %}
