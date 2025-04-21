@@ -10,6 +10,7 @@ DEVICE_CHOICES   = [('soilsaathi', 'Soil Saathi'),('atmo_sense', 'Atmo Sense'), 
 
 SOIL_SAATHI_FIELDS  = {
     'id'                   : 'ID',
+    'tag'                  : 'Tag',
     'electrical_conduction': 'Electrical Conduction',
     'nitrogen'             : 'Nitrogen',
     'phosphorous'          : 'Phosphorous',
@@ -31,6 +32,8 @@ SOIL_SAATHI_FIELDS  = {
     'oc'                   : 'Oc',
     'crop_type'            : 'Crop Type',
     'created_at'           : 'Requested At',
+    'latitude'             : 'Latitude',
+    'longitude'            : 'Longitude',
 }
 
 ATMO_SENSE_FIELDS = {
@@ -115,6 +118,9 @@ class DeviseApis(models.Model):
     ec                    = models.FloatField(default=0.0)
     oc                    = models.FloatField(default=0.0)
     crop_type             = models.CharField(max_length=255, choices = CROP_LIST)
+    tag                   = models.CharField( max_length=255, null=True, blank=True, default=None)
+    latitude              = models.FloatField(default=0.0)
+    longitude             = models.FloatField(default=0.0)
     created_at            = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

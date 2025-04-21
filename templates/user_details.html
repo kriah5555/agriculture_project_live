@@ -1,6 +1,9 @@
 {% extends "navbar.html" %}
 
 {% block content %}
+{% include "soil_saathi_parm_comparison_popup_bar_chart.html" %}
+{% include "map_popup.html" %}
+
 <div>
     <div class="row" style="display: flex;" >
 
@@ -11,8 +14,7 @@
                 <div class="card-body text-center">
                     <!-- Centering the image -->
                     <div class="d-flex justify-content-center mb-3">
-                        <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar"
-                            class="rounded-circle img-fluid" style="width: 120px; height: 120px; object-fit: cover;">
+                        <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar" class="rounded-circle img-fluid" style="width: 120px; height: 120px; object-fit: cover;">
                     </div>
 
                     <!-- User Details -->
@@ -88,7 +90,7 @@
             <div class="card bg-light flex-fill" style="overflow-y: auto;max-height: 300px;border-radius: 1%; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                 <div class="card-body">
             
-                    <h5 class="text-primary">Devices linked 
+                    <h5 class="text-primary">DeviSes linked 
                         <a href="{% url 'add-devise' user.username %}" onclick="saveUserDetails()" class="text-primary mr-3" style="font-size: 20px;" title="Save">
                             <i class="fas fa-plus"></i> 
                         </a>
@@ -139,6 +141,16 @@
                                    class="px-2">
                                     <i class="fas fa-file-export" title="Export Device APIs"></i>
                                 </a>
+                                {% if device.devise_type == "soilsaathi" %}
+                                    <a href="#"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Compare Nutrients"
+                                    onclick="event.stopPropagation(); showNpkPopup({{ device.pk }});"
+                                    class="px-2">
+                                    <i class="fas fa-chart-line" title="Compare Nutrients"></i>
+                                    </a>
+                                {% endif %}
                             </div>
                         </li>
                         
@@ -216,6 +228,11 @@
             <div class="card-header bg-primary text-white d-flex align-items-center">
                 <h5 class="mb-0 flex-grow-1">API Calls for Selected Device</h5>
                 <input type="text" id="searchInput" class="form-control w-50" placeholder="Search..." onkeyup="searchTable()">
+
+                <!-- Plus Icon Button -->
+                <button class="btn btn-light text-primary rounded-circle" data-bs-toggle="modal" data-bs-target="#addApiModal" title="Add API Call">
+                    <i class="fas fa-plus"></i>
+                </button>
             </div>
             
             <div class="card-body">
@@ -405,56 +422,62 @@
     }
 
     async function fetchData(id) {
-        try {
-            const response = await fetch(`${url}/${id}`);
+    try {
+        const response = await fetch(`${url}/${id}`);
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-            // Parse the JSON data
-            const deviseData = await response.json();
+        // Parse the JSON data
+        const deviseData = await response.json();
 
-            // Update the headers dynamically
-            const apiDetailsHeaders = document.getElementById('api-details-headers');
-            apiDetailsHeaders.innerHTML = ""; // Clear existing headers
-            for (const [key, value] of Object.entries(deviseData.headers)) {
-                const th = document.createElement('th');
-                th.textContent = value;
-                apiDetailsHeaders.appendChild(th);
-            }
+        // Update the headers dynamically
+        const apiDetailsHeaders = document.getElementById('api-details-headers');
+        apiDetailsHeaders.innerHTML = ""; // Clear existing headers
+        for (const [key, value] of Object.entries(deviseData.headers)) {
+            const th = document.createElement('th');
+            th.textContent = value;
+            apiDetailsHeaders.appendChild(th);
+        }
 
-            // Populate the API details table rows
-            const apiDetailsTable = document.getElementById('api-details-table');
-            apiDetailsTable.innerHTML = ""; // Clear existing rows
-            deviseData.data.forEach(api => {
-                const row = document.createElement('tr');
-                let rowContent = '';
+        // Populate the API details table rows
+        const apiDetailsTable = document.getElementById('api-details-table');
+        apiDetailsTable.innerHTML = ""; // Clear existing rows
+        deviseData.data.forEach(api => {
+            const row = document.createElement('tr');
+            let rowContent = '';
 
-                // Dynamically create table cells based on the headers
-                for (const headerKey in deviseData.headers) {
-                    const cellValue = api[headerKey] !== undefined ? api[headerKey] : '';
+            // Dynamically create table cells based on the headers
+            for (const headerKey in deviseData.headers) {
+                const cellValue = api[headerKey] !== undefined ? api[headerKey] : '';
 
-                    // Check if the header is for an image, if so, generate image HTML
-                    
-                    if (headerKey === 'image_path') {
-                        rowContent += `<td>${api.image_path ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />` : ''}</td>`;
-                    } else {
-                        rowContent += `<td>${cellValue}</td>`;
-                    }
+                // Check if the header is for an image, if so, generate image HTML
+                if (headerKey === 'image_path') {
+                    rowContent += `<td>${api.image_path ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />` : ''}</td>`;
+                } else {
+                    rowContent += `<td>${cellValue}</td>`;
                 }
+            }
 
-                rowContent += `<td><span class="edit-btn" onclick="redirectToEdit(${api.id})">👁️</span></td>`;
+            // Make the entire row clickable
+            row.style.cursor = "pointer";  // Changes the cursor to pointer when hovering over the row
 
-                // Insert the row into the table
-                row.innerHTML = rowContent;
-                apiDetailsTable.appendChild(row);
+            // When the row is clicked, trigger redirectToEdit
+            row.addEventListener("click", () => {
+                redirectToEdit(api.id);
             });
 
-        } catch (error) {
-            console.error('Error:', error);
-        }
+            // Insert the row into the table
+            row.innerHTML = rowContent;
+            apiDetailsTable.appendChild(row);
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
     }
+}
+
 
     function redirectToEdit(id) {
         let endpoint = ''; 

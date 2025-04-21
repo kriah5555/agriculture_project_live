@@ -338,13 +338,12 @@ def devise_list(request, **kwargs):
     if request.method == 'POST':
         pk = request.POST['pk']
         if pk:
-            devises = Devise.objects.filter(pk=request.POST['pk'])
+            devises = Devise.objects.filter(pk=request.POST['pk'], devise_type='soilsaathi')
         else :
-            devises = Devise.objects.all()
+            devises = Devise.objects.filter(devise_type='soilsaathi')
     else:
-        devises = Devise.objects.all()
+        devises = Devise.objects.filter(devise_type='soilsaathi')
 
-    devices = Devise.objects.all()
     template_name     = 'device_list.html'
     
     context = {
@@ -790,82 +789,179 @@ def get_downloadable_data_format(crops_data, crop, time):
             rows.append(['', fym])
     return rows
     
+# # To doload PDF response for API
+# def download_api_response_pdf(request, **kwargs):
+#     from django.http import FileResponse
+#     import io
+#     from reportlab.pdfgen import canvas
+#     from reportlab.lib.units import inch
+#     from reportlab.lib.pagesizes import letter
+#     from django.http import FileResponse
+#     import os
+
+#     api   = DeviseApis.objects.get(pk = kwargs['pk'])
+#     lines = []
+
+#     # craete byte streem buffer
+#     beffer = io.BytesIO()
+#     # create canvas
+#     c     = canvas.Canvas(beffer, pagesize = (595.27,841.89), bottomup = 0)
+#     image = os.path.join(os.getcwd(), 'static/logo3.PNG')
+#     c.drawImage(image, 450, 50, 100, 40) # adding image x, y, width, eight
+#     # create a text object
+#     textob = c.beginText()
+#     textob.setTextOrigin(inch, inch)
+#     textob.setFont('Helvetica', 14)
+
+#     textob.textLine(f'                 ArkaShine Innovations Pvt Ltd')
+#     textob.setFont('Helvetica', 10)
+#     if 'pk' in  kwargs:
+#         api = DeviseApis.objects.get(pk=kwargs['pk'])
+#         crops_data = FertilizerCalculation.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
+#         device_location = DeviseLocation.objects.filter(devise=api.device)
+#         textob.textLine(f'API call time :  {api.created_at}')
+#         textob.textLine(f'Crop          :  {api.crop_type}')
+#         textob.textLine(f'N             :  {api.nitrogen}')
+#         textob.textLine(f'P             :  {api.phosphorous}')
+#         textob.textLine(f'K             :  {api.potassium}')
+#         textob.textLine(f'PH            :  {api.ph}')
+#         textob.textLine(f'EC            :  {api.ec}')
+#         textob.textLine(f'OC            :  {api.oc}')
+#         if (device_location) : 
+#             device_location = device_location.first()
+#             textob.textLine(f'latitude          :  {device_location.latitude}')
+#             textob.textLine(f'longitude          :  {device_location.longitude}')
+#         textob.textLine(f'Phone         :  +91 9611297893')
+#         textob.textLine(f'Area name     :  {api.area_name}')
+#         textob.textLine(f'THE RECOMMENDED DOSES OF FERTILIZER FOR CROP "{api.crop_type}" ARE:')
+#         for crop_fertilizer_data in crops_data['crop_fertilizer']:
+#             for crop_data in crop_fertilizer_data:
+#                 textob.textLine('---->'+crop_data)
+#             textob.textLine(' ')
+#         textob.textLine('Remedy, Fertility, Fym and Target yield')
+#         for crop_fym_data in crops_data['fym']:
+#             for fym in crop_fym_data:
+#                 textob.textLine('---->'+fym)
+#     else:
+#         textob.textLine('no data available')
+
+#     textob.setFillColorCMYK(0.8,0,0,0.3)
+#     textob.textLine(' ')
+#     textob.textLine('Address : H. NO.9.1 2-226, 11th Cross, Bhawani Rice Mill Road')
+#     textob.textLine('Vidyanagar colony, Bidar, Karnataka, lndia, 585403')
+#     c.drawText(textob)
+#     c.showPage()
+#     c.save()
+#     beffer.seek(0)
+
+#     return FileResponse(beffer, as_attachment=True, filename="recomanded.pdf")
+
+# To doload PDF response for API
+def draw_gauge(value, label):
+    fig, ax = plt.subplots(figsize=(2.5, 1.5))
+    ax.set_xlim(-1, 1)
+    ax.set_ylim(-0.5, 1)
+    ax.axis('off')
+    ax.set_title(label, fontsize=10)
+
+    # Draw semicircle
+    wedge = plt.Circle((0, 0), 1, fill=False, edgecolor='black')
+    ax.add_artist(wedge)
+
+    # Draw ticks and labels
+    for i in range(0, 15):
+        angle = (i / 14) * 180
+        x = 0.9 * np.cos(np.radians(180 - angle))
+        y = 0.9 * np.sin(np.radians(180 - angle))
+        ax.plot([0, x], [0, y], color='gray', linewidth=0.5)
+
+    # Needle
+    needle_angle = (value / 14) * 180
+    x = 0.9 * np.cos(np.radians(180 - needle_angle))
+    y = 0.9 * np.sin(np.radians(180 - needle_angle))
+    ax.plot([0, x], [0, y], color='red', linewidth=2)
+
+    buf = io.BytesIO()
+    canvas = FigureCanvas(fig)
+    canvas.print_png(buf)
+    plt.close(fig)
+    buf.seek(0)
+    return buf
+
 def download_api_response_pdf(request, **kwargs):
-    from django.http import FileResponse
-    import io
-    from reportlab.pdfgen import canvas
-    from reportlab.lib.units import inch
-    from reportlab.lib.pagesizes import letter
-    from django.http import FileResponse
-    import os
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
 
-    api   = DeviseApis.objects.get(pk = kwargs['pk'])
-    lines = []
+    # Logo
+    logo_path = os.path.join(os.getcwd(), 'static/logo3.PNG')
+    c.drawImage(logo_path, 450, 780, width=100, height=40)
 
-    # craete byte streem buffer
-    beffer = io.BytesIO()
-    # create canvas
-    c     = canvas.Canvas(beffer, pagesize = (595.27,841.89), bottomup = 0)
-    image = os.path.join(os.getcwd(), 'static/logo3.PNG')
-    c.drawImage(image, 450, 50, 100, 40) # adding image x, y, width, eight
-    # create a text object
-    textob = c.beginText()
-    textob.setTextOrigin(inch, inch)
-    textob.setFont('Helvetica', 14)
+    # Header
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(50, 800, "ArkaShine Innovations Pvt Ltd")
 
-    # add some lines to text
-    
+    # Address
+    c.setFont("Helvetica", 9)
+    c.drawString(50, 785, "Address : H. NO.9.1 2-226, 11th Cross, Bhawani Rice Mill Road")
+    c.drawString(50, 772, "Vidyanagar colony, Bidar, Karnataka, India, 585403")
 
-    # lines = [
-    #     'Line1',
-    #     'Line1',
-    #     'Line1',
-    #     'Line1',
-    # ]
-    # for line in lines:
-    #     textob.textLine(line)
-    textob.textLine(f'                 ArkaShine Innovations Pvt Ltd')
-    textob.setFont('Helvetica', 10)
-    if 'pk' in  kwargs:
+    if 'pk' in kwargs:
         api = DeviseApis.objects.get(pk=kwargs['pk'])
-        crops_data = FertilizerCalculation.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
-        device_location = DeviseLocation.objects.filter(devise=api.device)
-        textob.textLine(f'API call time :  {api.created_at}')
-        textob.textLine(f'Crop          :  {api.crop_type}')
-        textob.textLine(f'N             :  {api.nitrogen}')
-        textob.textLine(f'P             :  {api.phosphorous}')
-        textob.textLine(f'K             :  {api.potassium}')
-        textob.textLine(f'PH            :  {api.ph}')
-        textob.textLine(f'EC            :  {api.ec}')
-        textob.textLine(f'OC            :  {api.oc}')
-        if (device_location) : 
-            device_location = device_location.first()
-            textob.textLine(f'latitude          :  {device_location.latitude}')
-            textob.textLine(f'longitude          :  {device_location.longitude}')
-        textob.textLine(f'Phone         :  +91 9611297893')
-        textob.textLine(f'Area name     :  {api.area_name}')
-        textob.textLine(f'THE RECOMMENDED DOSES OF FERTILIZER FOR CROP "{api.crop_type}" ARE:')
-        for crop_fertilizer_data in crops_data['crop_fertilizer']:
-            for crop_data in crop_fertilizer_data:
-                textob.textLine('---->'+crop_data)
-            textob.textLine(' ')
-        textob.textLine('Remedy, Fertility, Fym and Target yield')
-        for crop_fym_data in crops_data['fym']:
-            for fym in crop_fym_data:
-                textob.textLine('---->'+fym)
-    else:
-        textob.textLine('no data available')
+        location = DeviseLocation.objects.filter(devise=api.device).first()
 
-    textob.setFillColorCMYK(0.8,0,0,0.3)
-    textob.textLine(' ')
-    textob.textLine('Address : H. NO.9.1 2-226, 11th Cross, Bhawani Rice Mill Road')
-    textob.textLine('Vidyanagar colony, Bidar, Karnataka, lndia, 585403')
-    c.drawText(textob)
+        # Left Column
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(50, 740, f"Area name : {api.area_name}")
+        c.drawString(50, 725, f"API call time : {api.created_at}")
+        c.drawString(50, 710, f"Crop : {api.crop_type}")
+
+        # Right Column
+        c.drawString(320, 740, f"Latitude : {location.latitude if location else ''}")
+        c.drawString(320, 725, f"Longitude : {location.longitude if location else ''}")
+        c.drawString(320, 710, f"Phone : +91 9611297893")
+
+        # Gauges
+        ph_gauge = draw_gauge(api.ph, "pH")
+        ec_gauge = draw_gauge(api.ec, "EC")
+        c.drawImage(ph_gauge, 100, 600, width=150, height=100)
+        c.drawImage(ec_gauge, 300, 600, width=150, height=100)
+
+        # Table Headers
+        c.setFont("Helvetica-Bold", 10)
+        y = 550
+        c.drawString(50, y, "Parameters")
+        c.drawString(250, y, "Unit")
+        c.drawString(350, y, "Value")
+
+        # Table Data (Example only, replace with actual data source)
+        table_data = [
+            ("(0.51–0.75)", "%", "0.29"),
+            ("Available Phosphorus (11–25)", "Kg/acre", "108.00"),
+            ("Available Potassium (60–120)", "Kg/acre", "204.00"),
+            ("Available Calcium as Ca (>300)", "mg/kg", "468.10"),
+            ("Available Magnesium as Mg (>120)", "mg/kg", "106.80"),
+            ("Available Sulphur as S >10", "mg/kg", "30.11"),
+            ("Available Boron", "mg/kg", "0.74"),
+            ("Available Zinc as Zn (1.00)", "mg/kg", "2.30"),
+            ("Available Iron as Fe (24.50)", "mg/kg", "37.56"),
+            ("Available Copper as Cu (1.20)", "mg/kg", "1.50"),
+            ("Available Manganese as Mn", "mg/kg", "71.35"),
+        ]
+
+        c.setFont("Helvetica", 10)
+        y -= 20
+        for row in table_data:
+            c.drawString(50, y, row[0])
+            c.drawString(250, y, row[1])
+            c.drawString(350, y, row[2])
+            y -= 15
+    else:
+        c.drawString(50, 700, "No data available")
+
     c.showPage()
     c.save()
-    beffer.seek(0)
-
-    return FileResponse(beffer, as_attachment=True, filename="recomanded.pdf")
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename="recommended.pdf")
 
     
 def download_api_response_csv(request, **kwargs):
@@ -947,7 +1043,7 @@ class AddDeviceLocation(CreateView):
         'devise':self.kwargs['pk'],
     }
 
-class getDeviseApiCallsJsonData(View):
+class GetDeviseApiCallsJsonData(View):
 
     def get(self, *args, **kwargs):
         id             = kwargs.get('id')  # Use 'id' instead of 'pk'
@@ -971,4 +1067,86 @@ class getDeviseApiCallsJsonData(View):
         except Devise.DoesNotExist:
             return JsonResponse({'error': 'Devise not found'}, status=404)
         
-        return JsonResponse({'headers': headers, 'data': api_calls_data})
+        return JsonResponse({'headers': headers, 'data': api_calls_data, 'devise_type': devise.devise_type})
+
+class GetDeviseApiCallsJsonDataForChart(View):
+    def get(self, *args, **kwargs):
+        from django.views import View
+        from django.utils.dateformat import DateFormat
+        from django.utils.formats import get_format
+        from collections import defaultdict
+        from calendar import month_abbr
+        id = kwargs.get('id')
+        headers = {}
+        npk_grouped_data = defaultdict(list)
+
+        try:
+            devise = Devise.objects.get(pk=id)
+
+            match devise.devise_type:
+                case "soilsaathi":
+                    headers = SOIL_SAATHI_FIELDS
+                    api_calls_data = DeviseApis.objects.filter(device=devise).values()
+                case "atmo_sense":
+                    headers = ATMO_SENSE_FIELDS
+                    api_calls_data = DeviseApisFields.objects.filter(device=devise).values()
+                case "soil_life":
+                    headers = SOIL_LIFE_FIELDS
+                    api_calls_data = DeviseApisFields.objects.filter(device=devise).values()
+                case _:
+                    return JsonResponse({'error': 'Unsupported devise type'}, status=400)
+
+            for entry in api_calls_data:
+                timestamp = entry.get("created_at") or entry.get("timestamp") or entry.get("date")
+                if not timestamp:
+                    continue
+                
+                # Format as "Jan-2024"
+                month_year = f"{month_abbr[timestamp.month]}-{timestamp.year}"
+
+                # Remove non-nutrient fields (like device id, created_at, etc.)
+                nutrient_data = {
+                    key: value
+                    for key, value in entry.items()
+                    if key in headers  # Keep only known nutrient fields
+                }
+
+                npk_grouped_data[month_year].append(nutrient_data)
+
+        except Devise.DoesNotExist:
+            return JsonResponse({'error': 'Devise not found'}, status=404)
+
+        return JsonResponse({'headers': headers, 'data': dict(npk_grouped_data)})
+
+class GetApiHeadersJsonData(View):
+
+    def get(self, *args, **kwargs):
+        devise_type = kwargs.get('devise_type', '') 
+        match devise_type:
+            case "soilsaathi":
+                headers = SOIL_SAATHI_FIELDS
+            case "atmo_sense":
+                headers = ATMO_SENSE_FIELDS
+            case "soil_life":
+                headers = SOIL_LIFE_FIELDS
+            case _:
+                headers = []
+        return JsonResponse({'headers': headers})
+
+class GetApiFieldsJsonData(View):
+
+    def get(self, *args, **kwargs):
+        devise_type = kwargs.get('devise_type', '')  
+        id          = kwargs.get('id', '')  
+
+        match devise_type:
+            case "soilsaathi":
+                data = SOIL_SAATHI_FIELDS
+            case "atmo_sense" | "soil_life":  # Use `|` for multiple matches in Python
+                data = ATMO_SENSE_FIELDS
+            case "":
+                data = SOIL_LIFE_FIELDS
+            case _:
+                data = []
+
+        return JsonResponse({'data': data})

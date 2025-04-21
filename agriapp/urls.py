@@ -3,6 +3,7 @@
 from django.urls import path
 from django.views.generic import TemplateView
 from . import views as v
+from . import PDF as pdf
 from .views import *
 from .exportInfo import *
 from django.contrib.auth.decorators import login_required
@@ -32,7 +33,7 @@ urlpatterns = [
     path('notifications/<int:pk>/', login_required(v.notifications), name = "notifications"),
     path('add-api-threshold/<int:pk>/', APIThresholdForm.as_view(), name = "add-api-threshold"),
     path('update-api-threshold/<int:pk>/<int:devise_pk>/', APIThresholdFormUpdate.as_view(), name = "update-api-threshold"),
-    path('download_api_response_pdf/<int:pk>/', login_required(v.download_api_response_pdf), name = "download-api-response-pdf"),
+    path('download_api_response_pdf/<int:pk>/', login_required(pdf.download_api_response_pdf), name = "download-api-response-pdf"),
     path('download_api_response_csv/<int:pk>/', login_required(v.download_api_response_csv), name = "download-api-response-csv"),
     path('dynamic-fields/', login_required(v.dynamic_fields), name = "dynamic-fields"),
     path('delete_field/<int:id>/', login_required(v.delete_field), name = "delete_field"),
@@ -56,7 +57,10 @@ urlpatterns = [
     path('soil-life-dashboard/', login_required(SoilLifeDashboard.as_view()), name = "soil-life-dashboard"),
     path('soil-life-api-overview/<int:pk>/', login_required(v.api_overview), name = "soil-life-api-overview"),
 
-    path('devise-api-calls/<int:id>/', getDeviseApiCallsJsonData.as_view(), name = "devise-api-calls"), # api data for page
+    path('devise-api-calls/<int:id>/', GetDeviseApiCallsJsonData.as_view(), name = "devise-api-calls"), # api data for page
+    path('devise-api-calls-chart/<int:id>/', GetDeviseApiCallsJsonDataForChart.as_view(), name = "devise-api-calls-chart"), # api data for page
+    path('api-fields/<str:devise_type>', GetApiFieldsJsonData.as_view(), name = "api-fields"), # api data for page
+    path('api-data/<str:devise_type>/<int:id>', GetApiHeadersJsonData.as_view(), name = "api-data"), # api data for page
 
     path('user-page/', login_required(v.userPage), name = "user-page"),
     

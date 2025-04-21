@@ -1,256 +1,155 @@
+{% extends "navbar.html" %}
 {% load static %}
 
-<head>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
-    <style>
-       
-       body{
-        background-size: 100% 100%;background-image: url({% static 'dashboard/bg1.jpeg' %});
-        /* background: linear-gradient(to right, #fc00ff 0%, #00fffc 45%, #fffc00 100%); */
-        }
-        .project-list-table {
-            border-collapse: separate;
-            border-spacing: 0 12px
-        }
-
-        .project-list-table tr {
-            background-color: #fff
-        }
-
-        .table-nowrap td, .table-nowrap th {
-            white-space: nowrap;
-        }
-        .table-borderless>:not(caption)>*>* {
-            border-bottom-width: 0;
-        }
-        .table>:not(caption)>*>* {
-            padding: 0.75rem 0.75rem;
-            background-color: var(--bs-table-bg);
-            border-bottom-width: 1px;
-            box-shadow: inset 0 0 0 9999px var(--bs-table-accent-bg);
-        }
-
-        .avatar-sm {
-            height: 2rem;
-            width: 2rem;
-        }
-        .rounded-circle {
-            border-radius: 50%!important;
-        }
-        .me-2 {
-            margin-right: 0.5rem!important;
-        }
-        img, svg {
-            vertical-align: middle;
-        }
-
-        a {
-            color: #3b76e1;
-            text-decoration: none;
-        }
-
-        .badge-soft-danger {
-            color: #f56e6e !important;
-            background-color: rgba(245,110,110,.1);
-        }
-        .badge-soft-success {
-            color: #63ad6f !important;
-            background-color: rgba(99,173,111,.1);
-        }
-
-        .badge-soft-primary {
-            color: #3b76e1 !important;
-            background-color: rgba(59,118,225,.1);
-        }
-
-        .badge-soft-info {
-            color: #57c9eb !important;
-            background-color: rgba(87,201,235,.1);
-        }
-
-        .avatar-title {
-            align-items: center;
-            background-color: #3b76e1;
-            color: #fff;
-            display: flex;
-            font-weight: 500;
-            height: 100%;
-            justify-content: center;
-            width: 100%;
-        }
-        .bg-soft-primary {
-            background-color: rgba(59,118,225,.25)!important;
-        }
-
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.0/css/boxicons.min.css" integrity="sha512-pVCM5+SN2+qwj36KonHToF2p1oIvoU3bsqxphdOIWMYmgr4ZqD3t5DjKvvetKhXGc/ZG5REYTT6ltKfExEei/Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/5.3.45/css/materialdesignicons.css" integrity="sha256-NAxhqDvtY0l4xn+YVa6WjAcmd94NNfttjNsDmNatFVc=" crossorigin="anonymous" />
-</head>
-    <!-- navbar -->
-    <nav class="navbar fixed-top navbar-expand navbar-dark" style="background-color: #55779f;">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">
-                <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations</h3>
-            </a>
-                <ul class="navbar-nav ml-auto">
-                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-                    </li>
-                </ul>
+{% block content %}
+<div class="table-wrapper">
+    <!-- Heading Section -->
+    <div class="table-title">
+        <div class="row">
+            <div class="col-sm-6">
+                <h2>Device List <b>({{ devise_count }})</b></h2>
+            </div>
         </div>
-    </nav>
-  <!-- end navbar -->
-<div class="container col-md-12 col-sm-12" style="margin-top: 100px;">
-    <!-- success message -->
-    {% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-dismissible alert-success">
-        <!-- <button type="button" class="close" data-dismiss="alert">
-        ×
-        </button> -->
-        <strong>{{message}}</strong>
-        </div>
-    {% endfor %}
-    {% endif %}
-    <div class="row align-items-center">
-        <div class="">
-                <h5 class="" style="float: left;margin-right: 300px;color: white;">Device List ({{devise_count}})</h5>
-                    <form class="" method="POST" style="float: right;"> {% csrf_token %}
-                        <label>Search device</label>
-                        <select class="form-control select2" name="pk">
-                            <option value=""> All</option>
-                            {% for devise in devices %}
-                                <option value="{{devise.pk}}">{{devise.name}}</option> 
-                            {% endfor %}
-                        </select>
-                        <button class="btn btn-primary btn-sm btn-icon-text mt-1">Filter</button>
-                    </form>
-            <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-            <script>
-                $('.select2').select2();
-            </script>
-                    
-        </div>
-        <!-- <div class="col-md-6">
-            <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
-                <div>
-                    <ul class="nav nav-pills">
-                        <li class="nav-item">
-                            <a
-                                aria-current="page"
-                                href="#"
-                                class="router-link-active router-link-exact-active nav-link active"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title=""
-                                data-bs-original-title="List"
-                                aria-label="List"
-                            >
-                                <i class="bx bx-list-ul"></i>
+    </div>
+
+    <!-- Select2 CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    <script>
+        $('.select2').select2();
+    </script>
+
+    <!-- Table Filters -->
+    <div class="table-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered table-sm align-middle project-list-table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Device ID</th>
+                        <th>Serial No</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Amount Paid</th>
+                        <th>Balance Amount</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr>
+                        <th><input type="text" class="form-control form-control-sm column-filter" placeholder="Search name" data-column="0"></th>
+                        <th><input type="text" class="form-control form-control-sm column-filter" placeholder="Search ID" data-column="1"></th>
+                        <th><input type="text" class="form-control form-control-sm column-filter" placeholder="Search Serial" data-column="2"></th>
+                        <th><input type="text" class="form-control form-control-sm column-filter" placeholder="Search Email" data-column="3"></th>
+                        <th><input type="text" class="form-control form-control-sm column-filter" placeholder="Search Phone" data-column="4"></th>
+                        <th><input type="text" class="form-control form-control-sm column-filter" placeholder="Search Paid" data-column="5"></th>
+                        <th><input type="text" class="form-control form-control-sm column-filter" placeholder="Search Balance" data-column="6"></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for devise in devises %}
+                    <tr>
+                        <td class="py-2">
+                            <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="" style="height: 30px;" />
+                            {{ devise.name }}
+                        </td>
+                        <td class="py-2">{{ devise.devise_id }}</td>
+                        <td class="py-2">{{ devise.serial_no }}</td>
+                        <td class="py-2">{{ devise.email }}</td>
+                        <td class="py-2">{{ devise.phone }}</td>
+                        <td class="py-2">{{ devise.amount_paid }}</td>
+                        <td class="py-2">{{ devise.balance_amount }}</td>
+                        <td class="py-2">
+                            <a href="{% url 'map-devise' devise.pk %}" class="text-dark me-2" data-bs-toggle="tooltip" title="Device location">
+                                <i class="fas fa-map-marker-alt"></i>
                             </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="Grid" aria-label="Grid"><i class="bx bx-grid-alt"></i></a>
-                        </li>
-                    </ul>
-                </div>
-                <div>
-                    <a href="#" data-bs-toggle="modal" data-bs-target=".add-new" class="btn btn-primary"><i class="bx bx-plus me-1"></i> Add New</a>
-                </div>
-                <div class="dropdown">
-                    <a class="btn btn-link text-muted py-1 font-size-16 shadow-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bx bx-dots-horizontal-rounded"></i></a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                        <li><a class="dropdown-item" href="#">Something else here</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div> -->
-    </div>
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="">
-                <div class="table-responsive">
-                    <table class="table project-list-table table-nowrap align-middle table-borderless">
-                        <thead>
-                            <tr>
-                                <th scope="col">Name of individual or organization</th>
-                                <th scope="col">Device id</th>
-                                <th scope="col">Serial no</th>
-                                <th scope="col">Email</th>
-                                <th scope="col">Phone</th>
-                                <!-- <th scope="col">Purchase date</th> -->
-                                <th scope="col">Amount paid</th>
-                                <th scope="col">Balance amount</th>
-                                <th scope="col">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for devise in devises %}
-                                <tr style="background-color: #a97e7e94; color: white;">
-                                    <td><img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="" class="avatar-sm rounded-circle me-2" />{{ devise.name }}</td>
-                                    <td>{{ devise.devise_id }}</td>
-                                    <td>{{ devise.serial_no }}</td>
-                                    <td>{{ devise.email }}</td>
-                                    <td>{{ devise.phone }}</td>
-                                    <!-- <td>{{ devise.purchase_date }}</td> -->
-                                    <td>{{ devise.amount_paid }}</td>
-                                    <td>{{ devise.balance_amount }}</td>
-                                    <!-- <td><span class="badge badge-soft-success mb-0">Full Stack Developer</span></td> -->
-                                    <!-- <td><span class="badge badge-soft-danger mb-0">UI/UX Designer</span></td> -->
-                                    <td>
-                                        <ul class="list-inline mb-0">
-                                            <li class="list-inline-item">
-                                                <!-- <a href="{% url 'change-password' devise.pk %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Change password" class="px-2 text-white"><i class="bx bx-lock font-size-18"></i></a> -->
-                                                <a href="{% url 'map-devise' devise.pk %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Device location" class="px-2 text-white"><i class="bx bx-map font-size-18"></i></a>
-                                                <a href="{% url 'device-details' devise.pk %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Details" class="px-2 text-white"><i class="bx bx-detail font-size-18"></i></a>
-                                                <a href="{% url 'edit-devise' devise.pk %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit" class="px-2 text-white"><i class="bx bx-pencil font-size-18"></i></a>
-                                            </li>
-                                            <!-- delete icon -->
-                                            <!-- <li class="list-inline-item">
-                                                <a href="javascript:void(0);" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" class="px-2 text-danger"><i class="bx bx-trash-alt font-size-18"></i></a>
-                                            </li> -->
-                                            <!-- <li class="list-inline-item dropdown">
-                                                <a class="text-muted dropdown-toggle font-size-18 px-2" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true"><i class="bx bx-dots-vertical-rounded"></i></a>
-                                                <div class="dropdown-menu dropdown-menu-end">
-                                                    <a class="dropdown-item" href="#">Action</a><a class="dropdown-item" href="#">Another action</a><a class="dropdown-item" href="#">Something else here</a>
-                                                </div>
-                                            </li> -->
-                                        </ul>
-                                    </td>
-                                </tr>   
-                            {% endfor %}
-                            
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                            <a href="{% url 'device-details' devise.pk %}" class="text-dark me-2" data-bs-toggle="tooltip" title="Details">
+                                <i class="fas fa-info-circle"></i>
+                            </a>
+                            <a href="{% url 'edit-devise' devise.pk %}" class="text-dark" data-bs-toggle="tooltip" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-    <!-- <div class="row g-0 align-items-center pb-4"> -->
-        <!-- <div class="col-sm-6">
-            <div><p class="mb-sm-0">Showing 1 to 10 of 57 entries</p></div>
-        </div> -->
-        <!-- <div class="col-sm-6">
-            <div class="float-sm-end">
-                <ul class="pagination mb-sm-0">
-                    <li class="page-item disabled">
-                        <a href="#" class="page-link"><i class="mdi mdi-chevron-left"></i></a>
-                    </li>
-                    <li class="page-item active"><a href="#" class="page-link">1</a></li>
-                    <li class="page-item"><a href="#" class="page-link">2</a></li>
-                    <li class="page-item"><a href="#" class="page-link">3</a></li>
-                    <li class="page-item"><a href="#" class="page-link">4</a></li>
-                    <li class="page-item"><a href="#" class="page-link">5</a></li>
-                    <li class="page-item">
-                        <a href="#" class="page-link"><i class="mdi mdi-chevron-right"></i></a>
-                    </li>
-                </ul>
-            </div>
-        </div> -->
-    <!-- </div> -->
 </div>
+
+<!-- FontAwesome CDN -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+<!-- Filtering Script -->
+<script>
+    document.querySelectorAll('.column-filter').forEach(input => {
+        input.addEventListener('input', function () {
+            const filters = document.querySelectorAll('.column-filter');
+            const rows = document.querySelectorAll('.project-list-table tbody tr');
+
+            rows.forEach(row => {
+                let visible = true;
+                filters.forEach((filter, index) => {
+                    const value = filter.value.toLowerCase();
+                    const cell = row.querySelectorAll('td')[index];
+                    const cellText = cell?.textContent.toLowerCase() || '';
+                    if (value && !cellText.includes(value)) {
+                        visible = false;
+                    }
+                });
+                row.style.display = visible ? '' : 'none';
+            });
+        });
+    });
+</script>
+
+<!-- Styling -->
+<style>
+    .table-wrapper {
+        background: #fff;
+        padding: 20px 25px;
+        border-radius: 3px;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+    }
+
+    .table-title {
+        padding: 16px 30px;
+        margin: -20px -25px 10px;
+        border-radius: 3px 3px 0 0;
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .table-title h2 {
+        margin: 5px 0 0;
+        font-size: 24px;
+    }
+
+    .table-body {
+        padding: 10px;
+        background-color: #fff;
+        border-radius: 0 0 3px 3px;
+    }
+
+    table.table tr th,
+    table.table tr td {
+        border-color: #e9e9e9;
+        padding: 12px 15px;
+        vertical-align: middle;
+    }
+
+    table.table tr:hover {
+        background-color: #f5f5f5;
+        cursor: pointer;
+    }
+
+    .form-control-sm {
+        height: 30px;
+        font-size: 0.875rem;
+    }
+
+    .table-responsive {
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}

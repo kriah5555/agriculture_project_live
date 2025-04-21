@@ -1,0 +1,114 @@
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<!-- Styles for Map Popup -->
+<style>
+  #mapOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+  }
+
+  #mapPopup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 80%;
+    height: 80%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 10px;
+    z-index: 1001;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #mapTitle {
+    background: #3b82f6;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px 15px;
+    text-align: center;
+  }
+
+  #leafletMapPopup {
+    flex: 1;
+    width: 100%;
+  }
+
+  #closeMapPopupBtn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    z-index: 1002;
+    background: #000;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+</style>
+
+<!-- Map Overlay and Popup -->
+<div id="mapOverlay" onclick="hideMapPopup()"></div>
+
+<div id="mapPopup">
+  <button id="closeMapPopupBtn" onclick="hideMapPopup()">×</button>
+  <div id="mapTitle">Map</div>
+  <div id="leafletMapPopup"></div>
+</div>
+
+<!-- Script -->
+<script>
+  let leafletMapPopup;
+
+  function showMapPopup(lat, lng, name = "Map") {
+    document.getElementById("mapTitle").innerText = name;
+    document.getElementById("mapOverlay").style.display = "block";
+    document.getElementById("mapPopup").style.display = "flex";
+
+    setTimeout(() => {
+      if (!leafletMapPopup) {
+        leafletMapPopup = L.map('leafletMapPopup').setView([lat, lng], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(leafletMapPopup);
+      } else {
+        leafletMapPopup.setView([lat, lng], 13);
+      }
+
+      L.marker([lat, lng]).addTo(leafletMapPopup);
+    }, 200);
+  }
+
+  function hideMapPopup() {
+    document.getElementById("mapOverlay").style.display = "none";
+    document.getElementById("mapPopup").style.display = "none";
+
+    if (leafletMapPopup) {
+      leafletMapPopup.eachLayer(layer => {
+        if (layer instanceof L.Marker) {
+          leafletMapPopup.removeLayer(layer);
+        }
+      });
+    }
+  }
+
+  hideMapPopup()
+  // Example: Delhi with title
+//   showMapPopup(28.6139, 77.2090, "Delhi Sensor");
+</script>

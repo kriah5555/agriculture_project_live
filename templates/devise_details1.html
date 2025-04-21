@@ -1,331 +1,244 @@
+{% extends "navbar.html" %}
 {% load static %}
 
-<header>
-    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <!------ Include the above in your HEAD tag ---------->
-    <link rel="stylesheet" href="{% static 'devise/devise_details1.css' %}">
-    <link rel="stylesheet" href="{% static '/home/css/popup.css' %}" type="text/css">
-  </header>
-
-
-<!------ Include the above in your HEAD tag ---------->
- <!-- navbar -->
- <style>
-  body {
-        background-size: 100% 100%;background-image: url({% static 'dashboard/bg1.jpeg' %});
-    /* background: linear-gradient(40deg, #fc00ff 0%, #00fffc 45%, #fffc00 100%); */
-  }
- </style>
- <h4 class="bg-success" style="width: 100%;">{{message}}</h4>
- <nav class="navbar fixed-top navbar-expand navbar-dark" style="background-color: #55779f;">
-     <div class="container-fluid">
-         <a class="navbar-brand" href="{% url 'dashboard' %}">
-             <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations</h3>
-         </a>
-             <ul class="navbar-nav ml-auto">
-                  <li class="nav-item">
-                     <a class="nav-link" href="{% url 'logout' %}" >Logout</a>
-                 </li>
-             </ul>
-     </div>
- </nav>
-<!-- end navbar -->
-
-<!-- success message -->
-{% if messages %}
-{% for message in messages %}
-    <div class="alert alert-dismissible alert-success mt-5">
-    <strong>{{message}}</strong>
-    </div>
-{% endfor %}
-{% endif %}
-
-<section style="margin-top: 100px;">
-    <!-- <div class="container py-5"> -->
-    <!--  <div class="row">
-        <div class="col">
-          <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
-            <ol class="breadcrumb mb-0">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item"><a href="#">User</a></li>
-              <li class="breadcrumb-item active" aria-current="page">User Profile</li>
-            </ol>
-          </nav>
-        </div>
-      </div> -->
+{% block content %}
   
-      <div class="row mt-5 ml-1 mr-1">
-        <div class="col-lg-4">
-          <div class="card mb-4" style="border-radius: 10%;background-color: #a97e7e94; color: white;">
-            <div class="card-body text-center">
-              <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar"
-                class="rounded-circle img-fluid" style="width: 150px;">
-              <h5 class="my-3">{{devise.name}} </h5>
-              <p class="mb-1">{{devise.phone}}</p>
-              <p class="mb-4">{{devise.email}}</p>
-              <div class="d-flex justify-content-center mb-2">
-                <a href="{% url 'edit-devise' devise.pk %}" class="btn btn-primary">Edit</a>
-                <!-- <button type="button" class="btn btn-outline-primary ms-1">Message</button> -->
-              </div>
-            </div>
-          </div>
-          <div class="card mb-4 mb-lg-0" style="background: transparent;">
-            <div class="card-body p-0" style="background: transparent;">
-              <ul class="list-group list-group-flush rounded-3" style="background: transparent;">
-                <li class="list-group-item d-flex justify-content-between align-items-center p-3" style="background-color: #a97e7e94; color: white;">
-                  <i class="fas fa-globe fa-lg text-warning"></i>
-                  <p class="mb-0">Device usage ({{api_usage}})</p>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center p-3" style="background-color: #a97e7e94; color: white;">
-                  <i class="fab fa-github fa-lg" style="color: #333333;"></i>
-                  <ul>
-                    <li>
-                      <a href="{% url 'map-devise' devise.pk %}" style="color: white;">Device current location</a>
-                    </li>
-                    <li>
-                      {% if location %}
-                        <a href="{% url 'update-location' devise.pk %}" style="color: white;">Update device location</a>
-                      {% else %}
-                        <a href="{% url 'add-location' devise.pk %}" style="color: white;">Add device location</a>
-                      {% endif %}
-                    </li>
-                  </ul>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center p-3" style="background-color: #a97e7e94; color: white;">
-                  <i class="fab fa-twitter fa-lg" style="color: #55acee;"></i>
-                  <p class="mb-0"><a href="{% url 'api-list' devise.pk %}" style="color:white">Device API calls</a></p>
-                </li>
+<div class="row mt-5 ml-1 mr-1">
+  <div class="col-lg-4">
 
-                <li class="list-group-item d-flex justify-content-between align-items-center p-3" style="background-color: #a97e7e94; color: white;">
-                  {% if api_threshold %}
-
-                    <p class="mb-0"><a href="{% url 'update-api-threshold' pk=api_threshold.pk devise_pk=devise.pk %}" style="color: white;">Update API Thresholds</a><br><a href="#popup1" style="color: white;">View chart</a></p>
-                    <br>
-                    <ul style="background: transparent;">
-                      <li style="color: red; background: transparent;">
-                        >=  {{api_threshold.red}} RED
-                      </li>
-                      <li style="color: orange;">
-                         >= {{api_threshold.orange}} ORANGE
-                      </li>
-                      <li style="color: blue;">
-                        >= {{api_threshold.blue}} BLUE
-                      </li>
-                      <li style="color: green;">
-                        >= {{api_threshold.green}} Green
-                      </li>
-                      <li style="color: pink;">
-                         < {{api_threshold.green}} PINK
-                      </li>
-                </li>
-              </ul>
-
-
-
-              <!-- <li class="list-group-item d-flex justify-content-between align-items-center p-3"> -->
-                <!-- pie chart -->
-              <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-              <!-- <div id="myChart" style="width:100%; max-width:500px; height:190px;"></div> -->
-              <script>
-                google.charts.load('current', {'packages':['corechart']});
-                google.charts.setOnLoadCallback(drawChart);
-                
-                function drawChart() {
-                var data = google.visualization.arrayToDataTable([
-                  ['Contry', 'Mhl'],
-                  ['used',{{used}}],
-                  ['Remaining',{{remaining}}],
-                ]);
-                
-                var options = {
-                  title:'API calls chart',
-                  is3D: true,
-                  width: 300,
-                  height: 200,
-                  colors: ['{{color}}', 'grey'],
-                  pieSliceText: 'value'
-                };
-                
-                var chart = new google.visualization.PieChart(document.getElementById('myChart'));
-                  chart.draw(data, options);
-                }
-                </script>
-                <!-- end pie chart -->
-              <!-- </li> -->
-
-            </ul>
-          {% else %}
-            <p class="mb-0"><a href=" {% url 'add-api-threshold' devise.pk %}">Add API Thresholds</a></p>
-          {% endif %}
-
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-8">
-          <div class="card mb-4" style="border-radius: 5%;background-color: #a97e7e94; color: white;" >
-            <div class="card-body">
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">Full Name</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.name}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">Email</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.email}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">Phone</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.phone}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">Mobile</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.phone}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">Address1</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.address1}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">Address2</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.address2}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">device_id</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.devise_id}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">serial_no</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.serial_no}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">chipset_no</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.chipset_no}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">purchase_date</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.purchase_date}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">time_of_sale</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.time_of_sale}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">warrenty</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.warrenty}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">land</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.land}} acrs</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">amount_paid</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.amount_paid}}</p>
-                </div>
-              </div>
-              <hr>
-              <div class="row">
-                <div class="col-sm-3">
-                  <p class="mb-0">balance_amount</p>
-                </div>
-                <div class="col-sm-9">
-                  <p class="mb-0">{{devise.balance_amount}}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div class="card mb-4" style="border-radius: 10%; background-color: white; color: black;">
+      <div class="card-body text-center">
+        <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar"
+          class="rounded-circle img-fluid" style="width: 150px;">
+        <h5 class="my-3">{{devise.name}} </h5>
+        <p class="mb-1">{{devise.phone}}</p>
+        <p class="mb-4">{{devise.email}}</p>
+        <div class="d-flex justify-content-center mb-2">
+          <a href="{% url 'edit-devise' devise.pk %}" class="btn btn-primary">Edit</a>
         </div>
       </div>
-    <!-- </div> -->
+    </div>
+    
+    <div class="card mb-4 mb-lg-0 shadow" style="border-radius: 10px; background-color: white; color: black;">
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush rounded-3">
 
-    <!-- popup -->
-    <div id="popup1" class="overlay1">
-      <div class="popup" style="width: 50%;">
-          <center>
-            <a class="close" href="#">&times;</a>
-            <div class="page-content page-container mt-5" id="page-content">
-              <div class="padding">
-                  <div class="row">
-                      <div class="container-fluid d-flex justify-content-center">
-                          <div class="col-sm-8 col-md-6">
-                            <div id="myChart" style="width:100%; max-width:500px; height:190px;"></div>
-                          </div>
-                      </div>
-                  </div>
+          <!-- Location Links -->
+          <li class="list-group-item p-3 bg-light">
+            <div class="d-flex align-items-start">
+              <div>
+                <p class="mb-1"><a href="{% url 'map-devise' devise.pk %}" class="text-decoration-none text-dark">Device current location</a></p>
+                {% if location %}
+                  <p class="mb-0"><a href="{% url 'update-location' devise.pk %}" class="text-decoration-none text-dark">Update device location</a></p>
+                {% else %}
+                  <p class="mb-0"><a href="{% url 'add-location' devise.pk %}" class="text-decoration-none text-dark">Add device location</a></p>
+                {% endif %}
               </div>
-          </div>
-          </center>
+            </div>
+          </li>
+    
+          <!-- API Calls -->
+          <li class="list-group-item d-flex justify-content-between align-items-center p-3 bg-light">
+            <a href="{% url 'api-list' devise.pk %}" class="text-decoration-none text-dark">Device API calls</a>
+          </li>
+    
+          <!-- Thresholds & Chart -->
+          <li class="list-group-item p-3 bg-light">
+            {% if api_threshold %}
+              <p>
+                <a href="{% url 'update-api-threshold' pk=api_threshold.pk devise_pk=devise.pk %}" class="text-decoration-none text-dark">Update API Thresholds</a> |
+                <a href="#popup1" class="text-decoration-none text-dark">View chart</a>
+              </p>
+              <ul class="ps-3">
+                <li style="color: red;">&ge; {{api_threshold.red}} RED</li>
+                <li style="color: orange;">&ge; {{api_threshold.orange}} ORANGE</li>
+                <li style="color: blue;">&ge; {{api_threshold.blue}} BLUE</li>
+                <li style="color: green;">&ge; {{api_threshold.green}} GREEN</li>
+                <li style="color: pink;">&lt; {{api_threshold.green}} PINK</li>
+              </ul>
+            {% else %}
+              <p class="mb-0"><a href="{% url 'add-api-threshold' devise.pk %}" class="text-decoration-none text-dark">Add API Thresholds</a></p>
+            {% endif %}
+          </li>
+        </ul>
+    
+        <!-- Pie Chart Section -->
+        <div class="p-3">
+          <div id="myChart" style="width: 100%; max-width: 500px; height: 250px;"></div>
+        </div>
+    
+        <!-- Google Chart Script -->
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script>
+          google.charts.load('current', {'packages':['corechart']});
+          google.charts.setOnLoadCallback(drawChart);
+          
+          function drawChart() {
+            var data = google.visualization.arrayToDataTable([
+              ['Type', 'Count'],
+              ['Used', {{used}}],
+              ['Remaining', {{remaining}}]
+            ]);
+            
+            var options = {
+              title: 'API Calls Chart',
+              is3D: true,
+              width: '100%',
+              height: 250,
+              colors: ['{{color}}', 'grey'],
+              pieSliceText: 'value'
+            };
+            
+            var chart = new google.visualization.PieChart(document.getElementById('myChart'));
+            chart.draw(data, options);
+          }
+        </script>
       </div>
     </div>
 
-    <!-- end popup -->
+  </div>
+  
+  <div class="col-lg-8">
+    <div class="card mb-4" style="border-radius: 5%;background-color: #a97e7e94; color: white;" >
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">Full Name</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.name}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">Email</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.email}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">Phone</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.phone}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">Mobile</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.phone}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">Address1</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.address1}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">Address2</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.address2}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">device_id</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.devise_id}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">serial_no</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.serial_no}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">chipset_no</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.chipset_no}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">purchase_date</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.purchase_date}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">time_of_sale</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.time_of_sale}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">warrenty</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.warrenty}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">land</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.land}} acrs</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">amount_paid</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.amount_paid}}</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-sm-3">
+            <p class="mb-0">balance_amount</p>
+          </div>
+          <div class="col-sm-9">
+            <p class="mb-0">{{devise.balance_amount}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  </section>
+  
+</div>
+{% endblock %}

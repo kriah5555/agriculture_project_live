@@ -1,3 +1,7 @@
+{% include "soil_saathi_parm_comparison_popup_bar_chart.html" %}
+{% include "map_popup.html" %}
+{% include "form_popup.html" %}
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -130,7 +134,7 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
                 <div class="card bg-light flex-fill" style="overflow-y: auto;max-height: 300px;border-radius: 1%; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                     <div class="card-body">
                 
-                        <h5 class="text-primary">Devices linked </h5>
+                        <h5 class="text-primary">Devises linked </h5>
                         <ul class="list-group">
                             {% for device in linked_devices %}
     
@@ -155,6 +159,29 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
                             })">
                                 <span>{{ device.name }} ({{device.devise_type}})</span>
                                 
+                                <div>
+                            
+                                    <!-- Export Device APIs Icon -->
+                                    <a href="{% url 'export-device-apis' device.pk %}" 
+                                       data-bs-toggle="tooltip" 
+                                       data-bs-placement="top" 
+                                       title="Export Device APIs" 
+                                       onclick="event.stopPropagation();" 
+                                       class="px-2">
+                                        <i class="fas fa-file-export" title="Export Device APIs"></i>
+                                    </a>
+                                    {% if device.devise_type == "soilsaathi" %}
+                                        <a href="#"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Compare Nutrients"
+                                        onclick="event.stopPropagation(); showNpkPopup({{ device.pk }});"
+                                        class="px-2">
+                                        <i class="fas fa-chart-line" title="Compare Nutrients"></i>
+                                        </a>
+                                    {% endif %}
+
+                                </div>
                             </li>
                             
                             {% endfor %}
@@ -335,7 +362,8 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
     // Initialize a map variable to store the map instance
     let mapInstance = null;
 
-    function showDeviceDetails(device) {
+    function showDeviceDetails(device) 
+    {
         if (device) {
             selected_devise = device;
             document.getElementById('device-name').textContent   = device.name;
@@ -395,53 +423,80 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
         }
     }
 
-    async function fetchData(id) {
+    async function fetchData(id) 
+    {
         try {
             const response = await fetch(`${url}/${id}`);
-
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            // Parse the JSON data
             const deviseData = await response.json();
 
-            // Update the headers dynamically
-            const apiDetailsHeaders     = document.getElementById('api-details-headers');
-            apiDetailsHeaders.innerHTML = ""; // Clear existing headers
-            selected_devise_headers     = deviseData.headers
-
-            for (const [key, value] of Object.entries(deviseData.headers)) {
-                const th       = document.createElement('th');
-                th.textContent = value;
-                apiDetailsHeaders.appendChild(th);
-            }
-
-            // Populate the API details table rows
+            const apiDetailsHeaders = document.getElementById('api-details-headers');
             const apiDetailsTable = document.getElementById('api-details-table');
-            apiDetailsTable.innerHTML = ""; // Clear existing rows
+
+            // Clear existing
+            apiDetailsHeaders.innerHTML = "";
+            apiDetailsTable.innerHTML = "";
+
+            selected_devise_headers = deviseData.headers;
+            devise_type = deviseData.devise_type;
+
+            // Build headers
+            const headerKeys = Object.keys(deviseData.headers);
+            headerKeys.forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = deviseData.headers[key];
+                apiDetailsHeaders.appendChild(th);
+            });
+
+            // Add "Actions" header
+            // const actionTh = document.createElement('th');
+            // actionTh.textContent = "Actions";
+            // apiDetailsHeaders.appendChild(actionTh);
+
+            // Build rows
             deviseData.data.forEach(api => {
                 const row = document.createElement('tr');
-                let rowContent = '';
 
-                // Dynamically create table cells based on the headers
-                for (const headerKey in deviseData.headers) {
-                    const cellValue = api[headerKey] !== undefined ? api[headerKey] : '';
-
-                    // Check if the header is for an image, if so, generate image HTML
-                    
+                headerKeys.forEach(headerKey => {
+                    const cell = document.createElement('td');
                     if (headerKey === 'image_path') {
-                        rowContent += `<td>${api.image_path ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />` : ''}</td>`;
+                        cell.innerHTML = api.image_path
+                            ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />`
+                            : '';
                     } else {
-                        rowContent += `<td>${cellValue}</td>`;
+                        cell.textContent = api[headerKey] !== undefined ? api[headerKey] : '';
                     }
-                }
+                    row.appendChild(cell);
+                });
 
-                // rowContent += `<td><span class="edit-btn" onclick="showPopup(${api.id})">👁️</span></td>`;
-                rowContent += `<td><span class="edit-btn" onclick='showPopup("${encodeURIComponent(JSON.stringify(api))}")'>👁️</span></td>`;
+                // Action cell
+                const actionCell = document.createElement('td');
+                actionCell.style.display = "flex";
+                actionCell.style.gap = "8px";
+                actionCell.style.cursor = "pointer";
 
-                // Insert the row into the table
-                row.innerHTML = rowContent;
+                // ✏️ Pencil for all
+                // const editIcon = document.createElement('span');
+                // editIcon.className = "edit-btn";
+                // editIcon.innerHTML = "✏️";
+                // editIcon.onclick = (event) => {
+                //     event.stopPropagation();
+                //     showDynamicAPIForm(encodeURIComponent(JSON.stringify(api)));
+                // };
+                // actionCell.appendChild(editIcon);
+
+
+                // row.appendChild(actionCell);
+
+                // Full row click → showPopup
+                row.style.cursor = "pointer";
+                row.addEventListener("click", () => {
+                    showPopup(encodeURIComponent(JSON.stringify(api)), devise_type);
+                });
+
                 apiDetailsTable.appendChild(row);
             });
 
@@ -450,7 +505,9 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
         }
     }
 
-    function redirectToEdit(id) {
+
+    function redirectToEdit(id) 
+    {
         let endpoint = ''; 
         
         if (selected_devise.devise_type === 'soilsaathi') {
@@ -494,7 +551,7 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    function showPopup(apiString) 
+    function showPopup(apiString, devise_type) 
     {
         const api           = JSON.parse(decodeURIComponent(apiString));
         const popupImageDiv = document.getElementById("popupImage");
@@ -506,38 +563,54 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
         popupDataDiv.innerHTML  = "";
         popupChartDiv.innerHTML = '<canvas id="dataPieChart"></canvas>';
 
-        // 🔹 **Show Image if Needed**
+        // 🔹 Show Image if Needed
         if (selected_devise.devise_type === 'atmo_sense' && api.image_path) {
             popupImageDiv.innerHTML = `<img src="${api.image_path}" style="width: 400px; height: 400px; border-radius: 8px;">`;
         }
 
-        // 🔹 **Filter Data (Only Fields in Headers & Exclude Certain Fields)**
+        // 🔹 Add PDF Download Icon if devise type is 'soilsaathi'
+        if (selected_devise.devise_type === 'soilsaathi' && api.id) {
+            const pdfButton           = document.createElement("a");
+            pdfButton.href            = `/download_api_response_pdf/${api.id}/`;
+            pdfButton.target          = "_blank";
+            pdfButton.style.display   = "inline-block";
+            pdfButton.style.marginTop = "10px";
+            pdfButton.style.fontSize  = "24px";
+            pdfButton.style.color     = "#d9534f";
+            pdfButton.title           = "Download PDF Report";
+            pdfButton.innerHTML       = '<i class="fas fa-file-pdf"></i>';
+            popupImageDiv.appendChild(pdfButton);
+        }
+
+        // 🔹 Filter Data and Generate Table HTML
         let filteredLabels = [];
         let filteredValues = [];
-        let dataHtml       = "<ul style='list-style: none; padding: 0;'>";
+        let dataHtml       = "<table style='width: 100%; border-collapse: collapse;'>";
+        dataHtml += "<thead><tr><th style='padding: 8px; border: 1px solid #ddd; text-align: left;'>Field Name</th><th style='padding: 8px; border: 1px solid #ddd; text-align: left;'>Value</th></tr></thead>";
+        dataHtml += "<tbody>";
 
         for (const [key, value] of Object.entries(api)) {
-            if (key in selected_devise_headers && !["id", "image_path", "created_at", "crop_type"].includes(key)) {  
-                let fieldName = selected_devise_headers[key];  
+            if (key in selected_devise_headers && !["id", "image_path", "created_at", "crop_type", 'latitude', 'longitude'].includes(key)) {
+                let fieldName = selected_devise_headers[key];
                 filteredLabels.push(fieldName);
                 filteredValues.push(value);
-                dataHtml += `<li><strong>${fieldName}:</strong> ${value}</li>`;
+                dataHtml += `<tr><td style=' border: 1px solid #ddd;'>${fieldName}</td><td style='padding: 8px; border: 1px solid #ddd;'>${value}</td></tr>`;
             }
         }
 
-        dataHtml += "</ul>";
+        dataHtml += "</tbody></table>";
         popupDataDiv.innerHTML = dataHtml;
 
-        // 🔹 **Prepare Data for Pie Chart**
+        // 🔹 Prepare Data for Pie Chart
         const chartData = {
-            labels  : filteredLabels,
+            labels: filteredLabels,
             datasets: [{
-                data           : filteredValues,
+                data: filteredValues,
                 backgroundColor: ["#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff", "#ff9f40", "#ffcd56"]
             }]
         };
 
-        // 🔹 **Render Pie Chart**
+        // 🔹 Render Pie Chart
         setTimeout(() => {
             const ctx = document.getElementById("dataPieChart").getContext("2d");
             new Chart(ctx, {
@@ -546,13 +619,44 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
             });
         }, 100);
 
-        // Show popup
-        document.getElementById("overlay").style.display     = "block";
+
+        if (devise_type === 'soilsaathi') {
+            // ✏️ Pencil Icon
+            const pencilButton = document.createElement("span");
+            pencilButton.innerHTML = '✏️';
+            pencilButton.title = "Edit Entry";
+            pencilButton.style.cursor = "pointer";
+            pencilButton.style.marginLeft = "10px";
+            pencilButton.style.fontSize = "24px";
+            pencilButton.onclick = function () {
+                showDynamicAPIForm(devise_type, apiString);
+            };
+            popupImageDiv.appendChild(pencilButton);
+
+            // 🗺️ Map Icon
+            const mapButton = document.createElement("span");
+            mapButton.innerHTML = '🗺️';
+            mapButton.title = "View Location on Map";
+            mapButton.style.cursor = "pointer";
+            mapButton.style.marginLeft = "10px";
+            mapButton.style.fontSize = "24px";
+            mapButton.onclick = function () {
+                if (api.latitude && api.longitude && api.latitude !== "0" && api.longitude !== "0") {
+                    showMapPopup(api.latitude, api.longitude);
+                } else {
+                    alert("Latitude and Longitude are not available.");
+                }
+            };
+            popupImageDiv.appendChild(mapButton);
+        }
+
+
+        // 🔹 Show Popup
+        document.getElementById("overlay").style.display = "block";
         document.getElementById("logoutPopup").style.display = "block";
         document.getElementById("leaflet-map").style.display = "none";
     }
-
-
+    
     function hidePopup() 
     {
         document.getElementById("logoutPopup").style.display = "none";
@@ -583,12 +687,10 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
     
 </script>
 
-
-
 <style>
     .table {
-    width: 100%;
-    table-layout: auto; /* Allows flexible column widths */
+        width: 100%;
+        table-layout: auto; /* Allows flexible column widths */
     }
 
     .table th, .table td {
