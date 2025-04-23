@@ -5,15 +5,15 @@
 
         <!-- Filters -->
         <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-            <!-- Nutrient Checkboxes -->
-            <div id="nutrientCheckboxes" style="flex: 1; overflow-y: auto; max-height: 200px;">
-                <!-- Checkboxes will be dynamically created here -->
-            </div>
-
-            <!-- Month-Year Selector -->
+            <div id="nutrientCheckboxes" style="flex: 1; overflow-y: auto; max-height: 200px;"></div>
             <div style="flex: 1;">
                 <label for="monthSelector">Select Months</label>
                 <select id="monthSelector" multiple class="form-select" style="height: 150px;"></select>
+            </div>
+            <!-- Tag Filter -->
+            <div style="flex: 1;">
+                <label for="tagFilter">Filter by Tags</label>
+                <select id="tagFilter" multiple class="form-select" style="height: 150px;"></select>
             </div>
         </div>
 
@@ -25,7 +25,7 @@
     </div>
 </div>
 
-<!-- 🧩 Scripts -->
+<!-- 🧩 Dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
@@ -52,40 +52,39 @@
         oc            : 'OC'
     };
 
-    let npkBarChartInstance;
-    let LineChartMonthChoices;
+    let npkBarChartInstance   = null;
+    let LineChartMonthChoices = null;
+    let TagFilterChoices      = null;
 
-    // Dynamically generate checkboxes for nutrients
     function generateNutrientCheckboxes() {
-        const nutrientCheckboxesDiv = document.getElementById("nutrientCheckboxes");
-        for (const [key, value] of Object.entries(SOIL_SAATHI_FIELDS_BAR_CHART)) {
-            const label     = document.createElement("label");
-            label.innerHTML = `<input type="checkbox" value="${key}" checked /> ${value}`;
-            nutrientCheckboxesDiv.appendChild(label);
-            nutrientCheckboxesDiv.appendChild(document.createElement("br"));
-        }
+        const container = document.getElementById("nutrientCheckboxes");
+        container.innerHTML = "";
+        Object.entries(SOIL_SAATHI_FIELDS_BAR_CHART).forEach(([key, label]) => {
+            const el = document.createElement("label");
+            el.innerHTML = `<input type="checkbox" value="${key}" checked /> ${label}`;
+            container.appendChild(el);
+            container.appendChild(document.createElement("br"));
+        });
     }
 
-    // Show the popup and prepare data
-    async function showNpkPopup(devise_id) 
-    {
-        const npkData = await fetchDeviseApiData(devise_id)
+    async function showNpkPopup(devise_id = null) {
+        generateNutrientCheckboxes();
+
+        let {data, tags} = devise_id ? await fetchDeviseApiData(devise_id) : mockNpkData;
+        npkData          = data;
         
         document.getElementById('npkPopupOverlay').style.display = 'flex';
 
         const monthSelector     = document.getElementById("monthSelector");
-        monthSelector.innerHTML = ""; // Clear existing options
+        monthSelector.innerHTML = "";
 
-        // Creating month-year keys for selection (like Jan-2024, Feb-2024)
-        const months = Object.keys(npkData);
-        months.forEach(month => {
-            const opt       = document.createElement("option");
-            opt.value       = month;
-            opt.textContent = month;
-            monthSelector.appendChild(opt);
+        Object.keys(npkData).forEach(month => {
+            const option             = document.createElement("option");
+                  option.value       = month;
+                  option.textContent = month;
+            monthSelector.appendChild(option);
         });
 
-        // Initialize Choices.js for multi-select (once)
         if (!LineChartMonthChoices) {
             LineChartMonthChoices = new Choices("#monthSelector", {
                 removeItemButton: true,
@@ -94,198 +93,131 @@
             });
         }
 
-        // Event listeners for updates
+
+        const tagFilter      = document.getElementById("tagFilter");
+        tagFilter.innerHTML  = "";
+        const sampleTags     = tags || [];
+
+        sampleTags.forEach(tag => {
+            const option = document.createElement("option");
+            option.value = tag;
+            option.textContent = tag;
+            tagFilter.appendChild(option);
+        });
+
+        if (!TagFilterChoices) {
+            TagFilterChoices = new Choices("#tagFilter", {
+                removeItemButton: true,
+                placeholderValue: "Select or type tags",
+                shouldSort: false
+            });
+
+            document.getElementById("tagFilter").addEventListener("change", () => updateNpkChart(npkData));
+        }
+
+
         document.getElementById("nutrientCheckboxes").addEventListener("change", () => updateNpkChart(npkData));
         monthSelector.addEventListener("change", () => updateNpkChart(npkData));
 
         updateNpkChart(npkData);
     }
 
-    // Update the chart when user selects different nutrients or months
-    function updateNpkChart(npkData) {
-    const selectedNutrients = [...document.querySelectorAll('#nutrientCheckboxes input:checked')].map(cb => cb.value);
-    const selectedMonths    = LineChartMonthChoices ? LineChartMonthChoices.getValue(true) : [];
+    function updateNpkChart(npkData) 
+    {
+        const selectedNutrients = [...document.querySelectorAll('#nutrientCheckboxes input:checked')].map(cb => cb.value);
+        const selectedMonths    = LineChartMonthChoices ? LineChartMonthChoices.getValue(true) : [];
+        const selectedTags      = TagFilterChoices ? TagFilterChoices.getValue(true) : [];
+        // const selectedTags      = tagFilter && tagFilter.choices ? tagFilter.choices.filter(c => c.selected).map(c => c.value) : [];
 
-    if (!selectedNutrients.length || !selectedMonths.length) return;
+        if (!selectedNutrients.length || !selectedMonths.length) return;
 
-    // Create a flat list of labels like "Jan-2024 #1", "Jan-2024 #2", etc.
-    const labels          = [];
-    const nutrientDataMap = {};
+        const labels          = [];
+        const nutrientDataMap = {};
+        selectedNutrients.forEach(nutrient => nutrientDataMap[nutrient] = []);
 
-    selectedNutrients.forEach(nutrient => {
-        nutrientDataMap[nutrient] = [];
-    });
+        selectedMonths.forEach(month => {
+            const entries = npkData[month] || [];
 
-    selectedMonths.forEach(month => {
-        const entries = npkData[month] || [];
-        entries.forEach((entry, index) => {
-            labels.push(`${month} #${index + 1}`);
-            selectedNutrients.forEach(nutrient => {
-                nutrientDataMap[nutrient].push(entry[nutrient]);
+            entries.forEach((entry, idx) => {
+                if (selectedTags.length > 0 && (!entry.tag || !selectedTags.includes(entry.tag))) {
+                    return; // skip this entry
+                }
+
+                labels.push(`${month} #${idx + 1}`);
+                selectedNutrients.forEach(nutrient => {
+                    nutrientDataMap[nutrient].push(entry[nutrient]);
+                });
             });
         });
-    });
 
-    const colorPalette = ["#4caf50", "#2196f3", "#ff9800", "#e91e63", "#9c27b0", "#607d8b"];
+        const colors = ["#4caf50", "#2196f3", "#ff9800", "#e91e63", "#9c27b0", "#607d8b", "#3f51b5", "#f44336", "#00bcd4"];
+        const datasets = selectedNutrients.map((nutrient, idx) => ({
+            label: SOIL_SAATHI_FIELDS_BAR_CHART[nutrient] || nutrient,
+            data: nutrientDataMap[nutrient],
+            backgroundColor: colors[idx % colors.length],
+            borderColor: colors[idx % colors.length],
+            fill: false,
+            tension: 0.3
+        }));
 
-    const datasets = selectedNutrients.map((nutrient, i) => ({
-        label: SOIL_SAATHI_FIELDS_BAR_CHART[nutrient] || nutrient,
-        data: nutrientDataMap[nutrient],
-        backgroundColor: colorPalette[i % colorPalette.length],
-        borderColor: colorPalette[i % colorPalette.length],
-        fill: false,
-        tension: 0.1
-    }));
+        const ctx = document.getElementById("npkComparisonChart").getContext("2d");
+        if (npkBarChartInstance) npkBarChartInstance.destroy();
 
-    const ctx = document.getElementById("npkComparisonChart").getContext("2d");
-    if (npkBarChartInstance) npkBarChartInstance.destroy();
-
-    npkBarChartInstance = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels  : labels,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            plugins   : {
-                tooltip: { mode: "index", intersect: false },
-                legend : { position: 'bottom' }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title      : {
-                        display: true,
-                        text   : "Nutrient Value"
-                    }
+        npkBarChartInstance = new Chart(ctx, {
+            type: "line",
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: "bottom" },
+                    tooltip: { mode: "index", intersect: false }
                 },
-                x: {
-                    title: {
-                        display: true,
-                        text   : "Month & Sample"
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "Nutrient Value"
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: "Month & Sample"
+                        }
                     }
                 }
             }
-        }
-    });
-}
-
-
-    // Close the popup
-    function closeNpkPopup() {
-        document.getElementById('npkPopupOverlay').style.display = 'none';
+        });
     }
 
-    // Example mock data with month-year keys
-    const mockNpkData = {
-        "Jan-2024": [
-            { 
-                nitrogen: 45, 
-                phosphorous: 30, 
-                potassium: 25, 
-                calcium: 12, 
-                magnesium: 10, 
-                sulphur: 5, 
-                zinc: 2, 
-                manganese: 3, 
-                iron: 1, 
-                copper: 0.5, 
-                boron: 0.8, 
-                molybdenum: 0.4, 
-                chlorine: 0.7, 
-                nickel: 0.3, 
-                organic_carboa: 1.5, 
-                ph: 6.5, 
-                ec: 1.2, 
-                oc: 1.0 
-            },
-            { 
-                nitrogen: 50, 
-                phosphorous: 30, 
-                potassium: 25, 
-                calcium: 12, 
-                magnesium: 10, 
-                sulphur: 5, 
-                zinc: 2, 
-                manganese: 3, 
-                iron: 1, 
-                copper: 0.5, 
-                boron: 0.8, 
-                molybdenum: 0.4, 
-                chlorine: 0.7, 
-                nickel: 0.3, 
-                organic_carboa: 1.5, 
-                ph: 6.5, 
-                ec: 1.2, 
-                oc: 1.0 
-            },
-            { 
-                nitrogen: 46, 
-                phosphorous: 31, 
-                potassium: 26, 
-                calcium: 13, 
-                magnesium: 10.5, 
-                sulphur: 5.5, 
-                zinc: 2.1, 
-                manganese: 3.1, 
-                iron: 1.1, 
-                copper: 0.6, 
-                boron: 0.9, 
-                molybdenum: 0.5, 
-                chlorine: 0.8, 
-                nickel: 0.4, 
-                organic_carboa: 1.6, 
-                ph: 6.6, 
-                ec: 1.3, 
-                oc: 1.1 
-            }
-        ],
-        "Feb-2024": [
-            { 
-                nitrogen: 99, 
-                phosphorous: 28, 
-                potassium: 22, 
-                calcium: 14, 
-                magnesium: 11, 
-                sulphur: 6, 
-                zinc: 2.2, 
-                manganese: 3.1, 
-                iron: 1.2, 
-                copper: 0.6, 
-                boron: 1.0, 
-                molybdenum: 0.5, 
-                chlorine: 0.8, 
-                nickel: 0.4, 
-                organic_carboa: 1.6, 
-                ph: 6.6, 
-                ec: 1.3, 
-                oc: 1.2 
-            }
-        ]
-    };
 
-    // Show popup with mock data
-    generateNutrientCheckboxes();  // Add this line to generate the checkboxes
+    function closeNpkPopup() {
+        document.getElementById("npkPopupOverlay").style.display = "none";
+    }
 
     async function fetchDeviseApiData(id) 
     {
         try {
-            const base_url = `${window.location.protocol}//${window.location.host}`;
-            const url      = `${base_url}/devise-api-calls-chart`;
-            const response = await fetch(`${url}/${id}`);
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            // Parse the JSON data
-            const deviseData = await response.json();
-
-            return deviseData.data
-
+            const url      = `${window.location.origin}/devise-api-calls-chart/${id}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            return {data: data.data, tags: data.tags};
         } catch (error) {
-            console.error('Error:', error);
+            console.error("Error fetching data:", error);
+            return {};
         }
     }
+
+    // 🔬 Mock fallback data
+    const mockNpkData = {
+        "Jan-2024": [
+            { nitrogen: 45, phosphorous: 30, potassium: 25, calcium: 12, magnesium: 10, sulphur: 5, zinc: 2, manganese: 3, iron: 1, copper: 0.5, boron: 0.8, molybdenum: 0.4, chlorine: 0.7, nickel: 0.3, organic_carboa: 1.5, ph: 6.5, ec: 1.2, oc: 1.0 },
+            { nitrogen: 50, phosphorous: 32, potassium: 28, calcium: 13, magnesium: 11, sulphur: 5.5, zinc: 2.1, manganese: 3.1, iron: 1.1, copper: 0.6, boron: 0.9, molybdenum: 0.5, chlorine: 0.8, nickel: 0.4, organic_carboa: 1.6, ph: 6.6, ec: 1.3, oc: 1.1 }
+        ],
+        "Feb-2024": [
+            { nitrogen: 55, phosphorous: 29, potassium: 26, calcium: 14, magnesium: 11.2, sulphur: 6, zinc: 2.3, manganese: 3.2, iron: 1.2, copper: 0.7, boron: 1.0, molybdenum: 0.6, chlorine: 0.9, nickel: 0.5, organic_carboa: 1.7, ph: 6.7, ec: 1.4, oc: 1.3 }
+        ]
+    };
 </script>

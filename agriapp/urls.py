@@ -59,8 +59,10 @@ urlpatterns = [
 
     path('devise-api-calls/<int:id>/', GetDeviseApiCallsJsonData.as_view(), name = "devise-api-calls"), # api data for page
     path('devise-api-calls-chart/<int:id>/', GetDeviseApiCallsJsonDataForChart.as_view(), name = "devise-api-calls-chart"), # api data for page
-    path('api-fields/<str:devise_type>', GetApiFieldsJsonData.as_view(), name = "api-fields"), # api data for page
-    path('api-data/<str:devise_type>/<int:id>', GetApiHeadersJsonData.as_view(), name = "api-data"), # api data for page
+    path('get-api-fields/<str:devise_type>', GetApiFieldsJsonData.as_view(), name = "get-api-fields"), # api data for page
+    path('save-api-data/<int:devise_id>', SaveApiFieldsJsonData.as_view(), name = "save-api-data"), # api data for page
+    path('update-api-data/<int:devise_id>/<int:api_id>', SaveApiFieldsJsonData.as_view(), name = "save-api-data"), # api data for page
+    path('get-api-data/<int:devise_id>/<int:api_id>', GetApiDataJsonData.as_view(), name = "api-data"), # api data for page
 
     path('user-page/', login_required(v.userPage), name = "user-page"),
     

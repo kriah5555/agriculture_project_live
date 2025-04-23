@@ -3,6 +3,7 @@
 {% block content %}
 {% include "soil_saathi_parm_comparison_popup_bar_chart.html" %}
 {% include "map_popup.html" %}
+{% include "form_popup.html" %}
 
 <div>
     <div class="row" style="display: flex;" >
@@ -230,7 +231,7 @@
                 <input type="text" id="searchInput" class="form-control w-50" placeholder="Search..." onkeyup="searchTable()">
 
                 <!-- Plus Icon Button -->
-                <button class="btn btn-light text-primary rounded-circle" data-bs-toggle="modal" data-bs-target="#addApiModal" title="Add API Call">
+                <button onclick="openFormPopup()" class="btn btn-light text-primary rounded-circle" title="Add API Call">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
@@ -356,14 +357,19 @@
     // Function to dynamically change the device details based on selected device
     const base_url        = `${window.location.protocol}//${window.location.host}`;
     const url             = `${base_url}/devise-api-calls`;
-    let selected_devise   = {};                                                      // Use 'let' to clearly define scope and allow reassignment
+    let   selected_devise = {};
+    let   devise_type     = null;
+    let   devise_id       = null;
 
     // Initialize a map variable to store the map instance
     let mapInstance = null;
 
     function showDeviceDetails(device) {
         if (device) {
-            selected_devise = device; 
+            selected_devise = device;
+            devise_type     = device.devise_type
+            devise_id       = device.pk
+            
             document.getElementById('device-name').textContent   = device.name;
             document.getElementById('serialNo').textContent      = device.serialNo;
             document.getElementById('chipsetNo').textContent     = device.chipsetNo;
@@ -516,6 +522,11 @@
         }
     `;
     document.head.appendChild(style);
+
+    function openFormPopup()
+    {
+        showDynamicAPIForm(devise_type, devise_id)
+    }
 
 </script>
 

@@ -5,7 +5,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 
 from .forms import ContactForm, DeviseForm
-from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS
+from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_SAATHI_FIELD_THRESHOLDS
 
 from . import UserFunctions
 from django.views.generic import UpdateView, TemplateView, CreateView, View
@@ -27,6 +27,9 @@ from django import forms
 from django.utils.timezone import localtime
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 # Admin access only decorator
 def admin_required(function):
@@ -1050,15 +1053,17 @@ class GetDeviseApiCallsJsonData(View):
         headers        = {}
         api_calls_data = []  # Initialize the list for api calls data
         try:
-            devise = Devise.objects.get(pk=id)  # Use 'id' to fetch the Devise object
+            devise           = Devise.objects.get(pk=id)  # Use 'id' to fetch the Devise object
+            field_thresholds = {}
             match devise.devise_type:
                 case "soilsaathi":
-                    headers        = SOIL_SAATHI_FIELDS
-                    api_calls_data = list(DeviseApis.objects.filter(device=devise).values())
-                case "atmo_sense":
+                    headers          = SOIL_SAATHI_FIELDS
+                    field_thresholds = SOIL_SAATHI_FIELD_THRESHOLDS
+                    api_calls_data   = list(DeviseApis.objects.filter(device=devise).values())
+                case "atmo_sense": 
                     headers        = ATMO_SENSE_FIELDS
                     api_calls_data = list(DeviseApisFields.objects.filter(device=devise).values())
-                case "soil_life":
+                case "soil_life": 
                     headers        = SOIL_LIFE_FIELDS
                     api_calls_data = list(DeviseApisFields.objects.filter(device=devise).values())
                 case _:
@@ -1067,7 +1072,7 @@ class GetDeviseApiCallsJsonData(View):
         except Devise.DoesNotExist:
             return JsonResponse({'error': 'Devise not found'}, status=404)
         
-        return JsonResponse({'headers': headers, 'data': api_calls_data, 'devise_type': devise.devise_type})
+        return JsonResponse({'headers': headers, 'data': api_calls_data, 'devise_type': devise.devise_type, 'field_thresholds': field_thresholds})
 
 class GetDeviseApiCallsJsonDataForChart(View):
     def get(self, *args, **kwargs):
@@ -1076,9 +1081,10 @@ class GetDeviseApiCallsJsonDataForChart(View):
         from django.utils.formats import get_format
         from collections import defaultdict
         from calendar import month_abbr
-        id = kwargs.get('id')
-        headers = {}
+        id               = kwargs.get('id')
+        headers          = {}
         npk_grouped_data = defaultdict(list)
+        tag_set          = set()
 
         try:
             devise = Devise.objects.get(pk=id)
@@ -1112,11 +1118,14 @@ class GetDeviseApiCallsJsonDataForChart(View):
                 }
 
                 npk_grouped_data[month_year].append(nutrient_data)
+                tag = entry.get('tag')
+                if tag:
+                    tag_set.add(tag)
 
         except Devise.DoesNotExist:
             return JsonResponse({'error': 'Devise not found'}, status=404)
 
-        return JsonResponse({'headers': headers, 'data': dict(npk_grouped_data)})
+        return JsonResponse({'headers': headers, 'data': dict(npk_grouped_data),'tags': sorted(list(tag_set))})
 
 class GetApiHeadersJsonData(View):
 
@@ -1141,12 +1150,96 @@ class GetApiFieldsJsonData(View):
 
         match devise_type:
             case "soilsaathi":
-                data = SOIL_SAATHI_FIELDS
-            case "atmo_sense" | "soil_life":  # Use `|` for multiple matches in Python
-                data = ATMO_SENSE_FIELDS
+                fields = SOIL_SAATHI_FIELDS
+            case "atmo_sense" | "soil_life":
+                fields = ATMO_SENSE_FIELDS if devise_type == "atmo_sense" else SOIL_LIFE_FIELDS
             case "":
-                data = SOIL_LIFE_FIELDS
+                fields = SOIL_LIFE_FIELDS
             case _:
-                data = []
+                fields = {}
 
-        return JsonResponse({'data': data})
+        # Fields to exclude
+        exclude_keys = {'id', 'created_at', 'image_path', 'crop_type'}
+
+        # Filter out unwanted keys
+        filtered_data = {k: v for k, v in fields.items() if k not in exclude_keys}
+
+        return JsonResponse({'data': filtered_data})
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SaveApiFieldsJsonData(View):
+
+    def post(self, request, *args, **kwargs):
+        try:
+            devise_id = kwargs.get('devise_id', '')
+            data = json.loads(request.body)
+
+            # Get the device based on devise_id
+            device = get_object_or_404(Devise, id=devise_id)
+            devise_type = device.devise_type
+            
+            # Check if api_id is provided in the data for updating an existing instance
+            api_id = kwargs.get('api_id', None)
+
+            if devise_type == "soilsaathi":
+                if api_id:  # If api_id exists, update the existing record
+                    api_instance = get_object_or_404(DeviseApis, id=api_id, device=device)
+                    for field, value in data.items():
+                        setattr(api_instance, field, value)
+                    api_instance.save()
+                    message = 'Data updated successfully.'
+                else:  # If api_id does not exist, create a new record
+                    api_instance = DeviseApis.objects.create(device=device, devise_id=devise_id, **data)
+                    message = 'Data saved successfully.'
+            else:
+                if api_id:  # If api_id exists, update the existing record
+                    api_instance = get_object_or_404(DeviseApisFields, id=api_id, device=device)
+                    for field, value in data.items():
+                        setattr(api_instance, field, value)
+                    api_instance.save()
+                    message = 'Data updated successfully.'
+                else:  # If api_id does not exist, create a new record
+                    api_instance = DeviseApisFields.objects.create(device=device, **data)
+                    message = 'Data saved successfully.'
+
+            return JsonResponse({'status': 'success', 'message': message})
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+class GetApiDataJsonData(View):
+
+    def get(self, request, *args, **kwargs):
+        try:
+            devise_id = kwargs.get('devise_id')
+            api_id    = kwargs.get('api_id')
+
+            # Get the device
+            device = get_object_or_404(Devise, id=devise_id)
+
+            # Choose the field dictionary based on the device type
+            if device.devise_type == "soilsaathi":
+                api_data = get_object_or_404(DeviseApis, id=api_id, device=device)
+                field_map = SOIL_SAATHI_FIELDS
+            elif device.devise_type == "atmo_sense":
+                api_data = get_object_or_404(DeviseApisFields, id=api_id, device=device)
+                field_map = ATMO_SENSE_FIELDS
+            elif device.devise_type == "soil_life":
+                api_data = get_object_or_404(DeviseApisFields, id=api_id, device=device)
+                field_map = SOIL_LIFE_FIELDS
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Unknown device type.'}, status=400)
+
+            # Convert model to dictionary, but only include the fields that are in the field map
+            fields_data = {}
+            for field in api_data._meta.fields:
+                field_name = field.name
+                if field_name in field_map:
+                    fields_data[field_name] = getattr(api_data, field_name)
+
+            return JsonResponse({'status': 'success', 'data': fields_data})
+
+        except Exception as e:
+            print(f"Error: {str(e)}")  # Print the exception for debugging
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+

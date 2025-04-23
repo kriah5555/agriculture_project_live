@@ -1,6 +1,7 @@
 {% extends "navbar.html" %}
 
 {% block content %}
+{% include "form_popup.html" %}
     <div>
 
         <div style="display: flex; flex-direction: row; gap: 2rem; margin-bottom: 2rem; justify-content: space-between; align-items: center; background-color: #fff; padding: 1rem; border-radius: 8px;">
@@ -13,9 +14,9 @@
             <div style="text-align: right;">
                 
                 <!-- Edit Icon -->
-                <a href="javascript:void(0)" style="padding: 0.75rem 1.5rem;  text-decoration: none; border-radius: 8px; ">
+                <a href="javascript:void(0)" onclick="showDynamicAPIForm('atmo_sense', '{{ device.pk }}', '{{ fields_api_data.id }}')" style="padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px;">
                     <i class="fas fa-edit" style="font-size: 24px;"></i> <!-- Edit icon -->
-                </a>
+                </a>    
                 <!-- Back Icon -->
                 <a href="javascript:history.back()" style="padding: 0.75rem 1.5rem; ">
                     <i class="fas fa-arrow-left" style="font-size: 24px;"></i> <!-- Back icon -->

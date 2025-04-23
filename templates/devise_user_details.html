@@ -434,14 +434,15 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
             const deviseData = await response.json();
 
             const apiDetailsHeaders = document.getElementById('api-details-headers');
-            const apiDetailsTable = document.getElementById('api-details-table');
+            const apiDetailsTable   = document.getElementById('api-details-table');
 
             // Clear existing
             apiDetailsHeaders.innerHTML = "";
-            apiDetailsTable.innerHTML = "";
+            apiDetailsTable.innerHTML   = "";
 
             selected_devise_headers = deviseData.headers;
-            devise_type = deviseData.devise_type;
+            devise_type             = deviseData.devise_type;
+            field_thresholds        = deviseData.field_thresholds;
 
             // Build headers
             const headerKeys = Object.keys(deviseData.headers);
@@ -494,7 +495,7 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
                 // Full row click → showPopup
                 row.style.cursor = "pointer";
                 row.addEventListener("click", () => {
-                    showPopup(encodeURIComponent(JSON.stringify(api)), devise_type);
+                    showPopup(encodeURIComponent(JSON.stringify(api)), devise_type, field_thresholds);
                 });
 
                 apiDetailsTable.appendChild(row);
@@ -551,7 +552,7 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    function showPopup(apiString, devise_type) 
+    function showPopup(apiString, devise_type, field_thresholds) 
     {
         const api           = JSON.parse(decodeURIComponent(apiString));
         const popupImageDiv = document.getElementById("popupImage");
@@ -586,15 +587,54 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
         let filteredLabels = [];
         let filteredValues = [];
         let dataHtml       = "<table style='width: 100%; border-collapse: collapse;'>";
-        dataHtml += "<thead><tr><th style='padding: 8px; border: 1px solid #ddd; text-align: left;'>Field Name</th><th style='padding: 8px; border: 1px solid #ddd; text-align: left;'>Value</th></tr></thead>";
-        dataHtml += "<tbody>";
+
+        dataHtml += "<thead><tr>";
+        dataHtml += "<th style='padding: 8px; border: 1px solid #ddd; text-align: left;'>Field Name</th>";
+        dataHtml += "<th style='padding: 8px; border: 1px solid #ddd; text-align: left;'>Value</th>";
+
+        if (devise_type === 'soilsaathi') {
+            dataHtml += "<th style='padding: 8px; border: 1px solid #ddd; text-align: left;'>Level</th>";
+            dataHtml += "<th style='padding: 8px; border: 1px solid #ddd; text-align: left;'>Standard Range</th>";
+        }
+
+        dataHtml += "</tr></thead><tbody>";
 
         for (const [key, value] of Object.entries(api)) {
             if (key in selected_devise_headers && !["id", "image_path", "created_at", "crop_type", 'latitude', 'longitude'].includes(key)) {
-                let fieldName = selected_devise_headers[key];
+                let fieldName     = selected_devise_headers[key];
+                let displayValue  = value;
+                let standardRange = '';
+                let level         = '';
+
+                if (devise_type === 'soilsaathi' && field_thresholds && key in field_thresholds) {
+                    const min     = field_thresholds[key].min;
+                    const max     = field_thresholds[key].max;
+                    standardRange = `${min} - ${max}`;
+
+                    if (typeof value === 'number') {
+                        if (value < min) {
+                            level = (key === 'ph' ? 'Acidic' : 'Low');
+                        } else if (value > max) {
+                            level = (key === 'ph' ? 'Alkaline' : 'High');
+                        } else {
+                            level = (key === 'ph' ? 'Neutral' : 'Medium');
+                        }
+                    }
+                }
+
                 filteredLabels.push(fieldName);
                 filteredValues.push(value);
-                dataHtml += `<tr><td style=' border: 1px solid #ddd;'>${fieldName}</td><td style='padding: 8px; border: 1px solid #ddd;'>${value}</td></tr>`;
+
+                dataHtml += "<tr>";
+                dataHtml += `<td style='border: 1px solid #ddd;'>${fieldName}</td>`;
+                dataHtml += `<td style='padding: 8px; border: 1px solid #ddd;'>${displayValue}</td>`;
+
+                if (devise_type === 'soilsaathi') {
+                    dataHtml += `<td style='padding: 8px; border: 1px solid #ddd;'>${level}</td>`;
+                    dataHtml += `<td style='padding: 8px; border: 1px solid #ddd;'>${standardRange}</td>`;
+                }
+
+                dataHtml += "</tr>";
             }
         }
 
@@ -619,28 +659,29 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
             });
         }, 100);
 
-
+        // ✏️ Pencil Icon
+        const pencilButton            = document.createElement("span");
+        pencilButton.innerHTML        = '✏️';
+        pencilButton.title            = "Edit Entry";
+        pencilButton.style.cursor     = "pointer";
+        pencilButton.style.marginLeft = "10px";
+        pencilButton.style.fontSize   = "24px";
+        pencilButton.onclick          = function () {
+            hidePopup()
+            showDynamicAPIForm(devise_type, selected_devise.pk, api.id);
+        };
+        popupImageDiv.appendChild(pencilButton);
+        
         if (devise_type === 'soilsaathi') {
-            // ✏️ Pencil Icon
-            const pencilButton = document.createElement("span");
-            pencilButton.innerHTML = '✏️';
-            pencilButton.title = "Edit Entry";
-            pencilButton.style.cursor = "pointer";
-            pencilButton.style.marginLeft = "10px";
-            pencilButton.style.fontSize = "24px";
-            pencilButton.onclick = function () {
-                showDynamicAPIForm(devise_type, apiString);
-            };
-            popupImageDiv.appendChild(pencilButton);
 
             // 🗺️ Map Icon
-            const mapButton = document.createElement("span");
-            mapButton.innerHTML = '🗺️';
-            mapButton.title = "View Location on Map";
-            mapButton.style.cursor = "pointer";
+            const mapButton            = document.createElement("span");
+            mapButton.innerHTML        = '🗺️';
+            mapButton.title            = "View Location on Map";
+            mapButton.style.cursor     = "pointer";
             mapButton.style.marginLeft = "10px";
-            mapButton.style.fontSize = "24px";
-            mapButton.onclick = function () {
+            mapButton.style.fontSize   = "24px";
+            mapButton.onclick          = function () {
                 if (api.latitude && api.longitude && api.latitude !== "0" && api.longitude !== "0") {
                     showMapPopup(api.latitude, api.longitude);
                 } else {
@@ -650,12 +691,12 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
             popupImageDiv.appendChild(mapButton);
         }
 
-
         // 🔹 Show Popup
         document.getElementById("overlay").style.display = "block";
         document.getElementById("logoutPopup").style.display = "block";
         document.getElementById("leaflet-map").style.display = "none";
     }
+
     
     function hidePopup() 
     {
