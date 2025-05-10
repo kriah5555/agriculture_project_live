@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>API Thresholds</title>
+
+  <style>
+    body {
+      background: linear-gradient(40deg, #fc00ff 0%, #00fffc 45%, #fffc00 100%);
+      margin: 0;
+      padding: 0;
+    }
+
+    #formOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+    }
+
+    #formPopup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 50%;
+      max-height: 80%;
+      overflow-y: auto;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 10px;
+      z-index: 1001;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+    }
+
+    #formTitle {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #3b82f6;
+      text-align: center;
+    }
+
+    .form-container {
+      margin-top: 20px;
+    }
+
+    .form-container input[type="submit"] {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      display: block;
+      margin: 20px auto 0;
+    }
+
+    #closeFormBtn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: #000;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .slider-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .slider {
+      width: 80%;
+    }
+
+    .slider-value {
+      font-weight: bold;
+      margin-top: 5px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Popup Overlay and Form -->
+  <div id="formOverlay" onclick="hideFormPopup()"></div>
+
+  <div id="formPopup">
+    <button id="closeFormBtn" onclick="hideFormPopup()">×</button>
+    <div id="formTitle">API Threshold Limits</div>
+
+    <div class="form-container">
+      <form method="post" id="api-threshold-form">{% csrf_token %}
+        <div class="slider-container">
+          <div>
+            <label for="red">Red:</label>
+            <input type="number" id="red" min="0"  value="100" onchange="updateValue('red')" />
+            <div id="red-value" class="slider-value">100</div>
+          </div>
+          <div>
+            <label for="orange">Orange:</label>
+            <input type="number" id="orange" min="0" max="100" value="80" onchange="updateValue('orange')" />
+            <div id="orange-value" class="slider-value">80</div>
+          </div>
+          <div>
+            <label for="blue">Blue:</label>
+            <input type="number" id="blue" min="0" max="100" value="50" onchange="updateValue('blue')" />
+            <div id="blue-value" class="slider-value">50</div>
+          </div>
+          <div>
+            <label for="green">Green:</label>
+            <input type="number" id="green" min="0" max="100" value="20" onchange="updateValue('green')" />
+            <div id="green-value" class="slider-value">20</div>
+          </div>
+        </div>
+        <input type="submit" value="Save">
+      </form>
+
+      <div id="form-error" style="color: red; text-align: center; margin-top: 10px;"></div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentDeviseId = null;
+  
+    function showFormPopup(devise_id, devise_details = null) 
+    {
+      currentDeviseId = devise_id;
+
+      // Show form
+      document.getElementById('formOverlay').style.display = 'block';
+      document.getElementById('formPopup').style.display = 'block';
+      document.getElementById('form-error').innerText = '';
+
+      // If device threshold details are provided, populate them
+      if (devise_details) {
+        const { red, orange, blue, green } = devise_details;
+
+        if (red !== undefined) {
+          document.getElementById('red').value = red;
+          document.getElementById('red-value').innerText = red;
+        }
+        if (orange !== undefined) {
+          document.getElementById('orange').value = orange;
+          document.getElementById('orange-value').innerText = orange;
+        }
+        if (blue !== undefined) {
+          document.getElementById('blue').value = blue;
+          document.getElementById('blue-value').innerText = blue;
+        }
+        if (green !== undefined) {
+          document.getElementById('green').value           = green;
+          document.getElementById('green-value').innerText = green;
+        }
+
+        // Enforce constraints visually
+        ['red', 'orange', 'blue', 'green'].forEach(id => updateValue(id));
+      }
+    }
+  
+    function hideFormPopup() 
+    {
+      document.getElementById('formOverlay').style.display = 'none';
+      document.getElementById('formPopup').style.display   = 'none';
+    }
+  
+    function updateValue(slider) 
+    {
+      let value = parseInt(document.getElementById(slider).value);
+      document.getElementById(slider + '-value').innerText = value;
+  
+      const red    = parseInt(document.getElementById('red').value);
+      const orange = parseInt(document.getElementById('orange').value);
+      const blue   = parseInt(document.getElementById('blue').value);
+      const green  = parseInt(document.getElementById('green').value);
+  
+      // document.getElementById('red').min    = orange;
+      // document.getElementById('orange').max = red;
+      // document.getElementById('orange').min = blue;
+      // document.getElementById('blue').max   = orange;
+      // document.getElementById('blue').min   = green;
+      // document.getElementById('green').max  = blue;
+  
+      if (orange >= red) {
+        document.getElementById('orange').value = red - 1;
+        document.getElementById('orange-value').innerText = red - 1;
+      }
+      if (blue >= orange) {
+        document.getElementById('blue').value = orange - 1;
+        document.getElementById('blue-value').innerText = orange - 1;
+      }
+      if (green >= blue) {
+        document.getElementById('green').value = blue - 1;
+        document.getElementById('green-value').innerText = blue - 1;
+      }
+    }
+  
+    document.getElementById('api-threshold-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+  
+      const red    = parseInt(document.getElementById('red').value);
+      const orange = parseInt(document.getElementById('orange').value);
+      const blue   = parseInt(document.getElementById('blue').value);
+      const green  = parseInt(document.getElementById('green').value);
+  
+      if (green >= blue || blue >= orange || orange >= red) {
+        document.getElementById('form-error').innerText = "Thresholds must follow: Red > Orange > Blue > Green";
+        return;
+      }
+  
+      const payload = { red, orange, blue, green };
+  
+      try {
+        const response = await fetch(`/api-threshold/${currentDeviseId}/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: JSON.stringify(payload)
+        });
+  
+        const data = await response.json();
+  
+        if (response.ok) {
+          hideFormPopup();
+          alert("Thresholds saved successfully.");
+          location.reload(); // <-- Add this line to reload the page
+        } else {
+          document.getElementById('form-error').innerText = data.error || "Failed to save thresholds.";
+        }
+      } catch (err) {
+        document.getElementById('form-error').innerText = "Something went wrong. Try again.";
+      }
+    });
+  
+    function getCSRFToken() 
+    {
+      const name = 'csrftoken';
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        const [key, value] = cookie.trim().split('=');
+        if (key === name) return decodeURIComponent(value);
+      }
+      return '';
+    }
+  
+    // Initial setup
+    ['red', 'orange', 'blue', 'green'].forEach(id => updateValue(id));
+  </script>
+  
+  
+
+</body>
+</html>

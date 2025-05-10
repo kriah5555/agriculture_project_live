@@ -91,7 +91,7 @@
             <div class="card bg-light flex-fill" style="overflow-y: auto;max-height: 300px;border-radius: 1%; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                 <div class="card-body">
             
-                    <h5 class="text-primary">DeviSes linked 
+                    <h5 class="text-primary">Devises linked 
                         <a href="{% url 'add-devise' user.username %}" onclick="saveUserDetails()" class="text-primary mr-3" style="font-size: 20px;" title="Save">
                             <i class="fas fa-plus"></i> 
                         </a>
@@ -119,10 +119,21 @@
                             balanceAmount: '{{ device.balance_amount }}',
                             land: '{{ device.land }} acres',
                             latitude: '{{ device.latitude }} ',
-                            longitude: '{{ device.longitude }} '
+                            longitude: '{{ device.longitude }} ',
+                            api_limit: '{{ device.api_limit }} ',
+                            api_used: '{{ device.api_used }} ',
                         })">
                             <span>{{ device.name }} ({{device.devise_type}})</span>
                             <div>
+                                <a href="{% url 'device-details' device.pk %}" 
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="top" 
+                                   title="Export Device APIs" 
+                                   onclick="event.stopPropagation();" 
+                                   class="px-2">
+                                    <i class="fas fa-info-circle" title="Export Device APIs"></i>
+                                </a>
+
                                 <!-- Edit Device Icon -->
                                 <a href="{% url 'edit-devise' device.pk %}" 
                                    data-bs-toggle="tooltip" 
@@ -193,6 +204,7 @@
                                 <p><strong>Address Line 2:</strong> <span id="address2"></span></p>
                                 <p><strong>Purchase Date:</strong> <span id="purchaseDate"></span></p>
                                 <p><strong>Warranty:</strong> <span id="warranty"></span></p>
+                                <p><strong>Land:</strong> <span id="land"></span></p>
                             </div>
                         </div>
                     </div>
@@ -207,7 +219,8 @@
                             <div class="card-body">
                                 <p><strong>Amount Paid:</strong> $<span id="amountPaid"></span></p>
                                 <p><strong>Balance Amount:</strong> $<span id="balanceAmount"></span></p>
-                                <p><strong>Land:</strong> <span id="land"></span></p>
+                                <p><strong>API calls limit:</strong> <span id="api_limit"></span></p>
+                                <p><strong>API used:</strong> <span id="api_used"></span></p>
                             </div>
                         </div>
 
@@ -227,7 +240,10 @@
     <div id="api-details-container" class="mt-4" style="display: none;">
         <div class="card">
             <div class="card-header bg-primary text-white d-flex align-items-center">
-                <h5 class="mb-0 flex-grow-1">API Calls for Selected Device</h5>
+                <h5 class="mb-0 flex-grow-1">
+                    API Calls for Selected Device 
+                    <span id="selectedDeviceName" style="font-weight: normal; font-size: 90%; margin-left: 8px; color: white;"></span>
+                </h5>
                 <input type="text" id="searchInput" class="form-control w-50" placeholder="Search..." onkeyup="searchTable()">
 
                 <!-- Plus Icon Button -->
@@ -369,7 +385,7 @@
             selected_devise = device;
             devise_type     = device.devise_type
             devise_id       = device.pk
-            
+            document.getElementById('selectedDeviceName').innerText = selected_devise.name || '';
             document.getElementById('device-name').textContent   = device.name;
             document.getElementById('serialNo').textContent      = device.serialNo;
             document.getElementById('chipsetNo').textContent     = device.chipsetNo;
@@ -383,6 +399,8 @@
             document.getElementById('amountPaid').textContent    = device.amountPaid;
             document.getElementById('balanceAmount').textContent = device.balanceAmount;
             document.getElementById('land').textContent          = device.land;
+            document.getElementById('api_limit').textContent     = device.api_limit;
+            document.getElementById('api_used').textContent      = device.api_used;
 
             // Check if the map instance already exists and remove the old one
             if (mapInstance) {

@@ -16,37 +16,36 @@
     <!-- Popup code -->
     <div>
         <!-- Background Overlay -->
-<div id="overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
-</div>
-
-    <!-- Popup -->
-    <div id="logoutPopup" 
-        style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        background: white; padding: 20px; box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
-        border-radius: 8px; text-align: center; z-index: 1000; width: 60%;">
-
-        <div id="popupContent" style="display: flex; align-items: center; justify-content: space-around;">
-        <!-- Left Side: Image + Data Fields -->
-        <div id="popupLeft" style="flex: 1; text-align: left; padding: 10px;">
-        <div id="popupImage" style="margin-bottom: 10px;"></div>
-        <div id="popupData"></div> <!-- Field names & values go here -->
+        <div id="overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
         </div>
 
-        <!-- Right Side: Pie Chart -->
-        <div id="popupChart" style="flex: 1;">
-        <canvas id="dataPieChart"></canvas>
+            <!-- Popup -->
+            <div id="logoutPopup" 
+                style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: white; padding: 20px; box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+                border-radius: 8px; text-align: center; z-index: 1000; width: 60%; height: 80%; overflow-y: auto;">
+
+            <div id="popupContent" style="display: flex; align-items: center; justify-content: space-around;">
+                <!-- Left Side: Image + Data Fields -->
+                <div id="popupLeft" style="flex: 1; text-align: left; padding: 10px;">
+                    <div id="popupImage" style="margin-bottom: 10px;"></div>
+                    <div id="popupData"></div> <!-- Field names & values go here -->
+                </div>
+
+                <!-- Right Side: Pie Chart -->
+                <div id="popupChart" style="flex: 1;">
+                    <canvas id="dataPieChart"></canvas>
+                </div>
+            </div>
+
+            <button onclick="hidePopup()" style="margin-top: 10px; padding: 10px 20px; background: gray; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Close
+            </button>
+
+            <!-- Overlay blur effect-->
+            <div id="overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999;" onclick="hidePopup()"></div>
         </div>
-        </div>
-
-        <button onclick="hidePopup()" style="margin-top: 10px; padding: 10px 20px; background: gray; color: white; border: none; border-radius: 5px; cursor: pointer;">
-        Close
-        </button>
-
-        <!-- Overlay blur effect-->
-        <div id="overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999;" onclick="hidePopup()"></div>
-
-    </div>
 
    
     <div class="header" style="display: flex; justify-content: flex-end; padding: 10px;">
@@ -137,7 +136,6 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
                         <h5 class="text-primary">Devises linked </h5>
                         <ul class="list-group">
                             {% for device in linked_devices %}
-    
                             <li class="list-group-item" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="showDeviceDetails({
                                 pk: '{{ device.pk }}',
                                 id: '{{ device.devise_id }}',
@@ -155,7 +153,9 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
                                 balanceAmount: '{{ device.balance_amount }}',
                                 land: '{{ device.land }} acres',
                                 latitude: '{{ device.latitude }} ',
-                                longitude: '{{ device.longitude }} '
+                                longitude: '{{ device.longitude }} ',
+                                api_limit: '{{ device.api_limit }} ',
+                                api_used: '{{ device.api_used }} ',
                             })">
                                 <span>{{ device.name }} ({{device.devise_type}})</span>
                                 
@@ -216,6 +216,7 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
                                     <p><strong>Address Line 2:</strong> <span id="address2"></span></p>
                                     <p><strong>Purchase Date:</strong> <span id="purchaseDate"></span></p>
                                     <p><strong>Warranty:</strong> <span id="warranty"></span></p>
+                                    <p><strong>Land:</strong> <span id="land"></span></p>
                                 </div>
                             </div>
                         </div>
@@ -230,7 +231,8 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
                                 <div class="card-body">
                                     <p><strong>Amount Paid:</strong> $<span id="amountPaid"></span></p>
                                     <p><strong>Balance Amount:</strong> $<span id="balanceAmount"></span></p>
-                                    <p><strong>Land:</strong> <span id="land"></span></p>
+                                    <p><strong>API calls limit:</strong> <span id="api_limit"></span></p>
+                                    <p><strong>API used:</strong> <span id="api_used"></span></p>
                                 </div>
                             </div>
     
@@ -251,7 +253,10 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
         <div id="api-details-container" class="mt-4" style="display: none;">
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex align-items-center">
-                    <h5 class="mb-0 flex-grow-1">API Calls for Selected Device</h5>
+                    <h5 class="mb-0 flex-grow-1">
+                        API Calls for Selected Device 
+                        <span id="selectedDeviceName" style="font-weight: normal; font-size: 90%; margin-left: 8px; color: white;"></span>
+                    </h5>
                     <input type="text" id="searchInput" class="form-control w-50" placeholder="Search..." onkeyup="searchTable()">
                 </div>
                 
@@ -366,6 +371,7 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
     {
         if (device) {
             selected_devise = device;
+            document.getElementById('selectedDeviceName').innerText = selected_devise.name || '';
             document.getElementById('device-name').textContent   = device.name;
             document.getElementById('serialNo').textContent      = device.serialNo;
             document.getElementById('chipsetNo').textContent     = device.chipsetNo;
@@ -379,6 +385,8 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
             document.getElementById('amountPaid').textContent    = device.amountPaid;
             document.getElementById('balanceAmount').textContent = device.balanceAmount;
             document.getElementById('land').textContent          = device.land;
+            document.getElementById('api_limit').textContent     = device.api_limit;
+            document.getElementById('api_used').textContent      = device.api_used;
 
             // Check if the map instance already exists and remove the old one
             if (mapInstance) {
@@ -474,10 +482,10 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
                 });
 
                 // Action cell
-                const actionCell = document.createElement('td');
+                const actionCell         = document.createElement('td');
                 actionCell.style.display = "flex";
-                actionCell.style.gap = "8px";
-                actionCell.style.cursor = "pointer";
+                actionCell.style.gap     = "8px";
+                actionCell.style.cursor  = "pointer";
 
                 // ✏️ Pencil for all
                 // const editIcon = document.createElement('span');
@@ -500,6 +508,8 @@ background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); z-index: 999;">
 
                 apiDetailsTable.appendChild(row);
             });
+
+            document.getElementById('selectedDeviceName').innerText += selected_devise.name || '';
 
         } catch (error) {
             console.error('Error:', error);

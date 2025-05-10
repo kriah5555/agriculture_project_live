@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .serializers import DeviseApiSerializer, DeviseFieldsApiSerializer
-from agriapp.models import DeviseApis, Devise, DeviseLocation, ColumnData, DeviseApisFields
+from agriapp.models import DeviseApis, Devise, DeviseLocation, ColumnData, DeviseApisFields, APICountThreshold
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,6 +13,7 @@ from map.views import get_marker_color
 import copy
 from django.core.files.storage import FileSystemStorage
 from django.core.files.base import ContentFile
+
 
 def encode_to_base64(value):
     """
@@ -185,22 +186,35 @@ def process_device_data(request, device_type, success_message):
         # Fetch device based on `devise_id` and `device_type`
         devise = Devise.objects.filter(devise_id=devise_id, devise_type=device_type).first()
 
+        if not devise:
+            return Response({'message': 'No device found with the provided ID.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check API threshold
+        api_threshold = APICountThreshold.objects.filter(devise=devise).first()
+        if api_threshold:
+            match device_type:
+                case "soilsaathi":
+                    api_used = DeviseApis.objects.filter(device=devise).count()
+                case "atmo_sense" | "soil_life":
+                    api_used = DeviseApisFields.objects.filter(device=devise).count()
+                case _:
+                    api_used = 0
+
+            if api_used >= api_threshold.red:
+                return Response({'message': 'API usage limit reached for this device. Please contact admin..'}, status=status.HTTP_403_FORBIDDEN)
+
         # Check if latitude and longitude are provided
         latitude  = request.data.get('latitude', '')
         longitude = request.data.get('longitude', '')
-        # If latitude and longitude exist and are not empty, get or create DeviseLocation
         if latitude and longitude:
             devise_location, created = DeviseLocation.objects.get_or_create(
                 devise=devise, 
                 defaults={'latitude': latitude, 'longitude': longitude}
             )
-            if not created:  # If the location exists, update it with new values
+            if not created:
                 devise_location.latitude = latitude
                 devise_location.longitude = longitude
                 devise_location.save()
-
-        if not devise:
-            return Response({'message': 'No device found with the provided ID.'}, status=status.HTTP_404_NOT_FOUND)
 
         # Modify request data to include `device` foreign key and `image_path`
         modified_data               = request.data.copy()
@@ -239,7 +253,7 @@ def get_crops(request):
 def add_soil_data_open(request):
     try:
         device_id = request.GET.get('devise_id', '')
-        devise = Devise.objects.filter(devise_id=device_id).first()
+        devise    = Devise.objects.filter(devise_id=device_id).first()
         if (not devise):
             return Response({'message': 'Invslid devise ID'}, status=status.HTTP_400_BAD_REQUEST)
 

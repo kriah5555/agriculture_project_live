@@ -31,6 +31,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
+from .serializers import APICountThresholdSerializer 
+
 # Admin access only decorator
 def admin_required(function):
     return user_passes_test(lambda user: user.is_superuser)(function)
@@ -120,9 +122,17 @@ def userPage(request):
         devise_location  = DeviseLocation.objects.filter(devise=devise).first()
         devise.latitude  = devise_location.latitude if devise_location else 0
         devise.longitude = devise_location.longitude if devise_location else 0
-    
+        api_thresholds   = APICountThreshold.objects.filter(devise=devise).first()
+        devise.api_limit = api_thresholds.red if api_thresholds else None
+        match devise.devise_type:
+            case "soilsaathi":
+                devise.api_used = DeviseApis.objects.filter(device=devise).count()
+            case "atmo_sense" | "soil_life":
+                devise.api_used = DeviseApisFields.objects.filter(device=devise).count()
+            case _:
+                devise.api_used = 0    
     context = {
-        "linked_devices": linked_devices, # Add linked devices to the context
+        "linked_devices": linked_devices, # Add linked devices to the context"
     }
     return render(request, 'devise_user_details.html', context)
 
@@ -382,22 +392,24 @@ def devise_details(request, **kwargs):
     #     return resp
     devise  = Devise.objects.get(pk = kwargs['pk'])
 
-    apis          = DeviseApis.objects.filter(device=devise)
+    if devise.devise_type == 'soilsaathi':
+        apis = DeviseApis.objects.filter(device=devise)
+    else:
+        apis = DeviseApisFields.objects.filter(device=devise)
+        
     template_name = "devise_details1.html"
-    used          = 0
+    used          = len(apis)
     remaining     = 0
     if (len(apis)):
         api_thresholds = APICountThreshold.objects.filter(devise=devise).first()
         if api_thresholds:
             val       = api_thresholds.red - len(apis)
-            used      = len(apis)
             remaining = 0 if (val < 0) else api_thresholds.red - len(apis)
-
     context       = {
         'devise'        : devise,
         'api_usage'     : len(apis),
         'api_threshold' : APICountThreshold.objects.filter(devise=devise).first(),
-        'used'          : used,
+        'used'          : len(apis),
         'color'         : get_marker_color(devise),
         'remaining'     : remaining,
         'location'      : DeviseLocation.objects.filter(devise=devise)
@@ -416,6 +428,15 @@ def user_details(request, **kwargs):
         devise_location  = DeviseLocation.objects.filter(devise=devise).first()
         devise.latitude  = devise_location.latitude if devise_location else 0
         devise.longitude = devise_location.longitude if devise_location else 0
+        api_thresholds   = APICountThreshold.objects.filter(devise=devise).first()
+        devise.api_limit = api_thresholds.red if api_thresholds else None
+        match devise.devise_type:
+            case "soilsaathi":
+                devise.api_used = DeviseApis.objects.filter(device=devise).count()
+            case "atmo_sense" | "soil_life":
+                devise.api_used = DeviseApisFields.objects.filter(device=devise).count()
+            case _:
+                devise.api_used = 0  
     
     context = {
         "user"          : user,
@@ -560,6 +581,40 @@ class APIThresholdFormUpdate(UpdateView):
         else:
             form.add_error(None, "Please add valid thresholds.)")
             return self.form_invalid(form)
+
+from django.http import JsonResponse
+import json
+
+def create_or_update_threshold(request, pk):
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed."}, status=405)
+
+    try:
+        devise = Devise.objects.get(pk=pk)
+    except Devise.DoesNotExist:
+        return JsonResponse({"error": "Devise not found."}, status=404)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON."}, status=400)
+
+    data['devise'] = devise.pk
+
+    try:
+        instance = APICountThreshold.objects.get(devise=devise)
+        serializer = APICountThresholdSerializer(instance, data=data)
+    except APICountThreshold.DoesNotExist:
+        serializer = APICountThresholdSerializer(data=data)
+
+    if serializer.is_valid():
+        if not api_thresholds_validation(serializer.validated_data):
+            return JsonResponse({"error": "Please add valid thresholds."}, status=400)
+
+        serializer.save()
+        return JsonResponse(serializer.data, status=200)
+    else:
+        return JsonResponse(serializer.errors, status=400)
 
 def change_password(request, uid):
     # resp = user_login_access(request)

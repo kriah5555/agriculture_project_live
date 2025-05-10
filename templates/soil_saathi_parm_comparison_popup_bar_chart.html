@@ -61,7 +61,7 @@
         container.innerHTML = "";
         Object.entries(SOIL_SAATHI_FIELDS_BAR_CHART).forEach(([key, label]) => {
             const el = document.createElement("label");
-            el.innerHTML = `<input type="checkbox" value="${key}" checked /> ${label}`;
+            el.innerHTML = `<input type="checkbox" value="${key}" /> ${label}`;
             container.appendChild(el);
             container.appendChild(document.createElement("br"));
         });
@@ -192,7 +192,8 @@
     }
 
 
-    function closeNpkPopup() {
+    function closeNpkPopup() 
+    {
         document.getElementById("npkPopupOverlay").style.display = "none";
     }
 

@@ -3,7 +3,7 @@ import folium as fol
 # import geocoder as geo
 import os
 from django.contrib.auth.decorators import login_required
-from agriapp.models import DeviseLocation, Devise, DeviseApis, APICountThreshold
+from agriapp.models import DeviseLocation, Devise, DeviseApis, APICountThreshold, DeviseApisFields
 
 # Create your views here.
 
@@ -36,8 +36,11 @@ from agriapp.models import DeviseLocation, Devise, DeviseApis, APICountThreshold
 def get_marker_color(devise):
     if devise:
         api_thresholds = APICountThreshold.objects.filter(devise = devise).first()
-        api_count      = len(DeviseApis.objects.filter(device = devise))
-        color          = 'pink'
+        if devise.devise_type == 'soilsaathi':
+            api_count = len(DeviseApis.objects.filter(device = devise))
+        else :
+            api_count = len(DeviseApisFields.objects.filter(device = devise))
+        color = 'pink'
 
         if api_thresholds:
             if api_count >= api_thresholds.red:

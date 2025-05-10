@@ -31,8 +31,8 @@ urlpatterns = [
     path('devise_user_details/', login_required(TemplateView.as_view(template_name="devise_user_details.html")), name = "devise_user_details"),
     path('notifications/', login_required(v.notifications), name = "notifications"),
     path('notifications/<int:pk>/', login_required(v.notifications), name = "notifications"),
-    path('add-api-threshold/<int:pk>/', APIThresholdForm.as_view(), name = "add-api-threshold"),
-    path('update-api-threshold/<int:pk>/<int:devise_pk>/', APIThresholdFormUpdate.as_view(), name = "update-api-threshold"),
+    # path('add-api-threshold/<int:pk>/', APIThresholdForm.as_view(), name = "add-api-threshold"),
+    # path('update-api-threshold/<int:pk>/<int:devise_pk>/', APIThresholdFormUpdate.as_view(), name = "update-api-threshold"),
     path('download_api_response_pdf/<int:pk>/', login_required(pdf.download_api_response_pdf), name = "download-api-response-pdf"),
     path('download_api_response_csv/<int:pk>/', login_required(v.download_api_response_csv), name = "download-api-response-csv"),
     path('dynamic-fields/', login_required(v.dynamic_fields), name = "dynamic-fields"),
@@ -65,6 +65,8 @@ urlpatterns = [
     path('get-api-data/<int:devise_id>/<int:api_id>', GetApiDataJsonData.as_view(), name = "api-data"), # api data for page
 
     path('user-page/', login_required(v.userPage), name = "user-page"),
+    path('api-threshold/<int:pk>/', v.create_or_update_threshold, name='create-or-update-threshold'),
+    
     
 
 ]
