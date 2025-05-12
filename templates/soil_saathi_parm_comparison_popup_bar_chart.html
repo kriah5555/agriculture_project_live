@@ -31,26 +31,29 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 
 <script>
-    const SOIL_SAATHI_FIELDS_BAR_CHART = {
-        nitrogen      : 'Nitrogen',
-        phosphorous   : 'Phosphorous',
-        potassium     : 'Potassium',
-        calcium       : 'Calcium',
-        magnesium     : 'Magnesium',
-        sulphur       : 'Sulphur',
-        zinc          : 'Zinc',
-        manganese     : 'Manganese',
-        iron          : 'Iron',
-        copper        : 'Copper',
-        boron         : 'Boron',
-        molybdenum    : 'Molybdenum',
-        chlorine      : 'Chlorine',
-        nickel        : 'Nickel',
-        organic_carboa: 'Organic Carbon',
-        ph            : 'pH',
-        ec            : 'EC',
-        oc            : 'OC'
-    };
+    // const SOIL_SAATHI_FIELDS_BAR_CHART = {
+    //     nitrogen      : 'Nitrogen',
+    //     phosphorous   : 'Phosphorous',
+    //     potassium     : 'Potassium',
+    //     calcium       : 'Calcium',
+    //     magnesium     : 'Magnesium',
+    //     sulphur       : 'Sulphur',
+    //     zinc          : 'Zinc',
+    //     manganese     : 'Manganese',
+    //     iron          : 'Iron',
+    //     copper        : 'Copper',
+    //     boron         : 'Boron',
+    //     molybdenum    : 'Molybdenum',
+    //     chlorine      : 'Chlorine',
+    //     nickel        : 'Nickel',
+    //     organic_carboa: 'Organic Carbon',
+    //     ph            : 'pH',
+    //     ec            : 'EC',
+    //     oc            : 'OC'
+    // };
+
+    let SOIL_SAATHI_FIELDS_BAR_CHART = {};
+
 
     let npkBarChartInstance   = null;
     let LineChartMonthChoices = null;
@@ -68,9 +71,9 @@
     }
 
     async function showNpkPopup(devise_id = null) {
-        generateNutrientCheckboxes();
-
+        
         let {data, tags} = devise_id ? await fetchDeviseApiData(devise_id) : mockNpkData;
+        generateNutrientCheckboxes();
         npkData          = data;
         
         document.getElementById('npkPopupOverlay').style.display = 'flex';
@@ -204,6 +207,11 @@
             const response = await fetch(url);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
+            const excludeFields = ['id', 'tag', 'crop_type', 'created_at', 'latitude', 'longitude'];
+
+            SOIL_SAATHI_FIELDS_BAR_CHART = Object.fromEntries(
+                Object.entries(data.headers || {}).filter(([key]) => !excludeFields.includes(key))
+            );
             return {data: data.data, tags: data.tags};
         } catch (error) {
             console.error("Error fetching data:", error);
