@@ -4,20 +4,20 @@
   const apiData = {
     infoCards: [
       { title: "Notifications 10", icon: "fas fa-bell" },
-      { title: "June 20th", subtitle: "SoilSaathi", value: "9 times called", icon:"" },
-      { title: "22nd June", subtitle: "AtmoSense", value: "11 times called" },
+      { title: "June 20th", subtitle: "SoiLENZ", value: "9 times called", icon:"" },
+      { title: "22nd June", subtitle: "SoilSparsh", value: "11 times called" },
       { title: "13th June", subtitle: "SoiLIFE", value: "2 items called" },
     ],
     mastitisData: {
       labels: ["13", "14", "15", "16",],
       datasets: [
         {
-          label: "SoilSaathi",
+          label: "SoiLENZ",
           data: [7, 6, 6.5, 6.2],
           borderColor: "rgba(255, 99, 132, 1)",
         },
         {
-          label: "AtmoSense",
+          label: "SoilSparsh",
           data: [6.5, 5.5, 6, 5.8],
           borderColor: "rgba(54, 162, 235, 1)",
         },
@@ -30,13 +30,13 @@
     },
     milkInfo: [
       {
-        label: "Soil saathi devise count",
+        label: "SoiLENZ devise count",
         value: "Count 10",
         change: "20% Increase",
         changeType: "increase",
       },
       {
-        label: "AtmoSense devise count",
+        label: "SoilSparsh devise count",
         value: "Count 30",
         change: "15% Increase",
         changeType: "increase",

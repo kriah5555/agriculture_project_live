@@ -28,7 +28,7 @@
       <div class="card d-flex flex-row align-items-center p-3 me-3 mb-3 fixed-height">
         <i class="fas fa-temperature-low fa-2x text-success me-3"></i>
         <div>
-          <h5 class="mb-1">SoilSaathi</h5>
+          <h5 class="mb-1">SoiLENZ</h5>
           <p class="mb-0">{{ ss_api_counts }} times called</p>
         </div>
       </div>
@@ -38,7 +38,7 @@
       <div class="card d-flex flex-row align-items-center p-3 me-3 mb-3 fixed-height">
         <i class="fas fa-wind fa-2x text-info me-3"></i>
         <div>
-          <h5 class="mb-1">AtmoSense</h5>
+          <h5 class="mb-1">SoilSparsh</h5>
           <p class="mb-0">{{ as_api_counts }} times called</p>
         </div>
       </div>
@@ -82,24 +82,24 @@
     <!-- Donut Chart Container for Devices -->
     <div id="devisesInfoCard" class="col-md-4 mb-4">
       <div class="d-flex flex-column gap-3">
-        <!-- SoilSaathi Card with Donut Chart -->
+        <!-- SoiLENZ Card with Donut Chart -->
         <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit;">
           <div class="donut-card d-flex flex-row align-items-center p-3">
             <i class="fas fa-temperature-low fa-2x text-success me-3"></i>
             <div class="d-flex flex-column align-items-center w-100">
-              <h5 class="mb-1">SoilSaathi</h5>
+              <h5 class="mb-1">SoiLENZ</h5>
               <canvas id="soilSaathiChart" width="100" height="100"></canvas>
               <p class="mb-0">Sample Tested {{ ss_api_counts}}</p>
             </div>
           </div>
         </a>
 
-        <!-- AtmoSense Card with Donut Chart -->
+        <!-- SoilSparsh Card with Donut Chart -->
         <a href="{% url 'atmos-sense-dashboard' %}" style="text-decoration: none; color: inherit;">
           <div class="donut-card d-flex flex-row align-items-center p-3">
             <i class="fas fa-wind fa-2x text-info me-3"></i>
             <div class="d-flex flex-column align-items-center w-100">
-              <h5 class="mb-1">AtmoSense</h5>
+              <h5 class="mb-1">SoilSparsh</h5>
               <canvas id="atmoSenseChart" width="100" height="100"></canvas>
               <p class="mb-0">Sample Tested {{ as_api_counts }}</p>
             </div>
@@ -176,7 +176,7 @@
     labels: ['2021', '2022', '2023'], // X-axis: Years
     datasets: [
       {
-        label: 'SoilSaathi',
+        label: 'SoiLENZ',
         data: [5, 8, 9], // Year-wise API calls
         borderColor: 'rgba(75, 192, 192, 1)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -184,7 +184,7 @@
         fill: false,
       },
       {
-        label: 'AtmoSense',
+        label: 'SoilSparsh',
         data: [7, 10, 11],
         borderColor: 'rgba(54, 162, 235, 1)',
         backgroundColor: 'rgba(54, 162, 235, 0.2)',
@@ -244,7 +244,7 @@
   var atmoSenseData = { total: 1000, used: {{as_api_counts}} };
   var soiLifeData = { total: 1000, used: {{sl_api_counts}} };
 
-  // Donut Chart for SoilSaathi
+  // Donut Chart for SoiLENZ
   var ctx1 = document.getElementById('soilSaathiChart').getContext('2d');
   var soilSaathiChart = new Chart(ctx1, {
     type: 'doughnut',
@@ -274,7 +274,7 @@
     }
   });
 
-  // Donut Chart for AtmoSense
+  // Donut Chart for SoilSparsh
   var ctx2 = document.getElementById('atmoSenseChart').getContext('2d');
   var atmoSenseChart = new Chart(ctx2, {
     type: 'doughnut',

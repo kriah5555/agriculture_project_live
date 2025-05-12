@@ -40,8 +40,8 @@
                             <div class="col-6 mb-3">
                                 <label class="form-label">Device type <b>*</b></label>
                                 <select class="form-control" name="devise_type" required {{disabled}}>
-                                    <option value="soilsaathi" {% if devise.devise_type == "soilsaathi" %}selected{% endif %}>Soil Saathi</option>
-                                    <option value="atmo_sense" {% if devise.devise_type == "atmo_sense" %}selected{% endif %}>Atmo Sense</option>
+                                    <option value="soilsaathi" {% if devise.devise_type == "soilsaathi" %}selected{% endif %}>SoiLENZ</option>
+                                    <option value="atmo_sense" {% if devise.devise_type == "atmo_sense" %}selected{% endif %}>SoilSparsh</option>
                                     <option value="soil_life" {% if devise.devise_type == "soil_life" %}selected{% endif %}>SoilLIFE</option>
                                 </select>
                                 {% if field_errors.devise_type %}
@@ -128,11 +128,11 @@
                 </div>
             </div>
 
-            <!-- Warranty and Land Information -->
+            <!-- Warranty and Land info -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <b>Warranty & Land Information</b>
+                        <b>Warranty & Land Info</b>
                         <div class="row">
                             <div class="col-lg-6 mb-3">
                                 <label class="form-label">Warranty Expiry <b>*</b></label>
@@ -142,7 +142,7 @@
                                 {% endif %}
                             </div>
                             <div class="col-lg-6 mb-3">
-                                <label class="form-label">Land Information <b>*</b></label>
+                                <label class="form-label">Land in acres <b>*</b></label>
                                 <input type="text" class="form-control" name="land" required value="{{ devise.land }}">
                                 {% if field_errors.land %}
                                     <span style="color: red;">{{ field_errors.land }}</span>

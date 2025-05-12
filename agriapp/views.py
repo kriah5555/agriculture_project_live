@@ -759,7 +759,7 @@ class SoilLifeDashboard(TemplateView):
         device_api_counts_json       = json.dumps(device_api_counts)
         return context
 
-class SoilSaathiDashboard(TemplateView):
+class SoiLENZDashboard(TemplateView):
     template_name = "soil-saathi-dashboard.html"
     def get_context_data(self, **kwargs):
         context           = super().get_context_data(**kwargs)

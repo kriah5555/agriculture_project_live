@@ -49,7 +49,7 @@ urlpatterns = [
     path('admin-panne/', login_required(v.dashboard), name = "dashboard"),
     path('create-user/', login_required(v.create_user), name = "create-user"),
     path('user-details/<str:uid>/', login_required(v.user_details), name = "user-details"),
-    path('soil-saathi-dashboard/', login_required(SoilSaathiDashboard.as_view()), name = "soil-saathi-dashboard"),
+    path('soil-saathi-dashboard/', login_required(SoiLENZDashboard.as_view()), name = "soil-saathi-dashboard"),
 
     path('atmos-sense-dashboard/', login_required(AtmoSSenseDashboard.as_view()), name = "atmos-sense-dashboard"),
     path('atmos-sense-api-overview/<int:pk>/', login_required(v.api_overview), name = "atmos-sense-api-overview"),

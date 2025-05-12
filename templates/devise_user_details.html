@@ -137,25 +137,25 @@
                         <ul class="list-group">
                             {% for device in linked_devices %}
                             <li class="list-group-item" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="showDeviceDetails({
-                                pk: '{{ device.pk }}',
-                                id: '{{ device.devise_id }}',
-                                devise_type: '{{ device.devise_type }}',
-                                name: '{{ device.name }}',
-                                serialNo: '{{ device.serial_no }}',
-                                chipsetNo: '{{ device.chipset_no }}',
-                                email: '{{ device.email }}',
-                                phone: '{{ device.phone }}',
-                                address1: '{{ device.address1 }}',
-                                address2: '{{ device.address2 }}',
-                                purchaseDate: '{{ device.purchase_date }}',
-                                warranty: '{{ device.warrenty }}',
-                                amountPaid: '{{ device.amount_paid }}',
+                                pk           : '{{ device.pk }}',
+                                id           : '{{ device.devise_id }}',
+                                devise_type  : '{{ device.devise_type }}',
+                                name         : '{{ device.name }}',
+                                serialNo     : '{{ device.serial_no }}',
+                                chipsetNo    : '{{ device.chipset_no }}',
+                                email        : '{{ device.email }}',
+                                phone        : '{{ device.phone }}',
+                                address1     : '{{ device.address1 }}',
+                                address2     : '{{ device.address2 }}',
+                                purchaseDate : '{{ device.purchase_date }}',
+                                warranty     : '{{ device.warrenty }}',
+                                amountPaid   : '{{ device.amount_paid }}',
                                 balanceAmount: '{{ device.balance_amount }}',
-                                land: '{{ device.land }} acres',
-                                latitude: '{{ device.latitude }} ',
-                                longitude: '{{ device.longitude }} ',
-                                api_limit: '{{ device.api_limit }} ',
-                                api_used: '{{ device.api_used }} ',
+                                land         : '{{ device.land }} acres',
+                                latitude     : '{{ device.latitude }} ',
+                                longitude    : '{{ device.longitude }} ',
+                                api_limit    : '{{ device.api_limit }} ',
+                                api_used     : '{{ device.api_used }} ',
                             })">
                                 <span>{{ device.name }} ({{device.devise_type}})</span>
                                 
@@ -229,8 +229,8 @@
                                     <h4 class="mb-0">Financial Details</h4>
                                 </div>
                                 <div class="card-body">
-                                    <p><strong>Amount Paid:</strong> $<span id="amountPaid"></span></p>
-                                    <p><strong>Balance Amount:</strong> $<span id="balanceAmount"></span></p>
+                                    <p><strong>Amount Paid:</strong><span id="amountPaid"></span></p>
+                                    <p><strong>Balance Amount:</strong><span id="balanceAmount"></span></p>
                                     <p><strong>API calls limit:</strong> <span id="api_limit"></span></p>
                                     <p><strong>API used:</strong> <span id="api_used"></span></p>
                                 </div>

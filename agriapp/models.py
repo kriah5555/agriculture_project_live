@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from . import FertilizerCalculation as f
 
 CROP_LIST        = f.get_crop_list()
-DEVICE_CHOICES   = [('soilsaathi', 'Soil Saathi'),('atmo_sense', 'Atmo Sense'), ('soil_life', 'SoilLIFE')]
+DEVICE_CHOICES   = [('soilsaathi', 'SoiLENZ'),('atmo_sense', 'SoilSparsh'), ('soil_life', 'SoilLIFE')]
 
 SOIL_SAATHI_FIELDS = {
     'id'                   : 'ID',
