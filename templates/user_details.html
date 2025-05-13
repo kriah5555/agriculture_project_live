@@ -163,6 +163,17 @@
                                     <i class="fas fa-chart-line" title="Compare Nutrients"></i>
                                     </a>
                                 {% endif %}
+
+                                {% if device.devise_type == "soilsaathi" or device.devise_type == "atmo_sense" %}
+                                    <a href="#"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Compare Nutrients"
+                                    onclick="event.stopPropagation(); showAtmosPopup({{ device.pk }});"
+                                    class="px-2">
+                                        <i class="fas fa-chart-line" title="Compare Nutrients"></i>
+                                    </a>
+                                {% endif %}
                             </div>
                         </li>
                         
