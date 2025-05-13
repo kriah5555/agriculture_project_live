@@ -170,16 +170,14 @@
                                        class="px-2">
                                         <i class="fas fa-file-export" title="Export Device APIs"></i>
                                     </a>
-                                    {% if device.devise_type == "soilsaathi" %}
-                                        <a href="#"
+                                    <a href="#"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="top"
                                         title="Compare Nutrients"
                                         onclick="event.stopPropagation(); showNpkPopup({{ device.pk }});"
                                         class="px-2">
-                                        <i class="fas fa-chart-line" title="Compare Nutrients"></i>
-                                        </a>
-                                    {% endif %}
+                                    <i class="fas fa-chart-line" title="Compare Nutrients"></i>
+                                    </a>
 
                                 </div>
                             </li>

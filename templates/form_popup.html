@@ -253,6 +253,7 @@
         if (data.status === "success") {
           alert("✅ Data saved successfully!");
           hideFormPopup();
+          location.reload()
         } else {
           alert(`❌ Error: ${data.message}`);
         }

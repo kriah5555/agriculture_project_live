@@ -59,10 +59,24 @@
     let LineChartMonthChoices = null;
     let TagFilterChoices      = null;
 
-    function generateNutrientCheckboxes() {
+    function generateNutrientCheckboxes() 
+    {
         const container = document.getElementById("nutrientCheckboxes");
         container.innerHTML = "";
+
+        const excludeKeys = [
+            'id',
+            'tag',
+            'crop_type',
+            'created_at',
+            'latitude',
+            'longitude',
+            'image_path'
+        ];
+
         Object.entries(SOIL_SAATHI_FIELDS_BAR_CHART).forEach(([key, label]) => {
+            if (excludeKeys.includes(key)) return;  // Skip unwanted keys
+
             const el = document.createElement("label");
             el.innerHTML = `<input type="checkbox" value="${key}" /> ${label}`;
             container.appendChild(el);
@@ -70,9 +84,12 @@
         });
     }
 
-    async function showNpkPopup(devise_id = null) {
+    async function showNpkPopup(devise_id = null) 
+    {
         
-        let {data, tags} = devise_id ? await fetchDeviseApiData(devise_id) : mockNpkData;
+        let { data, tags, headers} = devise_id ? await fetchDeviseApiData(devise_id) : mockNpkData;
+        SOIL_SAATHI_FIELDS_BAR_CHART = headers
+        
         generateNutrientCheckboxes();
         npkData          = data;
         
@@ -88,13 +105,22 @@
             monthSelector.appendChild(option);
         });
 
-        if (!LineChartMonthChoices) {
-            LineChartMonthChoices = new Choices("#monthSelector", {
-                removeItemButton: true,
-                placeholderValue: "Select months",
-                shouldSort: false
-            });
+        // if (!LineChartMonthChoices) {
+        //     LineChartMonthChoices = new Choices("#monthSelector", {
+        //         removeItemButton: true,
+        //         placeholderValue: "Select months",
+        //         shouldSort: false
+        //     });
+        // }
+
+        if (LineChartMonthChoices) {
+            LineChartMonthChoices.destroy();
         }
+        LineChartMonthChoices = new Choices("#monthSelector", {
+            removeItemButton: true,
+            placeholderValue: "Select months",
+            shouldSort: false
+        });
 
 
         const tagFilter      = document.getElementById("tagFilter");
@@ -108,15 +134,26 @@
             tagFilter.appendChild(option);
         });
 
-        if (!TagFilterChoices) {
-            TagFilterChoices = new Choices("#tagFilter", {
-                removeItemButton: true,
-                placeholderValue: "Select or type tags",
-                shouldSort: false
-            });
+        // if (!TagFilterChoices) {
+        //     TagFilterChoices = new Choices("#tagFilter", {
+        //         removeItemButton: true,
+        //         placeholderValue: "Select or type tags",
+        //         shouldSort: false
+        //     });
 
-            document.getElementById("tagFilter").addEventListener("change", () => updateNpkChart(npkData));
+        //     document.getElementById("tagFilter").addEventListener("change", () => updateNpkChart(npkData));
+        // }
+
+        if (TagFilterChoices) {
+            TagFilterChoices.destroy();
         }
+        TagFilterChoices = new Choices("#tagFilter", {
+            removeItemButton: true,
+            placeholderValue: "Select or type tags",
+            shouldSort: false
+        });
+
+        document.getElementById("tagFilter").addEventListener("change", () => updateNpkChart(npkData));
 
 
         document.getElementById("nutrientCheckboxes").addEventListener("change", () => updateNpkChart(npkData));
@@ -155,12 +192,12 @@
 
         const colors = ["#4caf50", "#2196f3", "#ff9800", "#e91e63", "#9c27b0", "#607d8b", "#3f51b5", "#f44336", "#00bcd4"];
         const datasets = selectedNutrients.map((nutrient, idx) => ({
-            label: SOIL_SAATHI_FIELDS_BAR_CHART[nutrient] || nutrient,
-            data: nutrientDataMap[nutrient],
+            label          : SOIL_SAATHI_FIELDS_BAR_CHART[nutrient] || nutrient,
+            data           : nutrientDataMap[nutrient],
             backgroundColor: colors[idx % colors.length],
-            borderColor: colors[idx % colors.length],
-            fill: false,
-            tension: 0.3
+            borderColor    : colors[idx % colors.length],
+            fill           : false,
+            tension        : 0.3
         }));
 
         const ctx = document.getElementById("npkComparisonChart").getContext("2d");
@@ -198,6 +235,10 @@
     function closeNpkPopup() 
     {
         document.getElementById("npkPopupOverlay").style.display = "none";
+        if (npkBarChartInstance) {
+            npkBarChartInstance.destroy();
+            npkBarChartInstance = null;
+        }
     }
 
     async function fetchDeviseApiData(id) 
@@ -212,7 +253,7 @@
             SOIL_SAATHI_FIELDS_BAR_CHART = Object.fromEntries(
                 Object.entries(data.headers || {}).filter(([key]) => !excludeFields.includes(key))
             );
-            return {data: data.data, tags: data.tags};
+            return {data: data.data, tags: data.tags, headers: data.headers};
         } catch (error) {
             console.error("Error fetching data:", error);
             return {};
