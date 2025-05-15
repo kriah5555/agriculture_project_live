@@ -57,6 +57,7 @@ SOIL_SAATHI_FIELD_THRESHOLDS = {
 
 ATMO_SENSE_FIELDS = {
     'id'        : 'ID',
+    'tag'       : 'Tag',
     'image_path': 'Image',
     'field1'    : "Soil Temp (°C)",
     'field2'    : "Soil Moisture (%)",
@@ -68,6 +69,7 @@ ATMO_SENSE_FIELDS = {
 
 SOIL_LIFE_FIELDS = {
     'id'        : 'ID',
+    'tag'       : 'Tag',
     'image_path': 'Image',
     'field1'    : "CO₂ (ppm)",
     'field2'    : "Methane (ppm)",
@@ -147,6 +149,7 @@ class DeviseApis(models.Model):
 
 class DeviseApisFields(models.Model):
     device     = models.ForeignKey(to='Devise', on_delete=models.CASCADE)
+    tag        = models.CharField( max_length=255, null=True, blank=True, default=None)
     image_path = models.CharField(max_length=255, null=True, blank=True)
     field1     = models.FloatField(default=0.0) # Soil Temp
     field2     = models.FloatField(default=0.0) # soil Moisture

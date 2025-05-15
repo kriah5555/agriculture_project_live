@@ -29,8 +29,16 @@
             
             <!-- Left Side: Field Values -->
             <div style="flex: 0 0 65%; border-right: 1px solid #ddd; padding-right: 2rem; background-color: #f9f9f9; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-                <h4 style="font-size: 24px; color: #333; margin-bottom: 1rem;">Devise: {{ device.name }} ({{device.devise_type}}) <span style="float: right;">Devise ID: {{device.devise_id}}</span></h4>
-        
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 24px; color: #333; margin-bottom: 1rem;">
+                    <div>
+                        Device: {{ device.name }} ({{ device.devise_type }})
+                    </div>
+                    <div>
+                        <span style="margin-right: 1rem;">Device ID: {{ device.devise_id }}</span>
+                        <span>Tag: {{ fields_api_data.tag }}</span>
+                    </div>
+                </div>
+                        
                 <div class="container">
                     <table class="table table-bordered table-sm text-center small">
                         <thead class="thead-dark">
