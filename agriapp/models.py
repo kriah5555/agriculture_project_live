@@ -151,6 +151,9 @@ class DeviseApis(models.Model):
     longitude             = models.FloatField(default=0.0)
     created_at            = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return f"{self.device.devise_type}-{self.device.user.username}-{self.device.name}"
 
@@ -179,6 +182,9 @@ class DeviseApisFields(models.Model):
     field19    = models.FloatField(default=0.0)
     crop_type = models.CharField(max_length=255, choices=CROP_LIST, null=True, blank=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.device.devise_type}-{self.device.user.username}-{self.device.name}"
