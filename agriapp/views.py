@@ -5,7 +5,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 
 from .forms import ContactForm, DeviseForm
-from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_SAATHI_FIELD_THRESHOLDS
+from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES
 
 from . import UserFunctions
 from django.views.generic import UpdateView, TemplateView, CreateView, View
@@ -119,18 +119,20 @@ def dashboard(request):
 def userPage(request):
     linked_devices = Devise.objects.filter(user__username=request.user.username)  # Fetch all devices linked to the user
     for devise in linked_devices:
-        devise_location  = DeviseLocation.objects.filter(devise=devise).first()
-        devise.latitude  = devise_location.latitude if devise_location else 0
-        devise.longitude = devise_location.longitude if devise_location else 0
-        api_thresholds   = APICountThreshold.objects.filter(devise=devise).first()
-        devise.api_limit = api_thresholds.red if api_thresholds else None
+        devise_location          = DeviseLocation.objects.filter(devise=devise).first()
+        devise.latitude          = devise_location.latitude if devise_location else 0
+        devise.longitude         = devise_location.longitude if devise_location else 0
+        api_thresholds           = APICountThreshold.objects.filter(devise=devise).first()
+        devise.api_limit         = api_thresholds.red if api_thresholds else None
+        devise.type_display_name = DEVICE_NAMES[devise.devise_type] 
         match devise.devise_type:
             case "soilsaathi":
                 devise.api_used = DeviseApis.objects.filter(device=devise).count()
             case "atmo_sense" | "soil_life":
                 devise.api_used = DeviseApisFields.objects.filter(device=devise).count()
             case _:
-                devise.api_used = 0    
+                devise.api_used = 0
+
     context = {
         "linked_devices": linked_devices, # Add linked devices to the context"
     }
@@ -425,11 +427,12 @@ def user_details(request, **kwargs):
     linked_devices = Devise.objects.filter(user=user)  # Fetch all devices linked to the user
 
     for devise in linked_devices:
-        devise_location  = DeviseLocation.objects.filter(devise=devise).first()
-        devise.latitude  = devise_location.latitude if devise_location else 0
-        devise.longitude = devise_location.longitude if devise_location else 0
-        api_thresholds   = APICountThreshold.objects.filter(devise=devise).first()
-        devise.api_limit = api_thresholds.red if api_thresholds else None
+        devise_location          = DeviseLocation.objects.filter(devise=devise).first()
+        devise.latitude          = devise_location.latitude if devise_location else 0
+        devise.longitude         = devise_location.longitude if devise_location else 0
+        api_thresholds           = APICountThreshold.objects.filter(devise=devise).first()
+        devise.api_limit         = api_thresholds.red if api_thresholds else None
+        devise.type_display_name = DEVICE_NAMES[devise.devise_type]
         match devise.devise_type:
             case "soilsaathi":
                 devise.api_used = DeviseApis.objects.filter(device=devise).count()

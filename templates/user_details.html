@@ -123,7 +123,7 @@
                             api_limit: '{{ device.api_limit }} ',
                             api_used: '{{ device.api_used }} ',
                         })">
-                            <span>{{ device.name }} ({{device.devise_type}})</span>
+                            <span>{{ device.name }} ({{device.type_display_name}})</span>
                             <div>
                                 <a href="{% url 'device-details' device.pk %}" 
                                    data-bs-toggle="tooltip" 
