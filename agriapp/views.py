@@ -32,6 +32,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 from .serializers import APICountThresholdSerializer 
+import pytz
+from django.utils import timezone
 
 # Admin access only decorator
 def admin_required(function):
@@ -1127,9 +1129,18 @@ class GetDeviseApiCallsJsonData(View):
                 case _:
                     headers = []
 
+            bangalore_tz = pytz.timezone('Asia/Kolkata')
+            for item in api_calls_data:
+                if item.get('created_at'):
+                    utc_dt = item['created_at']
+                    if timezone.is_naive(utc_dt):
+                        utc_dt = timezone.make_aware(utc_dt, tz=pytz.UTC)  # <-- use tz=, not timezone=
+                    local_dt = utc_dt.astimezone(bangalore_tz)
+                    item['created_at'] = local_dt.strftime('%Y-%m-%d %H:%M:%S')
+
         except Devise.DoesNotExist:
             return JsonResponse({'error': 'Devise not found'}, status=404)
-        
+
         return JsonResponse({'headers': headers, 'data': api_calls_data, 'devise_type': devise.devise_type, 'field_thresholds': field_thresholds})
 
 class GetDeviseApiCallsJsonDataForChart(View):
