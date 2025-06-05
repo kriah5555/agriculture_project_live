@@ -3026,6 +3026,7 @@ input[type="button"].btn-block {
   position: absolute;
   top: 100%;
   left: 0;
+  right: 32px;
   z-index: 1000;
   display: none;
   float: left;
@@ -9513,9 +9514,7 @@ h4, h5, h6 {
   }
 }
 
-.navbar-dark {
-  display: none;
-}
+
 
 .navbar-dark .navbar-nav .nav-link {
   padding: 25px 10px;
@@ -9675,7 +9674,7 @@ h4, h5, h6 {
 .marquee--8 {
   --marquee-item-width: 150px;
   --marquee-item-height: 150px;
-  --marquee-duration: 60s; /* Adjust this duration as needed */
+  --marquee-duration: 10s; /* Adjust this duration as needed */
   --marquee-items: 8;
   width: 100%;
 }
@@ -9837,7 +9836,7 @@ h4, h5, h6 {
 .marquee--8 {
   --marquee-item-width: 150px;
   --marquee-item-height: 150px;
-  --marquee-duration: 60s; /* Adjust this duration as needed */
+  --marquee-duration: 10s; /* Adjust this duration as needed */
   --marquee-items: 8;
   width: 100%;
 }
@@ -9908,7 +9907,8 @@ h4, h5, h6 {
   }
 }
 
-
+.marquee:hover .marquee__item {
+  animation-play-state: paused;}
 
     .team-member {
         display: flex; /* Flexbox layout to align items horizontally */
@@ -10034,3 +10034,30 @@ h4, h5, h6 {
   display: block; /* Ensure image is displayed as a block element */
 }
 
+/* Main Navbar Background and Link Colors */
+.navbar {
+  background-color: #000 !important;
+}
+
+.navbar .nav-link {
+  color: #fff !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+  color: #ddd !important;
+}
+
+/* Dropdown Menu Styling */
+.navbar .dropdown-menu {
+  background-color: #fff !important;  /* White background */
+}
+
+.navbar .dropdown-item {
+  color: #000 !important;             /* Black font */
+}
+
+.navbar .dropdown-item:hover {
+  background-color: #f0f0f0 !important;
+  color: #000 !important;
+}
