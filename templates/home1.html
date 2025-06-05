@@ -6,7 +6,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>ArkaShine - agriculture Website Template</title>
+    <title>Empowering Farmers Through Innovative Agriculture Solutions</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Free HTML Templates" name="keywords">
     <meta content="Free HTML Templates" name="description">
@@ -57,32 +57,21 @@
             <a href="#contact" class="nav-item nav-link">Contact</a>
             
         </div>
-       
-        
-        <div class="navbar-nav ml-auto py-0">
-       
-            
 
+        <div class="navbar-nav ml-auto py-0 align-items-center">
                     <img src="{% static '/home/images/logo.jpg' %}" alt="Menu Icon" width="200" height="80">
-       
-            
-            </div>
-        </div>
-        <div class="navbar-nav ml-auto py-0">
             <div class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <img src="{% static '/home/images/menu.jpg' %}" alt="Menu Icon" width="30" height="30">
                 </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
                     <a class="dropdown-item" href="{% url 'admin-login' %}">Admin Login</a>
                     <a class="dropdown-item" href="{% url 'user-login' %}">User Login</a>
                     <a class="dropdown-item" href="#">Careers</a>
                 </div>
             </div>
-        </div>
             </div>
         </div>
-        
     </div>
 </nav>
 <!-- Navbar End -->
@@ -510,7 +499,7 @@
 
 <!-- Goals start -->
 <div class="container-fluid py-3" id="goals">
-    <div class="container py-1">
+    <div class="py-1 container-fluid">
         <div class="section-title position-relative text-center">
             <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Goals</h6>
             <h1 class="font-secondary display-4">Our Sustainability Goals</h1>
@@ -810,7 +799,7 @@
 
 <!-- Our Partners Start -->
 <div class="container-fluid py-5" id="partners">
-    <div class="container py-0">
+    <div class="py-0" container-fluid>
         <div class="section-title position-relative text-center">
             <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Partners</h6>
             <h1 class="font-secondary display-4">Our Partners</h1>
@@ -842,33 +831,57 @@
                     <div style="color: red">
                         {{errors}}
                     </div>
-                    <form  name="contactForm" id="contactForm" method="POST" novalidate="novalidate"> {% csrf_token %}
-                        <div class="form-row">
-                            <div class="col-sm-12 control-group">
-                                <input type="text" class="form-control bg-secondary border-0 py-4 px-3" name="name" placeholder="Name" required="required" data-validation-required-message="Please enter your first name" />
-                                <p class="help-block text-danger"></p>
+<!-- Contact modal start (Subset of Contact Start) -->
+<div class="modal fade" id="contactModal" tabindex="-1" role="dialog" aria-labelledby="contactModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document" style="max-width: 528px; height: 88vh; display: flex; align-items: center;"><!-- Increased width by 10% and height by 10% -->
+        <div class="modal-content" style="max-height: 88vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contactModalTitle" style="font-family: 'Times New Roman', Times, serif;">Get In Touch</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="contact-form text-center">
+                    <div id="success"></div>
+                    <div style="color: red">
+                        {{errors}}
+                    </div>
+                    <form class="mx-auto" name="contactForm" id="contactForm" method="POST" novalidate="novalidate" style="max-width: 600px;"><!-- Increased width by 10% -->
+                        {% csrf_token %}
+                        <div class="form-row justify-content-center">
+                            <div class="col-12 control-group mb-3 d-flex justify-content-center">
+                                <input type="text" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="name" placeholder="Name" required="required" data-validation-required-message="Please enter your first name" style="max-width: 543px;" /><!-- Increased width by 10% -->
                             </div>
                         </div>
-                        <div class="form-group control-group">
-                            <input type="email" class="form-control bg-secondary border-0 py-4 px-3" name="mail" placeholder="Your Email" required="required" data-validation-required-message="Please enter your email" />
-                            <p class="help-block text-danger"></p>
+                        <div class="form-group control-group mb-3 d-flex justify-content-center">
+                            <input type="email" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="mail" placeholder="Your Email" required="required" data-validation-required-message="Please enter your email" style="max-width: 543px;" />
                         </div>
-                        <div class="form-group control-group">
-                            <input type="tel" class="form-control bg-secondary border-0 py-4 px-3" name="country" placeholder="Country" required="required" data-validation-required-message="Please enter your country" />
-                            <p class="help-block text-danger"></p>
+                        <div class="form-group control-group mb-3 d-flex justify-content-center">
+                            <input type="tel" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="country" placeholder="Country" required="required" data-validation-required-message="Please enter your country" style="max-width: 543px;" />
                         </div>
-                        <div class="form-group control-group">
-                            <input type="text" class="form-control bg-secondary border-0 py-4 px-3" name="phone" placeholder="Phone Number" required="required" data-validation-required-message="Please enter your phone number" />
-                            <p class="help-block text-danger"></p>
+                        <div class="form-group control-group mb-3 d-flex justify-content-center">
+                            <input type="text" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="phone" placeholder="Phone Number" required="required" data-validation-required-message="Please enter your phone number" style="max-width: 543px;" />
                         </div>
-                        <div class="form-group control-group">
-                            <textarea class="form-control bg-secondary border-0 py-2 px-3" name="message" rows="6" placeholder="Message" required="required" data-validation-required-message="Please enter your message"></textarea>
-                            <p class="help-block text-danger"></p>
+                        <div class="form-group control-group mb-3 d-flex justify-content-center">
+                            <textarea class="form-control bg-secondary border-0 py-2 px-3 text-center" name="message" rows="5" placeholder="Message" required="required" data-validation-required-message="Please enter your message" style="max-width: 543px;"></textarea>
                         </div>
                         <div class="text-center">
-                            <input class="btn btn-primary font-weight-bold py-3 px-5" type="submit" />
+                            <input class="btn btn-primary font-weight-bold py-3 px-5" type="submit" value="Send Message" />
                         </div>
                     </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Contact modal End -->
+<div class="text-center">
+    <button class="btn btn-primary font-weight-bold py-3 px-5 mt-2" data-toggle="modal" data-target="#contactModal">Contact Us</button>
+</div>
                 </div>
             </div>
         </div>
