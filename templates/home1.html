@@ -817,23 +817,20 @@
     </div>
 </div>
 <!-- Our Partners End -->
-  <!-- Contact Start -->
+    <!-- Contact Start -->
 <div class="container-fluid py-0" id="contact">
-    <div class="container py-5">
-        <div class="section-title position-relative text-center">
-            <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Contact</h6>
-            <h1 class="font-secondary display-4">Get In Touch</h1>
-        </div>
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="contact-form">
-                    <div id="success"></div>
-                    <div style="color: red">
-                        {{errors}}
-                    </div>
+        <div class="container py-5">
+                <div class="section-title position-relative text-center">
+                        <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Contact</h6>
+                        <h1 class="font-secondary display-4">Get In Touch</h1>
+                </div>
+                <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                                <div class="contact-form">
+                                        <div id="success"></div>
 <!-- Contact modal start (Subset of Contact Start) -->
 <div class="modal fade" id="contactModal" tabindex="-1" role="dialog" aria-labelledby="contactModalTitle" aria-hidden="true">
-    <div class="modal-dialog modal-md" role="document" style="max-width: 528px; height: 88vh; display: flex; align-items: center;"><!-- Increased width by 10% and height by 10% -->
+    <div class="modal-dialog modal-md" role="document" style="max-width: 792px; height: 88vh; display: flex; align-items: center;">
         <div class="modal-content" style="max-height: 88vh; overflow-y: auto;">
             <div class="modal-header">
                 <h5 class="modal-title" id="contactModalTitle" style="font-family: 'Times New Roman', Times, serif;">Get In Touch</h5>
@@ -843,28 +840,29 @@
             </div>
             <div class="modal-body">
                 <div class="contact-form text-center">
-                    <div id="success"></div>
-                    <div style="color: red">
-                        {{errors}}
-                    </div>
-                    <form class="mx-auto" name="contactForm" id="contactForm" method="POST" novalidate="novalidate" style="max-width: 600px;"><!-- Increased width by 10% -->
+                    <form class="mx-auto needs-validation" name="contactForm" id="contactForm" method="POST" novalidate style="max-width: 600px;">
                         {% csrf_token %}
                         <div class="form-row justify-content-center">
-                            <div class="col-12 control-group mb-3 d-flex justify-content-center">
-                                <input type="text" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="name" placeholder="Name" required="required" data-validation-required-message="Please enter your first name" style="max-width: 543px;" /><!-- Increased width by 10% -->
+                            <div class="col-12 control-group mb-3 d-flex flex-column align-items-center">
+                                <input type="text" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="name" placeholder="Name" required pattern="^[A-Za-z\s]{2,}$" style="max-width: 543px;" />
+                                <div class="invalid-feedback text-left w-100" style="max-width:543px;">Please enter your first name (letters only).</div>
                             </div>
                         </div>
-                        <div class="form-group control-group mb-3 d-flex justify-content-center">
-                            <input type="email" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="mail" placeholder="Your Email" required="required" data-validation-required-message="Please enter your email" style="max-width: 543px;" />
+                        <div class="form-group control-group mb-3 d-flex flex-column align-items-center">
+                            <input type="email" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="mail" placeholder="Your Email" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" style="max-width: 543px;" />
+                            <div class="invalid-feedback text-left w-100" style="max-width:543px;">Please enter a valid email.</div>
                         </div>
-                        <div class="form-group control-group mb-3 d-flex justify-content-center">
-                            <input type="tel" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="country" placeholder="Country" required="required" data-validation-required-message="Please enter your country" style="max-width: 543px;" />
+                        <div class="form-group control-group mb-3 d-flex flex-column align-items-center">
+                            <input type="text" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="country" placeholder="Country" required pattern="^[A-Za-z\s]{2,}$" style="max-width: 543px;" />
+                            <div class="invalid-feedback text-left w-100" style="max-width:543px;">Please enter your country (letters only).</div>
                         </div>
-                        <div class="form-group control-group mb-3 d-flex justify-content-center">
-                            <input type="text" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="phone" placeholder="Phone Number" required="required" data-validation-required-message="Please enter your phone number" style="max-width: 543px;" />
+                        <div class="form-group control-group mb-3 d-flex flex-column align-items-center">
+                            <input type="text" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="phone" placeholder="Phone Number" required pattern="^[0-9+\-\s]{7,15}$" style="max-width: 543px;" />
+                            <div class="invalid-feedback text-left w-100" style="max-width:543px;">Please enter a valid phone number.</div>
                         </div>
-                        <div class="form-group control-group mb-3 d-flex justify-content-center">
-                            <textarea class="form-control bg-secondary border-0 py-2 px-3 text-center" name="message" rows="5" placeholder="Message" required="required" data-validation-required-message="Please enter your message" style="max-width: 543px;"></textarea>
+                        <div class="form-group control-group mb-3 d-flex flex-column align-items-center">
+                            <textarea class="form-control bg-secondary border-0 py-2 px-3 text-center" name="message" rows="5" placeholder="Message" required style="max-width: 543px;"></textarea>
+                            <div class="invalid-feedback text-left w-100" style="max-width:543px;">Please enter your message.</div>
                         </div>
                         <div class="text-center">
                             <input class="btn btn-primary font-weight-bold py-3 px-5" type="submit" value="Send Message" />
@@ -891,7 +889,7 @@
 
 
 
-    <!-- Menu Modal -->
+<!-- Menu Modal -->
 <div class="modal fade" id="menuModal" tabindex="-1" role="dialog" aria-labelledby="menuModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -1045,6 +1043,50 @@
 
     <!-- Template Javascript -->
     <script src="{% static '/home/js/main.js' %}"></script>
+    <!-- Modal popup form validation Start -->
+    <script>
+    // Bootstrap 4 validation with custom checks for name/country (no numbers) and email
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var form = document.getElementById('contactForm');
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    // Custom validation for name and country (no numbers)
+                    var name = form.elements['name'];
+                    var country = form.elements['country'];
+                    var email = form.elements['mail'];
+                    var nameValid = /^[A-Za-z\s]{2,}$/.test(name.value.trim());
+                    var countryValid = /^[A-Za-z\s]{2,}$/.test(country.value.trim());
+                    var emailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.value.trim());
+
+                    if (!nameValid) {
+                        name.setCustomValidity("Please enter your first name (letters only).");
+                    } else {
+                        name.setCustomValidity("");
+                    }
+                    if (!countryValid) {
+                        country.setCustomValidity("Please enter your country (letters only).");
+                    } else {
+                        country.setCustomValidity("");
+                    }
+                    if (!emailValid) {
+                        email.setCustomValidity("Please enter a valid email.");
+                    } else {
+                        email.setCustomValidity("");
+                    }
+
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            }
+        }, false);
+    })();
+</script>
+    <!-- Modal popup form validation End -->
 </body>
 
 </html>
