@@ -12,8 +12,7 @@
     <meta content="Free HTML Templates" name="description">
     
     <!-- Bootstrap CSS -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
-
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat&family=Roboto:wght@500;700&display=swap" rel="stylesheet"> 
@@ -59,10 +58,10 @@
         </div>
 
         <div class="navbar-nav ml-auto py-0 align-items-center">
-                    <img src="{% static '/home/images/logo.jpg' %}" alt="Menu Icon" width="200" height="80">
+                    <img src="{% static '/home/images/logo.jpg' %}" alt="Menu Icon" width="120" height="55">
             <div class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <img src="{% static '/home/images/menu.jpg' %}" alt="Menu Icon" width="30" height="30">
+                    <img class="menu-icon-align" src="{% static '/home/images/menu.jpg' %}" alt="Menu Icon" width="30" height="30">
                 </a>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
                     <a class="dropdown-item" href="{% url 'admin-login' %}">Admin Login</a>
@@ -144,10 +143,7 @@
     </div>
 </div>
 
-<!-- jQuery and Bootstrap Bundle (includes Popper) -->
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
 
 <!-- Carousel End -->
 
@@ -190,10 +186,7 @@
 </div>
 <!-- Modal End -->
 
-<!-- Bootstrap JS and dependencies -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 
 <!-- About Start 2 -->
 <div class="container-fluid py-5" id="about">
@@ -830,47 +823,67 @@
                                         <div id="success"></div>
 <!-- Contact modal start (Subset of Contact Start) -->
 <div class="modal fade" id="contactModal" tabindex="-1" role="dialog" aria-labelledby="contactModalTitle" aria-hidden="true">
-    <div class="modal-dialog modal-md" role="document" style="max-width: 792px; height: 88vh; display: flex; align-items: center;">
-        <div class="modal-content" style="max-height: 88vh; overflow-y: auto;">
+    <div class="modal-dialog modal-md" role="document" style="max-width: 750px; height: 108vh; display: flex; align-items: center;">
+        <div class="modal-content" style="max-height: 108vh; min-height: 400px; overflow: hidden;">
             <div class="modal-header">
                 <h5 class="modal-title" id="contactModalTitle" style="font-family: 'Times New Roman', Times, serif;">Get In Touch</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="overflow: visible;">
                 <div class="contact-form text-center">
+                    <div id="contact-success" class="alert alert-success d-none" role="alert">
+                        Message submitted successfully!
+                    </div>
                     <form class="mx-auto needs-validation" name="contactForm" id="contactForm" method="POST" novalidate style="max-width: 600px;">
                         {% csrf_token %}
+                        <!-- First Row: Name and Email -->
                         <div class="form-row justify-content-center">
-                            <div class="col-12 control-group mb-3 d-flex flex-column align-items-center">
-                                <input type="text" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="name" placeholder="Name" required pattern="^[A-Za-z\s]{2,}$" style="max-width: 543px;" />
-                                <div class="invalid-feedback text-left w-100" style="max-width:543px;">Please enter your first name (letters only).</div>
+                            <div class="col-md-6 mb-2 pr-md-2">
+                                <input type="text" class="form-control bg-secondary border-0 py-2 px-2 text-center"
+                                    name="name" placeholder="First Name" required pattern="^[A-Za-z\s]{2,}$" style="width: 100%; font-size: 0.95rem;" />
+                                <div class="invalid-feedback text-left w-100" style="font-size: 0.85rem;">Please enter your first name (letters only).</div>
+                            </div>
+                            <div class="col-md-6 mb-2 pl-md-2">
+                                <input type="email" class="form-control bg-secondary border-0 py-2 px-2 text-center"
+                                    name="mail" placeholder="Email Address" required
+                                    pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" style="width: 100%; font-size: 0.95rem;" />
+                                <div class="invalid-feedback text-left w-100" style="font-size: 0.85rem;">Please enter a valid email.</div>
                             </div>
                         </div>
-                        <div class="form-group control-group mb-3 d-flex flex-column align-items-center">
-                            <input type="email" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="mail" placeholder="Your Email" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" style="max-width: 543px;" />
-                            <div class="invalid-feedback text-left w-100" style="max-width:543px;">Please enter a valid email.</div>
+                        <!-- Second Row: Country and Phone -->
+                        <div class="form-row justify-content-center">
+                            <div class="col-md-6 mb-2 pr-md-2">
+                                <input type="text" class="form-control bg-secondary border-0 py-2 px-2 text-center"
+                                    name="country" placeholder="Country" required pattern="^[A-Za-z\s]{2,}$" style="width: 100%; font-size: 0.95rem;" />
+                                <div class="invalid-feedback text-left w-100" style="font-size: 0.85rem;">Please enter your country (letters only).</div>
+                            </div>
+                            <div class="col-md-6 mb-2 pl-md-2">
+                                <input type="text" class="form-control bg-secondary border-0 py-2 px-2 text-center"
+                                    name="phone" placeholder="Phone Number" required pattern="^[0-9+\-\s]{7,15}$" style="width: 100%; font-size: 0.95rem;" />
+                                <div class="invalid-feedback text-left w-100" style="font-size: 0.85rem;">Please enter a valid phone number.</div>
+                            </div>
                         </div>
-                        <div class="form-group control-group mb-3 d-flex flex-column align-items-center">
-                            <input type="text" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="country" placeholder="Country" required pattern="^[A-Za-z\s]{2,}$" style="max-width: 543px;" />
-                            <div class="invalid-feedback text-left w-100" style="max-width:543px;">Please enter your country (letters only).</div>
+                        <!-- Third Row: Message -->
+                        <div class="form-row justify-content-center">
+                            <div class="col-12 mb-2">
+                                <textarea class="form-control bg-secondary border-0 py-2 px-2 text-center"
+                                    name="message" rows="3" placeholder="Message" required
+                                    style="width: 100%; resize: none; font-size: 0.95rem;" ondragstart="return false;" ondrop="return false;"></textarea>
+                                <div class="invalid-feedback text-left w-100" style="font-size: 0.85rem;">Please enter your message.</div>
+                            </div>
                         </div>
-                        <div class="form-group control-group mb-3 d-flex flex-column align-items-center">
-                            <input type="text" class="form-control bg-secondary border-0 py-4 px-3 text-center" name="phone" placeholder="Phone Number" required pattern="^[0-9+\-\s]{7,15}$" style="max-width: 543px;" />
-                            <div class="invalid-feedback text-left w-100" style="max-width:543px;">Please enter a valid phone number.</div>
-                        </div>
-                        <div class="form-group control-group mb-3 d-flex flex-column align-items-center">
-                            <textarea class="form-control bg-secondary border-0 py-2 px-3 text-center" name="message" rows="5" placeholder="Message" required style="max-width: 543px;"></textarea>
-                            <div class="invalid-feedback text-left w-100" style="max-width:543px;">Please enter your message.</div>
-                        </div>
-                        <div class="text-center">
-                            <input class="btn btn-primary font-weight-bold py-3 px-5" type="submit" value="Send Message" />
+                        <div class="form-row justify-content-center">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary font-weight-bold py-2 px-4 mt-2" style="font-size: 1rem;">Send Message</button>
+                            </div>
                         </div>
                     </form>
+
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="border-top: none;">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
@@ -885,6 +898,62 @@
         </div>
     </div>
 </div>
+    <!-- Modal popup form validation Start -->
+    <script>
+    // Bootstrap 4 validation with custom checks for name/country (no numbers) and email
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var form = document.getElementById('contactForm');
+            var successDiv = document.getElementById('contact-success');
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    // Custom validation for name and country (no numbers)
+                    var name = form.elements['name'];
+                    var country = form.elements['country'];
+                    var email = form.elements['mail'];
+                    var nameValid = /^[A-Za-z\s]{2,}$/.test(name.value.trim());
+                    var countryValid = /^[A-Za-z\s]{2,}$/.test(country.value.trim());
+                    var emailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.value.trim());
+
+                    if (!nameValid) {
+                        name.setCustomValidity("Please enter your first name (letters only).");
+                    } else {
+                        name.setCustomValidity("");
+                    }
+                    if (!countryValid) {
+                        country.setCustomValidity("Please enter your country (letters only).");
+                    } else {
+                        country.setCustomValidity("");
+                    }
+                    if (!emailValid) {
+                        email.setCustomValidity("Please enter a valid email.");
+                    } else {
+                        email.setCustomValidity("");
+                    }
+
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        if(successDiv) successDiv.classList.add('d-none');
+                    } else {
+                        event.preventDefault();
+                        // Simulate sending data via AJAX (replace with real AJAX if needed)
+                        setTimeout(function() {
+                            if(successDiv) {
+                                successDiv.classList.remove('d-none');
+                                form.reset();
+                                form.classList.remove('was-validated');
+                            }
+                        }, 400);
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            }
+        }, false);
+    })();
+</script>
+    <!-- Modal popup form validation End -->
 <!-- Contact End -->
 
 
@@ -1029,6 +1098,7 @@
 
 
     <!-- JavaScript Libraries -->
+<!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
     <script src="{% static '/home/lib/easing/easing.min.js' %}"></script>
@@ -1037,56 +1107,10 @@
     <script src="{% static '/home/lib/isotope/isotope.pkgd.min.js' %}"></script>
     <script src="{% static '/home/lib/lightbox/js/lightbox.min.js' %}"></script>
 
-    <!-- Contact Javascript File -->
-    <script src="mail/jqBootstrapValidation.min.js"></script>
-    <script src="mail/contact.js"></script>
+
 
     <!-- Template Javascript -->
     <script src="{% static '/home/js/main.js' %}"></script>
-    <!-- Modal popup form validation Start -->
-    <script>
-    // Bootstrap 4 validation with custom checks for name/country (no numbers) and email
-    (function() {
-        'use strict';
-        window.addEventListener('load', function() {
-            var form = document.getElementById('contactForm');
-            if (form) {
-                form.addEventListener('submit', function(event) {
-                    // Custom validation for name and country (no numbers)
-                    var name = form.elements['name'];
-                    var country = form.elements['country'];
-                    var email = form.elements['mail'];
-                    var nameValid = /^[A-Za-z\s]{2,}$/.test(name.value.trim());
-                    var countryValid = /^[A-Za-z\s]{2,}$/.test(country.value.trim());
-                    var emailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.value.trim());
-
-                    if (!nameValid) {
-                        name.setCustomValidity("Please enter your first name (letters only).");
-                    } else {
-                        name.setCustomValidity("");
-                    }
-                    if (!countryValid) {
-                        country.setCustomValidity("Please enter your country (letters only).");
-                    } else {
-                        country.setCustomValidity("");
-                    }
-                    if (!emailValid) {
-                        email.setCustomValidity("Please enter a valid email.");
-                    } else {
-                        email.setCustomValidity("");
-                    }
-
-                    if (form.checkValidity() === false) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            }
-        }, false);
-    })();
-</script>
-    <!-- Modal popup form validation End -->
 </body>
 
 </html>

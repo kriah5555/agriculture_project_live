@@ -6167,7 +6167,7 @@ button.bg-light:focus {
 }
 
 .bg-dark {
-  background-color: #ffffff !important;
+  background-color: #000000 !important;
 }
 
 a.bg-dark:hover, a.bg-dark:focus,
@@ -9517,13 +9517,14 @@ h4, h5, h6 {
 
 
 .navbar-dark .navbar-nav .nav-link {
-  padding: 25px 10px;
-  color: #000000;
+  padding: 25px 10px;         /* smaller vertical padding */
+  color: #fff;
   letter-spacing: 1px;
   text-transform: uppercase;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 400;
   outline: none;
+  height: 1.5cm;
 }
 
 .navbar-dark .navbar-nav .nav-link:hover,
@@ -10060,4 +10061,27 @@ h4, h5, h6 {
 .navbar .dropdown-item:hover {
   background-color: #f0f0f0 !important;
   color: #000 !important;
+}
+
+/* Hide scrollbar on body when modal is open */
+body.modal-open .modal-content {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+body.modal-open .modal-content::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Webkit */
+}
+
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+}
+
+/* Align menu icon vertically with navbar links */
+.menu-icon-align {
+  position: relative;
+  top: -8px; /* Adjust this value as needed (try -8px, -10px, etc.) */
+  /* Optionally, add vertical-align: middle; if needed */
+  vertical-align: middle;
 }
