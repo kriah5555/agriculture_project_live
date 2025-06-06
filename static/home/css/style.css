@@ -10083,9 +10083,6 @@ body.modal-open {
 /* Align menu icon vertically with navbar links */
 .menu-icon-align {
   position: relative;
-  top: -8px; /* Adjust this value as needed (try -8px, -10px, etc.) */
-  /* Optionally, add vertical-align: middle; if needed */
-  vertical-align: middle;
 }
 
 /* Remove nav buttons for testimonial carousel */
