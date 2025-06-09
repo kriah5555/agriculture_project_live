@@ -513,8 +513,8 @@
 </div>
 <!-- Goals End -->
 <!-- FAQs Start -->
-    <div class="container-fluid py-5" id="faqs">
-        <div class="container py-5">
+    <div class="container-fluid py-3" id="faqs">
+        <div class="container py-3">
             <div class="section-title position-relative text-center">
                 <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">FAQs</h6>
                 <h1 class="display-4">You Should Know</h1>
@@ -546,31 +546,26 @@
     </div>
     <!-- FAQs End -->
 <!-- Impact Start -->
-<div class="container-fluid py-5" id="impact">
-    <div class="container py-5">
-        <div class="section-title position-relative text-center">
-            <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Impact</h6>
-            <h1 class="font-secondary display-4">Our Measurable Impact</h1>
-        </div>
-        <!-- Full-Width Image with Overlay Text -->
-        <div class="container-fluid p-0">
-            <div class="position-relative">
-                <!-- Full-width Image -->
-                <img class="img-fluid w-100" src="{% static '/home/images/photo.jpg' %}" alt="Agriculture Image" style="height: 500px; object-fit: cover;">
-
-                <!-- Overlay Text -->
-                <div class="position-absolute text-overlay">
-                    <ul class="bold-text">
-                        <li>Yield Increase: +10-20%</li>
-                        <li>Input Efficiency: -15-30%</li>
-                        <li>Environmental Benefits: -20% emissions</li>
-                        <li>Profitability: +15-25%</li>
-                        <li>Soil Health Improvement: +5-10%</li>
-                        <li>Adoption Rate: 10,000+ farmers</li>
-                        <li>Climate Resilience: -30% crop losses</li>
-                    </ul>
-                </div>
-            </div>
+<!-- Full-Width Image with Overlay Text -->
+<div class="container-fluid p-5" id="impact">
+    <div class="section-title position-relative text-center">
+        <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Impact</h6>
+        <h1 class="display-4">Our Measurable Impact</h1>
+    </div>
+    <div class="position-relative">
+        <!-- Full-width Image -->
+        <img class="img-fluid w-100" src="{% static '/home/images/photo.jpg' %}" alt="Agriculture Image" style="height: 500px; object-fit: cover;">
+        <!-- Overlay Text -->
+        <div class="position-absolute text-overlay">
+            <ul class="bold-text">
+                <li>Yield Increase: +10-20%</li>
+                <li>Input Efficiency: -15-30%</li>
+                <li>Environmental Benefits: -20% emissions</li>
+                <li>Profitability: +15-25%</li>
+                <li>Soil Health Improvement: +5-10%</li>
+                <li>Adoption Rate: 10,000+ farmers</li>
+                <li>Climate Resilience: -30% crop losses</li>
+            </ul>
         </div>
     </div>
 </div>
@@ -611,80 +606,88 @@
         line-height: 1.5; /* Increase line height for better readability */
     }
 </style>
+<!-- Impact End -->
 
 <!-- Testimonial Start -->
-<div class="testimonial-stack-container">
-  <!-- Testimonial 1 -->
-  <div class="testimonial-section">
-    <div class="testimonial-row">
-      <div class="testimonial-text-side">
-        <div class="testimonial-text-inner">
-                                        <p><i>"The soil test showed that my soil's pH was too acidic for the crops I was planting. Adjusting the pH improved the health and yield of my crops dramatically."</i></p>
-          <div class="testimonial-name-profession text-center">
-            <h4 class="testimonial-name">Usha</h4>
-            <span class="testimonial-profession">Farmer</span>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-img-side">
-        <img class="testimonial-img" src="{% static '/home/images/photo1.jpg' %}" alt="Client Photo">
-      </div>
+<div class="container py-5">
+    <div class="section-title position-relative text-center" style="margin-bottom: 90px;">
+        <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Testimonial</h6>
+        <h1 class="display-4">Our Clients Say</h1>
     </div>
-  </div>
 
-  <!-- Testimonial 2 -->
-  <div class="testimonial-section">
-    <div class="testimonial-row">
-      <div class="testimonial-text-side">
-        <div class="testimonial-text-inner">
-            <p class="testimonial-italic mb-2"><i>"The comprehensive soil analysis provided by the test has empowered me to make smarter decisions. My farm's output has improved, and I feel more confident in my crop management."</i></p>
-          <div class="testimonial-name-profession text-center">
-            <h4 class="testimonial-name">Hanumanthappa</h4>
-            <span class="testimonial-profession">Farmer</span>
-          </div>
+    <div class="testimonial-stack-container">
+        <!-- Testimonial 1 -->
+        <div class="testimonial-section">
+            <div class="testimonial-row">
+                <div class="testimonial-text-side">
+                    <div class="testimonial-text-inner">
+                        <p><i>"The soil test showed that my soil's pH was too acidic for the crops I was planting. Adjusting the pH improved the health and yield of my crops dramatically."</i></p>
+                        <div class="testimonial-name-profession text-center">
+                            <h4 class="testimonial-name">Usha</h4>
+                            <span class="testimonial-profession">Farmer</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-img-side">
+                    <img class="testimonial-img" src="{% static '/home/images/photo1.jpg' %}" alt="Client Photo">
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="testimonial-img-side">
-        <img class="testimonial-img" src="{% static '/home/images/photo2.jpg' %}" alt="Client Photo">
-      </div>
-    </div>
-  </div>
 
-  <!-- Testimonial 3 -->
-  <div class="testimonial-section">
-    <div class="testimonial-row">
-      <div class="testimonial-text-side">
-        <div class="testimonial-text-inner">
-        <p class="testimonial-italic mb-2"><i>"The pH results from the soil test guided me in choosing the right crops for my soil type. This has not only boosted my yields but also reduced my input costs."</i></p>
-          <div class="testimonial-name-profession text-center">
-            <h4 class="testimonial-name">Narasimhayya</h4>
-            <span class="testimonial-profession">Farmer</span>
-          </div>
+        <!-- Testimonial 2 -->
+        <div class="testimonial-section">
+            <div class="testimonial-row">
+                <div class="testimonial-text-side">
+                    <div class="testimonial-text-inner">
+                        <p class="testimonial-italic mb-2"><i>"The comprehensive soil analysis provided by the test has empowered me to make smarter decisions. My farm's output has improved, and I feel more confident in my crop management."</i></p>
+                        <div class="testimonial-name-profession text-center">
+                            <h4 class="testimonial-name">Hanumanthappa</h4>
+                            <span class="testimonial-profession">Farmer</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-img-side">
+                    <img class="testimonial-img" src="{% static '/home/images/photo2.jpg' %}" alt="Client Photo">
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="testimonial-img-side">
-        <img class="testimonial-img" src="{% static '/home/images/photo3.jpg' %}" alt="Client Photo">
-      </div>
-    </div>
-  </div>
 
-  <!-- Testimonial 4 -->
-  <div class="testimonial-section">
-    <div class="testimonial-row">
-      <div class="testimonial-text-side">
-        <div class="testimonial-text-inner">
-            <p class="testimonial-italic mb-2"><i>"Thanks to the soil test, I discovered my soil was deficient in zinc and manganese. Correcting these deficiencies has led to a noticeable boost in crop quality and yield."</i></p>
-          <div class="testimonial-name-profession text-center">
-            <h4 class="testimonial-name">Suresh</h4>
-            <span class="testimonial-profession">Farmer</span>
-          </div>
+        <!-- Testimonial 3 -->
+        <div class="testimonial-section">
+            <div class="testimonial-row">
+                <div class="testimonial-text-side">
+                    <div class="testimonial-text-inner">
+                        <p class="testimonial-italic mb-2"><i>"The pH results from the soil test guided me in choosing the right crops for my soil type. This has not only boosted my yields but also reduced my input costs."</i></p>
+                        <div class="testimonial-name-profession text-center">
+                            <h4 class="testimonial-name">Narasimhayya</h4>
+                            <span class="testimonial-profession">Farmer</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-img-side">
+                    <img class="testimonial-img" src="{% static '/home/images/photo3.jpg' %}" alt="Client Photo">
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="testimonial-img-side">
-        <img class="testimonial-img" src="{% static '/home/images/photo4.jpg' %}" alt="Client Photo">
-      </div>
+
+        <!-- Testimonial 4 -->
+        <div class="testimonial-section">
+            <div class="testimonial-row">
+                <div class="testimonial-text-side">
+                    <div class="testimonial-text-inner">
+                        <p class="testimonial-italic mb-2"><i>"Thanks to the soil test, I discovered my soil was deficient in zinc and manganese. Correcting these deficiencies has led to a noticeable boost in crop quality and yield."</i></p>
+                        <div class="testimonial-name-profession text-center">
+                            <h4 class="testimonial-name">Suresh</h4>
+                            <span class="testimonial-profession">Farmer</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-img-side">
+                    <img class="testimonial-img" src="{% static '/home/images/photo4.jpg' %}" alt="Client Photo">
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 <!-- Testimonial End -->
 
