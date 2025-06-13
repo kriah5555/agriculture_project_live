@@ -11,7 +11,9 @@ def get_recommendation(request, api_id):
 # ------------- Comment or Remove below during deployment -------------
     #59,55,79,20.36720401,16.89574311,8.766128654,82.2545577,chickpea
     #soil_nutrients = {'N': [86], 'P': [36], 'K': [24], 'temperature': [26.54986394], 'humidity':[72.89187265], 'ph': [5.787268394], 'rainfall': [73.33636055]}
-    soil_nutrients = {'N': [59], 'P': [55], 'K': [79], 'temperature': [20.54986394], 'humidity':[16.89187265], 'ph': [8.787268394], 'rainfall': [82.33636055]}        
+    #soil_nutrients = {'N': [59], 'P': [55], 'K': [79], 'temperature': [20.54986394], 'humidity':[16.89187265], 'ph': [8.787268394], 'rainfall': [82.33636055]}
+    #118,21,34,24.38534644,64.72543073,7.234258375,119.6324109,coffee
+    soil_nutrients = {'N': [118], 'P': [21], 'K': [34], 'temperature': [24.34986394], 'humidity':[64.79187265], 'ph': [7.287268394], 'rainfall': [119.63636055]}        
     result = run_model(soil_nutrients)
     return render(request, 'predicted_popup.html', {'recommendation': result,'soil_nutrients':soil_nutrients})
 # ---------------------------------------------------------------------

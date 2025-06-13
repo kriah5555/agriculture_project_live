@@ -10170,8 +10170,12 @@ body.modal-open {
 
 /* # Override: */
 /* Navbar color transition override has been written here */
-
+/*
+Initial navbar color black after scrolldown white
+When navbar color white when scroll up navbar color balck
+*/
 /* Initial state: black background, white text */
+/*
 .my-navbar {
     position: fixed;
     top: 0;
@@ -10185,33 +10189,108 @@ body.modal-open {
     opacity: 0;
     pointer-events: none;
 }
-
+*/
 /* White text by default */
+/*
 .my-navbar .nav-link,
 .my-navbar .navbar-brand,
 .my-navbar .dropdown-item {
     color: #ffffff !important;
     transition: color 0.3s ease;
 }
-
+*/
 /* When scrolled: white bg, black text */
+/*
 .my-navbar.navbar-scrolled {
     background-color: white !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
-
+*/
+/*
 .my-navbar.navbar-scrolled .nav-link,
 .my-navbar.navbar-scrolled .navbar-brand,
 .my-navbar.navbar-scrolled .dropdown-item {
     color: #000000 !important;
 }
-
+*/
 /* Hover color only on hover */
+/*
 .my-navbar.navbar-scrolled .nav-link:hover,
 .my-navbar.navbar-scrolled .dropdown-item:hover {
     color: #333333 !important;
 }
+    */
+/* Navbar transistion OVERRIDE END */
+/*-----------------------------------------------------------------*/
 
-.dropdown-menu{
-  color: #000000 !important;
+/* Navbar always white OVERRIDE */
+
+/* Always white background, black text */
+.my-navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1030;
+    background-color: white !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
+
+/* Hide behavior (if used elsewhere) */
+.navbar.hide-navbar {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Always black text */
+.my-navbar .nav-link,
+.my-navbar .navbar-brand,
+.my-navbar .dropdown-item {
+    color: #000000 !important;
+    transition: color 0.3s ease;
+}
+
+/* Optional: Slightly darker text on hover */
+.my-navbar .nav-link:hover,
+.my-navbar .dropdown-item:hover {
+    color: #333333 !important;
+}
+
+/* Base style - always black text */
+.my-navbar .nav-link,
+.my-navbar .navbar-brand,
+.my-navbar .dropdown-item {
+    color: #000000 !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 5px;
+}
+
+/* Hover effect - change background and optionally text color */
+.my-navbar .nav-link:hover,
+.my-navbar .dropdown-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);  /* light grey highlight */
+    color: #000000 !important;  /* Keep text black or adjust */
+}
+
+/* Navbar always white OVERRIDE END */
+
+/* # Override: */
+/* NAVBAR'S menu dropdown OVERRIDE has been written here */
+    .navbar .dropdown-menu {
+        background-color: #ffffff !important; 
+        color: #000000 !important;             
+        border: 1px solid #ddd !important;
+    }
+
+    .navbar .dropdown-menu .dropdown-item {
+        color: #000000 !important;             
+        font-weight: 500;
+    }
+
+    .navbar .dropdown-menu .dropdown-item:hover,
+    .navbar .dropdown-menu .dropdown-item:focus {
+        background-color: #f1f1f1 !important;   
+        color: #000000 !important;
+    }
+/* NAVBAR'S menu dropdown OVERRIDE ENDS */
