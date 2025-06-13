@@ -223,7 +223,7 @@
                         </div>
 
                         <div class="card h-50 shadow-sm border-0 rounded-3" style="background-color: #ffffff; height: 100%;">
-                            <div id="leaflet-map" class="h-100 w-100""></div>
+                            <div id="leaflet-map" class="h-100 w-100"></div>
                         </div>
 
                     </div>
@@ -268,7 +268,7 @@
     </div>
 
 </div>
-
+<div id="predictionModalContainer"></div>
 <!-- Add Hover Effects for Icons -->
 <style>
     .fa-pencil-alt:hover, .fa-key:hover {
@@ -477,18 +477,37 @@
                 // Check if the header is for an image, if so, generate image HTML
                 if (headerKey === 'image_path') {
                     rowContent += `<td>${api.image_path ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />` : ''}</td>`;
-                } else {
+                }
+                else if (headerKey === 'recommendation') {
+rowContent += `<td>
+    <button class="btn btn-sm btn-outline-primary predict-btn" data-api-id="${api.id}">
+        click to view!
+    </button></td>`;
+
+                }
+                else {
                     rowContent += `<td>${cellValue}</td>`;
                 }
             }
 
-            // Make the entire row clickable
-            row.style.cursor = "pointer";  // Changes the cursor to pointer when hovering over the row
+// Make the entire row clickable
+row.style.cursor = "pointer";  // Changes the cursor to pointer when hovering over the row
 
-            // When the row is clicked, trigger redirectToEdit
-            row.addEventListener("click", () => {
-                redirectToEdit(api.id);
-            });
+// When the row is clicked, trigger redirectToEdit
+row.addEventListener("click", (event) => {
+    if (event.target.classList.contains('predict-btn')) {
+        // Let the .predict-btn handler handle it
+        return;
+    }
+
+    redirectToEdit(api.id);
+});
+
+
+// Insert the row into the table
+row.innerHTML = rowContent;
+apiDetailsTable.appendChild(row);
+
 
             // Insert the row into the table
             row.innerHTML = rowContent;
@@ -570,6 +589,81 @@
     top: 0;
     background-color: white; /* Ensure background is visible when scrolling */
     z-index: 10;
+}
+</style>
+<div id="predictionModalContainer"></div>
+
+<script>
+document.addEventListener('click', function (event) {
+    const target = event.target;
+    
+    if (target.classList.contains('predict-btn')) {
+        const apiId = target.dataset.apiId;
+
+        // Fetch modal content from the server
+        fetch(`/predicter/api/predict/${apiId}/`)
+            .then(response => response.text())
+            .then(html => {
+                // Replace modal container content
+                const container = document.getElementById('predictionModalContainer');
+                container.innerHTML = ''
+                container.innerHTML = html;
+
+                // Show the modal using custom vanilla JS
+                const modal = document.getElementById('predictionModal');
+                if (modal) {
+                    modal.style.display = 'block';
+
+                    // Close button
+                    const closeBtn = modal.querySelector('.close');
+                    if (closeBtn) {
+                        closeBtn.onclick = () => {
+                            modal.style.display = 'none';
+                        };
+                    }
+
+                    // Click outside modal to close
+                    window.onclick = function (e) {
+                        if (e.target === modal) {
+                            modal.style.display = 'none';
+                        }
+                    };
+                }
+            })
+            .catch(() => alert('Prediction failed.'));
+        
+        event.stopPropagation(); // Prevent row click
+    }
+});
+</script>
+
+<style>
+/* Custom vanilla modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 8px;
+  width: 50%;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.close {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  font-size: 24px;
+  cursor: pointer;
 }
 </style>
 {% endblock %}

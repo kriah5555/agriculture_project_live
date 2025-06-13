@@ -2,13 +2,19 @@
     "use strict";
 
     // Navbar on scrolling
-    $(window).scroll(function () {
-        if ($(this).scrollTop() > 200) {
-            $('.navbar').fadeIn('slow').css('display', 'flex');
-        } else {
-            $('.navbar').fadeOut('slow').css('display', 'none');
-        }
-    });
+let hideNavbarTimeout;
+
+$(window).scroll(function () {
+    if ($(this).scrollTop() > 50) {
+        clearTimeout(hideNavbarTimeout); // cancel any pending hide
+        $('.navbar').css('display', 'flex').removeClass('hide-navbar');
+    } else {
+        $('.navbar').addClass('hide-navbar');
+        hideNavbarTimeout = setTimeout(() => {
+            $('.navbar').css('display', 'none');
+        }, 300); // match transition duration
+    }
+});
 
 
     // Smooth scrolling on the navbar links

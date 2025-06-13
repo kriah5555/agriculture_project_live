@@ -33,7 +33,7 @@
 
 <body data-spy="scroll" data-target=".navbar" data-offset="51">
  <!-- Navbar Start -->
-<nav class="navbar fixed-top shadow-sm navbar-expand-lg bg-dark navbar-dark py-1 py-lg-0 px-lg-5">
+<nav class="navbar fixed-top shadow-sm navbar-expand-lg my-navbar py-1 py-lg-0 px-lg-5">
     <a href="index.html" class="navbar-brand d-block d-lg-none">
         <h1 class="display-4 text-white text-uppercase m-0">ArkaShine</h1>
     </a>
@@ -291,13 +291,13 @@
             <div class="col-lg-3 mb-4">
                 <div class="product-item mb-2">
                     <div class="product-img-1">
-                        <img class="img-fluid" src="{% static '/home/images/product-1.jpg' %}" alt="SoiLENZ">
+                        <img class="img-fluid" src="{% static '/home/images/SoiLENZ.jpg' %}" alt="SoiLENZ" style="height: 250px; width: 250px;">
                         <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong7">
                             <i class="fa fa-2x fa-plus text-white"></i>
                         </a>
                     </div>
                     <div class="bg-secondary text-center p-4">
-                        <h3 class="m-0">SOILSAATHI</h3>
+                        <h3 class="m-0">SoiLENZ</h3>
                     </div>
                 </div>
             </div>
@@ -305,7 +305,7 @@
             <div class="col-lg-3 mb-4">
                 <div class="product-item mb-2">
                     <div class="product-img-2">
-                        <img class="img-fluid" src="{% static '/home/images/product-2.jpg' %}" alt="SoilLife">
+                        <img class="img-fluid" src="{% static '/home/images/Soil_Life.jpg' %}" alt="SoilLife" style="height: 250px; width: 250px;">
                         <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong2">
                             <i class="fa fa-2x fa-plus text-white"></i>
                         </a>
@@ -319,7 +319,7 @@
             <div class="col-lg-3 mb-4">
                 <div class="product-item mb-2">
                     <div class="product-img-3">
-                        <img class="img-fluid" src="{% static '/home/images/product-3.jpg' %}" alt="SoilSparsh">
+                        <img class="img-fluid" src="{% static '/home/images/Soil_Sparsh.jpg' %}" alt="SoilSparsh" style="height: 250px; width: 250px;">
                         <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong3">
                             <i class="fa fa-2x fa-plus text-white"></i>
                         </a>
@@ -333,7 +333,7 @@
            <div class="col-lg-3 mb-4">
             <div class="product-item mb-2">
                 <div class="product-img-4">
-                    <img class="img-fluid" src="{% static '/home/images/product-4.jpeg' %}" alt="Dashboard ">
+                    <img class="img-fluid" src="{% static '/home/images/Dashboard.png' %}" alt="Dashboard " style="height: 200px; width: 250px;">
                     <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong4">
                         <i class="fa fa-2x fa-plus text-white"></i>
                     </a>
@@ -343,9 +343,7 @@
                 </div>
             </div>
         </div>
-<style>
-   
-</style>
+
             </div>
         </div>
     </div>
@@ -1175,6 +1173,7 @@
 
     <!-- JavaScript Libraries -->
 <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
     <script src="{% static '/home/lib/easing/easing.min.js' %}"></script>
@@ -1183,11 +1182,44 @@
     <script src="{% static '/home/lib/isotope/isotope.pkgd.min.js' %}"></script>
     <script src="{% static '/home/lib/lightbox/js/lightbox.min.js' %}"></script>
 
-    <!-- Swiper JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
     <!-- Template Javascript -->
     <script src="{% static '/home/js/main.js' %}"></script>
+
+<script>
+$(document).ready(function () {
+    if ($(window).scrollTop() > 200) {
+        $('.navbar').css({
+            display: 'flex',
+            opacity: 1
+        });
+    }
+});
+</script>
+
+<script>
+    const navbar = document.querySelector('.my-navbar');
+
+    let lastKnownScrollY = 0;
+    let ticking = false;
+
+    function updateNavbar() {
+        if (lastKnownScrollY > 50) {
+            navbar.classList.add('navbar-scrolled');
+        } else {
+            navbar.classList.remove('navbar-scrolled');
+        }
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+        lastKnownScrollY = window.scrollY;
+        if (!ticking) {
+            window.requestAnimationFrame(updateNavbar);
+            ticking = true;
+        }
+    });
+</script>
+
 </body>
 
 </html>

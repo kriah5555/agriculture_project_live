@@ -9424,9 +9424,7 @@ a.text-dark:hover, a.text-dark:focus {
   .container {
     min-width: 992px !important;
   }
-  .navbar {
-    display: none;
-  }
+
   .badge {
     border: 2px solid #000;
   }
@@ -10037,33 +10035,6 @@ h4, h5, h6 {
   display: block; /* Ensure image is displayed as a block element */
 }
 
-/* Main Navbar Background and Link Colors */
-.navbar {
-  background-color: #000 !important;
-}
-
-.navbar .nav-link {
-  color: #fff !important;
-}
-
-.navbar .nav-link:hover,
-.navbar .nav-link:focus {
-  color: #ddd !important;
-}
-
-/* Dropdown Menu Styling */
-.navbar .dropdown-menu {
-  background-color: #fff !important;  /* White background */
-}
-
-.navbar .dropdown-item {
-  color: #000 !important;             /* Black font */
-}
-
-.navbar .dropdown-item:hover {
-  background-color: #f0f0f0 !important;
-  color: #000 !important;
-}
 
 /* Hide scrollbar on body when modal is open */
 body.modal-open .modal-content {
@@ -10195,4 +10166,52 @@ body.modal-open {
         margin: 0 auto;
         text-align: center;
     }
+}
+
+/* # Override: */
+/* Navbar color transition override has been written here */
+
+/* Initial state: black background, white text */
+.my-navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1030;
+    background-color: black !important;
+    transition: opacity 0.3s ease;
+}
+
+.navbar.hide-navbar {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* White text by default */
+.my-navbar .nav-link,
+.my-navbar .navbar-brand,
+.my-navbar .dropdown-item {
+    color: #ffffff !important;
+    transition: color 0.3s ease;
+}
+
+/* When scrolled: white bg, black text */
+.my-navbar.navbar-scrolled {
+    background-color: white !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.my-navbar.navbar-scrolled .nav-link,
+.my-navbar.navbar-scrolled .navbar-brand,
+.my-navbar.navbar-scrolled .dropdown-item {
+    color: #000000 !important;
+}
+
+/* Hover color only on hover */
+.my-navbar.navbar-scrolled .nav-link:hover,
+.my-navbar.navbar-scrolled .dropdown-item:hover {
+    color: #333333 !important;
+}
+
+.dropdown-menu{
+  color: #000000 !important;
 }

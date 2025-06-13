@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'devise_apis',
     # 'rest_framework.authtoken',
+    'predicter'
 ]
 
 MIDDLEWARE = [
@@ -94,9 +95,9 @@ DATABASES = {
          'ENGINE': 'django.db.backends.sqlite3',
          'NAME': BASE_DIR / 'db.sqlite3',
      }
-
 }
-# fro authentication
+
+# for authentication
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (
 #         'knox.auth.TokenAuthentication',
