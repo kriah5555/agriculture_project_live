@@ -1,0 +1,369 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+{% include "form_popup.html" %}
+    <div>
+
+        <div style="display: flex; flex-direction: row; gap: 2rem; margin-bottom: 2rem; justify-content: space-between; align-items: center; background-color: #fff; padding: 1rem; border-radius: 8px;">
+            <!-- API Overview Text in the middle -->
+            <div style="flex: 1; text-align: center;">
+                <span style="font-size: 18px;">API Overview</span> <!-- Add your API Overview text here -->
+            </div>
+        
+            <!-- Icons at the end (Edit and Back) -->
+            <div style="text-align: right;">
+                
+                <!-- Edit Icon -->
+                <a href="javascript:void(0)" onclick="showDynamicAPIForm('soil_life', '{{ device.pk }}', '{{ fields_api_data.id }}')" style="padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px;">
+                    <i class="fas fa-edit" style="font-size: 24px;"></i> <!-- Edit icon -->
+                </a>  
+                <!-- Back Icon -->
+                <a href="javascript:history.back()" style="padding: 0.75rem 1.5rem; ">
+                    <i class="fas fa-arrow-left" style="font-size: 24px;"></i> <!-- Back icon -->
+                </a>
+                
+            </div>
+        </div>
+        
+        <div style="display: flex; flex-direction: row; gap: 2rem;">
+            
+            <!-- Left Side: Field Values -->
+            <div style="flex: 0 0 65%; border-right: 1px solid #ddd; padding-right: 2rem; background-color: #f9f9f9; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 24px; color: #333; margin-bottom: 1rem;">
+                    <div>
+                        Device: {{ device.name }} ({{ device.devise_type }})
+                    </div>
+                    <div>
+                        <span style="margin-right: 1rem;">Device ID: {{ device.devise_id }}</span>
+                        <span>Tag: {{ fields_api_data.tag }}</span>
+                    </div>
+                </div>
+                        
+                <div class="container">
+                    <table class="table table-bordered table-sm text-center small">
+                        <thead class="thead-dark">
+                            <tr style="height: 30px;">
+                                <th>Field Name</th>
+                                <th>value</th>
+                                <th>Pie Chart</th>
+                                <th>Detection Range</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="height: 30px;">
+                                <td>CO₂</td>
+                                <td>{{ fields_api_data.field1 }}</td>
+                                <td><canvas id="chart_co2" width="40" height="40"></canvas></td>
+                                <td>400 - 5000 ppm</td>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <td>Methane</td>
+                                <td>{{ fields_api_data.field2 }}</td>
+                                <td><canvas id="chart_methane" width="40" height="40"></canvas></td>
+                                <td>300 - 10000 ppm</td>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <td>Ammonia</td>
+                                <td>{{ fields_api_data.field3 }}</td>
+                                <td><canvas id="chart_ammonia" width="40" height="40"></canvas></td>
+                                <td>5 - 5000 ppm</td>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <td>Nitrous Oxide</td>
+                                <td>{{ fields_api_data.field4 }}</td>
+                                <td><canvas id="chart_nitrous" width="40" height="40"></canvas></td>
+                                <td>0.1 - 10 ppm</td>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <td>Soil Temperature</td>
+                                <td>{{ fields_api_data.field5 }}</td>
+                                <td><canvas id="chart_soil_temp" width="40" height="40"></canvas></td>
+                                <td>°C</td>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <td>Soil Moisture</td>
+                                <td>{{ fields_api_data.field6 }}</td>
+                                <td><canvas id="chart_soil_moisture" width="40" height="40"></canvas></td>
+                                <td>%</td>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <td>Atmospheric Pressure</td>
+                                <td>{{ fields_api_data.field7 }}</td>
+                                <td><canvas id="chart_pressure" width="40" height="40"></canvas></td>
+                                <td>300 - 1250 hPa</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+        
+                <!-- New row for Image and Map Cards -->
+                <div class="row mt-4">
+                    <!-- Image Card -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <img class="card-img-top" src="{{ fields_api_data.image_path }}" alt="Card image" id="deviseImage" style="height: 300px; object-fit: cover;">
+                            <div class="card-body">
+                                <!-- <h5 class="card-title">Device Image</h5> -->
+                                <!-- <p class="card-text">Current image of the devise</p> -->
+                                <p class="card-text">Device Image</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Map Card -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body" style="padding: 0;">
+                                <h5 class="card-title">Location Map</h5>
+                                <div id="map" style="height: 350px; width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        
+            </div>
+            
+            <!-- Right Side: Circular Chart -->
+            <div style="flex: 1; padding-left: 2rem; background-color: #f9f9f9; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; justify-content: space-between;">
+                <!-- <h3 style="font-size: 24px; color: #333; margin-bottom: 1rem;">Overview </h3> -->
+                 <!-- chart -->
+                <div style="flex-grow: 1; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                    <canvas id="circleChart" style="max-width: 100%; max-height: 300px;"></canvas>
+                </div>
+
+                <!-- graph -->
+                <div style="flex-grow: 1; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                    <canvas id="apiCallsLineChart" style="background-color: white;"></canvas>
+                </div>
+
+            </div>
+        </div>
+        
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script>
+
+    // chart
+    document.addEventListener('DOMContentLoaded', function () {
+        const api_data = JSON.parse(`{{ fields_data_json|escapejs }}`);
+        const fields   = JSON.parse(`{{ fields|escapejs }}`);
+
+        // Extract field names and corresponding values
+        const labels = [];
+        const data   = [];
+        const colors = [];
+
+        // Filter out the unwanted fields (id, image_path, and created_at)
+        Object.keys(fields).forEach(key => {
+            if (api_data.hasOwnProperty(key) && api_data[key] !== null && !['id', 'image_path', 'created_at'].includes(key)) {
+                labels.push(fields[key]);  // Use user-friendly names
+                data.push(api_data[key]);  // Use actual values
+
+                // Generate a random color for each field
+                colors.push(`rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.6)`);
+            }
+        });
+
+        const ctx = document.getElementById('circleChart').getContext('2d');
+        const circleChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data           : data,
+                    backgroundColor: colors,
+                    borderColor    : '#fff',
+                    borderWidth    : 2,
+                }],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                return `${tooltipItem.label}: ${tooltipItem.raw}`;
+                            }
+                        }
+                    }
+                },
+            },
+        });
+    });
+
+    // Map script
+    mapInstance = L.map('map').setView([{{latitude}}, {{longitude}}], 5); // Center on the device's location
+
+    // Add a tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(mapInstance);
+
+    // Add a marker at the device's location
+    L.circleMarker([{{latitude}}, {{longitude}}], {
+        radius: 8,
+        fillColor: 'green',
+        color: 'green',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.6
+    }).addTo(mapInstance).bindPopup('{{device.name}}'); 
+
+    // graph
+
+    // Chart Data
+    const apiCallsData = {
+        labels: [], // X-axis: Years
+        datasets: [
+            {
+                label: 'SoiLENZ',
+                data: [{ x: 5, y: '2021' }, { x: 8, y: '2022' }, { x: 9, y: '2023' }],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 1)',
+                pointStyle: 'circle',
+                pointRadius: 6,
+                showLine: true, // Horizontal line
+                borderWidth: 2,
+            },
+        ],
+    };
+
+    // Chart Configuration
+    const api_data = JSON.parse(`{{ fields_data_json|escapejs }}`);
+    const fields   = JSON.parse(`{{ fields|escapejs }}`);
+
+      // Extract field names and corresponding values
+    const labels   = [];
+    const datasets = [];
+
+      // Generate dataset with two points per field
+    Object.keys(fields).forEach((key, index) => {
+        if (api_data.hasOwnProperty(key) && api_data[key] !== null && !['id', 'image_path', 'created_at'].includes(key)) {
+            labels.push(fields[key]);  // Use user-friendly names
+
+              // Generate a random color for each field
+            const color = `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.8)`;
+
+              // Each dataset contains only two points: (X, 0) and (X, Value)
+            datasets.push({
+                label: fields[key],
+                data : [
+                    { x: fields[key], y: 0 },             // Start from zero
+                    { x: fields[key], y: api_data[key] }  // Go to actual value
+                ],
+                borderColor    : color,
+                backgroundColor: color,
+                pointStyle     : 'circle',
+                pointRadius    : 6,
+                borderWidth    : 2,
+                showLine       : true,       // Enable line for vertical effect
+                fill           : false,      // Do not fill area under lines
+            });
+        }
+    });
+
+      // Chart Configuration
+    const ctx = document.getElementById('apiCallsLineChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: datasets,
+        },
+        options: {
+            responsive: true,
+            plugins   : {
+                legend: {
+                    display: false,   // Hide legend to avoid clutter
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            return `${tooltipItem.raw.x}: ${tooltipItem.raw.y}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type  : 'category',
+                    labels: labels,
+                    title : {
+                        display: true,
+                        text   : 'Field Names',
+                    },
+                },
+                y: {
+                    beginAtZero: true,
+                    title      : {
+                        display: true,
+                        text   : 'Values',
+                    },
+                },
+            },
+        },
+    });
+    </script>
+
+    <script>
+        // charts for each data
+
+        const data = {
+            co2          : {{ fields_api_data.field1 }},
+            methane      : {{ fields_api_data.field2 }},
+            ammonia      : {{ fields_api_data.field3 }},
+            nitrous      : {{ fields_api_data.field4 }},
+            soil_temp    : {{ fields_api_data.field5 }},
+            soil_moisture: {{ fields_api_data.field6 }},
+            pressure     : {{ fields_api_data.field7 }}
+        };
+
+        function createPieChart(canvasId, value) {
+            new Chart(document.getElementById(canvasId), {
+                type: 'pie',
+                data: {
+                    labels  : ["Current", "Remaining"],
+                    datasets: [{
+                        data           : [value, 100 - value],
+                        backgroundColor: ["#df6c84", "#dddddd"]
+                    }]
+                },
+                options: {
+                    responsive         : false,
+                    maintainAspectRatio: false,
+                    plugins            : {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        createPieChart("chart_co2", data.co2);
+        createPieChart("chart_methane", data.methane);
+        createPieChart("chart_ammonia", data.ammonia);
+        createPieChart("chart_nitrous", data.nitrous);
+        createPieChart("chart_soil_temp", data.soil_temp);
+        createPieChart("chart_soil_moisture", data.soil_moisture);
+        createPieChart("chart_pressure", data.pressure);
+    </script>
+
+    <style>
+        td canvas {
+            display: block;
+            margin: auto;
+        }
+    </style>
+{% endblock %}
+
+

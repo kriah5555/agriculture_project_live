@@ -3,11 +3,11 @@ import folium as fol
 # import geocoder as geo
 import os
 from django.contrib.auth.decorators import login_required
-from agriapp.models import DeviseLocation, Devise, DeviseApis, APICountThreshold
+from agriapp.models import DeviseLocation, Devise, DeviseApis, APICountThreshold, DeviseApisFields
 
 # Create your views here.
 
-# @login_required(login_url='/login1/')    
+# @login_required(login_url='/admin-login/')    
 # def map_view(request, **kwargs):
 #     location  = geo.osm('IN')
 #     latitude   = location.lat
@@ -15,8 +15,7 @@ from agriapp.models import DeviseLocation, Devise, DeviseApis, APICountThreshold
 #     country   = location.country
 #     map = fol.Map(location=[latitude, longitude], zoom_start = 6)
 #     fol.Marker([latitude, longitude], tooltip = f'India', popup = f'{country}', icon=fol.Icon(color="blue"),).add_to(map)
-#     print(latitude,longitude,'---------')
-#     if kwargs:
+#     if kwargs:login1
 #         devise_id = kwargs['pk']
 #         location = DeviseLocation.objects.filter(status=True, devise__pk = devise_id)
 #         if location:
@@ -37,8 +36,11 @@ from agriapp.models import DeviseLocation, Devise, DeviseApis, APICountThreshold
 def get_marker_color(devise):
     if devise:
         api_thresholds = APICountThreshold.objects.filter(devise = devise).first()
-        api_count      = len(DeviseApis.objects.filter(device = devise))
-        color          = 'pink'
+        if devise.devise_type == 'soilsaathi':
+            api_count = len(DeviseApis.objects.filter(device = devise))
+        else :
+            api_count = len(DeviseApisFields.objects.filter(device = devise))
+        color = 'pink'
 
         if api_thresholds:
             if api_count >= api_thresholds.red:
@@ -53,7 +55,7 @@ def get_marker_color(devise):
                 color = 'pink'
     return color
 
-@login_required(login_url='/login1/')    
+@login_required(login_url='/admin-login/')    
 def map_view(request, **kwargs):
     zoom = 0
     pk = ''

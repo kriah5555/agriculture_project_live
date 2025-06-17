@@ -1,0 +1,575 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+{% include "soil_saathi_parm_comparison_popup_bar_chart.html" %}
+{% include "map_popup.html" %}
+{% include "form_popup.html" %}
+
+<div>
+    <div class="row" style="display: flex;" >
+
+        <!-- Left Column (User Details and Device List) -->
+        <div class="col-lg-4 d-flex flex-column" >
+            <!-- User Details Card -->
+            <div class="card mb-4 bg-light flex-fill" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <div class="card-body text-center">
+                    <!-- Centering the image -->
+                    <div class="d-flex justify-content-center mb-3">
+                        <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar" class="rounded-circle img-fluid" style="width: 120px; height: 120px; object-fit: cover;">
+                    </div>
+
+                    <!-- User Details -->
+                    <div class="text-left mb-3" id="user-details">
+                        <ul class="list-unstyled">
+                            <li>
+                                <h5 class="text-primary font-weight-bold" id="username-display">{{ user.username }}</h5> <!-- Bold username -->
+                                <input type="text" id="username-edit" class="form-control" value="{{ user.username }}" style="display:none;">
+                            </li>
+                            <li class="text-muted" style="font-size: 16px;" id="name-display">
+                                {{ user.first_name }} {{ user.last_name }} <!-- Name with smaller text -->
+                                <input type="text" id="name-edit" class="form-control" value="{{ user.first_name }} {{ user.last_name }}" style="display:none;">
+                            </li>
+                            <li class="text-muted" style="font-size: 14px;" id="email-display">
+                                {{ user.email }} <!-- Email with smaller text -->
+                                <input type="email" id="email-edit" class="form-control" value="{{ user.email }}" style="display:none;">
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Icons for Edit and Reset Password -->
+                    <div class="mt-3" id="action-icons">
+                        <!-- <a href="javascript:void(0);" class="text-primary mr-3" style="font-size: 18px;" title="Edit Profile" onclick="editUserDetails()">
+                            <i class="fas fa-pencil" title="Edit details"></i>
+                        </a> -->
+                        <a href="{% url 'change-password' user.username %}" class="text-danger" style="font-size: 18px;" title="Reset Password" >
+                            <i class="fas fa-key" title="Reset password"></i>
+                        </a>
+                    </div>
+                    
+
+                    <!-- Reset Password Form -->
+                    <div id="reset-password-form" style="display:none; margin-top: 20px;">
+                        <div class="form-group">
+                            <input type="password" id="new-password" class="form-control" placeholder="Enter new password">
+                        </div>
+                        <div>
+                            <a href="javascript:void(0);" onclick="savePassword()" class="text-primary mr-3" style="font-size: 20px;" title="Save">
+                                <i class="fas fa-check-circle"></i> <!-- Save icon -->
+                            </a>
+                            <a href="javascript:void(0);" onclick="cancelReset()" class="text-danger" style="font-size: 20px;" title="Cancel">
+                                <i class="fas fa-times-circle"></i> <!-- Cancel icon -->
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Edit User Details Form -->
+                    <div id="edit-user-form" style="display:none; margin-top: 20px;">
+                        <div class="form-group">
+                            <input type="text" id="edit-username" class="form-control" placeholder="Enter username" value="{{ user.username }}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="edit-name" class="form-control" placeholder="Enter full name" value="{{ user.first_name }} {{ user.last_name }}">
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="edit-email" class="form-control" placeholder="Enter email" value="{{ user.email }}">
+                        </div>
+                        <div>
+                            <a href="javascript:void(0);" onclick="saveUserDetails()" class="text-primary mr-3" style="font-size: 20px;" title="Save">
+                                <i class="fas fa-check-circle"></i> <!-- Save icon -->
+                            </a>
+                            <a href="javascript:void(0);" onclick="cancelEdit()" class="text-danger" style="font-size: 20px;" title="Cancel">
+                                <i class="fas fa-times-circle"></i> <!-- Cancel icon -->
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <!-- Device List Card -->
+            <div class="card bg-light flex-fill" style="overflow-y: auto;max-height: 300px;border-radius: 1%; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <div class="card-body">
+            
+                    <h5 class="text-primary">Devises linked 
+                        <a href="{% url 'add-devise' user.username %}" onclick="saveUserDetails()" class="text-primary mr-3" style="font-size: 20px;" title="Save">
+                            <i class="fas fa-plus"></i> 
+                        </a>
+                        <a href="{% url 'export-user-devices' user.username %}" class="text-primary" style="font-size: 20px;float: right;" title="Export Devices">
+                            <i class="fas fa-file-excel"></i>
+                        </a>
+                    </h5>
+                    <ul class="list-group">
+                        {% for device in linked_devices %}
+
+                        <li class="list-group-item" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="showDeviceDetails({
+                            pk: '{{ device.pk }}',
+                            id: '{{ device.devise_id }}',
+                            devise_type: '{{ device.devise_type }}',
+                            name: '{{ device.name }}',
+                            serialNo: '{{ device.serial_no }}',
+                            chipsetNo: '{{ device.chipset_no }}',
+                            email: '{{ device.email }}',
+                            phone: '{{ device.phone }}',
+                            address1: '{{ device.address1 }}',
+                            address2: '{{ device.address2 }}',
+                            purchaseDate: '{{ device.purchase_date }}',
+                            warranty: '{{ device.warrenty }}',
+                            amountPaid: '{{ device.amount_paid }}',
+                            balanceAmount: '{{ device.balance_amount }}',
+                            land: '{{ device.land }} acres',
+                            latitude: '{{ device.latitude }} ',
+                            longitude: '{{ device.longitude }} ',
+                            api_limit: '{{ device.api_limit }} ',
+                            api_used: '{{ device.api_used }} ',
+                        })">
+                            <span>{{ device.name }} ({{device.type_display_name}})</span>
+                            <div>
+                                <a href="{% url 'device-details' device.pk %}" 
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="top" 
+                                   title="Export Device APIs" 
+                                   onclick="event.stopPropagation();" 
+                                   class="px-2">
+                                    <i class="fas fa-info-circle" title="Export Device APIs"></i>
+                                </a>
+
+                                <!-- Edit Device Icon -->
+                                <a href="{% url 'edit-devise' device.pk %}" 
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="top" 
+                                   title="Edit details" 
+                                   onclick="event.stopPropagation();" 
+                                   class="px-2">
+                                    <i class="fas fa-pencil" title="Edit details"></i>
+                                </a>
+                        
+                                <!-- Export Device APIs Icon -->
+                                <a href="{% url 'export-device-apis' device.pk %}" 
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="top" 
+                                   title="Export Device APIs" 
+                                   onclick="event.stopPropagation();" 
+                                   class="px-2">
+                                    <i class="fas fa-file-export" title="Export Device APIs"></i>
+                                </a>
+                                <a href="#"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="Compare Nutrients"
+                                onclick="event.stopPropagation(); showNpkPopup({{ device.pk }});"
+                                class="px-2">
+                                <i class="fas fa-chart-line" title="Compare Nutrients"></i>
+                                </a>
+                            </div>
+                        </li>
+                        
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+            <!-- <div id="device-details-card" class="card mb-4 flex-fill" style="border-radius: 1%; background-color: #a97e7e94; color: white;"> -->
+
+        <!-- Right Column (Device Details) -->
+        <div class="col-lg-8 d-flex flex-column bg-white rounded-3 shadow-sm" style="padding: 20px;">
+            <div class="container mt-4">
+                <div class="row">
+                    <!-- Device Name Section -->
+                    <div class="col-11">
+                        <h2 id="device-name" class="text-center mb-0">Please select device to view details</h2>
+                    </div>
+                    <div class="col-1">
+                        <a href="javascript:history.back()" class="text-decoration-none">
+                            <i class="fas fa-arrow-left fs-3"></i>
+                        </a>
+                    </div>
+                <div class="row">
+                    <!-- Device Info Section -->
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 shadow-sm border-0 rounded-3" style="background-color: #ffffff; height: 100%;">
+                            <div class="card-header bg-primary text-white rounded-3">
+                                <h4 class="mb-0">Device Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Serial No:</strong> <span id="serialNo"></span></p>
+                                <p><strong>Chipset No:</strong> <span id="chipsetNo"></span></p>
+                                <p><strong>Devise ID:</strong> <span id="deviseId"></span></p>
+                                <p><strong>Email:</strong> <span id="email"></span></p>
+                                <p><strong>Phone:</strong> <span id="phone"></span></p>
+                                <p><strong>Address Line 1:</strong> <span id="address1"></span></p>
+                                <p><strong>Address Line 2:</strong> <span id="address2"></span></p>
+                                <p><strong>Purchase Date:</strong> <span id="purchaseDate"></span></p>
+                                <p><strong>Warranty:</strong> <span id="warranty"></span></p>
+                                <p><strong>Land:</strong> <span id="land"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Financial Details Section -->
+                    <div class="col-md-6 mb-3">
+
+                        <div class="card h-50 shadow-sm border-0 rounded-3" style="background-color: #ffffff; height: 100%;">
+                            <div class="card-header bg-primary text-white rounded-3">
+                                <h4 class="mb-0">Financial Details</h4>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Amount Paid:</strong><span id="amountPaid"></span></p>
+                                <p><strong>Balance Amount:</strong><span id="balanceAmount"></span></p>
+                                <p><strong>API calls limit:</strong> <span id="api_limit"></span></p>
+                                <p><strong>API used:</strong> <span id="api_used"></span></p>
+                            </div>
+                        </div>
+
+                        <div class="card h-50 shadow-sm border-0 rounded-3" style="background-color: #ffffff; height: 100%;">
+                            <div id="leaflet-map" class="h-100 w-100""></div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+         
+    </div>
+
+    <!-- Bottom Division for API Call Details -->
+    <div id="api-details-container" class="mt-4" style="display: none;">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex align-items-center">
+                <h5 class="mb-0 flex-grow-1">
+                    API Calls for Selected Device 
+                    <span id="selectedDeviceName" style="font-weight: normal; font-size: 90%; margin-left: 8px; color: white;"></span>
+                </h5>
+                <input type="text" id="searchInput" class="form-control w-50" placeholder="Search..." onkeyup="searchTable()">
+
+                <!-- Plus Icon Button -->
+                <button onclick="openFormPopup()" class="btn btn-light text-primary rounded-circle" title="Add API Call">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            
+            <div class="card-body">
+                <div class="table-container">
+                    <table class="table table-striped table-bordered">
+                        <thead class="sticky-header">
+                            <tr id="api-details-headers">
+                                <!-- Headers will be dynamically inserted here -->
+                            </tr>
+                        </thead>
+                        <tbody id="api-details-table">
+                            <!-- Rows will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Add Hover Effects for Icons -->
+<style>
+    .fa-pencil-alt:hover, .fa-key:hover {
+        transform: scale(1.2); /* Increase icon size on hover */
+    }
+
+    .fa-pencil-alt {
+        transition: transform 0.3s ease; /* Smooth transition for hover effect */
+    }
+
+    .fa-key {
+        transition: transform 0.3s ease; /* Smooth transition for hover effect */
+    }
+</style>
+
+<!-- Leaflet.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+<!-- script  for  saving changes -->
+<script>
+    // Function to show the Edit User Details form
+    function editUserDetails() {
+        document.getElementById('username-display').style.display = 'none';
+        document.getElementById('name-display').style.display     = 'none';
+        document.getElementById('email-display').style.display    = 'none';
+        document.getElementById('action-icons').style.display     = 'none';
+        document.getElementById('edit-user-form').style.display   = 'block';
+    }
+
+    // Function to save the updated user details
+    function saveUserDetails() {
+        const username = document.getElementById('edit-username').value;
+        const name     = document.getElementById('edit-name').value;
+        const email    = document.getElementById('edit-email').value;
+
+        // API call here to update user details (replace with real API endpoint)
+        // Update the UI
+        document.getElementById('username-display').textContent = username;
+        document.getElementById('name-display').textContent     = name;
+        document.getElementById('email-display').textContent    = email;
+
+        cancelEdit();
+    }
+
+    // Function to cancel editing user details
+    function cancelEdit() {
+        document.getElementById('username-display').style.display = 'block';
+        document.getElementById('name-display').style.display     = 'block';
+        document.getElementById('email-display').style.display    = 'block';
+        document.getElementById('action-icons').style.display     = 'block';
+        document.getElementById('edit-user-form').style.display   = 'none';
+    }
+
+    // Function to show the Reset Password form
+    function resetPassword() {
+        document.getElementById('reset-password-form').style.display = 'block';
+    }
+
+    // Function to save the new password
+    function savePassword() {
+        const newPassword = document.getElementById('new-password').value;
+        const securityKey = document.getElementById('security-key').value;
+
+        // API call here to reset the password (replace with real API endpoint)
+        cancelReset();
+    }
+
+    // Function to cancel the reset password process
+    function cancelReset() {
+        document.getElementById('reset-password-form').style.display = 'none';
+    }
+
+    function searchTable() 
+    {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let table = document.getElementById("api-details-table");
+        let rows = table.getElementsByTagName("tr");
+
+        for (let i = 0; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName("td");
+            let rowMatches = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].textContent.toLowerCase().includes(input)) {
+                    rowMatches = true;
+                    break;
+                }
+            }
+
+            rows[i].style.display = rowMatches ? "" : "none";
+        }
+    }
+</script>
+
+<!-- script to show devise details -->
+<script>
+    // Function to dynamically change the device details based on selected device
+    const base_url        = `${window.location.protocol}//${window.location.host}`;
+    const url             = `${base_url}/devise-api-calls`;
+    let   selected_devise = {};
+    let   devise_type     = null;
+    let   devise_id       = null;
+
+    // Initialize a map variable to store the map instance
+    let mapInstance = null;
+
+    function showDeviceDetails(device) {
+        if (device) {
+            selected_devise = device;
+            devise_type     = device.devise_type
+            devise_id       = device.pk
+            document.getElementById('selectedDeviceName').innerText = selected_devise.name || '';
+            document.getElementById('device-name').textContent   = device.name;
+            document.getElementById('serialNo').textContent      = device.serialNo;
+            document.getElementById('chipsetNo').textContent     = device.chipsetNo;
+            document.getElementById('deviseId').textContent      = device.id;
+            document.getElementById('email').textContent         = device.email;
+            document.getElementById('phone').textContent         = device.phone;
+            document.getElementById('address1').textContent      = device.address1;
+            document.getElementById('address2').textContent      = device.address2;
+            document.getElementById('purchaseDate').textContent  = device.purchaseDate;
+            document.getElementById('warranty').textContent      = device.warranty;
+            document.getElementById('amountPaid').textContent    = device.amountPaid;
+            document.getElementById('balanceAmount').textContent = device.balanceAmount;
+            document.getElementById('land').textContent          = device.land;
+            document.getElementById('api_limit').textContent     = device.api_limit;
+            document.getElementById('api_used').textContent      = device.api_used;
+
+            // Check if the map instance already exists and remove the old one
+            if (mapInstance) {
+                mapInstance.remove(); // Removes the previous map
+            }
+
+            // Initialize the map if it doesn't exist yet
+            if (device.latitude && device.longitude) {
+                mapInstance = L.map('leaflet-map').setView([device.latitude, device.longitude], 5); // Center on the device's location
+
+                // Add a tile layer (OpenStreetMap)
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(mapInstance);
+
+                // Add a marker at the device's location
+                L.circleMarker([device.latitude, device.longitude], {
+                    radius     : 8,
+                    fillColor  : 'green',
+                    color      : 'green',
+                    weight     : 2,
+                    opacity    : 1,
+                    fillOpacity: 0.6
+                }).addTo(mapInstance).bindPopup(device.name); // Correct the popup binding
+            }
+
+            // Display the API details container
+            const apiDetailsContainer         = document.getElementById('api-details-container');
+            apiDetailsContainer.style.display = 'block';
+
+            // Clear previous API data
+            const apiDetailsHeaders     = document.getElementById('api-details-headers');
+            apiDetailsHeaders.innerHTML = "";
+            const apiDetailsTable       = document.getElementById('api-details-table');
+            apiDetailsTable.innerHTML   = "";
+
+            // Fetch the device API data
+            fetchData(device.pk);
+        } else {
+            document.getElementById('device-name').textContent = 'Device not found';
+            document.getElementById('device-info').innerHTML = '';
+        }
+    }
+
+    async function fetchData(id) {
+    try {
+        const response = await fetch(`${url}/${id}`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Parse the JSON data
+        const deviseData = await response.json();
+
+        // Update the headers dynamically
+        const apiDetailsHeaders = document.getElementById('api-details-headers');
+        apiDetailsHeaders.innerHTML = ""; // Clear existing headers
+        for (const [key, value] of Object.entries(deviseData.headers)) {
+            const th = document.createElement('th');
+            th.textContent = value;
+            apiDetailsHeaders.appendChild(th);
+        }
+
+        // Populate the API details table rows
+        const apiDetailsTable = document.getElementById('api-details-table');
+        apiDetailsTable.innerHTML = ""; // Clear existing rows
+        deviseData.data.forEach(api => {
+            const row = document.createElement('tr');
+            let rowContent = '';
+
+            // Dynamically create table cells based on the headers
+            for (const headerKey in deviseData.headers) {
+                const cellValue = api[headerKey] !== undefined ? api[headerKey] : '';
+
+                // Check if the header is for an image, if so, generate image HTML
+                if (headerKey === 'image_path') {
+                    rowContent += `<td>${api.image_path ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />` : ''}</td>`;
+                } else {
+                    rowContent += `<td>${cellValue}</td>`;
+                }
+            }
+
+            // Make the entire row clickable
+            row.style.cursor = "pointer";  // Changes the cursor to pointer when hovering over the row
+
+            // When the row is clicked, trigger redirectToEdit
+            row.addEventListener("click", () => {
+                redirectToEdit(api.id);
+            });
+
+            // Insert the row into the table
+            row.innerHTML = rowContent;
+            apiDetailsTable.appendChild(row);
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+
+    function redirectToEdit(id) {
+        let endpoint = ''; 
+        
+        if (selected_devise.devise_type === 'soilsaathi') {
+            endpoint = '/api-overview';
+        } else if (selected_devise.devise_type === 'atmo_sense') {
+            endpoint = '/atmos-sense-api-overview';
+        } else if (selected_devise.devise_type === 'soil_life') {
+            endpoint = '/soil-life-api-overview';
+        }
+        
+        if (endpoint) {
+            window.location.href = `${endpoint}/${id}/`;
+        } else {
+            console.error('Unknown device type for redirection');
+        }
+    }
+
+    // CSS for the image hover effect
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .small-img {
+            width: 50px;
+            height: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .big-img {
+            width: 150px;
+            height: 150px;
+        }
+
+        .edit-btn {
+            cursor: pointer;
+        }
+    `;
+    document.head.appendChild(style);
+
+    function openFormPopup()
+    {
+        showDynamicAPIForm(devise_type, devise_id)
+    }
+
+</script>
+
+
+<style>
+    .table {
+    width: 100%;
+    table-layout: auto; /* Allows flexible column widths */
+}
+
+.table th, .table td {
+    overflow: visible; /* Shows full content */
+    white-space: normal; /* Wraps text */
+    word-break: break-word; /* Allows breaking long words */
+}
+
+.table-container {
+    max-height: 800px; /* Set the maximum height for scrolling */
+    overflow-y: auto; /* Enable vertical scrolling */
+    position: relative;
+}
+
+.sticky-header {
+    position: sticky;
+    top: 0;
+    background-color: white; /* Ensure background is visible when scrolling */
+    z-index: 10;
+}
+</style>
+{% endblock %}

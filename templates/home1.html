@@ -1,622 +1,1037 @@
 {% load static %}
-<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<link rel="stylesheet" href="{% static '/home/css/home1.css' %}" type="text/css">
-<link rel="stylesheet" href="{% static '/home/css/popup.css' %}" type="text/css">
-<link rel="stylesheet" href="{% static '/home/css/image_animation.css' %}" type="text/css">
-<link rel="stylesheet" href="{% static '/home/css/image_animation1.css' %}" type="text/css">
-<link rel="stylesheet" href="{% static '/home/css/images.css' %}" type="text/css">
-<link rel="stylesheet" href="{% static '/home/css/patent.css' %}" type="text/css">
-<link rel="stylesheet" href="{% static '/home/css/slideshow.css' %}" type="text/css">
-<script src="{% static '/home/js/popup.js' %}"></script>    
-<!------ Include the above in your HEAD tag ---------->
-
-<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.css" />
-
-<header id="home">
-        <div class="overlay"></div>
-        <nav class="navbar fixed-top navbar-expand navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{% url 'dashboard' %}">
-                    <h3 class="my-heading">ArkaShine Innovations</h3>
-                </a>
-                <!-- <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation" onclick="console.log('fghjk')">
-                    <span class="fa fa-bars mfa-white"></span>
-                </button>    -->
-                <!-- <div class="collapse navbar-collapse" id="navbarResponsive"> -->
-                    <ul class="navbar-nav">
-                         <li class="nav-item">
-                            {% if user.is_authenticated %}
-                                <a class="nav-link" href="{% url 'logout' %}">Welcome, {{ user.get_username }} Logout</a>
-                            {% else %}
-                                <a class="nav-link" href="#login">Login</a>
-                                <!-- <a class="nav-link" href="{% url 'login1' %}">Login</a> -->
-                            {% endif %}
-                            </a>
-                        </li>
-                    </ul>
-                <!-- </div> -->
-            </div>
-        </nav>
-        <div class="tophead" style="margin-top: 100px;">
-            <!-- success message -->
-            {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-dismissible alert-success">
-                <!-- <button type="button" class="close" data-dismiss="alert">
-                ×
-                </button> -->
-                <strong>{{message}}</strong>
-                </div>
-            {% endfor %}
-            {% endif %}
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-6">
-                        <!-- <h1 class="title-main wow fadeInLeft" data-wow-duration="1.5s">ArkaShine Innovations</h1> -->
-                        <h3 class="subtitle-main wow fadeInUp" data-wow-duration="1.1s">
-                            Compact portable soil testing machines that are easy to carry, easy to operate, easy to refill and reuse, provide results on palm, requiring less skilled labor in providing timely soil test results as fertilizer and crop recommend to farmers through use of technology towards a greener footprint for climate change.
-                        </h3>
-						<div class="top-btn-block wow fadeInUp data-wow-duration=2.5s">
-							<!-- <a href="javascript:void(0)" class="btn-explore ">View details</a> -->
-							<!-- <a href="javascript:void(0)" class="btn-account ">Button</a> -->
-						</div>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <center>
-                            <ul id="ul" style="margin-top: -65px;">
-                                <li id="li"><a href="#ai_popup"><img title="Complete automation" id="img" src="{% static '/home/images/automation.jpg' %}"/></a></li>
-                                <li id="li"><a href="#ai_popup1"><img title="complete automation" id="img" src="{% static '/home/images/integration.PNG' %}"/></a></li>
-                                <li id="li"><a href="#soil_popup"><img title="Soil on chip technology" id="img" src="{% static '/home/images/soilonchip.PNG' %}"/></a></li>
-                                <li id="li"><a href="#soil_popup1"><img title="Soil on chip technology" id="img" src="{% static '/home/images/tracking.PNG' %}"/></a></li>
-                                <li id="li"><a href="#map_popup"><img title="Mapped recommendation unit" id="img" src="{% static '/home/images/map.PNG' %}"/></a></li>
-                                <li id="li"><a href="#ml_popup"><img title="AI and ML" id="img" src="{% static '/home/images/AIML.PNG' %}"/></a></li>
-                            </ul>
-                        </center>
-                        <!-- <div style="position: relative;">
-                            ProSOIL 
-                        </div> -->
-                    </div>
-                </div>
-            </div>
-                        
- <!-- ai details  popup -->
- <div id="ai_popup" class="overlay1">
-    <div class="popup" id="feature-css" style="width:500px;height:250px">
-        <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/automation.jpg' %});"> -->
-        <center>
-            <h2 style="color: #4b2711;">complete automation</h2>
-            <hr>
-            <a class="close" href="#">&times;</a>
-            <h4 class="content">
-                A 100 % automation in steps of soil preparation ready to go for testing under the sensory platform. One Of its first soil sampler unit that automates and saves time of test.
-            </h4>
-        </center>
-    </div>
-</div>   
-<!-- end ai details  popup  -->
-
- <!-- ai ai_popup1 -->
- <div id="ai_popup1" class="overlay1">
-    <div class="popup" id="feature-css" style="width:500px;height:250px">
-        <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/integration.PNG' %});"> -->
-        <center>
-            <h2 style="color: #4b2711;">Integration of technologies</h2>
-            <hr>
-            <a class="close" href="#">&times;</a>
-            <h4 class="content">
-                Integration of software and hardware modules to enhance the customer experience in decision making of agri inputs
-            </h4>
-        </center>
-    </div>
-</div>   
-<!-- end ai_popup1  -->
-
-<!-- login popup -->
-<div id="login" class="overlay1">
-    <div class="popup" id="feature-css" style="width:500px;height:200px">
-        <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/integration.PNG' %});"> -->
-        <center>
-            <h2 style="color: #4b2711;">Select login</h2>
-            <hr>
-            <a class="close" href="#">&times;</a>
-            <!-- <h4 class="content"> -->
-                <a class="btn btn-success" href="{% url 'login1' %}">Login as admin</a>
-                <!-- <br> -->
-                <a class="btn btn-success" href="{% url 'login2' %}">Login as user</a>
-            <!-- </h4> -->
-        </center>
-    </div>
-</div>   
-<!-- end login popup  -->
-
- <!-- soil_popup -->
- <div id="soil_popup" class="overlay1">
-    <div class="popup" id="feature-css" style="width:500px;height:250px">
-    <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/soilonchip.PNG' %});"> -->
-        <center>
-            <h2 style="color: #4b2711;">complete automation</h2>
-            <hr>
-            <a class="close" href="#">&times;</a>
-            <h4 class="content">
-                Through our research we came up with innovative reusable chipset for sensing  nutrients.
-            </h4>
-        </center>
-    </div>
-</div>   
-<!-- end soil_popup  -->
-
- <!-- soil_popup1 -->
- <div id="soil_popup1" class="overlay1">
-    <div class="popup" id="feature-css" style="width:500px;height:250px">
-    <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/tracking.PNG' %});"> -->
-        <center>
-            <h2 style="color: #4b2711;">Location tracking</h2>
-            <hr>
-            <a class="close" href="#">&times;</a>
-            <h4 class="content">
-                Live tracking of samples collected and serviced for a long term geographical study.
-            </h4>
-        </center>
-    </div>
-</div>   
-<!-- end soil_popup1  -->
-
- <!-- map_popup -->
- <div id="map_popup" class="overlay1">
-    <div class="popup" id="feature-css" style="width:500px;height:250px">
-    <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/map.PNG' %});"> -->
-        <center>
-            <h2 style="color: #4b2711;">A Mapped Recommendation Unit</h2>
-            <hr>
-            <a class="close" href="#">&times;</a>
-            <h4 class="content">
-                Providing output as printed  results through interpretation of results using mapped recommendation unit 
-            </h4>
-        </center>
-    </div>
-</div>   
-<!-- end map_popup  -->
-
- <!-- ml_popup -->
- <div id="ml_popup" class="overlay1">
-    <div class="popup" id="feature-css" style="width:500px;height:300px">
-    <!-- <div class="popup" id="feature-css" style="background-image: url({% static '/home/images/AIML.PNG' %});"> -->
-        <center>
-            <h2 style="color: #4b2711;">AI and ML based prediction models for fertilizer and crop recommendations</h2>
-            <hr>
-            <a class="close" href="#">&times;</a>
-            <h4 class="content">
-                Usage of advanced technologies for accurately predicting recommendations for agri inputs.
-            </h4>
-        </center>
-    </div>
-</div>   
-<!-- end ml_popup  -->
 
 
-        <div class="sesgoabajo"></div>
-    </header>
+<!DOCTYPE html>
+<html lang="en">
 
-    <main>
-        <section class="overview-wrap" id="overview">
-            <div class="container">
-                <div class="contenedor">
-                    <h2 class="title-overview wow fadeInUp" style="color: #4b2711;">Overview</h2>
-                    <p class="subtitle-overview wow fadeInUp">
-                        ProSOIL is a novel microfluidic and Machine Learning based Soil On Chip portable onsite testing device that provides printed results of fertilizer and crop recommendation within 20 minutes. A complete automation in the steps of sample preparation providing a common sample preparation for all tests , Sensory testing system nutrients, pH, electrical conductivity and mapped recommendation
-                        unit geotagging of data and AI & ML based algorithms for crop recommendation . The USP of the device is SOIL IN RESULTS OUT. This palmtop sensory system provides onsite decision making on farm with assessment of soil parameters at finger tips, acts fast with zero manual intervention
-                        <br>
-                        Features: 
-                        <br>
-                        <span style="font-weight: bold;">
-                            Complete Automation, 
-                            Soil On Chip Technology, 
-                            A Mapped Recommendation Unit, 
-                            AI and ML based prediction models for fertilizer and crop recommendations.
-                        </span>
-                    </p>
-
-                    <!-- images -->
-
-                    <!-- <div class="photo-album mb-5 wow bounceInUp">
-		
-                        
-                        <a href="" class="large polaroid img1"><img src="{% static '/home/images/img1.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        <a href="" class="polaroid img2"><img src="{% static '/home/images/img2.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        <a href="" class="small polaroid img3"><img src="{% static '/home/images/img3.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        
-                        <a href="" class="medium polaroid img4"><img src="{% static '/home/images/img4.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        
-                        <a href="" class="polaroid img5"><img src="{% static '/home/images/img5.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        
-                        
-                        <a href="" class="polaroid img6"><img src="{% static '/home/images/img6.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        
-                        <a href="" class="polaroid img7"><img src="{% static '/home/images/img1.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        <a href="" class="small polaroid img8"><img src="{% static '/home/images/img2.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        <a href="" class="medium polaroid img9"><img src="{% static '/home/images/img3.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        <a href="" class="polaroid img10"><img src="{% static '/home/images/img4.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        <a href="" class="small polaroid img11"><img src="{% static '/home/images/img5.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        <a href="" class="small polaroid img12"><img src="{% static '/home/images/img6.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        <a href="" class="small polaroid img13"><img src="{% static '/home/images/img1.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        <a href="" class="small polaroid img14"><img src="{% static '/home/images/img2.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                        <a href="" class="polaroid img15"><img src="{% static '/home/images/img3.PNG' %}" alt="" style="width: 100%;">Our product</a>
-                    </div> -->
-                    <!-- end images -->
-
-                     <!-- slideshow -->
-
-    <!-- Fork me on GitHub ribbon -->
-<!-- <a href="https://github.com/Elitewares/CSS3-Slider" target="_blank"><img style="position: fixed; top: 0; right: 0; border: 0;z-index:99;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a> -->
-
-                </div>
-            </div>
-        </section>
-
-
-        <!-- VIDEOS -->
-        <!-- <div class="row" style="    height: 760px;"> -->
-            <!-- <div class="col-md-12 col-lg-12 col-xs-12 wow bounceInUp" data-wow-duration="1.4s">
-                <video autoplay muted loop id="myVideo" style=" float: left;width:100%;height: 750px;" class="rounded">
-                    <source src="{%  static '/home/video1.mp4'%}" type="video/mp4">
-                    Your browser does not support HTML5 video.
-                </video>
-            </div>  -->
-            <!-- <div class="col-md-5 col-lg-5 col-xs-5 wow bounceInUp" data-wow-duration="1.4s"> -->
-                <!-- <div style="position: relative; margin: 50px;color: white;top:-200;"> -->
-                    <!-- <h5 class="title-overview wow fadeInUp" style="color:   white;">explanation of product</h5> -->
-                <!-- <p style="margin: 0px 238px;">Let's bring the life of soil back with ProSOIL and its accessories testing physical, chemical and biological aspects.</p> -->
-                <!-- </div> -->
-            <!-- </div>  -->
-            <!-- <script>
-                var video = document.getElementById("myVideo");
-                var btn = document.getElementById("myBtn");
-                
-                function myFunction() {
-                  if (video.paused) {
-                    video.play();
-                    btn.innerHTML = "Pause";
-                  } else {
-                    video.pause();
-                    btn.innerHTML = "Play";
-                  }
-                }
-                </script> -->
-        <!-- </div> -->
-        <!-- <div class="row"> -->
-            <!-- <div class="col-md-5 col-lg-5 col-xs-5 wow bounceInUp" data-wow-duration="1.4s">
-                <h5 class="title-overview wow fadeInUp" style="color: #4b2711;">product description</h5>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Libero magni eveniet cum, debitis assumenda quos consequatur sit ducimus, maiores esse tenetur saepe voluptatem dolorem adipisci voluptatum odit! Laudantium, accusantium beatae!</p>
-            </div>  -->
-            <!-- <div class="col-md-12 col-lg-12 col-xs-12 wow bounceInUp " data-wow-duration="1.4s" >
-                <video autoplay muted loop id="myVideo" style=" float: left;width:100%;height: 400px;" class="rounded"-5>
-                    <source src="{%  static '/home/video5.mp4'%}" type="video/mp4">
-                    Your browser does not support HTML5 video.
-                </video>
-            </div> 
-        </div> -->
-        <!-- END VIDEOS -->
-
-<!-- images -->
-    <div class="container_images  wow bounceInUp">
-        <!-- <div style="width: 15%;height:250px"><img class="img_images" src="{% static '/home/images/img1.PNG' %}" alt="" style="height:250px" ></div>
-        <div style="width: 15%;height:250px"><img class="img_images" src="{% static '/home/images/img1.PNG' %}" alt="" style="height:250px" ></div>
-        <div style="width: 15%;height:250px"><img class="img_images" src="{% static '/home/images/img1.PNG' %}" alt="" style="height:250px" ></div>
-        <div style="width: 15%;height:250px"><img class="img_images" src="{% static '/home/images/img1.PNG' %}" alt="" style="height:250px" ></div>
-        <div style="width: 15%;height:250px"><img class="img_images" src="{% static '/home/images/img1.PNG' %}" alt="" style="height:250px" ></div>
-        <div style="width: 15%;height:250px"><img class="img_images" src="{% static '/home/images/img1.PNG' %}" alt="" style="height:250px" ></div> -->
-      
-      <img class="img_images" src="{% static '/home/images/img1.PNG' %}" alt="">
-      <img class="img_images" src="{% static '/home/images/img2.PNG' %}" alt="">
-      <img class="img_images" src="{% static '/home/images/img3.PNG' %}" alt="">
-      <img class="img_images" src="{% static '/home/images/img4.PNG' %}" alt="">
-      <img class="img_images" src="{% static '/home/images/img5.PNG' %}" alt="">
-      <img class="img_images" src="{% static '/home/images/img6.PNG' %}" alt="">
-      <!-- <img class="img_images" src="{% static '/home/images/img5.PNG' %}" alt="">
-      <img class="img_images" src="{% static '/home/images/img6.PNG' %}" alt=""> -->
-    </div>
-<!-- end images -->
-        
-        <!-- partners -->
-
-        <section class="overview-wrap mt-2" style="float: left;margin-bottom: 100px;">
-            <h2 class="title-overview wow fadeInUp" style="color: #4b2711;">Our Partners</h2>
-            <div class="row">
-                    <div class="col-md-6 col-lg-3 col-xs-3 col-xs-3 wow bounceInUp"><img class="wow bounceInUp" src="{% static 'dashboard/p1.PNG' %}"></div>
-                    <div class="col-md-6 col-lg-3 col-xs-3 col-xs-3 wow bounceInUp"><img class="wow bounceInUp" src="{% static 'dashboard/p2.PNG' %}"></div>
-                    <div class="col-md-6 col-lg-3 col-xs-3 col-xs-3 wow bounceInUp"><img class="wow bounceInUp" src="{% static 'dashboard/p3.PNG' %}"></div>
-                    <div class="col-md-6 col-lg-3 col-xs-3 col-xs-3 wow bounceInUp"><img class="wow bounceInUp" src="{% static 'dashboard/p4.PNG' %}"></div>
-            </div>
-        </section>
-
-        
-        <!-- <section class="galeria">
-            <div class="sesgoarriba"></div>
-            <div class="imagenes">
-                <img src="https://images.pexels.com/photos/938965/pexels-photo-938965.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="" class="img-fluid">
-				 <div class="enmica">
-                    <h2>All technologies used in project</h2>
-                    <div></div>
-                </div>
-            </div>
-            <div class="sesgoabajo"></div>
-        </section> -->
-
-        <!-- <section class="cta contact-wrap" id="contact">
-
-            <div class="container">
-                <div class="row">
-                    <div class="col-xl-9 mx-auto  wow zoomIn">
-                        <div class="cta-inner text-center rounded">
-                            <h2 class="section-heading mb-4">
-    							<span class="section-heading-upper" style="color: #4b2711;">Get in Touch With Us</span>
-                             </h2>
-                            <div class="contactForm">
-                                <div style="color: red">
-                                    {{errors}}
-                                </div>
-                                <form  method="POST"> {% csrf_token %}
-                                    <div class="form-group">
-                                        <input type="text" name="name" class="form-control" placeholder="Name" required="required">
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="email" name="mail" class="form-control" placeholder="Email" required="required">
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="text" name="phone" class="form-control" placeholder="phone" required="required">
-                                    </div>
-                                    <div class="form-group">
-                                        <textarea class="form-control" rows="4" cols="50" placeholder="Message" name="message"></textarea>
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="col-md-12">
-                                            <input type="submit" name="submit" value="Send" class="btn-login">
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </section> -->
-
-        <!-- <div class="row wow bounceInUp"> -->
-            <!-- <div class=" wow bounceInUp" data-wow-duration="1.4s" >
-                <video autoplay muted loop id="myVideo" style="height:370px; width:100%;" class="rounded"-5>
-                    <source src="{%  static '/home/video3.mp4'%}" type="video/mp4">
-                    Your browser does not support HTML5 video.
-                </video>
-            </div> -->
-            <!-- <div class="col-md-3 col-lg-3 col-xs-3 wow bounceInUp" data-wow-duration="1.4s" >
-                <video autoplay muted loop id="myVideo" style="height:370px; width:100%;" class="rounded"-5>
-                    <source src="{%  static '/home/video2.mp4'%}" type="video/mp4">
-                    Your browser does not support HTML5 video.
-                </video>
-            </div> -->
-        <!-- </div> -->
-    </main>
-
-  
+<head>
+    <meta charset="utf-8">
+    <title>ArkaShine - agriculture Website Template</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Free HTML Templates" name="keywords">
+    <meta content="Free HTML Templates" name="description">
     
-    <!-- <footer class="footer" style="background-color: #04BF00; ">
-        <div class="container">
-            <div class="row">               
-                <div class="col-lg-12 text-center  my-auto " style=" font-size: large;">                   
-                    <p class="" style="font-weight: bold">Contact details</p>
-                    <p>Address : H. NO.9.1 2-226, 11th Cross,
-                        Bhawani Rice Mill Road,
-                        Vidyanagar colony,
-                        Bidar, Karnataka,
-                        lndia, 585403
-                        <br>
-                        Phone: +91-9611297893
-                        <br>
-                        Email: karbari.rsudha@gmail.com
-                        <br>
-                        sudha.karbari@arkashine-innovations.com
-                        <br>
-                        ramesh.karbari@arkashine-innovations.com
-                    </p>
-                </div>                
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&family=Roboto:wght@500;700&display=swap" rel="stylesheet"> 
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="{% static '/home/lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
+    <link href="{% static '/home/lib/lightbox/css/lightbox.min.css' %}" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{% static '/home/css/style.css' %}" rel="stylesheet">
+    
+</head>
+
+<body data-spy="scroll" data-target=".navbar" data-offset="51">
+ <!-- Navbar Start -->
+<nav class="navbar fixed-top shadow-sm navbar-expand-lg bg-dark navbar-dark py-1 py-lg-0 px-lg-5">
+    <a href="index.html" class="navbar-brand d-block d-lg-none">
+        <h1 class="display-4 text-white text-uppercase m-0">ArkaShine</h1>
+    </a>
+    <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
+        <div class="navbar-nav mr-auto py-0">
+            <a href="#home" class="nav-item nav-link active">Home</a>
+            <a href="#about" class="nav-item nav-link">About</a>
+            <a href="#service" class="nav-item nav-link">Service</a>
+            <a href="#goals" class="nav-item nav-link">Goals</a>
+          
+       
+            
+            <a href="#faqs" class="nav-item nav-link">FAQs</a>
+            <a href="#impact" class="nav-item nav-link">Impact</a>
+            <a href="#testimonial" class="nav-item nav-link">Testimonial</a>
+            <a href="#milestones" class="nav-item nav-link">Resources</a>
+            <a href="#team" class="nav-item nav-link">Team</a>
+            <a href="#partners" class="nav-item nav-link">Partners</a>
+            <a href="#contact" class="nav-item nav-link">Contact</a>
+            
+        </div>
+       
+        
+        <div class="navbar-nav ml-auto py-0">
+       
+            
+
+                    <img src="{% static '/home/images/logo.jpg' %}" alt="Menu Icon" width="200" height="80">
+       
+            
             </div>
         </div>
-    </footer> -->
-
-    <footer class="footer" style="float: left;" id = "foot">
-        <!-- <div class="waves">
-          <div class="wave" id="wave1"></div>
-          <div class="wave" id="wave2"></div>
-          <div class="wave" id="wave3"></div>
-          <div class="wave" id="wave4"></div>
-        </div> -->
-        <ul class="social-icon">
-          <li class="social-icon__item"><a class="social-icon__link" target="_blank" href="https://www.facebook.com/profile.php?id=100086596411403">
-              <ion-icon name="logo-facebook"></ion-icon>
-            </a></li>
-          <li class="social-icon__item"><a class="social-icon__link" target="_blank" href="https://twitter.com/ArkaShineInn?t=t-d7MVaogl29h_7G2xHz9Q&s=08">
-              <ion-icon name="logo-twitter"></ion-icon>
-            </a></li>
-          <li class="social-icon__item"><a class="social-icon__link" target="_blank" href="https://www.linkedin.com/company/89707450/admin/?trk=eml-company_page_created-body-view_cp_button&midToken=AQEyFtuesbYTzA&midSig=2C3DWbbHXfHWs1&trkEmail=eml-email_company_page_created_01-null-0-null-null-3bxup6%7El9cnuexr%7Evu-null-neptune%2Fcompany%2Eadmin">
-              <ion-icon name="logo-linkedin"></ion-icon>
-            </a></li>
-          <li class="social-icon__item"><a class="social-icon__link" target="_blank" href="http://instagram.com/arkashineinnovations">
-              <ion-icon name="logo-instagram"></ion-icon>
-            </a></li>
-        </ul>
-        <ul class="menu">
-
-            <!-- address -->
-            <div id="popup1" class="overlay1">
-                <div class="popup">
-                    <center>
-                        <h2 style="color: #4b2711;">Address</h2>
-                        <hr>
-                        <a class="close" href="#foot">&times;</a>
-                        <div class="content">
-                            Address : H. NO.9.1 2-226, 11th Cross,
-                            Bhawani Rice Mill Road,
-                            Vidyanagar colony,
-                            Bidar, Karnataka,
-                            lndia, 585403
-                        </div>
-                    </center>
+        <div class="navbar-nav ml-auto py-0">
+            <div class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <img src="{% static '/home/images/menu.jpg' %}" alt="Menu Icon" width="30" height="30">
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <a class="dropdown-item" href="{% url 'admin-login' %}">Admin Login</a>
+                    <a class="dropdown-item" href="{% url 'user-login' %}">User Login</a>
+                    <a class="dropdown-item" href="#">Careers</a>
                 </div>
-            </div>   
-            <!-- end address  -->
-            <!-- contact details -->
-            <div id="popup2" class="overlay1">
-                <div class="popup">
-                    <center>
-                        <h2 style="color: #4b2711;">Contact details</h2>
-                        <hr>
-                        <a class="close" href="#foot">&times;</a>
-                        <div class="content">
-                            <b>Phone: </b> +91 9611297893
-                            <br>
-                            <b>Email ids: </b> <a href="https://mail.google.com/mail/?view=cm&fs=1&tf=1&to=karbari.rsudha@gmail.com" target="_blank">karbari.rsudha@gmail.com</a>, 
-                            <a href="https://mail.google.com/mail/?view=cm&fs=1&tf=1&to=sudha.karbari@arkashine-innovations.com" target="_blank"> sudha.karbari@arkashine-innovations.com</a>, 
-                            <a href="https://mail.google.com/mail/?view=cm&fs=1&tf=1&to=ramesh.karbari@arkashine-innovations.com" target="_blank"> ramesh.karbari@arkashine-innovations.com</a>
-                            <table>
-                                <tr>
-                                    <td><b></b></td>
-                                    <td> </td>
-                                </tr>
-                                <tr>
-                                    <td><b></b></td>
-                                    <td> <br>
-                                           
-                                        <br>
-                                        
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </center>
-                </div>
-            </div> 
-            <!-- end contact details -->
-            <!-- Paitentsw -->'
-            <div id="paitents" class="overlay1" style="overflow-y: auto;">
-                <div class="popup" style="width: 700px;overflow-y: auto;">
-                        <h2 style="color: #4b2711;">Product Patents</h2>
-                        <hr>
-                        <a class="close" href="#foot">&times;</a>
-                        <div class="content">
-                            <!-- 1. 202141028625: APPARATUS AND METHOD FOR SOIL TESTING (Granted-387972)(Design of microfluidic chip without the mechanism of electrodes for detection along with GPS geotagging of samples tested)
-                            <br>
-                            2. 202142041007:APPARATUS AND METHOD FOR SOIL TESTING (Published and under examination)(Design of Soil Sampler Unit and the inventive steps of tests from raw soil to test results)
-                            <br>
-                            3. 202141038183 : RECOMMENDATION AND SYSTEM(Identification of parameters & framework for ML algorithm for a complete analysis and provision of results to end user)
-                            <br>
-                            4. 202141032351- A SYSTEM AND METHOD FOR DETECTING ADULTERATION IN ANY FOOD ITEM
-                            <br>
-                            5. 202141044570-A NANO-EMULSION BASED BIOPESTICIDE FORMULATION AND A METHOD FOR PREPARATION THEREOF
-                            <br>
-                            6. 202141044532-NANOFIBER BASED PHEROMONES AND A METHOD FOR PREPARATION THEREOF
-                            <br>
-                            7. 202241011922:SYSTEM FOR ANALYSING PERISHABLE ITEM
-                            <br>
-                            8.  202341001891: APPARATUS AND METHOD FOR OPTICAL ANALYSIS
-                            <br>
-                            9. 202341001892: APPARATUS FOR ELECTRICAL ANALYSIS
-                            <br>
-                            Design:
-                            346415-001: FOOD ADULTERATION TESTING DEVICE -->
-
-                            <div class="main" >
-                                <ol class="gradient-list">
-                                  <li title="(Design of microfluidic chip without the mechanism of electrodes for detection along with GPS geotagging of samples tested)">202141028625: APPARATUS AND METHOD FOR SOIL TESTING (Granted-387972)</li>
-                                  <li title="(Published and under examination)(Design of Soil Sampler Unit and the inventive steps of tests from raw soil to test results)">202142041007:APPARATUS AND METHOD FOR SOIL TESTING</li>
-                                  <li title="(Identification of parameters & framework for ML algorithm for a complete analysis and provision of results to end user)">202141038183 : RECOMMENDATION AND SYSTEM</li>
-                                  <li>202141032351- A SYSTEM AND METHOD FOR DETECTING ADULTERATION IN ANY FOOD ITEM</li>
-                                  <li>202141044570-A NANO-EMULSION BASED BIOPESTICIDE FORMULATION AND A METHOD FOR PREPARATION THEREOF</li>
-                                  <li>202141044532-NANOFIBER BASED PHEROMONES AND A METHOD FOR PREPARATION THEREOF</li>
-                                  <li>202241011922:SYSTEM FOR ANALYSING PERISHABLE ITEM</li>
-                                  <li>202341001891: APPARATUS AND METHOD FOR OPTICAL ANALYSIS</li>
-                                  <li>202341001892: APPARATUS FOR ELECTRICAL ANALYSIS</li>
-                                  
-                                  
-                                </ol>
-                              </div>
-                        </div>
-                </div>
-            </div> 
-            <!-- end paitents -->
-            <!-- Get in touh with us -->
-            <div id="get_in_touch" class="overlay1">
-                <div class="popup" style="width: 60%; max-height: 55%;overflow: auto;">
-                    <center>
-                        <h2 style="color: #4b2711;">Get in touch with us</h2>
-                        <hr>
-                        <a class="close" href="#foot">&times;</a>
-                        <div class="content">
-                            <div class="cta-inner text-center rounded">     
-                                <div class="contactForm">
-                                    <div style="color: red">
-                                        {{errors}}
-                                    </div>
-                                    <form  method="POST"> {% csrf_token %}
-                                        <div class="form-group">
-                                            <input type="text" name="name" class="form-control m-0" placeholder="Name" required="required">
-                                        </div>
-                                        <div class="form-group">
-                                            <input type="email" name="mail" class="form-control m-0" placeholder="Email" required="required">
-                                        </div>
-                                        <div class="form-group">
-                                            <input type="text" name="phone" class="form-control m-0" placeholder="phone" required="required">
-                                        </div>
-                                        <div class="form-group">
-                                            <textarea class="form-control m-0" rows="4" cols="50" placeholder="Message" name="message"></textarea>
-                                        </div>
-                                        <div class="form-group" style="height: 10%;">
-                                            <div class="col-md-12">
-                                                <input type="submit" name="submit" value="Send" class="btn-login">
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>  
-                    </center>
-                </div>
-            </div> 
-            <!-- end get in touch with us -->
-          <li class="menu__item"><a class="menu__link" href="#">Home</a></li>
-          <li class="menu__item"><a class="menu__link" href="#get_in_touch">Help</a></li>
-          <li class="menu__item"><a class="menu__link" href="#paitents">Patents</a></li>
-          <li class="menu__item"><a class="menu__link" href="#popup2">Contact details</a></li>
-          <li class="menu__item"><a class="menu__link" href="#popup1">Address</a></li>
-        </ul>
-        <p>&copy;Krish | All Rights Reserved</p>
-      </footer>
-      <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-      <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
-    </body>
-
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
-            <script>
-              new WOW().init();
-              </script>
-    <script>
-      
-        $(window).on("scroll", function() {
-            if ($(this).scrollTop() > 10) {
-                $("nav.navbar").addClass("mybg-dark");
-                $("nav.navbar").addClass("navbar-shrink");
-
-            } else {
-                $("nav.navbar").removeClass("mybg-dark");
-                $("nav.navbar").removeClass("navbar-shrink");
-            }
-
-        });
-
+            </div>
+        </div>
+            </div>
+        </div>
         
-    </script>
+    </div>
+</nav>
+<!-- Navbar End -->
+
+<!-- Carousel Start -->
+<div class="container-fluid p-0 mb-5 pb-5" id="home">
+    <div id="header-carousel" class="carousel slide carousel-fade" data-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item position-relative active" style="height: 100vh; min-height: 400px;">
+                <img class="position-absolute w-100 h-100" src="{% static '/home/images/cc9.jpg' %}" style="object-fit: cover;">
+                <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+                    <div class="p-3" style="max-width: 900px;">
+                        <h1 class="text-white text-uppercase mb-4" style="letter-spacing: 8px;">ArkaShine</h1>
+                        <h6 class="display-2 font-secondary text-white mb-4" style="font-size: 30px;">Innovation in Agriculture</h6>
+                        <a class="btn btn-light font-weight-bold py-3 px-5 mt-2 btn-scroll" href="#contact">Get A Demo</a>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item position-relative" style="height: 100vh; min-height: 400px;">
+                <img class="position-absolute w-100 h-100" src="{% static '/home/images/cc15.jpg' %}" style="object-fit: cover;">
+                <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+                    <div class="p-3" style="max-width: 900px;">
+                        <h2 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">ArkaShine</h2>
+                        <h6 class="display-2 font-secondary text-white mb-4" style="font-size: 35px;">Effortless Soil Testing with AI: Rapid, Reliable and Revolutionary</h6>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item position-relative" style="height: 100vh; min-height: 400px;">
+                <img class="position-absolute w-100 h-100" src="{% static '/home/images/cc16.jpg' %}" style="object-fit: cover;">
+                <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+                    <div class="p-3" style="max-width: 900px;">
+                        <h2 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">ArkaShine</h2>
+                        <h6 class="display-2 font-secondary text-white mb-4" style="font-size: 35px;">Maximize Wealth: Eco-Cultivation begins with Healthy Soil and Optimized Inputs</h6>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item position-relative" style="height: 100vh; min-height: 400px;">
+                <img class="position-absolute w-100 h-100" src="{% static '/home/images/carousel-2.jpg' %}" style="object-fit: cover;">
+                <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+                    <div class="p-3" style="max-width: 900px;">
+                        <h2 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">ArkaShine</h2>
+                        <h6 class="display-2 font-secondary text-white mb-4" style="font-size: 35px;">Grow More, Earn More with our Customized Soil Specific Crop Recommendations and Advisory.</h6>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item position-relative" style="height: 100vh; min-height: 400px;">
+                <img class="position-absolute w-100 h-100" src="{% static '/home/images/carousel-9.png' %}" style="object-fit: cover;">
+                <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+                    <div class="p-3" style="max-width: 900px;">
+                        <h2 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">ArkaShine</h2>
+                        <h6 class="display-2 font-secondary text-white mb-4" style="font-size: 35px;">Healthy Soil, Sustainable Agriculture: Reducing Carbon footprint for a greener Environment.</h6>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <a class="carousel-control-prev justify-content-start" href="#header-carousel" data-slide="prev">
+            <div class="btn btn-primary px-0" style="width: 68px; height: 68px;">
+                <span class="carousel-control-prev-icon mt-3"></span>
+            </div>
+        </a>
+        <a class="carousel-control-next justify-content-end" href="#header-carousel" data-slide="next">
+            <div class="btn btn-primary px-0" style="width: 68px; height: 68px;">
+                <span class="carousel-control-next-icon mt-3"></span>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- jQuery and Bootstrap Bundle (includes Popper) -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+<!-- Carousel End -->
+
+ <!-- About Start -->
+<div class="container-fluid py-5" id="about">
+    <div class="container py-5">About
+        <div class="row align-items-center">
+            <div class="col-lg-5">
+                <img class="img-fluid mb-4 mb-lg-0" src="{% static '/home/images/about.jpg' %}" alt="">
+            </div>
+            <div class="col-lg-7">
+                <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">About Us</h6>
+                <h1 class="display-4 mb-3"><span class="text-primary">Modern Era Modern Component</span> In Agriculture Industry</h1>
+                <p style="text-align: justify; font-family: 'Times New Roman', Times, serif;">A pioneering startup dedicated to revolutionizing agricultural practices through the development of cutting-edge portable soil testing devices. Our innovative technology automates the soil quality testing procedure without compromising accuracy, empowering farmers with precise and timely results to optimize crop yield and environmental sustainability.</p>
+                <button class="btn btn-primary font-weight-bold py-3 px-5 mt-2" data-toggle="modal" data-target="#exampleModalLong">Read More</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- About End -->
+
+<!-- Modal Start -->
+<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle" style="font-family: 'Times New Roman', Times, serif;">More About Us</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: justify; font-family: 'Times New Roman', Times, serif;">
+                <p>In the modern era of agriculture, our Organization is dedicated to developing advanced hardware devices designed to cater to the needs of farmers, especially those in remote areas without access to soil test laboratories. Our portable devices can be carried to these remote locations, providing instant and accurate soil test results to empower farmers with the information they need to optimize their agricultural practices. Leveraging artificial intelligence and machine learning, our devices provide customized recommendations for soil treatment and crop selection, tailored to the specific conditions of each field. Test results are seamlessly uploaded to a secure cloud platform, allowing for easy access, data storage, and long-term analysis. Farmers can monitor soil health trends and make data-driven decisions over time. We understand the challenges faced by farmers, particularly in remote areas, and strive to develop solutions that are accessible, affordable, and easy to use. We are at the forefront of agricultural technology, continuously researching and developing new methods to improve soil health, increase crop yields, and enhance farm efficiency.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal End -->
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- About Start 2 -->
+<div class="container-fluid py-5" id="about">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-5">
+                <img class="img-fluid mb-4 mb-lg-0" src="{% static '/home/images/extra.jpg' %}" alt="">
+            </div>
+            <div class="col-lg-7">
+                <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;"></h6>
+                <h1 class="display-4 mb-3"><span class="text-primary">We Prioritize Organic carbon for its vital role</span> in Sustainable Agriculture</h1>
+                <p style="text-align: justify; font-family: 'Times New Roman', Times, serif;">soil structure, prevents erosion, and improves water infiltration and root penetration.Our innovative devices provides real-time data on soil organic carbon, serving as a key indicator for nutrient cycling. This helps soil microorganisms decompose organic matter effectively, releasing essential nutrients such as nitrogen, phosphorus, and sulfur, making them readily available for crops.By increasing the soil's organic matter content, our unit boosts the soils cation exchange capacity. This enables the soil to retain and supply nutrients more efficiently, improving nutrient availability for crops and reducing nutrient leaching risks.
+                </p>
+                <button class="btn btn-primary font-weight-bold py-3 px-5 mt-2" data-toggle="modal" data-target="#exampleModalLong1">Read More</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- About End 2-->
+
+<!-- Modal Start 2 -->
+<div class="modal fade" id="exampleModalLong1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle" style="font-family: 'Times New Roman', Times, serif;">More About Us</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: justify; font-family: 'Times New Roman', Times, serif;">
+                <p>At our organization, we understand the critical role of organic carbon in soil health and are dedicated to advancing technologies that help farmers maintain and improve their soil's organic matter content. Through our holistic approach, we aim to foster a sustainable agricultural system that benefits both the environment and agricultural productivity.Based on organic carbon data, our AI-driven system provides customized recommendations for soil management practices that enhance organic matter content, such as cover cropping, reduced tillage, and organic amendments.By accurately measuring organic carbon levels, our device helps in the formation of soil aggregates.With precise monitoring of organic carbon, our device ensures soils maintain higher water-holding capacity. This is vital for mitigating drought effects and reducing the need for frequent irrigation, thus conserving valuable water resources.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal End 2-->
+
+<!-- Full-Width Image with Overlay Text -->
+<div class="container-fluid p-0">
+    <div class="position-relative">
+        <!-- Full-width Image -->
+        <img class="img-fluid w-100" src="{% static '/home/images/extra2.jpg' %}" alt="Agriculture Image" style="height: 500px; object-fit: cover;">
+
+        <!-- Overlay Text -->
+        <div class="position-absolute text-overlay">
+            <p class="overlay-text">
+                <strong>We specialize in Affordable, Innovative Soil Analysis solutions, providing Rapid, Reliable, and Precise Soil profiles. Our automated AI-driven insights enable balanced fertilizer recommendations and soil-specific crop selection, maximizing yields and farmer benefits. This promotes sustainable agriculture and empowers farmers for optimal productivity and wealth creation.</strong>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Custom CSS for overlay text -->
+<style>
+    .position-relative {
+        position: relative;
+    }
+
+    .position-absolute {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        text-align: center; /* Center align text */
+    }
+
+    .text-overlay {
+        background: rgba(0, 0, 0, 0.5); /* Semi-transparent background for better text visibility */
+        padding: 20px; /* Adjust padding as needed */
+        border-radius: 15px;
+        text-align: justify; /* Justify text alignment */
+        color: #fff; /* White text color */
+    }
+
+    .overlay-text {
+        margin: 0;
+        font-size: 1.5rem; /* Larger text size */
+        line-height: 1.6; /* Increase line height for better readability */
+        font-weight: 400; /* Normal font weight */
+    }
+</style>
+
+
+ <!-- Service Start -->
+ 
+<div class="container-fluid py-5" id="service">
+    <div class="container py-3">
+        <div class="section-title position-relative text-center">
+            <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Services</h6>
+            <h1 class="font-secondary display-4">What We Provide</h1>
+        </div>
+        <div class="row">
+            <!-- Product 1: SoiLENZ -->
+            <div class="col-lg-3 mb-4">
+                <div class="product-item mb-2">
+                    <div class="product-img-1">
+                        <img class="img-fluid" src="{% static '/home/images/product-1.jpg' %}" alt="SoiLENZ">
+                        <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong7">
+                            <i class="fa fa-2x fa-plus text-white"></i>
+                        </a>
+                    </div>
+                    <div class="bg-secondary text-center p-4">
+                        <h3 class="m-0">SOILSAATHI</h3>
+                    </div>
+                </div>
+            </div>
+            <!-- Product 2: SoilLife -->
+            <div class="col-lg-3 mb-4">
+                <div class="product-item mb-2">
+                    <div class="product-img-2">
+                        <img class="img-fluid" src="{% static '/home/images/product-2.jpg' %}" alt="SoilLife">
+                        <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong2">
+                            <i class="fa fa-2x fa-plus text-white"></i>
+                        </a>
+                    </div>
+                    <div class="bg-secondary text-center p-4">
+                        <h3 class="m-0">SOILIFE</h3>
+                    </div>
+                </div>
+            </div>
+            <!-- Product 3: SoilSparsh -->
+            <div class="col-lg-3 mb-4">
+                <div class="product-item mb-2">
+                    <div class="product-img-3">
+                        <img class="img-fluid" src="{% static '/home/images/product-3.jpg' %}" alt="SoilSparsh">
+                        <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong3">
+                            <i class="fa fa-2x fa-plus text-white"></i>
+                        </a>
+                    </div>
+                    <div class="bg-secondary text-center p-4">
+                        <h3 class="m-0">SOILSPARSH</h3>
+                    </div>
+                </div>
+            </div>
+           <!-- Product 4: Dashboard -->
+           <div class="col-lg-3 mb-4">
+            <div class="product-item mb-2">
+                <div class="product-img-4">
+                    <img class="img-fluid" src="{% static '/home/images/product-4.jpeg' %}" alt="Dashboard ">
+                    <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong4">
+                        <i class="fa fa-2x fa-plus text-white"></i>
+                    </a>
+                </div>
+                <div class="bg-secondary text-center p-4">
+                    <h3 class="m-0">DASHBOARD</h3>
+                </div>
+            </div>
+        </div>
+<style>
+   
+</style>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Service End -->
+
+<!-- Modal Start for SOILSAATHI -->
+<div class="modal fade" id="exampleModalLong7" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle1" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle1">SOILSAATHI</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>SoiLENZ is a revolutionary AI-integrated product that delivers reliable, effortless, and accurate soil analysis directly on the farm. This portable device, designed like a backpack, allows the entire miniature testing lab to be easily transported to remote and challenging locations where traditional soil testing labs are inaccessible. Our advanced technology provides detailed soil profiles, facilitating smart nutrient management and offering customized crop recommendations for enhanced agricultural productivity.</p>
+                <h5>Key Features of SoiLENZ include:</h5>
+                <ul>
+                    <li><strong>AI Integration:</strong> Utilizes artificial intelligence for precise and reliable soil analysis.</li>
+                    <li><strong>Portability:</strong> Compact and lightweight, designed like a backpack for easy transportation to farms and remote areas.</li>
+                    <li><strong>Comprehensive Soil Testing:</strong> Measures pH, electrical conductivity (EC), macronutrients, and all micronutrients.</li>
+                    <li><strong>Instant Results:</strong> Provides immediate soil test results, enabling quick decision-making in 20 minutes.</li>
+                    <li><strong>Custom Recommendations:</strong> Delivers tailored fertilizer and crop recommendations based on soil profiles of each farm.</li>
+                    <li><strong>Rugged Design:</strong> Built to withstand harsh field conditions where traditional soil testing labs are inaccessible.</li>
+                    <li><strong>No Initial Calibration:</strong> Good to go model with no requirement of repetitive calibration.</li>
+                    <li><strong>Self Cleaning:</strong> The design is equipped with easy cleaning modules within 2 minutes.</li>
+                    <li><strong>Cloud Interface:</strong> The tested results of soil samples are saved and recorded over cloud through a web interface.</li>
+                    <li><strong>User-Friendly Interface:</strong> Easy to operate with intuitive navigation controls, displays, and printing units.</li>
+                    <li><strong>Real-Time Data Analysis:</strong> Offers live data for effective nutrient management and optimal crop planning.</li>
+                    <li><strong>Enhanced Productivity:</strong> Supports improved agricultural practices by providing detailed soil insights.</li>
+                    <li><strong>Sustainability:</strong> Promotes sustainable farming through accurate soil health assessments and resource management.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal End for SOILSAATHI -->
+
+<!-- Modal Start for SOILIFE -->
+<div class="modal fade" id="exampleModalLong2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle2" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle2">SOILIFE</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>SoilLife is an innovative chamber designed to be inserted into the soil to accurately measure organic carbon, microbial activity, and greenhouse gas (GHG) emissions. Equipped with state-of-the-art sensors, it delivers real-time data analysis of live soil conditions, including temperature, moisture, pH, and electrical conductivity (EC). This precise measurement of carbon emissions enables farmers to effectively manage their carbon credit scores.</p>
+                <h5>Key Features of SoilLife include:</h5>
+                <ul>
+                    <li><strong>Advanced Measurement:</strong> Accurately measures organic carbon, microbial activity, and greenhouse gas (GHG) emissions.</li>
+                    <li><strong>Real-Time Data Analysis:</strong> Provides live analysis of soil conditions, including temperature, moisture, pH, and electrical conductivity (EC).</li>
+                    <li><strong>Precision Carbon Monitoring:</strong> Precisely tracks carbon emissions to help farmers manage their carbon credit scores effectively.</li>
+                    <li><strong>IoT Integration:</strong> Enables live monitoring of large land areas, facilitating data-driven decision-making.</li>
+                    <li><strong>Sustainable Practices:</strong> Supports sustainable farming practices, enhancing soil health and productivity.</li>
+                    <li><strong>Seamless Integration:</strong> Easily integrates with existing farm management systems for comprehensive soil management.</li>
+                    <li><strong>User-Friendly Design:</strong> Intuitive interface for straightforward operation and data interpretation.</li>
+                    <li><strong>Durable Construction:</strong> Robust design for reliable performance in various field conditions.</li>
+                    <li><strong>Data-Driven Insights:</strong> Provides actionable insights for agricultural agencies and B2B businesses.</li>
+                    <li><strong>Enhanced Productivity:</strong> Contributes to improved soil management and agricultural productivity through advanced monitoring capabilities.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal End for SOILIFE -->
+
+<!-- Modal Start for SOILSPARSH -->
+<div class="modal fade" id="exampleModalLong3" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle3" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle3">SOILSPARSH</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>SoilSparsh is an advanced, portable device engineered to precisely measure moisture, humidity, and temperature, providing comprehensive monitoring of the surrounding environment. Designed for seamless integration with IoT-based setups and devices, SoilSparsh empowers farmers with real-time data and insights. This enables informed, onsite decision-making for optimizing smart irrigation management systems, ensuring efficient water usage and enhancing agricultural productivity.</p>
+                <h5>Key Features of SoilSparsh include:</h5>
+                <ul>
+                    <li><strong>Comprehensive Environmental Monitoring:</strong> Measures moisture, humidity, and temperature for thorough environmental assessment.</li>
+                    <li><strong>Portable Design:</strong> Compact and lightweight, making it easy to transport and use in various field conditions.</li>
+                    <li><strong>Real-Time Data:</strong> Provides immediate analysis and feedback for on-the-spot decision-making.</li>
+                    <li><strong>WiFi Connectivity:</strong> Enables seamless connection to wireless networks for convenient data transfer and remote monitoring.</li>
+                    <li><strong>IoT Compatibility:</strong> Integrates seamlessly with IoT-based setups and devices for enhanced connectivity and automation.</li>
+                    <li><strong>Smart Irrigation Management:</strong> Supports intelligent irrigation systems by delivering precise environmental data, optimizing water usage.</li>
+                    <li><strong>User-Friendly Interface:</strong> Simple to operate with intuitive controls and displays for ease of use.</li>
+                    <li><strong>Durable Construction:</strong> Built to withstand harsh outdoor environments and rigorous use.</li>
+                    <li><strong>Versatile Application:</strong> Suitable for diverse agricultural scenarios, from small farms to large agricultural enterprises.</li>
+                    <li><strong>Enhanced Productivity:</strong> Helps improve crop yields and resource management through precise environmental monitoring.</li>
+                    <li><strong>Sustainable Practices:</strong> Promotes efficient water usage and sustainable farming techniques by providing accurate environmental insights.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal End for SOILSPARSH -->
+
+<!-- Modal Start for Dashboard -->
+<div class="modal fade" id="exampleModalLong4" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle4" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle4">Dashboard</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Introducing Our Mapped Recommendation Unit for Soil Health Monitoring: An advanced soil health monitoring device, the Mapped Recommendation Unit, featuring a state-of-the-art dashboard integrated with innovative hardware that measures all essential nutrients along with pH and electrical conductivity (EC). Designed to revolutionize agricultural practices, this device offers comprehensive on-farm soil testing with live result recording and seamless integration for enhanced decision-making.</p>
+                <h5>Key Features of Mapped Recommendation Unit include:</h5>
+                <ul>
+                    <li><strong>Live Soil Test Results:</strong> The Mapped Recommendation Unit conducts real-time soil analysis directly on the farm, providing instant and accurate data on soil health.</li>
+                    <li><strong>Comprehensive Soil Metrics:</strong> Our device measures a wide range of soil parameters, including pH, EC, macro and micro nutrient levels, moisture content, and organic matter, offering a holistic view of soil health.</li>
+                    <li><strong>Cloud Integration:</strong> Test results are automatically uploaded to a secure cloud platform, ensuring data is readily accessible and can be analyzed over time for trend identification and long-term planning.</li>
+                    <li><strong>Customized Recommendations:</strong> Utilizing AI and machine learning algorithms, the device provides tailored recommendations for soil management practices, optimizing crop yields and resource use.</li>
+                    <li><strong>User-Friendly Interface:</strong> The device features an intuitive touchscreen interface, making it easy for farmers and agricultural professionals to operate and interpret results.</li>
+                    <li><strong>Portable and Durable Design:</strong> Built for field conditions, the Mapped Recommendation Unit is portable and rugged, ensuring reliable performance in diverse environments.</li>
+                    <li><strong>Data Integration:</strong> Results can be integrated with other farm management software, allowing for comprehensive farm management and precision agriculture.</li>
+                    <li><strong>Environmental Impact Tracking:</strong> By monitoring soil health, our device helps track and reduce the environmental impact of farming practices, promoting sustainable agriculture.</li>
+                    <li><strong>Regular Updates:</strong> Our team continuously improves the software with regular updates, ensuring the device remains at the cutting edge of soil health technology.</li>
+                </ul>
+                <p>The Mapped Recommendation Unit not only provides valuable insights into current soil conditions but also supports future agricultural planning and sustainability efforts. With our device, farmers can make informed decisions that enhance productivity, improve soil health, and contribute to environmental conservation.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal End for Dashboard -->
+
+<!-- Goals start -->
+<div class="container-fluid py-3" id="goals">
+    <div class="container py-1">
+        <div class="section-title position-relative text-center">
+            <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Goals</h6>
+            <h1 class="font-secondary display-4">Our Sustainability Goals</h1>
+        </div>
+        <div class="marquee marquee--8" style="margin-top: 5px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/goal-1.png' %}" alt="Goal 1" style="width: 150px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/goal-7.png' %}" alt="Goal 2" style="width: 150px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/goal-2.png' %}" alt="Goal 3" style="width: 150px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/goal-6.png' %}" alt="Goal 4" style="width: 150px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/goal-8.png' %}" alt="Goal 5" style="width: 150px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/goal-9.jpg' %}" alt="Goal 6" style="width: 150px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/goal-4.png' %}" alt="Goal 7" style="width: 150px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/goal-3.png' %}" alt="Goal 8" style="width: 150px; height: 150px;">
+        </div>
+    </div>
+</div>
+<!-- Goals End -->
+<!-- FAQs Start -->
+    <div class="container-fluid py-5" id="faqs">
+        <div class="container py-5">
+            <div class="section-title position-relative text-center">
+                <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">FAQs</h6>
+                <h1 class="display-4">You Should Know</h1>
+            </div>
+            <div class="row">
+                <div class="col-md-6 border-right border-primary">
+                    <div class="text-center text-md-right mr-md-3 mb-4 mb-md-0">
+                        <h3 class="mb-4">Sustainability Goals</h3>
+                        <h5 class="mb-3"><i class="fa fa-check text-success float-md-right mr-2 mr-md-0 ml-md-2"></i>No poverty</h5>
+                        <h5 class="mb-3"><i class="fa fa-check text-success float-md-right mr-2 mr-md-0 ml-md-2"></i>Zero hunger</h5>
+                        <h5 class="mb-3"><i class="fa fa-check text-success float-md-right mr-2 mr-md-0 ml-md-2"></i>Decent work and economic growth</h5>
+                        <h5 class="mb-0"><i class="fa fa-check text-success float-md-right mr-2 mr-md-0 ml-md-2"></i>Industry,Innovation and Infrastructure</h5>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-center text-md-left ml-md-3">
+                        <h3 class="mb-4">Why Choose Us?</h3>
+                        <h5 class="mb-3"><i class="fa fa-check text-success mr-2"></i>User Friendly interfaces boost adoption.</h5>
+                        <h5 class="mb-3"><i class="fa fa-check text-success mr-2"></i>Automation saves time and labour.</h5>
+                        <h5 class="mb-3"><i class="fa fa-check text-success mr-2"></i>Portable devices for onsite soil specific recommendations.</h5>
+                        <h5 class="mb-0"><i class="fa fa-check text-success mr-2"></i>Accurate Crop Management drives Wealth.</h5>
+                    </div>
+                </div>
+                <div class="col-md-12 text-center pt-3">
+                    <a class="btn btn-primary font-weight-bold py-3 px-5 mt-4 btn-scroll" href="#contact">Get A Demo</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- FAQs End -->
+<!-- Full-Width Image with Overlay Text -->
+<div class="container-fluid p-0">
+    <div class="position-relative">
+        <!-- Full-width Image -->
+        <img class="img-fluid w-100" src="{% static '/home/images/photo.jpg' %}" alt="Agriculture Image" style="height: 500px; object-fit: cover;">
+
+        <!-- Overlay Text -->
+        <div class="position-absolute text-overlay">
+            <ul class="bold-text">
+                <li>Yield Increase: +10-20%</li>
+                <li>Input Efficiency: -15-30%</li>
+                <li>Environmental Benefits: -20% emissions</li>
+                <li>Profitability: +15-25%</li>
+                <li>Soil Health Improvement: +5-10%</li>
+                <li>Adoption Rate: 10,000+ farmers</li>
+                <li>Climate Resilience: -30% crop losses</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Custom CSS for overlay text -->
+<style>
+    .position-relative {
+        position: relative;
+    }
+
+    .position-absolute {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        text-align: center; /* Center align text */
+    }
+
+    .text-overlay {
+        background: rgba(0, 0, 0, 0.5); /* Semi-transparent background for better text visibility */
+        padding: 20px; /* Adjust padding as needed */
+        border-radius: 15px;
+        color: #fff; /* White text color */
+    }
+
+    .bold-text {
+        list-style-type: none; /* Remove default bullets */
+        padding-left: 0;
+        margin: 0;
+    }
+
+    .bold-text li {
+        margin-bottom: 15px; /* Space between items */
+        font-size: 1.2rem; /* Slightly larger text size */
+        font-weight: bold; /* Make text bold */
+        line-height: 1.5; /* Increase line height for better readability */
+    }
+</style>
+
+
+<!-- Testimonial Start -->
+<div class="container-fluid py-5" id="testimonial">
+    <div class="container py-5">
+        <div class="section-title position-relative text-center" style="margin-bottom: 120px;">
+            <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Testimonial</h6>
+            <h1 class="display-4">Our Clients Say</h1>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="owl-carousel testimonial-carousel">
+                    <!-- Testimonial Item 1 -->
+                    <div class="text-center">
+                        <img class="img-fluid mx-auto mb-3 testimonial-img" src="{% static '/home/images/photo1.jpg' %}" alt="Client Photo">
+                        <p class="testimonial-text">"The soil test showed that my soil's pH was too acidic for the crops I was planting. Adjusting the pH improved the health and yield of my crops dramatically."</p>
+                        <h4 class="testimonial-name">Usha</h4>
+                        <span class="testimonial-profession">Farmer</span>
+                    </div>
+                    <!-- Testimonial Item 2 -->
+                    <div class="text-center">
+                        <img class="img-fluid mx-auto mb-3 testimonial-img" src="{% static '/home/images/photo2.jpg' %}" alt="Client Photo">
+                        <p class="testimonial-text">"The comprehensive soil analysis provided by the test has empowered me to make smarter decisions. My farm's output has improved, and I feel more confident in my crop management."</p>
+                        <h4 class="testimonial-name">Hanumanthappa</h4>
+                        <span class="testimonial-profession">Farmer</span>
+                    </div>
+                    <!-- Testimonial Item 3 -->
+                    <div class="text-center">
+                        <img class="img-fluid mx-auto mb-3 testimonial-img" src="{% static '/home/images/photo3.jpg' %}" alt="Client Photo">
+                        <p class="testimonial-text">"The pH results from the soil test guided me in choosing the right crops for my soil type. This has not only boosted my yields but also reduced my input costs."</p>
+                        <h4 class="testimonial-name">Narasimhayya</h4>
+                        <span class="testimonial-profession">Farmer</span>
+                    </div>
+                    <!-- Testimonial Item 4 -->
+                    <div class="text-center">
+                        <img class="img-fluid mx-auto mb-3 testimonial-img" src="{% static '/home/images/photo4.jpg' %}" alt="Client Photo">
+                        <p class="testimonial-text">"Thanks to the soil test, I discovered my soil was deficient in zinc and manganese. Correcting these deficiencies has led to a noticeable boost in crop quality and yield."</p>
+                        <h4 class="testimonial-name">Suresh</h4>
+                        <span class="testimonial-profession">Farmer</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Testimonial End -->
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $(".testimonial-carousel").owlCarousel({
+            items: 1,
+            loop: true,
+            margin: 10,
+            nav: true
+        });
+    });
+</script>
+
+<!-- Custom CSS -->
+<style>
+    .testimonial-img {
+        width: 100px; /* Adjust to desired width */
+        height: 300px; /* Adjust to desired height */
+        object-fit: cover; /* Ensure image covers the area */
+        /* Removed border-radius to keep the image square */
+    }
+
+    .testimonial-text {
+        font-size: 20px; /* Adjust text size */
+        margin-bottom: 20px; /* Space below text */
+        line-height: 1.6; /* Increase line height for readability */
+        font-family: Arial, Helvetica, sans-serif; /* Revert to previous font */
+        /* Removed text justification to default alignment */
+    }
+
+    .section-title h1 {
+        font-size: 3rem; /* Adjust size of section title */
+    }
+
+    .testimonial-name {
+        font-family: Arial, Helvetica, sans-serif; /* Revert to previous font */
+    }
+
+    .testimonial-profession {
+        font-family: Arial, Helvetica, sans-serif; /* Revert to previous font */
+        display: block; /* Ensure profession is on a new line */
+        margin-top: 10px; /* Space above profession */
+    }
+
+    .owl-carousel .owl-nav .owl-prev,
+    .owl-carousel .owl-nav .owl-next {
+        color: #007bff; /* Customize navigation color */
+    }
+</style>
+<!-- Testimonial CSS End -->
+
+
+
+
+    <!-- Milestones Start -->
+<div class="container-fluid py-5" id="milestones">
+    <div class="container py-5">
+        <div class="section-title position-relative text-center">
+            <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Resources</h6>
+            <h1 class="font-secondary display-4">Granted Patents</h1>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="product-item mb-2">
+                    <div class="product-img-1 text-center">
+                        <a href="#patent1">
+                            <img class="img-fluid" src="{% static '/home/images/patent1.jpg' %}" alt="">
+                        </a>
+                    </div>
+                    <div class="bg-secondary text-center p-4">
+                        <h3 class="m-0">Patent 1</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="product-item mb-2">
+                    <div class="product-img-2 text-center">
+                        <a href="#patent2">
+                            <img class="img-fluid" src="{% static '/home/images/patent2.jpg' %}" alt="">
+                        </a>
+                    </div>
+                    <div class="bg-secondary text-center p-4">
+                        <h3 class="m-0">Patent 2</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Milestones End -->
+
+<!-- Team Start -->
+<div class="container-fluid py-5" id="team">
+    <div class="container py-5">
+        <div class="section-title position-relative text-center">
+            <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Team</h6>
+            <h1 class="font-secondary display-4">Meet The Team</h1>
+        </div>
+        <div class="row">
+            <!-- Team Member 1 -->
+            <div class="col-lg-6 mb-4">
+                <div class="team-member d-flex flex-column flex-sm-row">
+                    <div class="team-img">
+                        <!-- Placeholder for image replaced with sentence -->
+                        <p class="team-text">Sudha, a researcher with a PhD in micro and nanosciences, holds 12 patents and 32 publications. She is dedicated to translating advanced research into impactful technologies, with numerous grants supporting her commitment to enhancing quality of life and promoting sustainable development.</p>
+                    </div>
+                    <div class="bg-secondary text-center p-4 d-flex flex-column justify-content-center">
+                        <h5 class="mb-2">Dr Sudha Ramesh Karbari</h5>
+                        <p class="text-muted font-italic mb-2">CEO & Founder</p>
+                        <p>Role- Head</p>
+                        <div class="position-relative mb-2">
+                            <a class="btn btn-outline-primary btn-square mr-1" href="https://x.com/SudhaRKarbari"><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-outline-primary btn-square mr-1" href="https://www.facebook.com/sudha.karbari/"><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-outline-primary btn-square mr-1" href="https://www.linkedin.com/in/sudha-ramesh-karbari-03657257/"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Team Member 2 -->
+            <div class="col-lg-6 mb-4">
+                <div class="team-member d-flex flex-column flex-sm-row">
+                    <div class="team-img">
+                        <!-- Placeholder for image replaced with sentence -->
+                        <p class="team-text">Ramesh is a passionate engineer with extensive experience in designing advanced aerospace-related products. With a deep commitment to leveraging technology for societal welfare, he specializes in real-time projects that deliver significant benefits to communities and industries alike.</p>
+                    </div>
+                    <div class="bg-secondary text-center p-4 d-flex flex-column justify-content-center">
+                        <h5 class="mb-2">Mr Ramesh Karbari</h5>
+                        <p class="text-muted font-italic mb-2">Co-Founder & CTO</p>
+                        <p>Role- Product Development</p>
+                        <div class="position-relative mb-2">
+                            <a class="btn btn-outline-primary btn-square mr-1" href="https://x.com/KarbariRamesh"><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-outline-primary btn-square mr-1" href="https://www.facebook.com/ramesh.karbari"><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-outline-primary btn-square mr-1" href="https://www.linkedin.com/in/ramesh-karbari-564b6b156/"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Team End -->
+
+<!-- Team End -->
+
+<!-- Our Partners Start -->
+<div class="container-fluid py-5" id="partners">
+    <div class="container py-0">
+        <div class="section-title position-relative text-center">
+            <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Partners</h6>
+            <h1 class="font-secondary display-4">Our Partners</h1>
+        </div>
+        <div class="marquee marquee--8">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/partner-1.png' %}" alt="Partner 1" style="width: 160px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/partner-2.png' %}" alt="Partner 2" style="width: 160px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/partner-3.jpg' %}" alt="Partner 3" style="width: 160px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/partner-4 (2).jpg' %}" alt="Partner 4" style="width: 170px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/partner-5.jpg' %}" alt="Partner 5" style="width: 160px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/partner-6.jpeg' %}" alt="Partner 6" style="width: 160px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/partner-7.jpeg' %}" alt="Partner 7" style="width: 160px; height: 150px;">
+            <img class="marquee__item img-fluid rounded" src="{% static '/home/images/partner-8.jpeg' %}" alt="Partner 8" style="width: 160px; height: 150px;">
+        </div>
+    </div>
+</div>
+<!-- Our Partners End -->
+  <!-- Contact Start -->
+<div class="container-fluid py-0" id="contact">
+    <div class="container py-5">
+        <div class="section-title position-relative text-center">
+            <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Contact</h6>
+            <h1 class="font-secondary display-4">Get In Touch</h1>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="contact-form">
+                    <div id="success"></div>
+                    <div style="color: red">
+                        {{errors}}
+                    </div>
+                    <form  name="contactForm" id="contactForm" method="POST" novalidate="novalidate"> {% csrf_token %}
+                        <div class="form-row">
+                            <div class="col-sm-12 control-group">
+                                <input type="text" class="form-control bg-secondary border-0 py-4 px-3" name="name" placeholder="Name" required="required" data-validation-required-message="Please enter your first name" />
+                                <p class="help-block text-danger"></p>
+                            </div>
+                        </div>
+                        <div class="form-group control-group">
+                            <input type="email" class="form-control bg-secondary border-0 py-4 px-3" name="mail" placeholder="Your Email" required="required" data-validation-required-message="Please enter your email" />
+                            <p class="help-block text-danger"></p>
+                        </div>
+                        <div class="form-group control-group">
+                            <input type="tel" class="form-control bg-secondary border-0 py-4 px-3" name="country" placeholder="Country" required="required" data-validation-required-message="Please enter your country" />
+                            <p class="help-block text-danger"></p>
+                        </div>
+                        <div class="form-group control-group">
+                            <input type="text" class="form-control bg-secondary border-0 py-4 px-3" name="phone" placeholder="Phone Number" required="required" data-validation-required-message="Please enter your phone number" />
+                            <p class="help-block text-danger"></p>
+                        </div>
+                        <div class="form-group control-group">
+                            <textarea class="form-control bg-secondary border-0 py-2 px-3" name="message" rows="6" placeholder="Message" required="required" data-validation-required-message="Please enter your message"></textarea>
+                            <p class="help-block text-danger"></p>
+                        </div>
+                        <div class="text-center">
+                            <input class="btn btn-primary font-weight-bold py-3 px-5" type="submit" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Contact End -->
+
+
+
+    <!-- Menu Modal -->
+<div class="modal fade" id="menuModal" tabindex="-1" role="dialog" aria-labelledby="menuModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="menuModalLabel">Menu</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action">Admin Login</a>
+                    <a href="#" class="list-group-item list-group-item-action">User Login</a>
+                    <a href="#" class="list-group-item list-group-item-action">Careers</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Menu Modal End -->
+           
+   <!-- Footer Start -->
+<div class="container-fluid footer-custom bg-dark-custom text-white py-5 px-sm-3 px-lg-5" style="margin-top: 90px;">
+    <div class="row pt-5">
+        <div class="col-12 mb-4 px-4">
+            <div class="row mb-5 p-4 footer-overlay">
+                <div class="col-md-4">
+                    <div class="text-md-center">
+                        <h5 class="footer-title text-uppercase mb-2" style="letter-spacing: 5px;">Our Office</h5>
+                        <p class="footer-address mb-4 m-md-0">H. NO.9.1 2-226, 11th Cross,<br>
+                            Bhawani Rice Mill Road,<br>
+                            Vidyanagar colony,<br>
+                            Bidar, Karnataka,<br>
+                            India, 585403</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-md-center">
+                        <h5 class="footer-title text-uppercase mb-2" style="letter-spacing: 5px;">Email Us</h5>
+                        <p class="footer-email mb-4 m-md-0">karbari.rsudha@gmail.com</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-md-center">
+                        <h5 class="footer-title text-uppercase mb-2" style="letter-spacing: 5px;">Call Us</h5>
+                        <p class="footer-phone m-0">+91 9611297893</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7 col-md-12">
+            <div class="row">
+                <div class="col-md-6 mb-5">
+                    <p class="footer-about">We are an Interdisciplinary Team of Scientists working towards providing sustainable grassroot solutions to Agri-Tech Sector</p>
+                    <div class="d-flex justify-content-start mt-4 footer-social">
+                        <a class="btn btn-lg btn-outline-light btn-lg-square mr-2" target="_blank" href="https://twitter.com/ArkaShineInn?t=t-d7MVaogl29h_7G2xHz9Q&s=08"><i class="fab fa-twitter"></i></a>
+                        <a class="btn btn-lg btn-outline-light btn-lg-square mr-2" target="_blank" href="https://www.facebook.com/profile.php?id=100086596411403"><i class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-lg btn-outline-light btn-lg-square mr-2" target="_blank" href="https://www.linkedin.com/company/89707450/admin/?trk=eml-company_page_created-body-view_cp_button&midToken=AQEyFtuesbYTzA&midSig=2C3DWbbHXfHWs1&trkEmail=eml-email_company_page_created_01-null-0-null-null-3bxup6%7El9cnuexr%7Evu-null-neptune%2Fcompany%2Eadmin"><i class="fab fa-linkedin-in"></i></a>
+                        <a class="btn btn-lg btn-outline-light btn-lg-square" target="_blank" href="http://instagram.com/arkashineinnovations"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-5">
+                    <h5 class="footer-title text-uppercase mb-4" style="letter-spacing: 5px;">Our Products</h5>
+                    <div class="d-flex flex-column justify-content-start footer-products">
+                        <a class="text-white btn-scroll mb-2" href="#service"><i class="fa fa-angle-right mr-2"></i>SOILSAATHI</a>
+                        <a class="text-white btn-scroll mb-2" href="#service"><i class="fa fa-angle-right mr-2"></i>SOILIFE</a>
+                        <a class="text-white btn-scroll mb-2" href="#service"><i class="fa fa-angle-right mr-2"></i>SOILSPARSH</a>
+                        <a class="text-white btn-scroll mb-2" href="#service"><i class="fa fa-angle-right mr-2"></i>ARKASHINE-approved</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 col-md-12 mb-5">
+            <h5 class="footer-title text-uppercase mb-4" style="letter-spacing: 5px;">Newsletter</h5>
+            <p class="footer-newsletter-text">Be the First to Know: Sign Up for Our Newsletter Now!</p>
+            <div class="w-100">
+                <div class="input-group">
+                    <input type="email" class="form-control border-light footer-newsletter-input" style="padding: 30px;" placeholder="Your Email Address">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary px-4 footer-newsletter-btn">Sign Up</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid footer-bottom bg-dark-custom text-white text-center border-top py-4 px-sm-3 px-md-5" style="border-color: rgba(255, 255, 255, .05) !important;">
+    <p class="m-0 text-white">&copy; <a href="#">Domain Name</a>. All Rights Reserved. Designed by <a href="https://www.arkashine-innovations.com">ArkaShine Innovations</a></p>
+</div>
+<!-- Footer End -->
+<!-- Modal 3 -->
+ <div class="modal fade" id="patent1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+ aria-hidden="true">
+ <div class="modal-dialog modal-lg" role="document">
+     <div class="modal-content">
+         <div class="modal-header">
+             <h5 class="modal-title" id="exampleModalLongTitle">SOILSPARSH</h5>
+             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                 <span aria-hidden="true">&times;</span>
+             </button>
+         </div>
+         <div class="modal-body">
+             <img class="img-fluid mb-4" src="{% static '/home/images/patent1.jpg' %}" alt="">
+             <p>369092-001 PORTABLE SOIL TESTING APPARATUS</p>
+         </div>
+     </div>
+ </div>
+</div>
+<!-- Modal 3-->
+<!-- Modal 3 -->
+ <div class="modal fade" id="patent2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+ aria-hidden="true">
+ <div class="modal-dialog modal-lg" role="document">
+     <div class="modal-content">
+         <div class="modal-header">
+             <h5 class="modal-title" id="exampleModalLongTitle">SOILSPARSH</h5>
+             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                 <span aria-hidden="true">&times;</span>
+             </button>
+         </div>
+         <div class="modal-body">
+             <img class="img-fluid mb-4" src="{% static '/home/images/patent2.jpg' %}" alt="">
+             <p>397147-001 PORTABLE SOIL TESTING APPARATUS</p>
+         </div>
+     </div>
+ </div>
+</div>
+<!-- Modal 3-->
+
+
+
+    <!-- Scroll to Bottom -->
+    <i class="fa fa-2x fa-angle-down text-white scroll-to-bottom"></i>
+
+    <!-- Back to Top -->
+    <a href="#" class="btn btn-lg btn-outline-primary btn-lg-square back-to-top"><i class="fa fa-angle-double-up"></i></a>
+
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static '/home/lib/easing/easing.min.js' %}"></script>
+    <script src="{% static '/home/lib/waypoints/waypoints.min.js' %}"></script>
+    <script src="{% static '/home/lib/owlcarousel/owl.carousel.min.js' %}"></script>
+    <script src="{% static '/home/lib/isotope/isotope.pkgd.min.js' %}"></script>
+    <script src="{% static '/home/lib/lightbox/js/lightbox.min.js' %}"></script>
+
+    <!-- Contact Javascript File -->
+    <script src="mail/jqBootstrapValidation.min.js"></script>
+    <script src="mail/contact.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="{% static '/home/js/main.js' %}"></script>
+</body>
+
+</html>

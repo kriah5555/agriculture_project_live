@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <style>
+    #formOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+    }
+
+    #formPopup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 50%;
+      max-height: 80%;
+      overflow-y: auto;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 10px;
+      z-index: 1001;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+    }
+
+    #formTitle {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #3b82f6;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    #closeFormBtn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: #000;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    #submitFormBtn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      display: block;
+      margin: 20px auto 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Trigger Button Example -->
+  <!-- <button onclick="showDynamicAPIForm('Soil Analysis Form')">Open Dynamic Form</button> -->
+
+  <!-- Overlay and Form Popup -->
+  <div id="formOverlay" onclick="hideFormPopup()"></div>
+
+  <div id="formPopup">
+    <button id="closeFormBtn" onclick="hideFormPopup()">×</button>
+    <div id="formTitle">Form</div>
+    <form id="dynamicForm"></form>
+    <button id="submitFormBtn" onclick="submitForm()">Submit</button>
+  </div>
+
+  <!-- Script -->
+  <script>
+    let currentDeviseId = null;
+    let currentAPIId = null;
+    const dummyApiResponse = {
+      'electrical_conduction': 'Electrical Conduction',
+      'nitrogen'             : 'Nitrogen',
+      'phosphorous'          : 'Phosphorous',
+      'potassium'            : 'Potassium',
+      'calcium'              : 'Calcium',
+      'magnesium'            : 'Magnesium',
+      'sulphur'              : 'Sulphur',
+      'zinc'                 : 'Zinc',
+      'manganese'            : 'Manganese',
+      'iron'                 : 'Iron',
+      'copper'               : 'Copper',
+      'boron'                : 'Boron',
+      'molybdenum'           : 'Molybdenum',
+      'chlorine'             : 'Chlorine',
+      'nickel'               : 'Nickel',
+      'organic_carboa'       : 'Organic Carbon',
+      'ph'                   : 'Ph',
+      'ec'                   : 'Ec',
+      'oc'                   : 'Oc',
+    };
+
+    async function fetchFormFields(form_type) 
+    {
+      const base_url = `${window.location.protocol}//${window.location.host}`;
+      const response = await fetch(`${base_url}/get-api-fields/${form_type}`);
+      if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const deviseData = await response.json();
+      return deviseData.data;
+    }
+
+    async function fetchExistingApiData(devise_id, api_id) 
+    {
+        const base_url = `${window.location.protocol}//${window.location.host}`;
+        const response = await fetch(`${base_url}/get-api-data/${devise_id}/${api_id}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error while fetching existing API data! Status: ${response.status}`);
+        }
+        const json = await response.json();
+        return json.data;
+    }
+    
+    async function showDynamicAPIForm(form_type, devise_id, api_id = null) 
+    {
+      
+        const formTitle     = document.getElementById("formTitle");
+        const formContainer = document.getElementById("dynamicForm");
+        const overlay       = document.getElementById("formOverlay");
+        const popup         = document.getElementById("formPopup");
+        
+        currentDeviseId = devise_id;
+        currentAPIId    = api_id;
+
+        formTitle.innerText     = form_type;
+        formContainer.innerHTML = "";
+
+        const fields = await fetchFormFields(form_type);
+        let existingData = {};
+
+        if (api_id) {
+            try {
+                existingData = await fetchExistingApiData(devise_id, api_id);
+                
+            } catch (e) {
+                console.error("Failed to fetch existing data:", e);
+                alert("❌ Failed to load existing data.");
+            }
+        }
+
+        for (const key in fields) {
+            const label = fields[key];
+
+            const div = document.createElement("div");
+            div.className = "form-group";
+
+            const inputLabel = document.createElement("label");
+            inputLabel.setAttribute("for", key);
+            inputLabel.innerText = label;
+
+            const input = document.createElement("input");
+            input.setAttribute("type", key != 'tag' ? "number" : "text");
+            input.setAttribute("step", "any");
+            input.setAttribute("inputmode", "decimal");
+            input.setAttribute("id", key);
+            input.setAttribute("name", key);
+            input.setAttribute("placeholder", label);
+
+            if (existingData[key] !== undefined && existingData[key] !== null) {
+                input.value = existingData[key];
+            }
+
+            div.appendChild(inputLabel);
+            div.appendChild(input);
+            formContainer.appendChild(div);
+        }
+
+        overlay.style.display = "block";
+        popup.style.display   = "block";
+    }
+
+    function hideFormPopup() {
+        document.getElementById("formOverlay").style.display = "none";
+        document.getElementById("formPopup").style.display = "none";
+    }
+
+    async function submitForm() 
+    {
+      const form     = document.getElementById("dynamicForm");
+      const formData = new FormData(form);
+      const result   = {};
+
+      for (const [key, value] of formData.entries()) {
+        if (key === 'tag') {
+          result[key] = value.trim(); // Store string directly
+        } else {
+          const num = parseFloat(value);
+          if (isNaN(num)) {
+            alert(`Field "${key}" must be a valid number.`);
+            return;
+          }
+          result[key] = num;
+        }
+      }
+
+      try {
+        var base_url = `${window.location.protocol}//${window.location.host}`;
+        var url = '';
+        if (currentAPIId) {
+            // If api_id exists, send update request
+            url = `${base_url}/update-api-data/${currentDeviseId}/${currentAPIId}`;
+        } else {
+            // Otherwise, send save request
+            url = `${base_url}/save-api-data/${currentDeviseId}`;
+        }
+        var response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(result),
+        });
+
+        var data = await response.json();
+        if (data.status === "success") {
+          alert("✅ Data saved successfully!");
+          hideFormPopup();
+          location.reload()
+        } else {
+          alert(`❌ Error: ${data.message}`);
+        }
+      } catch (error) {
+        alert(`❌ Error: ${error}`);
+      }
+    }
+  </script>
+
+</body>
+</html>

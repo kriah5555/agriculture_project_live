@@ -1,342 +1,262 @@
-<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <script>
-  $( function() {
-    $( "#sortable" ).sortable();
-    $( "#sortable" ).disableSelection();
-  } );
-  </script>
-<style>
-    
- body {
-     background-color: #f9f9fa
- }
+{% extends "navbar.html" %}
 
- .flex {
-     -webkit-box-flex: 1;
-     -ms-flex: 1 1 auto;
-     flex: 1 1 auto
- }
+{% block content %}
 
- @media (max-width:991.98px) {
-     .padding {
-         padding: 1.5rem
-     }
- }
-
- @media (max-width:767.98px) {
-     .padding {
-         padding: 1rem
-     }
- }
-
- .padding {
-     padding: 5rem
- }
-
- .card {
-     background: #fff;
-     border-width: 0;
-     border-radius: .25rem;
-     box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
-     margin-bottom: 1.5rem
- }
-
- .card {
-     position: relative;
-     display: flex;
-     flex-direction: column;
-     min-width: 0;
-     word-wrap: break-word;
-     background-color: #fff;
-     background-clip: border-box;
-     border: 1px solid rgba(19, 24, 44, .125);
-     border-radius: .25rem
- }
- 
- .list-item {
-    position: relative;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    min-width: 0;
-    word-wrap: break-word
-}
-
-.list-item.block .media {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0
-}
-
-.list-item.block .list-content {
-    padding: 1rem
-}
-
-.w-40 {
-    width: 40px!important;
-    height: 40px!important
-}
-
-.avatar {
-    position: relative;
-    line-height: 1;
-    border-radius: 500px;
-    white-space: nowrap;
-    font-weight: 700;
-    border-radius: 100%;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-pack: center;
-    justify-content: center;
-    -ms-flex-align: center;
-    align-items: center;
-    -ms-flex-negative: 0;
-    flex-shrink: 0;
-    border-radius: 500px;
-    box-shadow: 0 5px 10px 0 rgba(50, 50, 50, .15)
-}
-
-.avatar img {
-    border-radius: inherit;
-    width: 100%
-}
-
-.gd-primary {
-    color: #fff;
-    border: none;
-    background: #448bff linear-gradient(45deg, #448bff, #44e9ff)
-}
-
-.flex {
-    -webkit-box-flex: 1;
-    -ms-flex: 1 1 auto;
-    flex: 1 1 auto
-}
-
-.text-color {
-    color: #5e676f
-}
-
-.text-sm {
-    font-size: .825rem
-}
-
-.h-1x {
-    height: 1.25rem;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical
-}
-
-.no-wrap {
-    white-space: nowrap
-}
-
-.list-row .list-item {
-    -ms-flex-direction: row;
-    flex-direction: row;
-    -ms-flex-align: center;
-    align-items: center;
-    padding: .75rem .625rem;
-}
-
-.list-item {
-    position: relative;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    min-width: 0;
-    word-wrap: break-word;
-}
-
-.list-row .list-item>* {
-    padding-left: .625rem;
-    padding-right: .625rem;
-}
-
-.dropdown {
-    position: relative;
-}
-
-a:focus, a:hover {
-    text-decoration: none;
-}
-
-list-item{
-    background:white;
-}
-
-</style>
-<div class="page-content page-container" id="page-content">
-   <div class="padding">
-      <div class="row">
-         <div class="col-sm-8">
-             
-           <div class="container-fluid d-flex justify-content-center">
-            <div class="list list-row card" id="sortable" data-sortable-id="0" aria-dropeffect="move">
-               <div class="list-item" data-id="13" data-item-sortable-id="0" draggable="true" role="option" aria-grabbed="false" style="">
-                  <div><a href="#" data-abc="true"><span class="w-40 avatar gd-primary">P</span></a></div>
-                  <div class="flex">
-                     <a href="#" class="item-author text-color" data-abc="true">Patrick Linod</a>
-                     <div class="item-except text-muted text-sm h-1x">For what reason would it be advisable for me to think about business content?</div>
-                  </div>
-                  <div class="no-wrap">
-                     <div class="item-date text-muted text-sm d-none d-md-block">3 weeks ago</div>
-                  </div>
-                  <div>
-                     <div class="item-action dropdown">
-                        <a href="#" data-toggle="dropdown" class="text-muted" data-abc="true">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical">
-                              <circle cx="12" cy="12" r="1"></circle>
-                              <circle cx="12" cy="5" r="1"></circle>
-                              <circle cx="12" cy="19" r="1"></circle>
-                           </svg>
+    <div>
+        <div class="table-wrapper">
+            <div class="table-title bg-primary">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h2>Manage <b>Users</b></h2>
+                    </div>
+                    <div class="col-sm-6">
+                        <a href="{% url 'create-user' %}" class="btn" data-toggle="modal">
+                            <i class="fa fa-plus" title="Add user"></i> 
                         </a>
-                        <div class="dropdown-menu dropdown-menu-right bg-black" role="menu">
-                           <a class="dropdown-item" href="#" data-abc="true">See detail </a><a class="dropdown-item download" data-abc="true">Download </a><a class="dropdown-item edit" data-abc="true">Edit</a>
-                           <div class="dropdown-divider"></div>
-                           <a class="dropdown-item trash" data-abc="true">Delete item</a>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               <div class="list-item" data-id="9" data-item-sortable-id="0" draggable="true" role="option" aria-grabbed="false">
-                  <div><a href="#" data-abc="true"><span class="w-40 avatar gd-info"><img src="https://img.icons8.com/bubbles/24/000000/user.png" alt="."></span></a></div>
-                  <div class="flex">
-                     <a href="#" class="item-author text-color" data-abc="true">Steven Hmpire</a>
-                     <div class="item-except text-muted text-sm h-1x">Build a progressive web app using jQuery</div>
-                  </div>
-                  <div class="no-wrap">
-                     <div class="item-date text-muted text-sm d-none d-md-block">2 days ago</div>
-                  </div>
-                  <div>
-                     <div class="item-action dropdown">
-                        <a href="#" data-toggle="dropdown" class="text-muted" data-abc="true">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical">
-                              <circle cx="12" cy="12" r="1"></circle>
-                              <circle cx="12" cy="5" r="1"></circle>
-                              <circle cx="12" cy="19" r="1"></circle>
-                           </svg>
+                        <a href="{% url 'export-users' %}" class="btn">
+                            <i class="fa fa-download" title="Export users"></i> Export
                         </a>
-                        <div class="dropdown-menu dropdown-menu-right bg-black" role="menu">
-                           <a class="dropdown-item" href="#" data-abc="true">See detail </a><a class="dropdown-item download" data-abc="true">Download </a><a class="dropdown-item edit" data-abc="true">Edit</a>
-                           <div class="dropdown-divider"></div>
-                           <a class="dropdown-item trash" data-abc="true">Delete item</a>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               <div class="list-item" data-id="17" data-item-sortable-id="0" draggable="true" role="option" aria-grabbed="false" style="">
-                  <div><a href="#" data-abc="true"><span class="w-40 avatar gd-warning">A</span></a></div>
-                  <div class="flex">
-                     <a href="#" class="item-author text-color" data-abc="true">Alan musk</a>
-                     <div class="item-except text-muted text-sm h-1x">it be advisable for me to think about business content?</div>
-                  </div>
-                  <div class="no-wrap">
-                     <div class="item-date text-muted text-sm d-none d-md-block">13/12 18</div>
-                  </div>
-                  <div>
-                     <div class="item-action dropdown">
-                        <a href="#" data-toggle="dropdown" class="text-muted" data-abc="true">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical">
-                              <circle cx="12" cy="12" r="1"></circle>
-                              <circle cx="12" cy="5" r="1"></circle>
-                              <circle cx="12" cy="19" r="1"></circle>
-                           </svg>
+                        <a href="{% url 'export-users-devices' %}" class="btn">
+                            <i class="fa fa-file-excel" title="Export users with details"></i> Export with Details
                         </a>
-                        <div class="dropdown-menu dropdown-menu-right bg-black" role="menu">
-                           <a class="dropdown-item" href="#" data-abc="true">See detail </a><a class="dropdown-item download" data-abc="true">Download </a><a class="dropdown-item edit" data-abc="true">Edit</a>
-                           <div class="dropdown-divider"></div>
-                           <a class="dropdown-item trash" data-abc="true">Delete item</a>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               <div class="list-item" data-id="8" data-item-sortable-id="0" draggable="true" role="option" aria-grabbed="false">
-                  <div><a href="#" data-abc="true"><span class="w-40 avatar gd-success"><img src="https://img.icons8.com/doodle/24/000000/user-male.png" alt="."></span></a></div>
-                  <div class="flex">
-                     <a href="#" class="item-author text-color" data-abc="true">Lawrence Telon</a>
-                     <div class="item-except text-muted text-sm h-1x">For what reason would it be advisable for me to think</div>
-                  </div>
-                  <div class="no-wrap">
-                     <div class="item-date text-muted text-sm d-none d-md-block">02/11 18</div>
-                  </div>
-                  <div>
-                     <div class="item-action dropdown">
-                        <a href="#" data-toggle="dropdown" class="text-muted" data-abc="true">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical">
-                              <circle cx="12" cy="12" r="1"></circle>
-                              <circle cx="12" cy="5" r="1"></circle>
-                              <circle cx="12" cy="19" r="1"></circle>
-                           </svg>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right bg-black" role="menu">
-                           <a class="dropdown-item" href="#" data-abc="true">See detail </a><a class="dropdown-item download" data-abc="true">Download </a><a class="dropdown-item edit" data-abc="true">Edit</a>
-                           <div class="dropdown-divider"></div>
-                           <a class="dropdown-item trash" data-abc="true">Delete item</a>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               <div class="list-item" data-id="10" data-item-sortable-id="0" draggable="true" role="option" aria-grabbed="false" style="">
-                  <div><a href="#" data-abc="true"><span class="w-40 avatar gd-danger"><img src="https://img.icons8.com/color/16/000000/administrator-male.png" alt="."></span></a></div>
-                  <div class="flex">
-                     <a href="#" class="item-author text-color" data-abc="true">Stuart Clark</a>
-                     <div class="item-except text-muted text-sm h-1x">For what reason would, i think about business content?</div>
-                  </div>
-                  <div class="no-wrap">
-                     <div class="item-date text-muted text-sm d-none d-md-block">1 day ago</div>
-                  </div>
-                  <div>
-                     <div class="item-action dropdown">
-                        <a href="#" data-toggle="dropdown" class="text-muted" data-abc="true">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical">
-                              <circle cx="12" cy="12" r="1"></circle>
-                              <circle cx="12" cy="5" r="1"></circle>
-                              <circle cx="12" cy="19" r="1"></circle>
-                           </svg>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right bg-black" role="menu">
-                           <a class="dropdown-item" href="#" data-abc="true">See detail </a><a class="dropdown-item download" data-abc="true">Download </a><a class="dropdown-item edit" data-abc="true">Edit</a>
-                           <div class="dropdown-divider"></div>
-                           <a class="dropdown-item trash" data-abc="true">Delete item</a>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-               <div class="list-item" data-id="3" data-item-sortable-id="0" draggable="true" role="option" aria-grabbed="false">
-                  <div><a href="#" data-abc="true"><span class="w-40 avatar gd-primary"><img src="https://img.icons8.com/bubbles/16/000000/administrator-male.png" alt="."></span></a></div>
-                  <div class="flex">
-                     <a href="#" class="item-author text-color" data-abc="true">Jordan Stephens</a>
-                     <div class="item-except text-muted text-sm h-1x">For what reason would it be advisable for me to think about business</div>
-                  </div>
-                  <div class="no-wrap">
-                     <div class="item-date text-muted text-sm d-none d-md-block">1 hour ago</div>
-                  </div>
-                  <div>
-                     <div class="item-action dropdown">
-                        <a href="#" data-toggle="dropdown" class="text-muted" data-abc="true">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical">
-                              <circle cx="12" cy="12" r="1"></circle>
-                              <circle cx="12" cy="5" r="1"></circle>
-                              <circle cx="12" cy="19" r="1"></circle>
-                           </svg>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right bg-black" role="menu">
-                           <a class="dropdown-item" href="#" data-abc="true">See detail </a><a class="dropdown-item download" data-abc="true">Download </a><a class="dropdown-item edit" data-abc="true">Edit</a>
-                           <div class="dropdown-divider"></div>
-                           <a class="dropdown-item trash" data-abc="true">Delete item</a>
-                        </div>
-                     </div>
-                  </div>
-               </div>
+                    </div>
+                </div>
             </div>
-         </div>
-        </div>     
-      </div>  
-   </div>
-</div>
+            <div class="d-flex mb-3">
+                <div class="col">
+                    <input type="text" class="form-control form-control-sm mb-2" id="searchFirstName" placeholder="Search First Name">
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control form-control-sm mb-2" id="searchLastName" placeholder="Search Last Name">
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control form-control-sm mb-2" id="searchUsername" placeholder="Search Username">
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control form-control-sm mb-2" id="searchEmail" placeholder="Search Email">
+                </div>
+                <div class="col-auto d-flex align-items-end" style="margin-bottom:10px">
+                    <button class="btn btn-secondary btn-sm" onclick="clearFilters()">Clear Filters</button>
+                </div>
+            </div>
+            <table id="userTable" class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr onclick="redirectToUserDetails('{{ user.username }}')">
+                        <td>{{ user.first_name }}</td>
+                        <td>{{ user.last_name }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No users found in the "deviseowner" group.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>                
+            
+        </div>
+    </div>
 
+    <script>
+
+    function redirectToUserDetails(uid) 
+    {
+        const url = `/user-details/${uid}/`;
+        window.location.href = url; // Redirect to the URL
+    }
+
+        // Function to search the table
+        function searchTable() {
+            let filterFirstName = document.getElementById("searchFirstName").value.toLowerCase();
+            let filterLastName = document.getElementById("searchLastName").value.toLowerCase();
+            let filterUsername = document.getElementById("searchUsername").value.toLowerCase();
+            let filterEmail = document.getElementById("searchEmail").value.toLowerCase();
+            
+            let table = document.getElementById("userTable");
+            let rows = table.getElementsByTagName("tr");
+    
+            // Loop through all rows and hide those that don't match the search query
+            for (let i = 1; i < rows.length; i++) {
+                let row = rows[i];
+                let cells = row.getElementsByTagName("td");
+    
+                let firstName = cells[0].textContent.toLowerCase();
+                let lastName = cells[1].textContent.toLowerCase();
+                let username = cells[2].textContent.toLowerCase();
+                let email = cells[3].textContent.toLowerCase();
+    
+                // Check if the row matches the filter values for each column
+                if (
+                    firstName.includes(filterFirstName) &&
+                    lastName.includes(filterLastName) &&
+                    username.includes(filterUsername) &&
+                    email.includes(filterEmail)
+                ) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            }
+        }
+    
+        // Bind search function to each input field to filter as you type
+        document.getElementById("searchFirstName").addEventListener("input", searchTable);
+        document.getElementById("searchLastName").addEventListener("input", searchTable);
+        document.getElementById("searchUsername").addEventListener("input", searchTable);
+        document.getElementById("searchEmail").addEventListener("input", searchTable);
+    
+        // Function to clear all filters
+        function clearFilters() {
+            // Clear the search input fields
+            document.getElementById("searchFirstName").value = '';
+            document.getElementById("searchLastName").value = '';
+            document.getElementById("searchUsername").value = '';
+            document.getElementById("searchEmail").value = '';
+    
+            // Show all rows again
+            let table = document.getElementById("userTable");
+            let rows = table.getElementsByTagName("tr");
+    
+            for (let i = 1; i < rows.length; i++) {
+                rows[i].style.display = "";
+            }
+        }
+    </script>
+    <style>
+	.table-wrapper {
+        background: #fff;
+        padding: 20px 25px;
+		border-radius: 3px;
+        box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    }
+	.table-title {        
+		padding-bottom: 15px;
+		color: #fff;
+		padding: 16px 30px;
+		margin: -20px -25px 10px;
+		border-radius: 3px 3px 0 0;
+    }
+    .table-title h2 {
+		margin: 5px 0 0;
+		font-size: 24px;
+	}
+	.table-title .btn-group {
+		float: right;
+	}
+	.table-title .btn {
+		color: #fff;
+		float: right;
+		font-size: 13px;
+		border: none;
+		min-width: 50px;
+		border-radius: 2px;
+		border: none;
+		outline: none !important;
+		margin-left: 10px;
+	}
+	.table-title .btn i {
+		float: left;
+		font-size: 21px;
+		margin-right: 5px;
+	}
+	.table-title .btn span {
+		float: left;
+		margin-top: 2px;
+	}
+    table.table tr th, table.table tr td {
+        border-color: #e9e9e9;
+		padding: 12px 15px;
+		vertical-align: middle;
+    }
+    
+	table.table tr th:last-child {
+		width: 100px;
+	}
+    table.table th i {
+        font-size: 13px;
+        margin: 0 5px;
+        cursor: pointer;
+    }	
+    table.table td:last-child i {
+		opacity: 0.9;
+		font-size: 22px;
+        margin: 0 5px;
+    }
+	table.table td a {
+		font-weight: bold;
+		color: #566787;
+		display: inline-block;
+		text-decoration: none;
+		outline: none !important;
+	}
+	table.table td a:hover {
+		color: #2196F3;
+	}
+	table.table td a.edit {
+        color: #FFC107;
+    }
+    table.table td a.delete {
+        color: #F44336;
+    }
+    table.table td i {
+        font-size: 19px;
+    }
+	table.table .avatar {
+		border-radius: 50%;
+		vertical-align: middle;
+		margin-right: 10px;
+	}
+    .pagination {
+        float: right;
+        margin: 0 0 5px;
+    }
+    .pagination li a {
+        border: none;
+        font-size: 13px;
+        min-width: 30px;
+        min-height: 30px;
+        color: #999;
+        margin: 0 2px;
+        line-height: 30px;
+        border-radius: 2px !important;
+        text-align: center;
+        padding: 0 6px;
+    }
+    .pagination li a:hover {
+        color: #666;
+    }	
+    .pagination li.active a, .pagination li.active a.page-link {
+        background: #03A9F4;
+    }
+    .pagination li.active a:hover {        
+        background: #0397d6;
+    }
+	.pagination li.disabled i {
+        color: #ccc;
+    }
+    .pagination li i {
+        font-size: 16px;
+        padding-top: 6px
+    }
+    .hint-text {
+        float: left;
+        margin-top: 10px;
+        font-size: 13px;
+    }  
+
+    tr:hover {
+      cursor: pointer; /* Show pointer cursor */
+    }
+	
+    </style>
+{% endblock %}

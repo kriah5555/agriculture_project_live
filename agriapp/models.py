@@ -1,10 +1,93 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
 from . import FertilizerCalculation as f
 
-CROP_LIST = f.get_crop_list()
+CROP_LIST      = f.get_crop_list()
+
+DEVICE_NAMES = {
+    'soilsaathi': 'SoiLENZ',
+    'atmo_sense': 'SoilSparsh',
+    'soil_life' : 'SoilLIFE'
+}
+
+DEVICE_CHOICES = list(DEVICE_NAMES.items())
+
+SOIL_SAATHI_FIELDS = {
+    'id'                   : 'ID',
+    'tag'                  : 'Tag',
+    # 'electrical_conduction': 'Electrical Conduction (dS/m)',
+    'nitrogen'             : 'Nitrogen(kg/ha)',
+    'phosphorous'          : 'P(kg/ha)',
+    'potassium'            : 'K(kg/ha)',
+    'calcium'              : 'Ca(meq/100g)',
+    'magnesium'            : 'Mg(meq/100g)',
+    'sulphur'              : 'S(ppm)',
+    'zinc'                 : 'Zn(ppm)',
+    'manganese'            : 'Mn(ppm)',
+    'iron'                 : 'Fe(ppm)',
+    'copper'               : 'Cu(ppm)',
+    'boron'                : 'B(ppm)',
+    # 'molybdenum'           : 'Molybdenum (ppm)',
+    # 'chlorine'             : 'Chlorine (ppm)',
+    # 'nickel'               : 'Nickel (ppm)',
+    # 'organic_carboa'       : 'Organic Carbon (%)',
+    'ph'                   : 'Ph(pH)',
+    'ec'                   : 'Ec(dS/m)',
+    'oc'                   : 'Oc(%)',
+    'crop_type'            : 'Crop Type',
+    'created_at'           : 'Requested At',
+    'latitude'             : 'Latitude',
+    'longitude'            : 'Longitude',
+}
+
+SOIL_SAATHI_FIELD_THRESHOLDS = {
+    'nitrogen'             : {'min': 280, 'max': 560},
+    'phosphorous'          : {'min': 22, 'max': 56},
+    'potassium'            : {'min': 141, 'max': 336},
+    'sulphur'              : {'min': 10, 'max': 20},
+    'zinc'                 : {'min': 0.6, 'max': 0.6},
+    'boron'                : {'min': 0.5, 'max': 0.5},
+    'calcium'              : {'min': 1.5, 'max': 1.5},
+    'magnesium'            : {'min': 1.0, 'max': 1.0},
+    'manganese'            : {'min': 5.0, 'max': 9.0},
+    'copper'               : {'min': 0.6, 'max': 1.0},
+    'iron'                 : {'min': 6.5, 'max': 10.5},
+    'organic_carboa'       : {'min': 0.5, 'max': 0.75},
+    'oc'                   : {'min': 0.5, 'max': 0.75},
+    'ph'                   : {'min': 6.5, 'max': 7.3},
+    'electrical_conduction': {'min': 1.0, 'max': 4.0},
+    'ec'                   : {'min': 1.0, 'max': 4.0}
+}
+
+ATMO_SENSE_FIELDS = {
+    'id'        : 'ID',
+    'tag'       : 'Tag',
+    'image_path': 'Image',
+    'field1'    : "Soil Temp (°C)",
+    'field2'    : "Soil Moisture (%)",
+    'field3'    : "Atmos Temp (°C)",
+    'field4'    : "Atmos Humidity (%)",
+    'field5'    : "Light Intensity (lux)",
+    'created_at': 'Requested At',
+}
+
+SOIL_LIFE_FIELDS = {
+    'id'        : 'ID',
+    'tag'       : 'Tag',
+    'image_path': 'Image',
+    'field1'    : "CO₂ (ppm)",
+    'field2'    : "Methane (ppm)",
+    'field3'    : "Ammonia (ppm)",
+    'field4'    : "Nitrous Oxide (ppm)",
+    'field5'    : "Soil Temperature (°C)",
+    'field6'    : "Soil Moisture (%)",
+    'field7'    : "Atmospheric Pressure (hPa)",
+    'created_at': 'Requested At',
+}
+
 class ContactDetails(models.Model):
     name       = models.CharField(max_length=255)
     phone      = models.CharField(max_length=255, unique=True)
@@ -32,6 +115,8 @@ class Devise(models.Model):
     balance_amount = models.FloatField(default=0)
     land           = models.FloatField(default=0.0)
     created_at     = models.DateTimeField(auto_now_add=True)
+    devise_type    = models.CharField(max_length=255, choices = DEVICE_CHOICES, default='soilsaathi')
+    user           = models.ForeignKey(User, on_delete=models.CASCADE, related_name='devices', null=True, blank=True)
 
     def __str__(self):
         return self.name + ' ' + self.devise_id
@@ -61,11 +146,48 @@ class DeviseApis(models.Model):
     ec                    = models.FloatField(default=0.0)
     oc                    = models.FloatField(default=0.0)
     crop_type             = models.CharField(max_length=255, choices = CROP_LIST)
+    tag                   = models.CharField( max_length=255, null=True, blank=True, default=None)
+    latitude              = models.FloatField(default=0.0)
+    longitude             = models.FloatField(default=0.0)
     created_at            = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.device.name + ' ' + self.area_name
+    class Meta:
+        ordering = ['-created_at']
 
+    def __str__(self):
+        return f"{self.device.devise_type}-{self.device.user.username}-{self.device.name}"
+
+class DeviseApisFields(models.Model):
+    device     = models.ForeignKey(to='Devise', on_delete=models.CASCADE)
+    tag        = models.CharField( max_length=255, null=True, blank=True, default=None)
+    image_path = models.CharField(max_length=255, null=True, blank=True)
+    field1     = models.FloatField(default=0.0) # Soil Temp
+    field2     = models.FloatField(default=0.0) # soil Moisture
+    field3     = models.FloatField(default=0.0) # Atmos Temp
+    field4     = models.FloatField(default=0.0) # Atmos Humidity
+    field5     = models.FloatField(default=0.0) # Light Intensity
+    field6     = models.FloatField(default=0.0)
+    field7     = models.FloatField(default=0.0)
+    field8     = models.FloatField(default=0.0)
+    field9     = models.FloatField(default=0.0)
+    field10    = models.FloatField(default=0.0)
+    field11    = models.FloatField(default=0.0)
+    field12    = models.FloatField(default=0.0)
+    field13    = models.FloatField(default=0.0)
+    field14    = models.FloatField(default=0.0)
+    field15    = models.FloatField(default=0.0)
+    field16    = models.FloatField(default=0.0)
+    field17    = models.FloatField(default=0.0)
+    field18    = models.FloatField(default=0.0)
+    field19    = models.FloatField(default=0.0)
+    crop_type = models.CharField(max_length=255, choices=CROP_LIST, null=True, blank=True, default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.device.devise_type}-{self.device.user.username}-{self.device.name}"
 
 class DeviseLocation(models.Model):
     devise     = models.ForeignKey(to='Devise', on_delete=models.CASCADE, unique=True)

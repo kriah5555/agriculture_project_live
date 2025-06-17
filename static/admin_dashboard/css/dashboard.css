@@ -1,0 +1,66 @@
+
+  
+  /* #sidebar.collapsed a:hover{
+    color: #ffff;
+  } */
+  
+  
+  /* #sidebar ul .active > a {
+    color: #ffff;
+  } */
+  
+  .card {
+    background-color: var(--card-bg-color);
+    border: none;
+    margin-bottom: 20px;
+    height: 100%;
+  }
+  
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .card-title {
+    color: var(--card-title-color);
+    margin-bottom: 1rem;
+    font-size: var(--font-size);
+  }
+  
+  .milk-info {
+    border-color: var(--card-title-color);
+  }
+  
+  .milk-info p {
+    margin-bottom: 5px;
+    color: var(--font-color);
+    font-size: var(--font-size);
+  }
+  
+  .milk-info h3 {
+    margin-bottom: 5px;
+    color: var(--font-color);
+    font-size: var(--font-size);
+  }
+  
+  .badge {
+    font-size: 0.8em;
+  }
+  
+  .account_style {
+    font-size: 24px;
+    padding: 15px;
+  }
+  
+  .info_card_text {
+    font-size: 2rem;
+    color: var(--card-title-color);
+  }
+  
+  .milk-info p {
+    color: var(--card-title-color);
+  }
+  
+
+  

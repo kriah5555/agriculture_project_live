@@ -1,0 +1,446 @@
+{% load static %}
+
+<header>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!------ Include the above in your HEAD tag ---------->
+    <link rel="stylesheet" href="{% static 'devise/devise_details1.css' %}">
+    <link rel="stylesheet" href="{% static '/home/css/popup.css' %}" type="text/css">
+    <link rel="stylesheet" href="{% static '/api_details/css/recomended.css' %}" type="text/css">
+    <script src="{% static '/home/js/popup.js' %}"></script>  
+    <script src="{% static '/api_details/js/recomended.js' %}"></script>  
+</header>
+
+<style>
+  body{
+    background-size: 100% 100%;background-image: url({% static 'dashboard/bg1.jpeg' %});
+        /* background: linear-gradient(to right, #fc00ff 0%, #00fffc 45%, #fffc00 100%); */
+        }
+
+</style>
+
+<!------ Include the above in your HEAD tag ---------->
+ <!-- navbar -->
+ <nav class="navbar fixed-top navbar-expand navbar-dark" style="background-color: #55779f;">
+     <div class="container-fluid">
+         <a class="navbar-brand" href="{% url 'dashboard' %}">
+             <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations</h3>
+         </a>
+             <ul class="navbar-nav ml-auto">
+              {% if request.user.is_staff %}
+              {% endif %}
+                  <li class="nav-item">
+                     <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                 </li>
+             </ul>
+     </div>
+ </nav>
+<!-- end navbar -->
+<h3 class="" style="margin-top: 100px;color: white;">{{devise_name}} in area {{api.areaname}}</h3>
+<!-- success message -->
+{% if messages %}
+{% for message in messages %}
+    <div class="alert alert-dismissible alert-success">
+    <!-- <button type="button" class="close" data-dismiss="alert">
+    ×
+    </button> -->
+    <strong>{{message}}</strong>
+    </div>
+{% endfor %}
+{% endif %}
+{% if request.user.is_staff %}
+<a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'api-edit' api.device.id %}" >Edit</a> 
+{% endif %}
+<a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#popup1">View NPK chart</a>
+<a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#popup2">View chart</a>
+<a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#recomended-crops">View Recomendation</a>
+<a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'download-api-response-pdf' api.pk %}" >Download PDF</a>
+<a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'download-api-response-csv' api.pk %}" >Download CSV</a>
+<a class="btn btn-primary btn-sm btn-icon-text" href="javascript:history.back()" >Back</a>
+<div class="row mt-2 m-1">
+  <div class="col-md-6">
+    <div class="card mb-4 mb-md-0" style="background: #a97e7e94; color: white;">
+      <div class="card-body">
+        <p class="mb-4"><span class="text-primary font-italic me-1">API</span> Parameters</p>
+        <hr> 
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">Devse id : {{api.devise_id}}</p>
+        <p class="mt-4 mb-1" style="font-size: .77rem;">Serial no : {{api.serial_no}}</p>
+        <p class="mt-4 mb-1" style="font-size: .77rem;">Crop name : {{api.crop_type}}</p>
+        <p class="mt-4 mb-1" style="font-size: .77rem;">API call at : {{api.created_at}}</p>
+        <p class="mt-4 mb-1" style="font-size: .77rem;">electrical_conduction {{api.electrical_conduction}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.electrical_conduction}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">nitrogen (N) {{api.nitrogen}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.nitrogen}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">phosphorous (P) {{api.phosphorous}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.phosphorous}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">potassium (K) {{api.potassium}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.potassium}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">Ph {{api.ph}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.organic_carboa}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">EC {{api.ec}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.organic_carboa}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">OC {{api.oc}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.organic_carboa}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">calcium {{api.calcium}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.calcium}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card mb-4 mb-md-0"  style="background: #a97e7e94; color: white;">
+      <div class="card-body">
+        
+        <p class="mt-4 mb-1" style="font-size: .77rem;">magnesium {{api.magnesium}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.magnesium}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        
+        <p class="mt-4 mb-1" style="font-size: .77rem;">sulphur {{api.sulphur}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.sulphur}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">zinc {{api.zinc}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.zinc}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">manganese {{api.manganese}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.manganese}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">iron {{api.iron}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.iron}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">copper {{api.copper}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.copper}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">boron {{api.boron}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.boron}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">molybdenum {{api.molybdenum}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.molybdenum}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">chlorine {{api.chlorine}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.chlorine}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">nickel {{api.nickel}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.nickel}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <p class="mt-4 mb-1" style="font-size: .77rem;">organic_carboa {{api.organic_carboa}}</p>
+        <div class="progress rounded" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" style="width: {{api.organic_carboa}}%" aria-valuenow="72"
+            aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% if dynamic_fields %}
+  <div class="row mt-2 m-1">
+    <div class="col-md-6">
+      <div class="card mb-4 mb-md-0" style="background: #a97e7e94; color: white;">
+        <div class="card-body">
+          <p class="mb-4"><span class="text-primary font-italic me-1">Dynamic</span> Fields</p>
+          <hr> 
+          {% for field_name, field_value in dynamic_fields.items  %}
+          <p class="mt-4 mb-1" style="font-size: .77rem;">{{field_name}} {{field_value}}</p>
+          <div class="progress rounded" style="height: 5px;">
+            <div class="progress-bar" role="progressbar" style="width: {{field_value}}%" aria-valuenow="72"
+              aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<!-- pichart -->
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
+<script>
+    $(document).ready(function() {
+        var ctx = $("#chart-line");
+        var myLineChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ["Nitrogen", "Phosphorous", "Potassium"],
+                datasets: [{
+                    data: [{{api.nitrogen}}, {{api.phosphorous}}, {{api.potassium}}],
+                    backgroundColor: ["rgba(255, 0, 0, 0.5)", "rgba(100, 255, 0, 0.5)", "rgba(200, 50, 255, 0.5)" ]
+                }]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: ''
+                }
+            }
+        });
+    });
+</script>
+<!-- pichart -->
+
+<!-- pichart1 -->
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
+<script>
+    $(document).ready(function() {
+        var ctx = $("#chart-line1");
+        var myLineChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: "{{fields}}".split(','),
+                datasets: [{
+                    data: "{{fields_data}}".split(','),
+                    backgroundColor : [
+                      "rgba(255, 0, 0, 0.5)", 
+                      "rgba(100, 255, 0, 0.5)", 
+                      "rgba(200, 50, 255, 0.5)", 
+                      "rgba(255, 0, 0, 0.5)", 
+                      "rgba(100, 255, 0, 0.5)", 
+                      "rgba(200, 50, 255, 0.5)", 
+                      "rgba(255, 0, 0, 0.5)", 
+                      "rgba(100, 255, 0, 0.5)", 
+                      "rgba(200, 50, 255, 0.5)",
+                      "rgba(255, 0, 0, 0.5)", 
+                      "rgba(100, 255, 0, 0.5)", 
+                      "rgba(200, 50, 255, 0.5)",
+                      "rgba(255, 0, 0, 0.5)", 
+                      "rgba(100, 255, 0, 0.5)", 
+                      "rgba(200, 50, 255, 0.5)",
+                      "rgba(255, 0, 0, 0.5)", 
+                      "rgba(100, 255, 0, 0.5)", 
+                      "rgba(200, 50, 255, 0.5)", 
+                      "rgba(220,  0,  0,  0.5)"
+                    ]
+                    // backgroundColor: "{{fields_data_colors}}".split(',')
+                }]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: ''
+                }
+            }
+        });
+    });
+</script>
+<!-- pichart -->
+
+<div id="popup1" class="overlay1">
+  <div class="popup" style="width: 70%;">
+      <center>
+        <a class="close" href="#">&times;</a>
+        <div class="page-content page-container mt-5" id="page-content">
+          <div class="padding">
+              <div class="row">
+                  <div class="container-fluid d-flex justify-content-center">
+                      <div class="col-sm-8 col-md-6">
+                          <div class="card">
+                              <div class="card-header" style="color: #4b2711;">NPK values</div>
+                              <div class="card-body" style="height: 420px">
+                                  <div class="chartjs-size-monitor" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
+                                      <div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                                          <div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div>
+                                      </div>
+                                      <div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                                          <div style="position:absolute;width:200%;height:200%;left:0; top:0"></div>
+                                      </div>
+                                  </div> <canvas id="chart-line" width="299" height="200" class="chartjs-render-monitor" style="display: block; width: 299px; height: 200px;"></canvas>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      </center>
+  </div>
+</div>
+
+<!-- end pie chart -->
+
+
+<!-- pichart1 -->
+
+<div id="popup2" class="overlay1">
+  <div class="popup" style="width: 70%;">
+      <center>
+        <a class="close" href="#">&times;</a>
+        <div class="page-content page-container mt-5" id="page-content">
+          <div class="padding">
+              <div class="row">
+                  <div class="container-fluid d-flex justify-content-center">
+                      <div class="col-sm-8 col-md-6">
+                          <div class="card">
+                              <div class="card-header" style="color: #4b2711;">Values</div>
+                              <div class="card-body" style="height: 420px">
+                                  <div class="chartjs-size-monitor" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
+                                      <div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                                          <div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div>
+                                      </div>
+                                      <div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                                          <div style="position:absolute;width:200%;height:200%;left:0; top:0"></div>
+                                      </div>
+                                  </div> <canvas id="chart-line1" width="299" height="200" class="chartjs-render-monitor" style="display: block; width: 299px; height: 200px;"></canvas>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      </center>
+  </div>
+</div>
+
+<!-- end pie chart -->
+
+<!-- recomanded crops -->
+<div id="recomended-crops" class="overlay1">
+  <div class="popup" style="width: 70%;">
+      <center>
+        <a class="close" href="#">&times;</a>
+        <section>
+          <!--for demo wrap-->
+          <h1>Recomendation</h1>
+          <div class="tbl-header" id="#body">
+            <table cellpadding="0" cellspacing="0" border="0">
+              <thead>
+                <tr>
+                  <th>The recommended doses of fertilizer are:</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+          <div class="tbl-content">
+            <table cellpadding="0" cellspacing="0" border="0">
+              <tbody>
+                {% for crop_fertilizer_data in crops_data.crop_fertilizer %}
+                  {% for crop_data in crop_fertilizer_data %}
+                    <tr>
+                      <td style="width:100px"></td>
+                      <td>{{crop_data}}</td>
+                    </tr>
+                  {% endfor %}
+                    <tr style="background-color:white">
+                      <td style="background-color:white"></td>
+                      <td style="background-color:white"></td>
+                    </tr>
+                {% endfor %}
+
+                <tr style="background-color:rgba(233, 21, 17, 0.88)">
+                  <td style="background-color:rgb(233, 21, 17, 0.88)"></td>
+                  <td style="background-color:rgb(233, 21, 17, 0.88)"><b> Remedy, Fertility, Fym and Target yield</b></td>
+                </tr>
+
+                {% for crop_fym_data in crops_data.fym %}
+                  {% for fym in crop_fym_data %}
+                    <tr>
+                      <td style="width:100px"></td>
+                      <td>{{fym}}</td>
+                    </tr>
+                  {% endfor %}
+                    <tr style="background-color:white">
+                      <td style="background-color:white"></td>
+                      <td style="background-color:white"></td>
+                    </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        
+   
+      </center>
+  </div>
+</div>
+<!-- end recomended croops -->
+
+<!-- 
+<div class="page-content page-container mt-5" id="page-content">
+  <div class="padding">
+      <div class="row">
+          <div class="container-fluid d-flex justify-content-center">
+              <div class="col-sm-8 col-md-6">
+                  <div class="card">
+                      <div class="card-header">Pie chart</div>
+                      <div class="card-body" style="height: 420px">
+                          <div class="chartjs-size-monitor" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
+                              <div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                                  <div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div>
+                              </div>
+                              <div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                                  <div style="position:absolute;width:200%;height:200%;left:0; top:0"></div>
+                              </div>
+                          </div> <canvas id="chart-line" width="299" height="200" class="chartjs-render-monitor" style="display: block; width: 299px; height: 200px;"></canvas>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</div> -->
+
+<!-- end pi chart -->

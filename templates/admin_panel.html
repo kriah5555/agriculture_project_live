@@ -1,0 +1,402 @@
+{% extends "navbar.html" %}
+{% load static %}
+
+
+{% block content %}
+
+<div class="container-fluid">
+  <!-- Info Cards -->
+  <div id="headInfoCards" class="d-flex flex-row justify-content-between flex-wrap mb-4">
+    <!-- Notifications Card -->
+    <a href="{% url 'notifications' %}" style="text-decoration: none; color: inherit; position: relative;">
+      <div class="card d-flex flex-row align-items-center p-3 me-3 mb-3 fixed-height">
+          <i class="fas fa-bell fa-2x text-primary me-3 position-relative"></i>
+  
+          
+          <div>
+            <!-- Red Dot for Active Notifications -->
+            {% if active_notification %}
+                <span class="notification-dot"></span>
+            {% endif %}
+              <h5 class="mb-1">Notifications</h5>
+          </div>
+      </div>
+    </a>
+  
+    <!-- Device Info Cards -->
+    <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit;">
+      <div class="card d-flex flex-row align-items-center p-3 me-3 mb-3 fixed-height">
+        <i class="fas fa-temperature-low fa-2x text-success me-3"></i>
+        <div>
+          <h5 class="mb-1">SoiLENZ</h5>
+          <p class="mb-0">{{ ss_api_counts }} times called</p>
+        </div>
+      </div>
+    </a>
+  
+    <a href="{% url 'atmos-sense-dashboard' %}" style="text-decoration: none; color: inherit;">
+      <div class="card d-flex flex-row align-items-center p-3 me-3 mb-3 fixed-height">
+        <i class="fas fa-wind fa-2x text-info me-3"></i>
+        <div>
+          <h5 class="mb-1">SoilSparsh</h5>
+          <p class="mb-0">{{ as_api_counts }} times called</p>
+        </div>
+      </div>
+    </a>
+  
+    <a href="{% url 'soil-life-dashboard' %}" style="text-decoration: none; color: inherit;">
+      <div class="card d-flex flex-row align-items-center p-3 me-3 mb-3 fixed-height">
+        <i class="fas fa-leaf fa-2x text-warning me-3"></i>
+        <div>
+          <h5 class="mb-1">SoiLIFE</h5>
+          <p class="mb-0">{{ sl_api_counts }} times called</p>
+        </div>
+      </div>
+    </a>
+  
+    <div class="card d-flex flex-row align-items-center p-3 mb-3 fixed-height">
+      <i class="fas fa-chart-line fa-2x text-danger me-3"></i>
+      <div>
+        <h5 class="mb-1">API Call Count</h5>
+        <p class="mb-0">{{ api_counts }} total calls</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart and Device Info -->
+  <div class="row">
+    <!-- API Calls Line Chart -->
+    <div id="graphCard" class="col-md-8 mb-4">
+      <div class="card p-3 w-100">
+        <div class="d-flex justify-content-end">
+          <select id="timeframeSelector" class="form-select form-select-sm mb-3 w-auto">
+            <option value="weekly">Weekly</option>
+            <option value="monthly" selected>Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </div>
+        <canvas id="apiCallsLineChart" style="background-color: white;"></canvas>
+      </div>
+    </div>
+
+    <!-- Donut Chart Container for Devices -->
+    <div id="devisesInfoCard" class="col-md-4 mb-4">
+      <div class="d-flex flex-column gap-3">
+        <!-- SoiLENZ Card with Donut Chart -->
+        <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit;">
+          <div class="donut-card d-flex flex-row align-items-center p-3">
+            <i class="fas fa-temperature-low fa-2x text-success me-3"></i>
+            <div class="d-flex flex-column align-items-center w-100">
+              <h5 class="mb-1">SoiLENZ</h5>
+              <canvas id="soilSaathiChart" width="100" height="100"></canvas>
+              <p class="mb-0">Sample Tested {{ ss_api_counts}}</p>
+            </div>
+          </div>
+        </a>
+
+        <!-- SoilSparsh Card with Donut Chart -->
+        <a href="{% url 'atmos-sense-dashboard' %}" style="text-decoration: none; color: inherit;">
+          <div class="donut-card d-flex flex-row align-items-center p-3">
+            <i class="fas fa-wind fa-2x text-info me-3"></i>
+            <div class="d-flex flex-column align-items-center w-100">
+              <h5 class="mb-1">SoilSparsh</h5>
+              <canvas id="atmoSenseChart" width="100" height="100"></canvas>
+              <p class="mb-0">Sample Tested {{ as_api_counts }}</p>
+            </div>
+          </div>
+        </a>
+
+        <!-- SoiLIFE Card with Donut Chart -->
+        <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit;">
+          <div class="donut-card d-flex flex-row align-items-center p-3">
+            <i class="fas fa-leaf fa-2x text-warning me-3"></i>
+            <div class="d-flex flex-column align-items-center w-100">
+              <h5 class="mb-1">SoiLIFE</h5>
+              <canvas id="soiLifeChart" width="100" height="100"></canvas>
+              <p class="mb-0">Sample Tested {{sl_api_counts}}</p>
+            </div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="row">
+    <div id="map" class="col-md-12 mb-12">
+      <div id="leaflet-map" style="height: 400px;"></div>
+    </div>
+  </div>
+
+</div>
+<!-- For chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Leaflet.js Script -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+<!-- Map script -->
+<script>
+  // Initialize the map
+  var map = L.map('leaflet-map').setView([20.5937, 78.9629], 5); // Center on India, for example
+
+  // Add a tile layer (OpenStreetMap)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  // Define device types and their colors
+  var deviceTypes = {
+    "soilsaathi": "#198754",
+    "atmo_sense": "#0dcaf0",
+    "soil_life" : "#ffc107"
+  };
+
+  const devices = JSON.parse(`{{ devises|escapejs }}`);
+
+  // Function to add markers for each device
+  devices.forEach(function(device) {
+    var color = deviceTypes[device.devise_type]; // Get color for the device type
+    L.circleMarker([device.latitude, device.longitude], {
+      radius: 8,
+      fillColor: color,
+      color: color,
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.6
+    }).addTo(map).bindPopup(device.name);
+  });
+</script>
+
+<!-- Chart script -->
+<script>
+  // Chart Data
+  const apiCallsData = {
+    labels: ['2021', '2022', '2023'], // X-axis: Years
+    datasets: [
+      {
+        label: 'SoiLENZ',
+        data: [5, 8, 9], // Year-wise API calls
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.4, // Smooth line
+        fill: false,
+      },
+      {
+        label: 'SoilSparsh',
+        data: [7, 10, 11],
+        borderColor: 'rgba(54, 162, 235, 1)',
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        tension: 0.4,
+        fill: false,
+      },
+      {
+        label: 'SoiLIFE',
+        data: [1, 3, 2],
+        borderColor: 'rgba(255, 206, 86, 1)',
+        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+        tension: 0.4,
+        fill: false,
+      },
+    ],
+  };
+
+  // Chart Configuration
+  const config = {
+    type: 'line', // Line chart
+    data: apiCallsData,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+        },
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Year',
+          },
+        },
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'API Calls',
+          },
+        },
+      },
+    },
+  };
+
+  // Render Chart
+  const ctx = document.getElementById('apiCallsLineChart').getContext('2d');
+  new Chart(ctx, config);
+</script>
+
+<!-- script for donut chart -->
+<script>
+  // Data for the charts: Total vs Used API Calls
+  var soilSaathiData = { total: 1000, used: {{ss_api_counts}} }; // Example data
+  var atmoSenseData = { total: 1000, used: {{as_api_counts}} };
+  var soiLifeData = { total: 1000, used: {{sl_api_counts}} };
+
+  // Donut Chart for SoiLENZ
+  var ctx1 = document.getElementById('soilSaathiChart').getContext('2d');
+  var soilSaathiChart = new Chart(ctx1, {
+    type: 'doughnut',
+    data: {
+      labels: ['Used', 'Reference samples'],
+      datasets: [{
+        data: [soilSaathiData.used, soilSaathiData.total - soilSaathiData.used],
+        backgroundColor: ['#007bff', '#d3d3d3'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      cutoutPercentage: 70, // Makes the chart a donut (adjust the percentage to change thickness)
+      plugins: {
+        legend: {
+          display: false // Hide the legend
+        },
+        tooltip: {
+          callbacks: {
+            label: function(tooltipItem) {
+              return tooltipItem.raw + ' Samples';
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Donut Chart for SoilSparsh
+  var ctx2 = document.getElementById('atmoSenseChart').getContext('2d');
+  var atmoSenseChart = new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+      labels: ['Used', 'Remaining'],
+      datasets: [{
+        data: [atmoSenseData.used, atmoSenseData.total - atmoSenseData.used],
+        backgroundColor: ['#17a2b8', '#d3d3d3'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      cutoutPercentage: 70, // Makes the chart a donut
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function(tooltipItem) {
+              return tooltipItem.raw + ' Samples';
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Donut Chart for SoiLIFE
+  var ctx3 = document.getElementById('soiLifeChart').getContext('2d');
+  var soiLifeChart = new Chart(ctx3, {
+    type: 'doughnut',
+    data: {
+      labels: ['Used', 'Remaining'],
+      datasets: [{
+        data: [soiLifeData.used, soiLifeData.total - soiLifeData.used],
+        backgroundColor: ['#ffc107', '#d3d3d3'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      cutoutPercentage: 70, // Makes the chart a donut
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function(tooltipItem) {
+              return tooltipItem.raw + ' Samples';
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
+
+<style>
+   #headInfoCards .card {
+    min-width: 250px;
+    flex: 1;
+    max-width: 300px; /* Limit width if required */
+  }
+
+  /* To add responsive behavior */
+  @media (max-width: 768px) {
+    #headInfoCards {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<style>
+  .fixed-height {
+    height: 100px; /* Adjust this value as needed */
+    display: flex;
+    align-items: center; /* Vertically center the content */
+    justify-content: flex-start; /* Align content to the left */
+  }
+
+  .fixed-height i {
+    font-size: 2rem; /* Adjust the icon size */
+  }
+
+  .fixed-height div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .fixed-height h5, .fixed-height p {
+    margin: 0;
+  }
+
+  .donut-card {
+    background-color: white; /* Ensure solid background */
+    border-radius: 8px; /* Optional: smooth the edges */
+    padding: 15px; /* Optional: adjust padding */
+  }
+
+  .donut-card canvas {
+    max-width: 150px;
+    max-height: 100px;
+    margin-bottom: 10px;
+  }
+
+  .donut-card i {
+    color: #333; /* Optional: adjust icon color for contrast */
+  } 
+
+  .notification-dot {
+    width: 12px;
+    height: 12px;
+    background-color: red;
+    border-radius: 50%;
+    position: absolute;
+    top: 54px;  /* Adjust as needed */
+    left: 37px; /* Adjust to position it on the bell */
+  }
+</style>
+{% endblock %}
+
+

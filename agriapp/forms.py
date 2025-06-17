@@ -24,4 +24,5 @@ class DeviseForm(forms.ModelForm):
             'amount_paid',
             'balance_amount',
             'land',
+            'devise_type',
             ]

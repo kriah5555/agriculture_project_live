@@ -1,115 +1,129 @@
+{% extends "navbar.html" %}
 {% load static %}
-<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="{% static 'notifications/notifications.js' %}"></script>
-<!------ Include the above in your HEAD tag ---------->
 
-<head>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
-    <link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons">
-</head>
- <style>
-  body {
-        background-size: 100% 100%;background-image: url({% static 'dashboard/bg1.jpeg' %});
-        color:white;
-    /* background: linear-gradient(40deg, #fc00ff 0%, #00fffc 45%, #fffc00 100%); */
-  }
- </style>
+{% block content %}
+<body style="background-color: #f8f9fa;">  <!-- Light gray background -->
 
-<body>
-    <!-- navbar -->
-<nav class="navbar fixed-top navbar-expand navbar-dark" style="background-color: #55779f;">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'dashboard' %}">
-            <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations</h3>
-        </a>
-            <ul class="navbar-nav ml-auto">
-                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-                </li>
-            </ul>
+    <div class="header">
+        <h2 class="bg-primary" style=" color:white; text-align: center; padding: 10px;"><i class="fa fa-bell"></i> Notifications</h2>
     </div>
-  </nav>
-  <!-- end navbar -->
-    <div class="container" style="margin-top: 100px;">
-        <div class="title">
-          <h3>Notifications</h3>
-        </div>
-    </div>
-    {% for active_notif in notification_active  %}
-        <div class="alert alert-info mx-5">
-            <div class="container">
-                <div class="alert-icon">
-                    <i class="material-icons">info_outline</i>
-                </div>
-                <form action="" method="POST">{% csrf_token %}</form>
-                <!-- <button type="button" class="close" data-dismiss="alert" aria-label="Close"> -->
-                    <a href="{% url 'notifications' active_notif.pk %}" title="Click to make it unread">
-                        <span aria-hidden="true"><i class="material-icons" style="float: right;">clear</i></span>
+
+  <div class="container mt-4">
+
+      <div class="row justify-content-center">
+          <!-- Left Column (Notification List & Filters) -->
+          <div class="col-md-4 p-3" style="background-color: white; height: 80vh; overflow-y: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+              <h5 class="text-center">📢 All Notifications</h5>
+
+              <!-- Filter Box -->
+              <div class="mb-3">
+                  <input type="text" id="filterPhone" class="form-control" placeholder="🔍 Filter by Phone" onkeyup="applyFilter()">
+              </div>
+              <div class="mb-3">
+                  <input type="text" id="filterEmail" class="form-control" placeholder="📧 Filter by Email" onkeyup="applyFilter()">
+              </div>
+
+              <!-- Notifications List -->
+              <div id="notificationsList">
+                    {% if notification_active %}
+                        <span>Unread notification</span>
+                    {% endif %}
+                  {% for notif in notification_active %}
+                  <div class="alert alert-info notification d-flex justify-content-between align-items-center" style="cursor: pointer;" 
+                       onclick="showDetails('{{ notif.pk }}', '{{ notif.name }}', '{{ notif.phone }}', '{{ notif.mail }}', '{{ notif.message }}', true)">
+                      <div>
+                          <b>{{ notif.name }}</b> | <span class="phone">{{ notif.phone }}</span> → <span class="email">{{ notif.mail }}</span>
+                      </div>
+                      <a class="btn btn-outline-success btn-sm mark-read" href="{% url 'notifications' notif.pk %}" class="btn btn-outline-success btn-sm" title="Mark as read">
+                        <i class="fa fa-check-circle"></i>
                     </a>
-                <!-- </button> -->
+                  </div>
+                  {% endfor %}
 
-                <b>{{ active_notif.name }}:</b> <b>{{ active_notif.phone }} </b> --> <b>{{ active_notif.mail }} :</b>  {{ active_notif.message }}
+                  {% if notification_inactive %}
+                        <span>Notification</span>
+                    {% endif %}
+                  {% for notif in notification_inactive %}
+                  <div class="alert alert-success notification" style="cursor: pointer;" 
+                       onclick="showDetails('{{ notif.pk }}', '{{ notif.name }}', '{{ notif.phone }}', '{{ notif.mail }}', '{{ notif.message }}', false)">
+                      <b>{{ notif.name }}</b> | <span class="phone">{{ notif.phone }}</span> → <span class="email">{{ notif.mail }}</span>
+                  </div>
+                  {% endfor %}
+              </div>
+          </div>
 
-            </div>
-        </div>
-    {% endfor %}
-    
-    {% for inactive_notif in notification_inactive  %}
-        <div class="alert alert-success  mx-5">
-            <div class="container">
-                <div class="alert-icon">
-                    <i class="material-icons">check</i>
-                </div>
-                <!-- <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true"><a href="#"><i class="material-icons">clear</i></a></span>
-                </button> -->
-                <b>{{ inactive_notif.name }}:</b> <b>{{ inactive_notif.phone }} </b> --> <b>{{ inactive_notif.mail }} :</b>  {{ inactive_notif.message }}
-            </div>
-        </div>
-    {% endfor %}
+          <!-- Right Column (Notification Details) -->
+          <div class="col-md-7 offset-md-1 p-3" style="background-color: white; height: 80  vh; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+              <h5 class="text-center">📩 Details</h5>
+              <div id="notificationDetails" class="p-3 text-center">
+                  <p class="text-muted">Click on a notification to view details here.</p>
+              </div>
+          </div>
+      </div>
+  </div>
 
-    <!-- <div class="alert alert-warning">
-         <div class="container">
-             <div class="alert-icon">
-                <i class="material-icons">warning</i>
-            </div>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true"><i class="material-icons">clear</i></span>
-            </button>
-             <b>Warning Alert:</b> Hey, it looks like you still have the "copyright ©  2015" in your footer. Please update it!
-        </div>
-    </div> -->
-    <!-- <div class="alert alert-danger">
-         <div class="container">
-             <div class="alert-icon">
-                <i class="material-icons">error_outline</i>
-            </div>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true"><i class="material-icons">clear</i></span>
-            </button>
-             <b>Error Alert:</b> Damn man! You screwed up the server this time. You should find a good excuse for your Boss...
-        </div>
-    </div> -->
-    <!-- <div class="alert alert-primary">
-        <div class="container">
-            <div class="alert-icon">
-                <i class="material-icons">update</i>
-            </div>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true"><i class="material-icons">clear</i></span>
-            </button>
-            <b>Primary Alert:</b> Good evening! You should upgrade your data today.
-        </div>
-    </div> -->
-    
-    <!-- <footer class="footer text-center ">
-        <p>Made with <a href="https://demos.creative-tim.com/material-kit/index.html" target="_blank">Material Kit</a> by Creative Tim</p>
-    </footer> -->
-    
-    <script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+<script>
+    function applyFilter() {
+        let phoneFilter = document.getElementById("filterPhone").value.toLowerCase();
+        let emailFilter = document.getElementById("filterEmail").value.toLowerCase();
+
+        document.querySelectorAll(".notification").forEach(notification => {
+            let phone = notification.querySelector(".phone").textContent.toLowerCase();
+            let email = notification.querySelector(".email").textContent.toLowerCase();
+            
+            if ((phone.includes(phoneFilter) || phoneFilter === "") && 
+                (email.includes(emailFilter) || emailFilter === "")) {
+                notification.style.display = "";
+            } else {
+                notification.style.display = "none";
+            }
+        });
+    }
+
+    function showDetails(id, name, phone, mail, message, isActive) {
+        let detailsHTML = `
+            <p><b>Name:</b> ${name}</p>
+            <p><b>Phone:</b> ${phone}</p>
+            <p><b>Email:</b> ${mail}</p>
+            <p><b>Message:</b> ${message}</p>`;
+
+        document.getElementById("notificationDetails").innerHTML = detailsHTML;
+    }
+
+    function markAsRead(event, notifId) {
+        event.stopPropagation(); // Prevent triggering the main click event
+        fetch(`/mark-as-read/${notifId}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCSRFToken() },
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload(); // Reload the page to update notifications
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    }
+
+    function getCSRFToken() {
+        return document.cookie.split('; ')
+            .find(row => row.startsWith('csrftoken='))
+            ?.split('=')[1];
+    }
+</script>
+
+<style>
+    .notification:hover {
+        background-color: #e9ecef;
+    }
+
+    .mark-read {
+        visibility: hidden;
+    }
+
+    .notification:hover .mark-read {
+        visibility: visible;
+    }
+</style>
 
 </body>
+{% endblock %}

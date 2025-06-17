@@ -1,0 +1,273 @@
+<!-- 🧪 NPK Comparison Popup -->
+<div id="npkPopupOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 20px; border-radius: 8px; width: 750px; position: relative; max-height: 80%; overflow: auto;">
+        <h3 style="margin-top: 0;">Nutrient Comparison Over Time</h3>
+
+        <!-- Filters -->
+        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+            <div id="nutrientCheckboxes" style="flex: 1; overflow-y: auto; max-height: 200px;"></div>
+            <div style="flex: 1;">
+                <label for="monthSelector">Select Months</label>
+                <select id="monthSelector" multiple class="form-select" style="height: 150px;"></select>
+            </div>
+            <!-- Tag Filter -->
+            <div style="flex: 1;">
+                <label for="tagFilter">Filter by Tags</label>
+                <select id="tagFilter" multiple class="form-select" style="height: 150px;"></select>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <canvas id="npkComparisonChart" width="700" height="350"></canvas>
+
+        <!-- Close Button -->
+        <button onclick="closeNpkPopup()" style="position: absolute; top: 10px; right: 15px;">✖</button>
+    </div>
+</div>
+
+<!-- 🧩 Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+
+<script>
+    // const SOIL_SAATHI_FIELDS_BAR_CHART = {
+    //     nitrogen      : 'Nitrogen',
+    //     phosphorous   : 'Phosphorous',
+    //     potassium     : 'Potassium',
+    //     calcium       : 'Calcium',
+    //     magnesium     : 'Magnesium',
+    //     sulphur       : 'Sulphur',
+    //     zinc          : 'Zinc',
+    //     manganese     : 'Manganese',
+    //     iron          : 'Iron',
+    //     copper        : 'Copper',
+    //     boron         : 'Boron',
+    //     molybdenum    : 'Molybdenum',
+    //     chlorine      : 'Chlorine',
+    //     nickel        : 'Nickel',
+    //     organic_carboa: 'Organic Carbon',
+    //     ph            : 'pH',
+    //     ec            : 'EC',
+    //     oc            : 'OC'
+    // };
+
+    let SOIL_SAATHI_FIELDS_BAR_CHART = {};
+
+
+    let npkBarChartInstance   = null;
+    let LineChartMonthChoices = null;
+    let TagFilterChoices      = null;
+
+    function generateNutrientCheckboxes() 
+    {
+        const container = document.getElementById("nutrientCheckboxes");
+        container.innerHTML = "";
+
+        const excludeKeys = [
+            'id',
+            'tag',
+            'crop_type',
+            'created_at',
+            'latitude',
+            'longitude',
+            'image_path'
+        ];
+
+        Object.entries(SOIL_SAATHI_FIELDS_BAR_CHART).forEach(([key, label]) => {
+            if (excludeKeys.includes(key)) return;  // Skip unwanted keys
+
+            const el = document.createElement("label");
+            el.innerHTML = `<input type="checkbox" value="${key}" /> ${label}`;
+            container.appendChild(el);
+            container.appendChild(document.createElement("br"));
+        });
+    }
+
+    async function showNpkPopup(devise_id = null) 
+    {
+        
+        let { data, tags, headers} = devise_id ? await fetchDeviseApiData(devise_id) : mockNpkData;
+        SOIL_SAATHI_FIELDS_BAR_CHART = headers
+        
+        generateNutrientCheckboxes();
+        npkData          = data;
+        
+        document.getElementById('npkPopupOverlay').style.display = 'flex';
+
+        const monthSelector     = document.getElementById("monthSelector");
+        monthSelector.innerHTML = "";
+
+        Object.keys(npkData).forEach(month => {
+            const option             = document.createElement("option");
+                  option.value       = month;
+                  option.textContent = month;
+            monthSelector.appendChild(option);
+        });
+
+        // if (!LineChartMonthChoices) {
+        //     LineChartMonthChoices = new Choices("#monthSelector", {
+        //         removeItemButton: true,
+        //         placeholderValue: "Select months",
+        //         shouldSort: false
+        //     });
+        // }
+
+        if (LineChartMonthChoices) {
+            LineChartMonthChoices.destroy();
+        }
+        LineChartMonthChoices = new Choices("#monthSelector", {
+            removeItemButton: true,
+            placeholderValue: "Select months",
+            shouldSort: false
+        });
+
+
+        const tagFilter      = document.getElementById("tagFilter");
+        tagFilter.innerHTML  = "";
+        const sampleTags     = tags || [];
+
+        sampleTags.forEach(tag => {
+            const option = document.createElement("option");
+            option.value = tag;
+            option.textContent = tag;
+            tagFilter.appendChild(option);
+        });
+
+        // if (!TagFilterChoices) {
+        //     TagFilterChoices = new Choices("#tagFilter", {
+        //         removeItemButton: true,
+        //         placeholderValue: "Select or type tags",
+        //         shouldSort: false
+        //     });
+
+        //     document.getElementById("tagFilter").addEventListener("change", () => updateNpkChart(npkData));
+        // }
+
+        if (TagFilterChoices) {
+            TagFilterChoices.destroy();
+        }
+        TagFilterChoices = new Choices("#tagFilter", {
+            removeItemButton: true,
+            placeholderValue: "Select or type tags",
+            shouldSort: false
+        });
+
+        document.getElementById("tagFilter").addEventListener("change", () => updateNpkChart(npkData));
+
+
+        document.getElementById("nutrientCheckboxes").addEventListener("change", () => updateNpkChart(npkData));
+        monthSelector.addEventListener("change", () => updateNpkChart(npkData));
+
+        updateNpkChart(npkData);
+    }
+
+    function updateNpkChart(npkData) 
+    {
+        const selectedNutrients = [...document.querySelectorAll('#nutrientCheckboxes input:checked')].map(cb => cb.value);
+        const selectedMonths    = LineChartMonthChoices ? LineChartMonthChoices.getValue(true) : [];
+        const selectedTags      = TagFilterChoices ? TagFilterChoices.getValue(true) : [];
+        // const selectedTags      = tagFilter && tagFilter.choices ? tagFilter.choices.filter(c => c.selected).map(c => c.value) : [];
+
+        if (!selectedNutrients.length || !selectedMonths.length) return;
+
+        const labels          = [];
+        const nutrientDataMap = {};
+        selectedNutrients.forEach(nutrient => nutrientDataMap[nutrient] = []);
+
+        selectedMonths.forEach(month => {
+            const entries = npkData[month] || [];
+
+            entries.forEach((entry, idx) => {
+                if (selectedTags.length > 0 && (!entry.tag || !selectedTags.includes(entry.tag))) {
+                    return; // skip this entry
+                }
+
+                labels.push(`${month} #${idx + 1}`);
+                selectedNutrients.forEach(nutrient => {
+                    nutrientDataMap[nutrient].push(entry[nutrient]);
+                });
+            });
+        });
+
+        const colors = ["#4caf50", "#2196f3", "#ff9800", "#e91e63", "#9c27b0", "#607d8b", "#3f51b5", "#f44336", "#00bcd4"];
+        const datasets = selectedNutrients.map((nutrient, idx) => ({
+            label          : SOIL_SAATHI_FIELDS_BAR_CHART[nutrient] || nutrient,
+            data           : nutrientDataMap[nutrient],
+            backgroundColor: colors[idx % colors.length],
+            borderColor    : colors[idx % colors.length],
+            fill           : false,
+            tension        : 0.3
+        }));
+
+        const ctx = document.getElementById("npkComparisonChart").getContext("2d");
+        if (npkBarChartInstance) npkBarChartInstance.destroy();
+
+        npkBarChartInstance = new Chart(ctx, {
+            type: "line",
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: "bottom" },
+                    tooltip: { mode: "index", intersect: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "Nutrient Value"
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: "Month & Sample"
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+
+    function closeNpkPopup() 
+    {
+        document.getElementById("npkPopupOverlay").style.display = "none";
+        if (npkBarChartInstance) {
+            npkBarChartInstance.destroy();
+            npkBarChartInstance = null;
+        }
+    }
+
+    async function fetchDeviseApiData(id) 
+    {
+        try {
+            const url      = `${window.location.origin}/devise-api-calls-chart/${id}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            const excludeFields = ['id', 'tag', 'crop_type', 'created_at', 'latitude', 'longitude'];
+
+            SOIL_SAATHI_FIELDS_BAR_CHART = Object.fromEntries(
+                Object.entries(data.headers || {}).filter(([key]) => !excludeFields.includes(key))
+            );
+            return {data: data.data, tags: data.tags, headers: data.headers};
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            return {};
+        }
+    }
+
+    // 🔬 Mock fallback data
+    const mockNpkData = {
+        "Jan-2024": [
+            { nitrogen: 45, phosphorous: 30, potassium: 25, calcium: 12, magnesium: 10, sulphur: 5, zinc: 2, manganese: 3, iron: 1, copper: 0.5, boron: 0.8, molybdenum: 0.4, chlorine: 0.7, nickel: 0.3, organic_carboa: 1.5, ph: 6.5, ec: 1.2, oc: 1.0 },
+            { nitrogen: 50, phosphorous: 32, potassium: 28, calcium: 13, magnesium: 11, sulphur: 5.5, zinc: 2.1, manganese: 3.1, iron: 1.1, copper: 0.6, boron: 0.9, molybdenum: 0.5, chlorine: 0.8, nickel: 0.4, organic_carboa: 1.6, ph: 6.6, ec: 1.3, oc: 1.1 }
+        ],
+        "Feb-2024": [
+            { nitrogen: 55, phosphorous: 29, potassium: 26, calcium: 14, magnesium: 11.2, sulphur: 6, zinc: 2.3, manganese: 3.2, iron: 1.2, copper: 0.7, boron: 1.0, molybdenum: 0.6, chlorine: 0.9, nickel: 0.5, organic_carboa: 1.7, ph: 6.7, ec: 1.4, oc: 1.3 }
+        ]
+    };
+</script>
