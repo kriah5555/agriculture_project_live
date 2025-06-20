@@ -10135,8 +10135,8 @@ body.modal-open {
 
 .testimonial-img-side img {
     width: 90%;
-    max-width: 320px;
-    height: 180px;
+    max-width: 100%;
+    height: 100%;
     object-fit: cover;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     margin-left: 0;
