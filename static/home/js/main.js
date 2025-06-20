@@ -1,15 +1,43 @@
 (function ($) {
     "use strict";
 
+/*
     // Navbar on scrolling
+let hideNavbarTimeout;
+
+$(window).scroll(function () {
+    if ($(this).scrollTop() > 50) {
+        clearTimeout(hideNavbarTimeout); // cancel any pending hide
+        $('.navbar').css('display', 'flex').removeClass('hide-navbar');
+    } else {
+        $('.navbar').addClass('hide-navbar');
+        hideNavbarTimeout = setTimeout(() => {
+            $('.navbar').css('display', 'none');
+        }, 300); // match transition duration
+    }
+});
+
+    // Portfolio isotope and filter
+    var portfolioIsotope = $('.portfolio-container').isotope({
+        itemSelector: '.portfolio-item',
+        layoutMode: 'fitRows'
+    });
+    $('#portfolio-flters li').on('click', function () {
+        $("#portfolio-flters li").removeClass('active');
+        $(this).addClass('active');
+
+        portfolioIsotope.isotope({filter: $(this).data('filter')});
+    });
+ */
+
+    // Scroll to Bottom
     $(window).scroll(function () {
-        if ($(this).scrollTop() > 200) {
-            $('.navbar').fadeIn('slow').css('display', 'flex');
+        if ($(this).scrollTop() > 100) {
+            $('.scroll-to-bottom').fadeOut('slow');
         } else {
-            $('.navbar').fadeOut('slow').css('display', 'none');
+            $('.scroll-to-bottom').fadeIn('slow');
         }
     });
-
 
     // Smooth scrolling on the navbar links
     $(".navbar-nav a, .btn-scroll").on('click', function (event) {
@@ -27,30 +55,6 @@
         }
     });
 
-
-    // Scroll to Bottom
-    $(window).scroll(function () {
-        if ($(this).scrollTop() > 100) {
-            $('.scroll-to-bottom').fadeOut('slow');
-        } else {
-            $('.scroll-to-bottom').fadeIn('slow');
-        }
-    });
-
-
-    // Portfolio isotope and filter
-    var portfolioIsotope = $('.portfolio-container').isotope({
-        itemSelector: '.portfolio-item',
-        layoutMode: 'fitRows'
-    });
-    $('#portfolio-flters li').on('click', function () {
-        $("#portfolio-flters li").removeClass('active');
-        $(this).addClass('active');
-
-        portfolioIsotope.isotope({filter: $(this).data('filter')});
-    });
-    
-    
     // Back to top button
     $(window).scroll(function () {
         if ($(this).scrollTop() > 200) {

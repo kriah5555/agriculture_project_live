@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'devise_apis',
     # 'rest_framework.authtoken',
+    'predicter'
 ]
 
 MIDDLEWARE = [
@@ -78,25 +79,25 @@ WSGI_APPLICATION = 'agriculture_project_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#        'NAME': 'myproject1',
+#                'USER': 'myprojectuser',
+#                'PASSWORD': 'password',
+#                'HOST': 'localhost',
+#                'PORT': '',
+#    }
+#}
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'myproject1',
-                'USER': 'myprojectuser',
-                'PASSWORD': 'password',
-                'HOST': 'localhost',
-                'PORT': '',
-    }
+     'default': {
+         'ENGINE': 'django.db.backends.sqlite3',
+         'NAME': BASE_DIR / 'db.sqlite3',
+     }
 }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-# fro authentication
+# for authentication
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (
 #         'knox.auth.TokenAuthentication',

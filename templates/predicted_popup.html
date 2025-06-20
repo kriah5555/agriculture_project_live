@@ -1,0 +1,16 @@
+{% block content %}
+<div id="predictionModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3>Predicted Crop Recommendation</h3>
+    <p><strong>Recommended Crop:</strong> {{ recommendation }}</p>
+    <hr>
+    <h4>Input Used:</h4>
+    <ul>
+      {% for key, val in soil_nutrients.items %}
+        <li>{{ key|title }}: {{ val.0 }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

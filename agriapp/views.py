@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect # redirect to direct url redirect(to)
 from django.contrib import auth
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .forms import ContactForm, DeviseForm
 from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES
@@ -20,7 +20,7 @@ from .import FertilizerCalculation
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 
 from django.urls import reverse_lazy
 from django import forms
@@ -30,6 +30,13 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+import matplotlib.pyplot as plt
+import numpy as np
+import io
+import os
+from matplotlib.backends.backend_agg import FigureCanvas
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
 
 from .serializers import APICountThresholdSerializer 
 import pytz
