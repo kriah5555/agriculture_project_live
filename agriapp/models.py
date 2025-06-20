@@ -18,7 +18,7 @@ DEVICE_CHOICES = list(DEVICE_NAMES.items())
 SOIL_SAATHI_FIELDS = {
     'id'                   : 'ID',
     'tag'                  : 'Tag',
-    # 'electrical_conduction': 'Electrical Conduction (dS/m)',
+    #'electrical_conduction': 'Electrical Conduction (dS/m)',
     'nitrogen'             : 'Nitrogen(kg/ha)',
     'phosphorous'          : 'P(kg/ha)',
     'potassium'            : 'K(kg/ha)',
@@ -41,6 +41,7 @@ SOIL_SAATHI_FIELDS = {
     'created_at'           : 'Requested At',
     'latitude'             : 'Latitude',
     'longitude'            : 'Longitude',
+    'recommendation'       : 'Show Recommendations'
 }
 
 SOIL_SAATHI_FIELD_THRESHOLDS = {
@@ -150,6 +151,7 @@ class DeviseApis(models.Model):
     latitude              = models.FloatField(default=0.0)
     longitude             = models.FloatField(default=0.0)
     created_at            = models.DateTimeField(auto_now_add=True)
+    recommendation        = models.CharField(max_length=50, default='click to view')
 
     class Meta:
         ordering = ['-created_at']

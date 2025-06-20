@@ -3026,6 +3026,7 @@ input[type="button"].btn-block {
   position: absolute;
   top: 100%;
   left: 0;
+  right: 32px;
   z-index: 1000;
   display: none;
   float: left;
@@ -4034,16 +4035,18 @@ input[type="button"].btn-block {
 
 .navbar-nav {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   padding-left: 0;
   margin-bottom: 0;
   list-style: none;
+  align-items: center;
 }
 
 .navbar-nav .nav-link {
-  padding: 0.5rem 1.5rem;
-  padding-right: 0;
-  padding-left: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0.5rem 1rem;  
 }
 
 .navbar-nav .dropdown-menu {
@@ -6166,7 +6169,7 @@ button.bg-light:focus {
 }
 
 .bg-dark {
-  background-color: #ffffff !important;
+  background-color: #000000 !important;
 }
 
 a.bg-dark:hover, a.bg-dark:focus,
@@ -9421,9 +9424,7 @@ a.text-dark:hover, a.text-dark:focus {
   .container {
     min-width: 992px !important;
   }
-  .navbar {
-    display: none;
-  }
+
   .badge {
     border: 2px solid #000;
   }
@@ -9513,18 +9514,17 @@ h4, h5, h6 {
   }
 }
 
-.navbar-dark {
-  display: none;
-}
+
 
 .navbar-dark .navbar-nav .nav-link {
-  padding: 25px 10px;
-  color: #000000;
+  padding: 25px 10px;         /* smaller vertical padding */
+  color: #fff;
   letter-spacing: 1px;
   text-transform: uppercase;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 400;
   outline: none;
+  height: 1.5cm;
 }
 
 .navbar-dark .navbar-nav .nav-link:hover,
@@ -9675,7 +9675,7 @@ h4, h5, h6 {
 .marquee--8 {
   --marquee-item-width: 150px;
   --marquee-item-height: 150px;
-  --marquee-duration: 60s; /* Adjust this duration as needed */
+  --marquee-duration: 10s; /* Adjust this duration as needed */
   --marquee-items: 8;
   width: 100%;
 }
@@ -9837,7 +9837,7 @@ h4, h5, h6 {
 .marquee--8 {
   --marquee-item-width: 150px;
   --marquee-item-height: 150px;
-  --marquee-duration: 60s; /* Adjust this duration as needed */
+  --marquee-duration: 10s; /* Adjust this duration as needed */
   --marquee-items: 8;
   width: 100%;
 }
@@ -9908,7 +9908,8 @@ h4, h5, h6 {
   }
 }
 
-
+.marquee:hover .marquee__item {
+  animation-play-state: paused;}
 
     .team-member {
         display: flex; /* Flexbox layout to align items horizontally */
@@ -10034,3 +10035,262 @@ h4, h5, h6 {
   display: block; /* Ensure image is displayed as a block element */
 }
 
+
+/* Hide scrollbar on body when modal is open */
+body.modal-open .modal-content {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+body.modal-open .modal-content::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Webkit */
+}
+
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+}
+
+/* Align menu icon vertically with navbar links */
+.menu-icon-align {
+  position: relative;
+}
+
+/* Remove nav buttons for testimonial carousel */
+.testimonial-carousel .owl-nav {
+    display: none !important;
+}
+
+
+/* Side-by-side testimonial layout */
+.testimonial-img-side {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.testimonial-text-side {
+    flex: 1;
+    font-size: 1.1rem;
+    margin-right: 1rem;
+}
+
+.testimonial-name {
+    font-weight: bold;
+    margin-top: 1rem;
+}
+
+.testimonial-profession {
+    display: block;
+    color: #888;
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+}
+
+
+/* Testimonial side-by-side layout fix */
+
+.testimonial-author {
+    text-align: center;
+}
+
+.testimonial-row {
+    width: 100%;
+    min-height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 2rem 0;
+}
+
+.testimonial-text-side {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 50%;
+    min-width: 0;
+    height: 220%;
+    text-align: right;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.testimonial-text-inner {
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: 0;
+    text-align: left;    
+}
+
+.testimonial-img-side {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 50%;
+    min-width: 0;
+    height: 100%;
+}
+
+.testimonial-img-side img {
+    width: 90%;
+    max-width: 320px;
+    height: 180px;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-left: 0;
+    margin-right: auto;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .testimonial-row {
+        flex-direction: column;
+        min-height: unset;
+    }
+    .testimonial-text-side,
+    .testimonial-img-side {
+        width: 100% !important;
+        justify-content: center;
+        align-items: center;
+    }
+    .testimonial-img-side img {
+        width: 80vw;
+        max-width: 95vw;
+        height: 140px;
+        margin: 0 auto 16px auto;
+    }
+    .testimonial-text-inner {
+        max-width: 95vw;
+        margin: 0 auto;
+        text-align: center;
+    }
+}
+
+/* # Override: */
+/* Navbar color transition override has been written here */
+/*
+Initial navbar color black after scrolldown white
+When navbar color white when scroll up navbar color balck
+*/
+/* Initial state: black background, white text */
+/*
+.my-navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1030;
+    background-color: black !important;
+    transition: opacity 0.3s ease;
+}
+
+.navbar.hide-navbar {
+    opacity: 0;
+    pointer-events: none;
+}
+*/
+/* White text by default */
+/*
+.my-navbar .nav-link,
+.my-navbar .navbar-brand,
+.my-navbar .dropdown-item {
+    color: #ffffff !important;
+    transition: color 0.3s ease;
+}
+*/
+/* When scrolled: white bg, black text */
+/*
+.my-navbar.navbar-scrolled {
+    background-color: white !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+*/
+/*
+.my-navbar.navbar-scrolled .nav-link,
+.my-navbar.navbar-scrolled .navbar-brand,
+.my-navbar.navbar-scrolled .dropdown-item {
+    color: #000000 !important;
+}
+*/
+/* Hover color only on hover */
+/*
+.my-navbar.navbar-scrolled .nav-link:hover,
+.my-navbar.navbar-scrolled .dropdown-item:hover {
+    color: #333333 !important;
+}
+    */
+/* Navbar transistion OVERRIDE END */
+/*-----------------------------------------------------------------*/
+
+/* Navbar always white OVERRIDE */
+
+/* Always white background, black text */
+.my-navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1030;
+    background-color: white !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hide behavior (if used elsewhere) */
+.navbar.hide-navbar {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Always black text */
+.my-navbar .nav-link,
+.my-navbar .navbar-brand,
+.my-navbar .dropdown-item {
+    color: #000000 !important;
+    transition: color 0.3s ease;
+}
+
+/* Optional: Slightly darker text on hover */
+.my-navbar .nav-link:hover,
+.my-navbar .dropdown-item:hover {
+    color: #333333 !important;
+}
+
+/* Base style - always black text */
+.my-navbar .nav-link,
+.my-navbar .navbar-brand,
+.my-navbar .dropdown-item {
+    color: #000000 !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 5px;
+}
+
+/* Hover effect - change background and optionally text color */
+.my-navbar .nav-link:hover,
+.my-navbar .dropdown-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);  /* light grey highlight */
+    color: #000000 !important;  /* Keep text black or adjust */
+}
+
+/* Navbar always white OVERRIDE END */
+
+/* # Override: */
+/* NAVBAR'S menu dropdown OVERRIDE has been written here */
+    .navbar .dropdown-menu {
+        background-color: #ffffff !important; 
+        color: #000000 !important;             
+        border: 1px solid #ddd !important;
+    }
+
+    .navbar .dropdown-menu .dropdown-item {
+        color: #000000 !important;             
+        font-weight: 500;
+    }
+
+    .navbar .dropdown-menu .dropdown-item:hover,
+    .navbar .dropdown-menu .dropdown-item:focus {
+        background-color: #f1f1f1 !important;   
+        color: #000000 !important;
+    }
+/* NAVBAR'S menu dropdown OVERRIDE ENDS */
