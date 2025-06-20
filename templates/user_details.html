@@ -441,7 +441,7 @@
             document.getElementById('device-name').textContent = 'Device not found';
             document.getElementById('device-info').innerHTML = '';
         }
-    }
+}
 
     async function fetchData(id) {
     try {
@@ -480,8 +480,8 @@
                 }
                 else if (headerKey === 'recommendation') {
 rowContent += `<td class='no-redirect-cell'>
-    <button class="btn btn-sm btn-outline-primary predict-btn" data-api-id="${api.id}">
-        click to view!
+    <button class="btn btn-sm predict-btn" data-api-id="${api.id}" style="background-color:rgb(31, 139, 255); color: #ffffff; border-radius: 0; height:30px; width: 95px;">
+        click to view
     </button></td>`;
                 }
                 else {
@@ -494,6 +494,7 @@ row.style.cursor = "pointer";  // Changes the cursor to pointer when hovering ov
 
 // Don't redirect when recommendation cell is clicked, Only redirect when the "click to view" button is clicked
 
+/*
 row.addEventListener("click", function (event) {
     const td = event.target.closest('.no-redirect-cell');
     const isButton = event.target.classList.contains('predict-btn');
@@ -508,7 +509,8 @@ row.addEventListener("click", function (event) {
                 msg.style.color = 'red';
                 msg.style.marginTop = '5px';
                 msg.style.fontStyle = 'italic';
-                msg.textContent = 'Please click on the button';
+                msg.style.size = '10px';
+                msg.textContent = 'click on the button';
                 td.appendChild(msg);
 
                 // Optional: remove after 3 seconds
@@ -524,8 +526,8 @@ row.addEventListener("click", function (event) {
     // Outside of no-redirect-cell: allow row redirect
     redirectToEdit(api.id);
 });
+*/
 
-/*
 row.addEventListener("click", function (event) {
     // If click happened inside a cell that should not trigger redirect
     if (event.target.closest('.no-redirect-cell')) {
@@ -534,9 +536,8 @@ row.addEventListener("click", function (event) {
 
     redirectToEdit(api.id);
 });
-*/
-// When the row is clicked, trigger redirectToEdit
 /*
+// When the row is clicked, trigger redirectToEdit
 row.addEventListener("click", (event) => {
     if (event.target.classList.contains('predict-btn')) {
         // Let the .predict-btn handler handle it
