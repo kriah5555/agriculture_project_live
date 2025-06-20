@@ -10,7 +10,22 @@ Once the project is cloned, navigate to the project directory:
 cd agriculture_project_backend
 Install all the required packages using the requirements.txt file located in the root of the repository:
 
-pip install -r requirments.txt
+pip install -r requirements.txt
+
+OR
+
+Run install_deps.sh to automate the process (recommended).
+This script checks for and installs required system dependencies needed by some Python packages (e.g., psycopg2):
+This script will also install all the packages from requirements.txt
+
+bash:(running below command in the shell will start the script)
+
+sh install_deps.sh
+
+OR
+
+./install_deps.sh
+
 Step 3: Set Up the Database
 
 To set up the database, run the following commands:
