@@ -5,63 +5,70 @@
 {% block content %}
 
 <div class="container-fluid">
-  <!-- Info Cards -->
-  <div id="headInfoCards" class="d-flex flex-row justify-content-between flex-wrap mb-4">
+  <!-- Info Cards: Single Row -->
+  <div id="headInfoCards" class="d-flex flex-row justify-content-between flex-nowrap mb-4 gap-3" style="max-width: 330px;">
     <!-- Notifications Card -->
-    <a href="{% url 'notifications' %}" style="text-decoration: none; color: inherit; position: relative;">
-      <div class="card d-flex flex-row align-items-center p-3 me-3 mb-3 fixed-height">
-          <i class="fas fa-bell fa-2x text-primary me-3 position-relative"></i>
-  
-          
-          <div>
-            <!-- Red Dot for Active Notifications -->
-            {% if active_notification %}
-                <span class="notification-dot"></span>
-            {% endif %}
-              <h5 class="mb-1">Notifications</h5>
-          </div>
+    <a href="{% url 'notifications' %}" style="text-decoration: none; color: inherit;">
+      <div class="card d-flex flex-row align-items-center p-2" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 0;">
+      <div class="position-relative me-2" style="width: 24px; height: 24px;">
+      <i class="fas fa-bell text-primary" style="font-size: 1.1rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
+      {% if active_notification %}
+      <span class="notification-dot" style="position: absolute; top: 2px; right: 2px;"></span>
+      {% endif %}
+      </div>
+      <div>
+      <h5 class="mb-1" style="font-size: 0.9rem;">Notifications</h5>
+      </div>
       </div>
     </a>
-  
+
     <!-- Device Info Cards -->
     <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit;">
-      <div class="card d-flex flex-row align-items-center p-3 me-3 mb-3 fixed-height">
-        <i class="fas fa-temperature-low fa-2x text-success me-3"></i>
-        <div>
-          <h5 class="mb-1">SoiLENZ</h5>
-          <p class="mb-0">{{ ss_api_counts }} times called</p>
-        </div>
+      <div class="card d-flex flex-row align-items-center p-2" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 0;">
+      <div class="position-relative me-2" style="width: 24px; height: 24px;">
+      <i class="fas fa-temperature-low text-success" style="font-size: 1.1rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
       </div>
-    </a>
-  
-    <a href="{% url 'atmos-sense-dashboard' %}" style="text-decoration: none; color: inherit;">
-      <div class="card d-flex flex-row align-items-center p-3 me-3 mb-3 fixed-height">
-        <i class="fas fa-wind fa-2x text-info me-3"></i>
-        <div>
-          <h5 class="mb-1">SoilSparsh</h5>
-          <p class="mb-0">{{ as_api_counts }} times called</p>
-        </div>
-      </div>
-    </a>
-  
-    <a href="{% url 'soil-life-dashboard' %}" style="text-decoration: none; color: inherit;">
-      <div class="card d-flex flex-row align-items-center p-3 me-3 mb-3 fixed-height">
-        <i class="fas fa-leaf fa-2x text-warning me-3"></i>
-        <div>
-          <h5 class="mb-1">SoiLIFE</h5>
-          <p class="mb-0">{{ sl_api_counts }} times called</p>
-        </div>
-      </div>
-    </a>
-  
-    <div class="card d-flex flex-row align-items-center p-3 mb-3 fixed-height">
-      <i class="fas fa-chart-line fa-2x text-danger me-3"></i>
       <div>
-        <h5 class="mb-1">API Call Count</h5>
-        <p class="mb-0">{{ api_counts }} total calls</p>
+      <h5 class="mb-1" style="font-size: 0.9rem;">SoiLENZ</h5>
+      <p class="mb-0" style="font-size: 0.9rem;">{{ ss_api_counts }} times called</p>
+      </div>
+      </div>
+    </a>
+
+    <a href="{% url 'atmos-sense-dashboard' %}" style="text-decoration: none; color: inherit;">
+      <div class="card d-flex flex-row align-items-center p-2" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 0;">
+      <div class="position-relative me-2" style="width: 24px; height: 24px;">
+      <i class="fas fa-wind text-info" style="font-size: 1.1rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
+      </div>
+      <div>
+      <h5 class="mb-1" style="font-size: 0.9rem;">SoilSparsh</h5>
+      <p class="mb-0" style="font-size: 0.9rem;">{{ as_api_counts }} times called</p>
+      </div>
+      </div>
+    </a>
+
+    <a href="{% url 'soil-life-dashboard' %}" style="text-decoration: none; color: inherit;">
+      <div class="card d-flex flex-row align-items-center p-2" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 0;">
+      <div class="position-relative me-2" style="width: 24px; height: 24px;">
+      <i class="fas fa-leaf text-warning" style="font-size: 1.1rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
+      </div>
+      <div>
+      <h5 class="mb-1" style="font-size: 0.9rem;">SoiLIFE</h5>
+      <p class="mb-0" style="font-size: 0.9rem;">{{ sl_api_counts }} times called</p>
+      </div>
+      </div>
+    </a>
+
+    <div class="card d-flex flex-row align-items-center p-2" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 0;">
+      <div class="position-relative me-2" style="width: 24px; height: 24px;">
+      <i class="fas fa-chart-line text-danger" style="font-size: 1.1rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
+      </div>
+      <div>
+      <h5 class="mb-1" style="font-size: 0.9rem;">API Call Count</h5>
+      <p class="mb-0" style="font-size: 0.9rem;">{{ api_counts }} total calls</p>
       </div>
     </div>
-  </div>
+    </div>
 
   <!-- Chart and Device Info -->
   <div class="row">
@@ -122,13 +129,11 @@
     </div>
   </div>
 
-  
   <div class="row">
     <div id="map" class="col-md-12 mb-12">
       <div id="leaflet-map" style="height: 400px;"></div>
     </div>
   </div>
-
 </div>
 <!-- For chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -350,6 +355,8 @@
   }
 </style>
 
+{# Handel cards styling of Notification, SoiLENZ, SoilSparsh, SoiLIFE, API Call Count #}
+
 <style>
   .fixed-height {
     height: 100px; /* Adjust this value as needed */
@@ -373,7 +380,7 @@
 
   .donut-card {
     background-color: white; /* Ensure solid background */
-    border-radius: 8px; /* Optional: smooth the edges */
+    border-radius: 4px; /* Optional: smooth the edges */
     padding: 15px; /* Optional: adjust padding */
   }
 
@@ -384,18 +391,34 @@
   }
 
   .donut-card i {
-    color: #333; /* Optional: adjust icon color for contrast */
-  } 
-
+    color: #333; {# Optional: adjust icon color for contrast #}
   .notification-dot {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     background-color: red;
     border-radius: 50%;
     position: absolute;
-    top: 54px;  /* Adjust as needed */
-    left: 37px; /* Adjust to position it on the bell */
+    top: -2px;
+    right: -2px;
+    border: 2px solid #fff;
+    z-index: 2;
   }
+    left: 37px; {# Adjust to position it on the bell #}
+  }
+</style>
+
+<style>
+  {# Make the background of the dashboard White #}
+  body, .container-fluid {
+    background: #fff !important;
+}
+  {# Add Shadow effect to the cards #}
+  .card, .donut-card {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    background: #fff;
+    border-radius: 12px;
+    border: none;
+}
 </style>
 {% endblock %}
 

@@ -12,17 +12,16 @@
     <script src="{% static '/api_details/js/recomended.js' %}"></script>  
 </header>
 
-<style>
+<!--<style>
   body{
     background-size: 100% 100%;background-image: url({% static 'dashboard/bg1.jpeg' %});
-        /* background: linear-gradient(to right, #fc00ff 0%, #00fffc 45%, #fffc00 100%); */
-        }
-
+    background: linear-gradient(to right, #fc00ff 0%, #00fffc 45%, #fffc00 100%);
+    }
 </style>
 
 <!------ Include the above in your HEAD tag ---------->
  <!-- navbar -->
- <nav class="navbar fixed-top navbar-expand navbar-dark" style="background-color: #55779f;">
+ <nav class="navbar fixed-top navbar-expand navbar-dark" style="background-color:rgb(22, 107, 235);">
      <div class="container-fluid">
          <a class="navbar-brand" href="{% url 'dashboard' %}">
              <h3 class="my-heading" style="font-size: 15px;">ArkaShine Innovations</h3>
@@ -31,7 +30,7 @@
               {% if request.user.is_staff %}
               {% endif %}
                   <li class="nav-item">
-                     <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                    <a class="nav-link" href="{% url 'logout' %}" style="color: #fff;">Logout</a>
                  </li>
              </ul>
      </div>
@@ -49,18 +48,20 @@
     </div>
 {% endfor %}
 {% endif %}
-{% if request.user.is_staff %}
-<a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'api-edit' api.device.id %}" >Edit</a> 
-{% endif %}
-<a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#popup1">View NPK chart</a>
-<a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#popup2">View chart</a>
-<a class=" btn btn-primary btn-sm btn-icon-text menu__link" href="#recomended-crops">View Recomendation</a>
-<a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'download-api-response-pdf' api.pk %}" >Download PDF</a>
-<a class="btn btn-primary btn-sm btn-icon-text" href="{% url 'download-api-response-csv' api.pk %}" >Download CSV</a>
-<a class="btn btn-primary btn-sm btn-icon-text" href="javascript:history.back()" >Back</a>
+<div class="d-flex flex-wrap justify-content-start align-items-center mb-4" style="margin-top: -60px; margin-left: 1.5%;">
+  {% if request.user.is_staff %}
+    <a class="btn btn-primary btn-sm btn-icon-text mr-2 mb-2" style="border-radius:0; margin-right:8px; margin-bottom:8px;" href="{% url 'api-edit' api.device.id %}">Edit</a>
+  {% endif %}
+  <a class="btn btn-primary btn-sm btn-icon-text menu__link mr-2 mb-2" style="border-radius:0; margin-right:8px; margin-bottom:8px; margin-left:10px;" href="#popup1">View NPK chart</a>
+  <a class="btn btn-primary btn-sm btn-icon-text menu__link mr-2 mb-2" style="border-radius:0; margin-right:8px; margin-bottom:8px; margin-left:10px;" href="#popup2">View chart</a>
+  <a class="btn btn-primary btn-sm btn-icon-text menu__link mr-2 mb-2" style="border-radius:0; margin-right:8px; margin-bottom:8px; margin-left:10px;" href="#recomended-crops">View Recomendation</a>
+  <a class="btn btn-primary btn-sm btn-icon-text mr-2 mb-2" style="border-radius:0; margin-right:8px; margin-bottom:8px; margin-left:10px;" href="{% url 'download-api-response-pdf' api.pk %}">Download PDF</a>
+  <a class="btn btn-primary btn-sm btn-icon-text mr-2 mb-2" style="border-radius:0; margin-right:8px; margin-bottom:8px; margin-left:10px;" href="{% url 'download-api-response-csv' api.pk %}">Download CSV</a>
+  <a class="btn btn-primary btn-sm btn-icon-text mb-2" style="border-radius:0; margin-right:8px; margin-bottom:8px; margin-left:10px;" href="javascript:history.back()">Back</a>
+</div>
 <div class="row mt-2 m-1">
   <div class="col-md-6">
-    <div class="card mb-4 mb-md-0" style="background: #a97e7e94; color: white;">
+    <div class="card mb-4 mb-md-0" style="background: #f5f5dc; color: black;">
       <div class="card-body">
         <p class="mb-4"><span class="text-primary font-italic me-1">API</span> Parameters</p>
         <hr> 
@@ -121,7 +122,7 @@
     </div>
   </div>
   <div class="col-md-6">
-    <div class="card mb-4 mb-md-0"  style="background: #a97e7e94; color: white;">
+    <div class="card mb-4 mb-md-0"  style="background: #f5f5dc; color: black;">
       <div class="card-body">
         
         <p class="mt-4 mb-1" style="font-size: .77rem;">magnesium {{api.magnesium}}</p>
