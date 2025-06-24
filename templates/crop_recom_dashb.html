@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crop Recommendation Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f4ef; /* Beige */
+      color: #1a3c6c; /* Elegant Blue */
+    }
+    .card {
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    .nutrient-bar {
+      height: 10px;
+      border-radius: 5px;
+    }
+    .header-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    .map-container {
+      height: 300px;
+      border-radius: 1rem;
+    }
+  </style>
+</head>
+<body>
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <!-- Crop Recommendation Card -->
+    <div class="col-md-6">
+      <div class="card bg-white p-4">
+        <div class="header-title mb-2">Recommended Crop</div>
+        <h3 class="text-primary">Rice</h3>
+        <p>Based on current nutrient values and environmental conditions.</p>
+        <div class="progress" style="height: 20px;">
+          <div class="progress-bar bg-success" style="width: 80%;">Suitability: 80%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="col-md-6">
+      <div class="card p-3">
+        <div class="header-title mb-2">Location Map</div>
+        <div id="map" class="map-container bg-light">[Map Placeholder]</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <!-- Nutrient Values -->
+    <div class="col-md-3">
+      <div class="card p-3">
+        <div class="header-title mb-3">Soil Nutrients</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">N - Nitrogen <div class="nutrient-bar bg-primary w-75"></div></li>
+          <li class="list-group-item">P - Phosphorus <div class="nutrient-bar bg-primary w-60"></div></li>
+          <li class="list-group-item">K - Potassium <div class="nutrient-bar bg-primary w-80"></div></li>
+          <li class="list-group-item">Zn - Zinc <div class="nutrient-bar bg-primary w-40"></div></li>
+          <li class="list-group-item">Fe - Iron <div class="nutrient-bar bg-primary w-55"></div></li>
+          <li class="list-group-item">Cu - Copper <div class="nutrient-bar bg-primary w-30"></div></li>
+          <li class="list-group-item">Mn - Manganese <div class="nutrient-bar bg-primary w-45"></div></li>
+          <li class="list-group-item">S - Sulphur <div class="nutrient-bar bg-primary w-65"></div></li>
+          <li class="list-group-item">B - Boron <div class="nutrient-bar bg-primary w-50"></div></li>
+          <li class="list-group-item">Ca - Calcium <div class="nutrient-bar bg-primary w-70"></div></li>
+          <li class="list-group-item">Mg - Magnesium <div class="nutrient-bar bg-primary w-50"></div></li>
+          <li class="list-group-item">Na - Sodium <div class="nutrient-bar bg-primary w-25"></div></li>
+          <li class="list-group-item">Mo - Molybdenum <div class="nutrient-bar bg-primary w-15"></div></li>
+          <li class="list-group-item">Cl - Chloride <div class="nutrient-bar bg-primary w-35"></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Inputs Section -->
+    <div class="col-md-9">
+      <div class="card p-4">
+        <div class="header-title mb-3">Input Parameters</div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card p-3 text-center bg-light">
+              <h6>Nitrogen</h6>
+              <p class="text-primary">78 mg/kg</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3 text-center bg-light">
+              <h6>Soil pH</h6>
+              <p class="text-primary">6.5</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3 text-center bg-light">
+              <h6>Moisture</h6>
+              <p class="text-primary">22%</p>
+            </div>
+          </div>
+          <!-- Add more input cards as needed -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

@@ -462,7 +462,12 @@
             th.textContent = value;
             apiDetailsHeaders.appendChild(th);
         }
-
+    // Add recommendation section in header by default
+//--------------------------------------------
+    const th = document.createElement('th');
+    th.textContent = 'recommendation';
+    apiDetailsHeaders.appendChild(th);
+//---------------------------------------------
         // Populate the API details table rows
         const apiDetailsTable = document.getElementById('api-details-table');
         apiDetailsTable.innerHTML = ""; // Clear existing rows
@@ -477,17 +482,18 @@
                 // Check if the header is for an image, if so, generate image HTML
                 if (headerKey === 'image_path') {
                     rowContent += `<td>${api.image_path ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />` : ''}</td>`;
-                }
-                else if (headerKey === 'recommendation') {
-rowContent += `<td class='no-redirect-cell'>
-    <button class="btn btn-sm predict-btn" data-api-id="${api.id}" style="background-color:rgb(31, 139, 255); color: #ffffff; border-radius: 0; height:30px; width: 95px;">
-        click to view
-    </button></td>`;
-                }
-                else {
+                } else {
                     rowContent += `<td>${cellValue}</td>`;
                 }
             }
+            // Add the button in the last column by default (for every row)
+//------------------------------------------------------------------------------
+            rowContent += `<td class='no-redirect-cell'>
+                <button class="btn btn-sm predict-btn" data-api-id="${api.id}" style="background-color:rgb(31, 139, 255); color: #ffffff; border-radius: 0; height:30px; width: 95px;">
+                    click to view
+                </button>
+            </td>`;
+//------------------------------------------------------------------------------
 
 // Make the entire row clickable
 row.style.cursor = "pointer";  // Changes the cursor to pointer when hovering over the row
@@ -635,51 +641,57 @@ apiDetailsTable.appendChild(row);
     z-index: 10;
 }
 </style>
+
+<!-- Spinner Container -->
+<div id="loadingSpinner" style="display: none; text-align:center; padding: 20px;">
+  <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+    <span class="sr-only">Loading...</span>
+  </div>
+</div>
+
+{# Below code handels api call to the Ai model #}
+
 <div id="predictionModalContainer"></div>
 
 <script>
 document.addEventListener('click', function (event) {
     const target = event.target;
-    
+
     if (target.classList.contains('predict-btn')) {
         const apiId = target.dataset.apiId;
+        window.location.href = `/crop-recommendation-dashboard/?api_id=${apiId}`;
+        const container = document.getElementById('predictionModalContainer');
+        const spinner = document.getElementById('loadingSpinner');
 
-        // Fetch modal content from the server
+        // Show the spinner
+        if (spinner) {
+            spinner.style.display = 'block';
+        }
+
+        // Optionally clear previous modal content
+        container.innerHTML = '';
+
         fetch(`/predicter/api/predict/${apiId}/`)
             .then(response => response.text())
             .then(html => {
-                // Replace modal container content
-                const container = document.getElementById('predictionModalContainer');
-                container.innerHTML = ''
-                container.innerHTML = html;
-
-                // Show the modal using custom vanilla JS
-                const modal = document.getElementById('predictionModal');
-                if (modal) {
-                    modal.style.display = 'block';
-
-                    // Close button
-                    const closeBtn = modal.querySelector('.close');
-                    if (closeBtn) {
-                        closeBtn.onclick = () => {
-                            modal.style.display = 'none';
-                        };
-                    }
-
-                    // Click outside modal to close
-                    window.onclick = function (e) {
-                        if (e.target === modal) {
-                            modal.style.display = 'none';
-                        }
-                    };
+                // Hide the spinner
+                if (spinner) {
+                    spinner.style.display = 'none';
                 }
+
             })
-            .catch(() => alert('Prediction failed.'));
-        
-        event.stopPropagation(); // Prevent row click
+            .catch(() => {
+                if (spinner) {
+                    spinner.style.display = 'none';
+                }
+                alert('Prediction failed.');
+            });
+
+        event.stopPropagation();
     }
 });
 </script>
+
 
 <style>
 /* Custom vanilla modal */

@@ -11,10 +11,24 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   </head>
   <body>
-    <div style="background: url('{% static 'home/images/cc9.jpg' %}') no-repeat top center; background-size: cover; height: 200px; width: 100%; position: relative;">
-      <img src="{% static 'home/images/arkashine-transparent-logo.png' %}" alt="Logo" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: 90px;"/>
-      {# <img src="{% static 'home/images/arkashine-transparent-logo.png' %}" alt="Logo" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: 80px; filter: brightness(0) invert(1);" /> #}
+    <div style="background: url('{% static 'home/images/cc9.jpg' %}') no-repeat top center; background-size: cover; height: 200px; width: 100%; position: relative; filter: blur(1px);">
     </div>
+    <div style="position: absolute; left: 50%; top: 100px; transform: translate(-50%, -50%); height: 90px; width: 100%; display: flex; align-items: center; justify-content: center;">
+      <img src="{% static 'home/images/arkashine-transparent-logo.png' %}" alt="Logo" style="height: 90px;"/>
+    </div>
+    <div style="position: absolute; left: 100px; top: 100px; transform: translateY(-50%); height: 90px; display: flex; align-items: center; z-index: 2;">
+      <span id="live-time" style="font-size: 1.3rem; color: #F5F5DC; font-weight: bold; text-shadow: 1px 1px 4px #333;"></span>
+    </div>
+    <script>
+      function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        document.getElementById('live-time').textContent = timeString;
+      }
+      setInterval(updateTime, 1000);
+      updateTime();
+    </script>
+    {# <img src="{% static 'home/images/arkashine-transparent-logo.png' %}" alt="Logo" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: 80px; filter: brightness(0) invert(1);" /> #}
     <div class="wrapper">
       <nav id="sidebar" class="collapsed" style="position: fixed; top: 0; left: 0; height: 100vh; z-index: 1001;">
         <ul class="list-unstyled">
