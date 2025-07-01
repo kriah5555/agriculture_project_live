@@ -268,7 +268,6 @@
     </div>
 
 </div>
-<div id="predictionModalContainer"></div>
 <!-- Add Hover Effects for Icons -->
 <style>
     .fa-pencil-alt:hover, .fa-key:hover {
@@ -642,16 +641,8 @@ apiDetailsTable.appendChild(row);
 }
 </style>
 
-<!-- Spinner Container -->
-<div id="loadingSpinner" style="display: none; text-align:center; padding: 20px;">
-  <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-    <span class="sr-only">Loading...</span>
-  </div>
-</div>
-
 {# Below code handels api call to the Ai model #}
-
-<div id="predictionModalContainer"></div>
+{# Add functionality to fetch recommendation from AI model and redirect to recommendation section #}
 
 <script>
 document.addEventListener('click', function (event) {
@@ -659,37 +650,41 @@ document.addEventListener('click', function (event) {
 
     if (target.classList.contains('predict-btn')) {
         const apiId = target.dataset.apiId;
-        window.location.href = `/crop-recommendation-dashboard/?api_id=${apiId}`;
-        const container = document.getElementById('predictionModalContainer');
         const spinner = document.getElementById('loadingSpinner');
 
         // Show the spinner
-        if (spinner) {
-            spinner.style.display = 'block';
-        }
+        showSpinner();
 
-        // Optionally clear previous modal content
-        container.innerHTML = '';
+        // Open the dashboard in a new tab
+        setTimeout(function() {
+            window.open(`/crop-recommendation-dashboard/?api_id=${apiId}`, '_blank');
+        }, 1000);
 
-        fetch(`/predicter/api/predict/${apiId}/`)
-            .then(response => response.text())
-            .then(html => {
-                // Hide the spinner
-                if (spinner) {
-                    spinner.style.display = 'none';
-                }
-
-            })
-            .catch(() => {
-                if (spinner) {
-                    spinner.style.display = 'none';
-                }
-                alert('Prediction failed.');
-            });
+        // Hide the spinner after a short delay (since navigation is in new tab)
+        setTimeout(() => {
+            hideSpinner();
+        }, 1000);
 
         event.stopPropagation();
     }
 });
+</script>
+
+{# Spinner before redirecting #}
+<div id="customSpinner" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999; background: rgba(255,255,255,0.6); align-items: center; justify-content: center;">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+{# Function to handel show/hide spinner #}
+<script>
+function showSpinner() {
+        document.getElementById('customSpinner').style.display = 'flex';
+}
+function hideSpinner() {
+        document.getElementById('customSpinner').style.display = 'none';
+}
 </script>
 
 

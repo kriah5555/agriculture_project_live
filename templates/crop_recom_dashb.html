@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,8 +8,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      background-color: #f8f4ef; /* Beige */
-      color: #1a3c6c; /* Elegant Blue */
+      background-color: #f8f4ef; {# Beige #}
+      color: #1a3c6c; {# Elegant Blue #}
     }
     .card {
       border-radius: 1rem;
@@ -35,7 +36,7 @@
     <div class="col-md-6">
       <div class="card bg-white p-4">
         <div class="header-title mb-2">Recommended Crop</div>
-        <h3 class="text-primary">Rice</h3>
+        <h3 class="text-primary">{{ recommendation|capfirst }}</h3>
         <p>Based on current nutrient values and environmental conditions.</p>
         <div class="progress" style="height: 20px;">
           <div class="progress-bar bg-success" style="width: 80%;">Suitability: 80%</div>
@@ -43,36 +44,70 @@
       </div>
     </div>
 
-    <!-- Map Section -->
-    <div class="col-md-6">
-      <div class="card p-3">
-        <div class="header-title mb-2">Location Map</div>
-        <div id="map" class="map-container bg-light">[Map Placeholder]</div>
-      </div>
-    </div>
+<!-- Map Section -->
+<div class="col-md-6">
+  <div class="card p-3">
+    <div class="header-title mb-2">Location Map</div>
+    <div id="map" class="map-container bg-light" style="height: 400px; border-radius: 8px;"></div>
   </div>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var map = L.map('map').setView([20.5937, 78.9629], 5); // Centered on India
+
+    // Base Map Layer
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://carto.com/">CartoDB</a>',
+      maxZoom: 19
+    }).addTo(map);
+
+    // GeoJSON Overlay (Zone Belts)
+    fetch("{% static 'mapdata/zones.geojson' %}")
+      .then(res => res.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: feature => ({
+            color: "#008000",
+            weight: 2,
+            fillOpacity: 0.3
+          }),
+          onEachFeature: (feature, layer) => {
+            if (feature.properties && feature.properties.zone_name) {
+              layer.bindPopup(`<strong>Zone:</strong> ${feature.properties.zone_name}`);
+            }
+          }
+        }).addTo(map);
+      })
+      .catch(err => {
+        console.error("Error loading GeoJSON:", err);
+      });
+  });
+</script>
+
 
   <div class="row mb-4">
     <!-- Nutrient Values -->
     <div class="col-md-3">
       <div class="card p-3">
-        <div class="header-title mb-3">Soil Nutrients</div>
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item">N - Nitrogen <div class="nutrient-bar bg-primary w-75"></div></li>
-          <li class="list-group-item">P - Phosphorus <div class="nutrient-bar bg-primary w-60"></div></li>
-          <li class="list-group-item">K - Potassium <div class="nutrient-bar bg-primary w-80"></div></li>
-          <li class="list-group-item">Zn - Zinc <div class="nutrient-bar bg-primary w-40"></div></li>
-          <li class="list-group-item">Fe - Iron <div class="nutrient-bar bg-primary w-55"></div></li>
-          <li class="list-group-item">Cu - Copper <div class="nutrient-bar bg-primary w-30"></div></li>
-          <li class="list-group-item">Mn - Manganese <div class="nutrient-bar bg-primary w-45"></div></li>
-          <li class="list-group-item">S - Sulphur <div class="nutrient-bar bg-primary w-65"></div></li>
-          <li class="list-group-item">B - Boron <div class="nutrient-bar bg-primary w-50"></div></li>
-          <li class="list-group-item">Ca - Calcium <div class="nutrient-bar bg-primary w-70"></div></li>
-          <li class="list-group-item">Mg - Magnesium <div class="nutrient-bar bg-primary w-50"></div></li>
-          <li class="list-group-item">Na - Sodium <div class="nutrient-bar bg-primary w-25"></div></li>
-          <li class="list-group-item">Mo - Molybdenum <div class="nutrient-bar bg-primary w-15"></div></li>
-          <li class="list-group-item">Cl - Chloride <div class="nutrient-bar bg-primary w-35"></div></li>
-        </ul>
+      <div class="header-title mb-3">Soil Nutrients (Input)</div>
+      <ul class="list-group list-group-flush">
+        {% for key, value in soil_nutrients.items %}
+        <li class="list-group-item d-flex align-items-center justify-content-between">
+        <span>{{ key|title }} - {{ value.0|floatformat:2 }}</span>
+        <div class="flex-grow-1 ms-2">
+          <div class="progress" style="height:10px;">
+          <div class="progress-bar bg-primary" role="progressbar" style="width: {{ value.0|floatformat:2 }}%;" aria-valuenow="{{ value.0|floatformat:2 }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+        <span class="ms-2">{{ value.0|floatformat:2 }}%</span>
+        </li>
+        {% endfor %}
+      </ul>
       </div>
     </div>
 
