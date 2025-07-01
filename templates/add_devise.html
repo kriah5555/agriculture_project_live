@@ -111,14 +111,14 @@
                         <div class="row">
                             <div class="col-lg-6 mb-3">
                                 <label class="form-label">Purchased Date <b>*</b></label>
-                                <input type="date" class="form-control" name="purchase_date" required value="{{ purchase_date }}">
+                                <input type="date" class="form-control" name="purchase_date" required value="{{ purchase_date|default:"" }}" {{disabled}}>
                                 {% if field_errors.purchase_date %}
                                     <span style="color: red;">{{ field_errors.purchase_date }}</span>
                                 {% endif %}
                             </div>
                             <div class="col-lg-6 mb-3">
                                 <label class="form-label">Time of Sale <b>*</b></label>
-                                <input type="time" class="form-control" name="time_of_sale" required value="{{ time_of_sale }}">
+                                <input type="time" class="form-control" name="time_of_sale" required value="{{ time_of_sale|default:"" }}" {{disabled}}>
                                 {% if field_errors.time_of_sale %}
                                     <span style="color: red;">{{ field_errors.time_of_sale }}</span>
                                 {% endif %}

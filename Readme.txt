@@ -15,7 +15,7 @@ pip install -r requirements.txt
 OR
 
 Run install_deps.sh to automate the process (recommended).
-This script checks for and installs required system dependencies needed by some Python packages (e.g., psycopg2):
+This script checks and installs required system dependencies needed by some Python packages (e.g., psycopg2):
 This script will also install all the packages from requirements.txt
 
 bash:(running below command in the shell will start the script)

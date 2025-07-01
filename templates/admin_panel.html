@@ -6,10 +6,12 @@
 
 <div class="container-fluid">
   <!-- Info Cards: Single Row -->
-  <div id="headInfoCards" class="d-flex flex-row justify-content-between flex-nowrap mb-4 gap-3" style="max-width: 330px;">
+  <div class="container" style="position: relative; top: -140px; left: -25px;">
+    <div id="headInfoCards" class="d-flex flex-row justify-content-between flex-nowrap align-items-center"
+       style="width: 900px; height: 100px; position: relative; background: rgba(255,255,255,0.6); border-radius: 4px; padding-top: 10px; padding-bottom: 10px; backdrop-filter: blur(5px); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10); border: 1px solid rgba(255,255,255,0.18);">
     <!-- Notifications Card -->
     <a href="{% url 'notifications' %}" style="text-decoration: none; color: inherit;">
-      <div class="card d-flex flex-row align-items-center p-2" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 0;">
+      <div class="card d-flex flex-row align-items-center p-2 hover-effect" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 4px; margin-left: 15px">
       <div class="position-relative me-2" style="width: 24px; height: 24px;">
       <i class="fas fa-bell text-primary" style="font-size: 1.1rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
       {% if active_notification %}
@@ -24,19 +26,19 @@
 
     <!-- Device Info Cards -->
     <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit;">
-      <div class="card d-flex flex-row align-items-center p-2" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 0;">
-      <div class="position-relative me-2" style="width: 24px; height: 24px;">
-      <i class="fas fa-temperature-low text-success" style="font-size: 1.1rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
-      </div>
-      <div>
-      <h5 class="mb-1" style="font-size: 0.9rem;">SoiLENZ</h5>
-      <p class="mb-0" style="font-size: 0.9rem;">{{ ss_api_counts }} times called</p>
-      </div>
+      <div class="card d-flex flex-row align-items-center p-2 hover-effect" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 4px; transition: box-shadow 0.2s, transform 0.2s;">
+        <div class="position-relative me-2" style="width: 24px; height: 24px;">
+          <i class="fas fa-temperature-low text-success" style="font-size: 1.1rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
+        </div>
+        <div>
+          <h5 class="mb-1" style="font-size: 0.9rem;">SoiLENZ</h5>
+          <p class="mb-0" style="font-size: 0.9rem;">{{ ss_api_counts }} times called</p>
+        </div>
       </div>
     </a>
 
     <a href="{% url 'atmos-sense-dashboard' %}" style="text-decoration: none; color: inherit;">
-      <div class="card d-flex flex-row align-items-center p-2" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 0;">
+      <div class="card d-flex flex-row align-items-center p-2 hover-effect" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 4px;">
       <div class="position-relative me-2" style="width: 24px; height: 24px;">
       <i class="fas fa-wind text-info" style="font-size: 1.1rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
       </div>
@@ -48,7 +50,7 @@
     </a>
 
     <a href="{% url 'soil-life-dashboard' %}" style="text-decoration: none; color: inherit;">
-      <div class="card d-flex flex-row align-items-center p-2" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 0;">
+      <div class="card d-flex flex-row align-items-center p-2 hover-effect" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 4px;">
       <div class="position-relative me-2" style="width: 24px; height: 24px;">
       <i class="fas fa-leaf text-warning" style="font-size: 1.1rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
       </div>
@@ -59,7 +61,7 @@
       </div>
     </a>
 
-    <div class="card d-flex flex-row align-items-center p-2" style="height: 60px; min-width: 144px; max-width: 243px; border-radius: 0;">
+    <div class="card d-flex flex-row align-items-center p-2 hover-effect" style="height: 60px; min-width: 120px; max-width: 160px; border-radius: 4px; margin-right: 15px;">
       <div class="position-relative me-2" style="width: 24px; height: 24px;">
       <i class="fas fa-chart-line text-danger" style="font-size: 1.1rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
       </div>
@@ -68,10 +70,19 @@
       <p class="mb-0" style="font-size: 0.9rem;">{{ api_counts }} total calls</p>
       </div>
     </div>
+  </div>
     </div>
-
+    <!-- Hover effect for cards -->
+    <style>
+      .hover-effect:hover {
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.18), 0 2px 8px rgba(0,0,0,0.12);
+        transform: translateY(-4px) scale(1.03);
+        background: linear-gradient(90deg, #f8fafc 0%, #e6f7ef 100%);
+        cursor: pointer;
+      }
+    </style>
   <!-- Chart and Device Info -->
-  <div class="row">
+  <div class="row" style="margin-top: -85px;">
     <!-- API Calls Line Chart -->
     <div id="graphCard" class="col-md-8 mb-4">
       <div class="card p-3 w-100">
@@ -146,9 +157,9 @@
   // Initialize the map
   var map = L.map('leaflet-map').setView([20.5937, 78.9629], 5); // Center on India, for example
 
-  // Add a tile layer (OpenStreetMap)
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  // Add a CartoDB Positron tile layer for better view
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
 
   // Define device types and their colors
@@ -416,7 +427,7 @@
   .card, .donut-card {
     box-shadow: 0 4px 24px rgba(0,0,0,0.10);
     background: #fff;
-    border-radius: 12px;
+    border-radius: 4px;
     border: none;
 }
 </style>
