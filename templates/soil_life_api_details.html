@@ -75,13 +75,13 @@
                                 <td>0.1 - 10 ppm</td>
                             </tr>
                             <tr style="height: 30px;">
-                                <td>Soil Temperature</td>
+                                <td>Temperature</td>
                                 <td>{{ fields_api_data.field5 }}</td>
                                 <td><canvas id="chart_soil_temp" width="40" height="40"></canvas></td>
                                 <td>°C</td>
                             </tr>
                             <tr style="height: 30px;">
-                                <td>Soil Moisture</td>
+                                <td>Humidity</td>
                                 <td>{{ fields_api_data.field6 }}</td>
                                 <td><canvas id="chart_soil_moisture" width="40" height="40"></canvas></td>
                                 <td>%</td>
@@ -91,6 +91,12 @@
                                 <td>{{ fields_api_data.field7 }}</td>
                                 <td><canvas id="chart_pressure" width="40" height="40"></canvas></td>
                                 <td>300 - 1250 hPa</td>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <td>Microbial Content</td>
+                                <td>{{ fields_api_data.field8 }}</td>
+                                <td><canvas id="chart_microbial" width="40" height="40"></canvas></td>
+                                <td>0 - 100 %</td>
                             </tr>
                         </tbody>
                     </table>
@@ -326,7 +332,8 @@
             nitrous      : {{ fields_api_data.field4 }},
             soil_temp    : {{ fields_api_data.field5 }},
             soil_moisture: {{ fields_api_data.field6 }},
-            pressure     : {{ fields_api_data.field7 }}
+            pressure     : {{ fields_api_data.field7 }},
+            microbial    : {{ fields_api_data.field8 }}
         };
 
         function createPieChart(canvasId, value) {
@@ -356,6 +363,7 @@
         createPieChart("chart_soil_temp", data.soil_temp);
         createPieChart("chart_soil_moisture", data.soil_moisture);
         createPieChart("chart_pressure", data.pressure);
+        createPieChart("chart_microbial", data.microbial);
     </script>
 
     <style>

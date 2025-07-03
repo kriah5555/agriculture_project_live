@@ -82,9 +82,10 @@ SOIL_LIFE_FIELDS = {
     'field2'    : "Methane (ppm)",
     'field3'    : "Ammonia (ppm)",
     'field4'    : "Nitrous Oxide (ppm)",
-    'field5'    : "Soil Temperature (°C)",
-    'field6'    : "Soil Moisture (%)",
+    'field5'    : "Temperature (°C)",
+    'field6'    : "Humidity (%)",
     'field7'    : "Atmospheric Pressure (hPa)",
+    'field8'    : "Microbial Content (%)",
     'created_at': 'Requested At',
 }
 
