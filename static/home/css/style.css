@@ -9753,7 +9753,9 @@ h4, h5, h6 {
 
 /* Footer Styles */
 .footer-custom {
-  background-color: #343a40; /* bg-dark */
+  background: url("/static/home/images/kajetan-sumila-GUUN5HivCSQ-unsplash.jpg") no-repeat bottom center;
+  background-position: 0 0;
+  background-size: cover;
   color: #ffffff; /* text-white */
   padding-top: 3rem; /* py-5 */
   padding-bottom: 3rem; /* py-5 */
@@ -9761,11 +9763,10 @@ h4, h5, h6 {
   padding-right: 1.5rem; /* px-sm-3 */
   padding-left: 3rem; /* px-lg-5 */
   padding-right: 3rem; /* px-lg-5 */
-  margin-top: 90px;
 }
 
 .footer-custom .footer-overlay {
-  background: rgba(255, 255, 255, .05); /* Corrected from 256 to 255 */
+  /* background: rgba(255, 255, 255, .05); /* Corrected from 256 to 255 */
   padding: 2rem; /* p-4 */
   margin-bottom: 3rem; /* mb-5 */
 }
