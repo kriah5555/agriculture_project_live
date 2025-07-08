@@ -57,32 +57,32 @@
 {#            No crop illustrations available. #}
 {#          </div> #}
 {#          {% endfor %} #}
-          <div class="d-flex justify-content-between">
+          <div class="progress-bar-style d-flex justify-content-between flex-wrap">
     <div class="text-center">
         <p>Wheat</p>
-        <div class="progress" style="width: 60px; height: 10px;">
-            <div class="progress-bar bg-info" style="width: 70%;"></div>
+        <div class="progress" style="width: 150px; height: 10px;">
+            <div class="progress-bar bg-success" style="width: 70%;"></div>
         </div>
         <small>70%</small>
     </div>
     <div class="text-center">
         <p>Rice</p>
-        <div class="progress" style="width: 60px; height: 10px;">
+        <div class="progress" style="width: 150px; height: 10px;">
             <div class="progress-bar bg-success" style="width: 85%;"></div>
         </div>
         <small>85%</small>
     </div>
     <div class="text-center">
         <p>Maize</p>
-        <div class="progress" style="width: 60px; height: 10px;">
-            <div class="progress-bar bg-warning" style="width: 60%;"></div>
+        <div class="progress" style="width: 150px; height: 10px;">
+            <div class="progress-bar bg-success" style="width: 60%;"></div>
         </div>
         <small>60%</small>
     </div>
     <div class="text-center">
         <p>Soybean</p>
-        <div class="progress" style="width: 60px; height: 10px;">
-            <div class="progress-bar bg-info" style="width: 75%;"></div>
+        <div class="progress" style="width: 150px; height: 10px;">
+            <div class="progress-bar bg-success" style="width: 75%;"></div>
         </div>
         <small>75%</small>
     </div>
@@ -97,6 +97,13 @@
         </div>
       </div>
     </div>
+<style>
+.progress-bar-style{
+  p{
+    font-size: 1.5rem;
+  }
+}
+</style>
 
 <!-- Map Section -->
 <div class="col-md-6">
@@ -112,42 +119,63 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    var map = L.map('map').setView([20.5937, 78.9629], 5); // Centered on India
+    // 1. Initialize Map
+    var map = L.map('map').setView([15.5, 78.5], 6);
 
-    // Base Map Layer
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://carto.com/">CartoDB</a>',
-      maxZoom: 19
+    // 2. Add Base Layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
     }).addTo(map);
 
-    // GeoJSON Overlay (Zone Belts)
-    fetch("{% static 'mapdata/zones.geojson' %}")
+    // 3. Mock NPK data per district
+    const npkValues = {
+      "Chittoor": 45,
+      "Anantapur": 20,
+      "Kadapa": 65,
+      "Kurnool": 35,
+      // Add more districts matching GeoJSON 'DISTRICT' field
+    };
+
+    // 4. Color scale function
+    function getColor(value) {
+      return value > 60 ? '#d73027' :
+             value > 40 ? '#fc8d59' :
+             value > 20 ? '#fee08b' :
+             value > 10 ? '#d9ef8b' :
+                          '#91cf60';
+    }
+
+    // 5. Load and display GeoJSON
+    fetch('/static/mapdata/districts.geojson')
       .then(res => res.json())
       .then(data => {
         L.geoJSON(data, {
-          style: feature => ({
-            color: "#008000",
-            weight: 2,
-            fillOpacity: 0.3
-          }),
+          style: feature => {
+            const district = feature.properties.DISTRICT || feature.properties.DIST_NAME;
+            const value = npkValues[district] || 0;
+            return {
+              fillColor: getColor(value),
+              color: "#333",
+              weight: 1,
+              fillOpacity: 0.6
+            };
+          },
           onEachFeature: (feature, layer) => {
-            if (feature.properties && feature.properties.zone_name) {
-              layer.bindPopup(`<strong>Zone:</strong> ${feature.properties.zone_name}`);
-            }
+            const name = feature.properties.DISTRICT || feature.properties.DIST_NAME;
+            const value = npkValues[name] || 0;
+            layer.bindPopup(`<strong>${name}</strong><br>Nitrogen: ${value}`);
           }
         }).addTo(map);
-      })
-      .catch(err => {
-        console.error("Error loading GeoJSON:", err);
       });
   });
 </script>
+
 
 <div class="container my-4">
   <div class="card p-4">
     <div class="header-title mb-3">Soil Nutrient Grid</div>
     <div class="table-responsive">
-      <table class="table table-bordered text-center align-middle mb-0">
+      <table id="nutrient-data-body" class="table table-bordered text-center align-middle mb-0">
         <tbody>
           <tr>
             <td>
@@ -267,6 +295,7 @@
     chart.draw(data, options);
   }
 </script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
