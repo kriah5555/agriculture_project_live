@@ -278,77 +278,87 @@
 </style>
 
 
- <!-- Service Start -->
- 
-<div class="container-fluid py-5" id="service">
+<!-- Service Start -->
+<div class="container-fluid py-2" id="service">
     <div class="container py-3">
         <div class="section-title position-relative text-center">
-            <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Services</h6>
+            <h6 class="text-uppercase text-primary mb-5" style="letter-spacing: 3px; margin-bottom: 60px;">Services</h6>
             <h1 class="font-secondary display-4">What We Provide</h1>
         </div>
-        <div class="row">
-            <!-- Product 1: SoiLENZ -->
-            <div class="col-lg-3 mb-4">
-                <div class="product-item mb-2">
-                    <div class="product-img-1">
-                        <img class="img-fluid" src="{% static '/home/images/SoiLENZ.jpg' %}" alt="SoiLENZ" style="height: 250px; width: 250px;">
-                        <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong7">
-                            <i class="fa fa-2x fa-plus text-white"></i>
-                        </a>
-                    </div>
-                    <div class="bg-secondary text-center p-4">
-                        <h3 class="m-0">SoiLENZ</h3>
-                    </div>
-                </div>
+
+        <!-- Product 1: SoiLENZ -->
+        <div class="row align-items-center mb-5">
+            <div class="col-md-5">
+                <img class="img-fluid" src="{% static '/home/images/SoiLENZ.jpg' %}" alt="SoiLENZ" style="max-width: 100%;">
             </div>
-            <!-- Product 2: SoilLife -->
-            <div class="col-lg-3 mb-4">
-                <div class="product-item mb-2">
-                    <div class="product-img-2">
-                        <img class="img-fluid" src="{% static '/home/images/Soil_Life.jpg' %}" alt="SoilLife" style="height: 250px; width: 250px;">
-                        <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong2">
-                            <i class="fa fa-2x fa-plus text-white"></i>
-                        </a>
-                    </div>
-                    <div class="bg-secondary text-center p-4">
-                        <h3 class="m-0">SOILIFE</h3>
-                    </div>
-                </div>
-            </div>
-            <!-- Product 3: SoilSparsh -->
-            <div class="col-lg-3 mb-4">
-                <div class="product-item mb-2">
-                    <div class="product-img-3">
-                        <img class="img-fluid" src="{% static '/home/images/Soil_Sparsh.jpg' %}" alt="SoilSparsh" style="height: 250px; width: 250px;">
-                        <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong3">
-                            <i class="fa fa-2x fa-plus text-white"></i>
-                        </a>
-                    </div>
-                    <div class="bg-secondary text-center p-4">
-                        <h3 class="m-0">SOILSPARSH</h3>
-                    </div>
-                </div>
-            </div>
-           <!-- Product 4: Dashboard -->
-           <div class="col-lg-3 mb-4">
-            <div class="product-item mb-2">
-                <div class="product-img-4">
-                    <img class="img-fluid" src="{% static '/home/images/Dashboard.png' %}" alt="Dashboard " style="height: 200px; width: 250px;">
-                    <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong4">
-                        <i class="fa fa-2x fa-plus text-white"></i>
-                    </a>
-                </div>
-                <div class="bg-secondary text-center p-4">
-                    <h3 class="m-0">DASHBOARD</h3>
-                </div>
+            <div class="col-md-7">
+                SoiLENZ is a revolutionary AI-integrated product that delivers reliable, effortless, and accurate soil analysis directly on the farm. This portable device is a miniature testing lab that can be carried to the field, transported to remote and challenging locations where traditional soil testing labs are inaccessible. Our advanced technology provides detailed soil profiles, facilitating smart nutrient management and offering customized crop recommendations for enhanced agricultural productivity.Provides immediate soil test results, enabling quick decision-making in 20 minutes with customized recommendations. It Measures pH, electrical conductivity (EC), Organic Carbon OC, macronutrients (NPK) and micronutrients(Fe, Cu, Zn, B, S, Mn, Mg, Ca).
+                Key Features include-AI Integration, Portability, Comprehensive Soil Testing, Instant Results, Custom Recommendations, Rugged Design, No Initial Calibration, Self Cleaning, Cloud Interface, User-Friendly Interface, Real-Time Data Analysis, Enhanced Productivity and Sustainability.
             </div>
         </div>
 
+        <!-- Product 2: SoilLife -->
+        <div class="row align-items-center mb-3">
+            <div class="col-md-5">
+                <img class="img-fluid" src="{% static '/home/images/Soil_Life.jpg' %}" alt="SoilLife" style="max-width: 100%;">
+            </div>
+            <div class="col-md-7">
+                SoilSparsh is an advanced, portable device engineered to precisely measure moisture, humidity, and temperature, providing comprehensive micro climatic monitoring of the surrounding environment. Designed for seamless integration with IoT-based setups and devices, SoilSparsh empowers farmers with real-time data and insights. This enables informed, onsite decision-making for optimizing smart irrigation management systems, ensuring efficient water usage and enhancing agricultural productivity.
             </div>
         </div>
+
+        <!-- Product 3: SoilSparsh -->
+        <div class="row align-items-center mb-3">
+            <div class="col-md-5">
+                <img class="img-fluid" src="{% static '/home/images/Soil_Sparsh.jpg' %}" alt="SoilSparsh" style="max-width: 100%;">
+            </div>
+            <div class="col-md-7">
+                SoiLIFE is an innovative chamber designed to be inserted into the soil to accurately measure organic carbon, microbial activity, and greenhouse gas (GHG) emissions. Equipped with state-of-the-art sensors, it delivers real-time data analysis of live soil conditions. This precise measurement of carbon emissions enables farmers to effectively manage their carbon credit scores.
+            </div>
+        </div>
+
+        <!-- Product 4: Dashboard -->
+        <div class="row align-items-center mb-3">
+            <div class="col-md-5">
+                <img class="img-fluid" src="{% static '/home/images/Dashboard.png' %}" alt="Dashboard" style="max-width: 100%;">
+            </div>
+            <div class="col-md-7">
+                The Dashboard is a centralized, monitoring and analytics platform designed to visualize and manage all soil test data gathered from devices like SoiLENZ. It provides a comprehensive overview of soil health, nutrient trends, and field-specific insights in a user-friendly web interface.
+            </div>
+        </div>
+
     </div>
 </div>
 <!-- Service End -->
+
+<style>
+    /* Control service section image sizing */
+    #service .img-fluid {
+        height: 200px;       /* You can tweak this */
+        width: auto;         /* Keeps aspect ratio */
+        object-fit: cover;   /* Keeps it clean and filled */
+    }
+
+    /* Control text content font-size & line spacing */
+    #service .col-md-7 {
+        font-size: 16px;          /* Adjust font size */
+        line-height: 1.7;         /* Adjust line spacing */
+        text-align: justify;      /* Optional: clean alignment */
+    }
+
+    /* Optional: reduce mobile image height */
+    @media (max-width: 768px) {
+        #service .img-fluid {
+            height: 150px;
+        }
+
+        #service .col-md-7 {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+    }
+</style>
+
 
 <!-- Modal Start for SoiLENZ -->
 <div class="modal fade" id="exampleModalLong7" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle1" aria-hidden="true">
@@ -608,172 +618,87 @@
 
 <!-- Testimonial Start -->
 <div class="container py-5" id="testimonial">
-    <div class="section-title position-relative text-center" style="margin-bottom: 90px;">
+    <div class="section-title text-center mb-5">
         <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">Testimonial</h6>
         <h1 class="display-4">Our Clients Say</h1>
     </div>
 
-    <div class="testimonial-stack-container">
-        <!-- Testimonial 1 -->
-        <div class="testimonial-section">
-            <div class="testimonial-row">
-                <div class="testimonial-text-side">
-                    <div class="testimonial-text-inner">
+    <div id="simpleSlider" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+
+            <!-- Slide 1 -->
+            <div class="carousel-item active">
+                <div class="d-flex align-items-center flex-wrap">
+                    <div class="w-50 p-3">
                         <p>The soil test showed that my soil's pH was too acidic for the crops I was planting. Adjusting the pH improved the health and yield of my crops dramatically.</p>
-                        <div class="testimonial-name-profession text-center">
-                            <h4 class="testimonial-name">Usha</h4>
-                            <span class="testimonial-profession">Farmer</span>
-                        </div>
+                        <h4>Usha</h4>
+                        <small>Farmer</small>
+                    </div>
+                    <div class="w-50 p-3">
+                        <img src="{% static '/home/images/photo1.jpg' %}" alt="Usha" style="width: 100%; height: auto; border-radius: 10px;">
                     </div>
                 </div>
-                <div class="testimonial-img-side">
-                    <img class="testimonial-img" src="{% static '/home/images/photo1.jpg' %}" alt="Client Photo">
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="carousel-item">
+                <div class="d-flex align-items-center flex-wrap">
+                    <div class="w-50 p-3">
+                        <p>The comprehensive soil analysis provided by the test has empowered me to make smarter decisions. My farm's output has improved, and I feel more confident in my crop management.</p>
+                        <h4>Hanumanthappa</h4>
+                        <small>Farmer</small>
+                    </div>
+                    <div class="w-50 p-3">
+                        <img src="{% static '/home/images/photo2.jpg' %}" alt="Hanumanthappa" style="width: 100%; height: auto; border-radius: 10px;">
+                    </div>
                 </div>
             </div>
+
+            <!-- Slide 3 -->
+            <div class="carousel-item">
+                <div class="d-flex align-items-center flex-wrap">
+                    <div class="w-50 p-3">
+                        <p>The pH results from the soil test guided me in choosing the right crops for my soil type. This has not only boosted my yields but also reduced my input costs.</p>
+                        <h4>Narasimhayya</h4>
+                        <small>Farmer</small>
+                    </div>
+                    <div class="w-50 p-3">
+                        <img src="{% static '/home/images/photo3.jpg' %}" alt="Narasimhayya" style="width: 100%; height: auto; border-radius: 10px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="carousel-item">
+                <div class="d-flex align-items-center flex-wrap">
+                    <div class="w-50 p-3">
+                        <p>Thanks to the soil test, I discovered my soil was deficient in zinc and manganese. Correcting these deficiencies has led to a noticeable boost in crop quality and yield.</p>
+                        <h4>Suresh</h4>
+                        <small>Farmer</small>
+                    </div>
+                    <div class="w-50 p-3">
+                        <img src="{% static '/home/images/photo4.jpg' %}" alt="Suresh" style="width: 100%; height: auto; border-radius: 10px;">
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- Testimonial 2 -->
-        <div class="testimonial-section">
-            <div class="testimonial-row">
-                <div class="testimonial-text-side">
-                    <div class="testimonial-text-inner">
-                        <p class="testimonial-italic mb-2">The comprehensive soil analysis provided by the test has empowered me to make smarter decisions. My farm's output has improved, and I feel more confident in my crop management.</p>
-                        <div class="testimonial-name-profession text-center">
-                            <h4 class="testimonial-name">Hanumanthappa</h4>
-                            <span class="testimonial-profession">Farmer</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial-img-side">
-                    <img class="testimonial-img" src="{% static '/home/images/photo2.jpg' %}" alt="Client Photo">
-                </div>
-            </div>
-        </div>
-
-        <!-- Testimonial 3 -->
-        <div class="testimonial-section">
-            <div class="testimonial-row">
-                <div class="testimonial-text-side">
-                    <div class="testimonial-text-inner">
-                        <p class="testimonial-italic mb-2">The pH results from the soil test guided me in choosing the right crops for my soil type. This has not only boosted my yields but also reduced my input costs.</p>
-                        <div class="testimonial-name-profession text-center">
-                            <h4 class="testimonial-name">Narasimhayya</h4>
-                            <span class="testimonial-profession">Farmer</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial-img-side">
-                    <img class="testimonial-img" src="{% static '/home/images/photo3.jpg' %}" alt="Client Photo">
-                </div>
-            </div>
-        </div>
-
-        <!-- Testimonial 4 -->
-        <div class="testimonial-section">
-            <div class="testimonial-row">
-                <div class="testimonial-text-side">
-                    <div class="testimonial-text-inner">
-                        <p class="testimonial-italic mb-2">Thanks to the soil test, I discovered my soil was deficient in zinc and manganese. Correcting these deficiencies has led to a noticeable boost in crop quality and yield.</p>
-                        <div class="testimonial-name-profession text-center">
-                            <h4 class="testimonial-name">Suresh</h4>
-                            <span class="testimonial-profession">Farmer</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial-img-side">
-                    <img class="testimonial-img" src="{% static '/home/images/photo4.jpg' %}" alt="Client Photo">
-                </div>
-            </div>
-        </div>
+        <!-- Controls -->
+        <a class="carousel-control-prev" href="#simpleSlider" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </a>
+        <a class="carousel-control-next" href="#simpleSlider" role="button" data-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </a>
     </div>
 </div>
-<!-- Testimonial End -->
-
-
 <style>
-.testimonial-stack-container {
-    position: relative;
-}
-
-.testimonial-section {
-    position: sticky;
-    height: 250px;
-    background: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    max-width: 90%;
-    margin: 0 auto;
-}
-
-.testimonial-section:nth-child(1) {
-    top: 95px;
-    z-index: 1;
-}
-.testimonial-section:nth-child(2) {
-    top: 105px;
-    z-index: 2;
-}
-.testimonial-section:nth-child(3) {
-    top: 115px;
-    z-index: 3;
-}
-.testimonial-section:nth-child(4) {
-    top: 125px;
-    z-index: 4;
-}
-
-.testimonial-row {
-    display: flex;
-    width: 90%;
-    max-width: 100%;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-}
-
-.testimonial-text-side,
-.testimonial-img-side {
-    width: auto;
-    flex: 1 1 0;
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.testimonial-img-side {
-    align-items: center;
-    justify-content: center;
-    display: flex;
-}
-
-.testimonial-img {
-    width: 90px;
-    height: 70px;
-    object-fit: cover;
-}
-
-.testimonial-italic,
-.testimonial-section p {
-    font-style: italic;
-    font-size: 1rem;
-    line-height: 1.4;
-    
-}
-
-.testimonial-name {
-    font-weight: bold;
-    font-size: 1rem;
-}
-
-.testimonial-profession {
-    color: #007bff;
-    font-size: 0.9rem;
-}
+    small{
+        color:rgb(0, 128, 255);
+    }
 </style>
+<!-- Testimonial End -->
 
 <!-- Milestones Start -->
 
