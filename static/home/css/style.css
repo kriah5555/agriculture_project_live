@@ -9753,16 +9753,17 @@ h4, h5, h6 {
 
 /* Footer Styles */
 .footer-custom {
-  background: url("/static/home/images/kajetan-sumila-GUUN5HivCSQ-unsplash.jpg") no-repeat bottom center;
-  background-position: 0 0;
+/*  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("/static/home/images/green-tea-bud-leaves-green-tea-plantations-morning.jpg") no-repeat center center; */
+  background: url("/static/home/images/green-tea-bud-leaves-green-tea-plantations-morning.jpg") no-repeat center center;
   background-size: cover;
-  color: #ffffff; /* text-white */
-  padding-top: 3rem; /* py-5 */
-  padding-bottom: 3rem; /* py-5 */
-  padding-left: 1.5rem; /* px-sm-3 */
-  padding-right: 1.5rem; /* px-sm-3 */
-  padding-left: 3rem; /* px-lg-5 */
-  padding-right: 3rem; /* px-lg-5 */
+/*  color: #ffffff; */
+/*  text-shadow: 1px 1px 2px rgba(0, 0, 0, 1); */
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  padding-left: 3rem;
+  padding-right: 3rem;
+  color: #000000 !important;  /* Force black text */
+  text-shadow: none !important;  /* Remove white text glow */
 }
 
 .footer-custom .footer-overlay {
