@@ -102,7 +102,7 @@
                 </div>
             </div>
             <div class="carousel-item position-relative" style="height: 100vh; min-height: 400px;">
-                <img class="position-absolute w-100 h-100" src="{% static '/home/images/aerial-view-small-village-country-roadside.jpg' %}" style="object-fit: cover;">
+                <img class="position-absolute w-100 h-100" src="{% static '/home/images/city-park.jpg' %}" style="object-fit: cover; filter: brightness(0.75);">
                 <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
                     <div class="p-3" style="max-width: 900px;">
                         <h2 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">ArkaShine</h2>
@@ -112,7 +112,7 @@
                 </div>
             </div>
             <div class="carousel-item position-relative" style="height: 100vh; min-height: 400px;">
-                <img class="position-absolute w-100 h-100" src="{% static '/home/images/green-tea-bud-leaves-green-tea-plantations-morning-nature-background.jpg' %}" style="object-fit: cover;">
+                <img class="position-absolute w-100 h-100" src="{% static '/home/images/strawberry-field.jpg' %}" style="object-fit: cover; filter: brightness(0.75);">
                 <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
                     <div class="p-3" style="max-width: 900px;">
                         <h2 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">ArkaShine</h2>
@@ -122,7 +122,7 @@
                 </div>
             </div>
             <div class="carousel-item position-relative" style="height: 100vh; min-height: 400px;">
-                <img class="position-absolute w-100 h-100" src="{% static '/home/images/sustainable-development-goals-still-life.jpg' %}" style="object-fit: cover;">
+                <img class="position-absolute w-100 h-100" src="{% static '/home/images/rows-agricultural-crops-field.jpg' %}" style="object-fit: cover; filter: brightness(0.75);">
                 <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
                     <div class="p-3" style="max-width: 900px;">
                         <h2 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">ArkaShine</h2>
@@ -289,7 +289,7 @@
         <!-- Product 1: SoiLENZ -->
         <div class="row align-items-center mb-5">
             <div class="col-md-5">
-                <img class="img-fluid" src="{% static '/home/images/SoiLENZ.jpg' %}" alt="SoiLENZ" style="max-width: 100%;">
+                <img class="img-fluid" src="{% static '/home/images/SoiLENZ.jpg' %}" alt="SoiLENZ" style="width:400px; height:400px;">
             </div>
             <div class="col-md-7">
                 SoiLENZ is a revolutionary AI-integrated product that delivers reliable, effortless, and accurate soil analysis directly on the farm. This portable device is a miniature testing lab that can be carried to the field, transported to remote and challenging locations where traditional soil testing labs are inaccessible. Our advanced technology provides detailed soil profiles, facilitating smart nutrient management and offering customized crop recommendations for enhanced agricultural productivity.Provides immediate soil test results, enabling quick decision-making in 20 minutes with customized recommendations. It Measures pH, electrical conductivity (EC), Organic Carbon OC, macronutrients (NPK) and micronutrients(Fe, Cu, Zn, B, S, Mn, Mg, Ca).
@@ -300,7 +300,7 @@
         <!-- Product 2: SoilLife -->
         <div class="row align-items-center mb-3">
             <div class="col-md-5">
-                <img class="img-fluid" src="{% static '/home/images/Soil_Life.jpg' %}" alt="SoilLife" style="max-width: 100%;">
+                <img class="img-fluid" src="{% static '/home/images/Soil_Life.jpg' %}" alt="SoilLife" style="width:400px; height:400px;">
             </div>
             <div class="col-md-7">
                 SoilSparsh is an advanced, portable device engineered to precisely measure moisture, humidity, and temperature, providing comprehensive micro climatic monitoring of the surrounding environment. Designed for seamless integration with IoT-based setups and devices, SoilSparsh empowers farmers with real-time data and insights. This enables informed, onsite decision-making for optimizing smart irrigation management systems, ensuring efficient water usage and enhancing agricultural productivity.
@@ -310,7 +310,7 @@
         <!-- Product 3: SoilSparsh -->
         <div class="row align-items-center mb-3">
             <div class="col-md-5">
-                <img class="img-fluid" src="{% static '/home/images/Soil_Sparsh.jpg' %}" alt="SoilSparsh" style="max-width: 100%;">
+                <img class="img-fluid" src="{% static '/home/images/Soil_Sparsh.jpg' %}" alt="SoilSparsh" style="width:260px; height:300px;">
             </div>
             <div class="col-md-7">
                 SoiLIFE is an innovative chamber designed to be inserted into the soil to accurately measure organic carbon, microbial activity, and greenhouse gas (GHG) emissions. Equipped with state-of-the-art sensors, it delivers real-time data analysis of live soil conditions. This precise measurement of carbon emissions enables farmers to effectively manage their carbon credit scores.
@@ -320,7 +320,7 @@
         <!-- Product 4: Dashboard -->
         <div class="row align-items-center mb-3">
             <div class="col-md-5">
-                <img class="img-fluid" src="{% static '/home/images/Dashboard.png' %}" alt="Dashboard" style="max-width: 100%;">
+                <img class="img-fluid" src="{% static '/home/images/Dashboard.png' %}" alt="Dashboard" style="width:400px; height:400px;">
             </div>
             <div class="col-md-7">
                 The Dashboard is a centralized, monitoring and analytics platform designed to visualize and manage all soil test data gathered from devices like SoiLENZ. It provides a comprehensive overview of soil health, nutrient trends, and field-specific insights in a user-friendly web interface.
@@ -1037,7 +1037,38 @@
         </div>
     </div>
 </div>
+<style>
+.footer-custom {
+    position: relative;
+    overflow: hidden;
+}
 
+.footer-custom::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: url("/static/home/images/green-tea-bud-leaves-green-tea-plantations-morning.jpg") no-repeat center center;
+    background-size: cover;
+    filter: blur(2.5px);
+    z-index: 0;
+}
+
+.footer-custom > * {
+    position: relative;
+    z-index: 1;
+}
+.footer-custom {
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+    color: white;
+    font-weight: 900;
+    font-size: 2rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    z-index: 1;
+}
+</style>
 <style>
 .footer-custom .row > [class^="col-"] {
     padding-left: 0;
