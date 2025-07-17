@@ -566,19 +566,80 @@
 
         <!-- Overlay Text -->
         <div class="position-absolute text-overlay">
-            <ul class="bold-text">
-                <li>Yield Increase: +10-20%</li>
-                <li>Input Efficiency: -15-30%</li>
-                <li>Environmental Benefits: -20% emissions</li>
-                <li>Profitability: +15-25%</li>
-                <li>Soil Health Improvement: +5-10%</li>
-                <li>Adoption Rate: 10,000+ farmers</li>
-                <li>Climate Resilience: -30% crop losses</li>
-            </ul>
+        <ul class="bold-text">
+            <li>Yield Increase: <span class="count-up" data-target="20">0</span>%</li>
+            <li>Input Efficiency: <span class="count-up" data-target="30">0</span>%</li>
+            <li>Environmental Benefits: <span class="count-up" data-target="20">0</span>%</li>
+            <li>Profitability: <span class="count-up" data-target="25">0</span>%</li>
+            <li>Soil Health Improvement: <span class="count-up" data-target="10">0</span>%</li>
+            <li>Adoption Rate: <span class="count-up" data-target="10000">0</span>+ farmers</li>
+            <li>Climate Resilience: <span class="count-up" data-target="30">0</span>%</li>
+        </ul>
     </div>
 </div>
-<!-- Impact End -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const counters = document.querySelectorAll(".count-up");
+    let hasAnimated = false;
 
+    function animateCounter(el) {
+        const target = +el.getAttribute("data-target");
+        const duration = 3000; // milliseconds
+        const frameRate = 60; // FPS
+        const totalFrames = Math.round(duration / (1000 / frameRate));
+        let frame = 0;
+
+        function update() {
+            frame++;
+            const progress = frame / totalFrames;
+            const current = Math.round(target * easeOutQuad(progress));
+
+            el.innerText = current.toLocaleString();
+
+            if (frame < totalFrames) {
+                requestAnimationFrame(update);
+            } else {
+                el.innerText = target.toLocaleString(); // make sure it's exact at end
+            }
+        }
+
+        update();
+    }
+
+    // Easing function for smoother animation
+    function easeOutQuad(t) {
+        return t * (2 - t);
+    }
+
+    function isVisible(el) {
+        const rect = el.getBoundingClientRect();
+        return rect.top < window.innerHeight && rect.bottom > 0;
+    }
+
+    function onScroll() {
+        if (!hasAnimated && counters.length > 0 && isVisible(counters[0])) {
+            counters.forEach(animateCounter);
+            hasAnimated = true;
+        }
+    }
+
+    window.addEventListener("scroll", onScroll);
+    onScroll(); // in case already visible
+});
+</script>
+<!-- Impact End -->
+<!-- 3As Section Start -->
+<div class="container-fluid p-5" id="">
+    <div class="section-title position-relative text-center">
+        <h6 class="text-uppercase text-primary mb-3" style="letter-spacing: 3px;">We follow The 3A's</h6>
+        <h1 class="display-4">Accuracy, Access, Action</h1>
+    </div>
+</div>
+    <div class="position-relative">
+        <!-- Full-width Image -->
+        <img class="img-fluid w-100" src="{% static '/home/images/3As.jpg' %}" alt="3A's Image" style="">
+</div>
+<!-- 3As Section End -->
 <!-- Custom CSS for overlay text -->
 <style>
     .position-relative {
