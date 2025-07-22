@@ -86,63 +86,200 @@
   <div class="container">
   <!-- Chart and Device Info -->
   <div class="row" style="margin-top: -85px;">
-    
-<!-- API Calls Line Chart Column -->
-<div id="graphCard" class="col-md-8 mb-4">
-  <div class="card p-3 w-100" style="max-width: 100%;">
-    <div class="d-flex justify-content-end">
-      <select id="timeframeSelector" class="form-select form-select-sm mb-3 w-auto">
-        <option value="weekly">Weekly</option>
-        <option value="monthly" selected>Monthly</option>
-        <option value="yearly">Yearly</option>
-      </select>
+    <!-- API Calls Line Chart Column -->
+    <div id="graphCard" class="col-md-8 mb-4">
+      <div class="card p-3 w-100" style="max-width: 100%;">
+        <div class="d-flex justify-content-end">
+          <select id="timeframeSelector" class="form-select form-select-sm mb-3 w-auto">
+            <option value="weekly">Weekly</option>
+            <option value="monthly" selected>Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </div>
+        <!-- Updated canvas height and width -->
+        <canvas id="apiCallsLineChart" style="background-color: white; height: 280px; width: 100%;"></canvas>
+      </div>
     </div>
-    <!-- Updated canvas height and width -->
-    <canvas id="apiCallsLineChart" style="background-color: white; height: 280px; width: 100%;"></canvas>
+    <!-- Donut Chart Container for Devices -->
+    <div id="devisesInfoCard" class="col-md-4 mb-4 d-flex flex-column align-items-end">
+      <div class="d-flex flex-column gap-3 w-100 align-items-end">
+        <!-- SoiLENZ Card with Donut Chart -->
+        <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit; width: 100%;">
+          <div class="donut-card d-flex flex-row align-items-center p-3 mb-3 w-100" style="min-width: 0;">
+            <i class="fas fa-temperature-low fa-2x text-success me-3"></i>
+            <div class="d-flex flex-column align-items-center w-100">
+              <h5 class="mb-1">SoiLENZ</h5>
+              <canvas id="soilSaathiChart" width="100" height="100"></canvas>
+              <p class="mb-0">Sample Tested {{ ss_api_counts}}</p>
+            </div>
+          </div>
+        </a>
+        <!-- SoilSparsh Card with Donut Chart -->
+        <a href="{% url 'atmos-sense-dashboard' %}" style="text-decoration: none; color: inherit; width: 100%;">
+          <div class="donut-card d-flex flex-row align-items-center p-3 mb-3 w-100" style="min-width: 0;">
+            <i class="fas fa-wind fa-2x text-info me-3"></i>
+            <div class="d-flex flex-column align-items-center w-100">
+              <h5 class="mb-1">SoilSparsh</h5>
+              <canvas id="atmoSenseChart" width="100" height="100"></canvas>
+              <p class="mb-0">Sample Tested {{ as_api_counts }}</p>
+            </div>
+          </div>
+        </a>
+        <!-- SoiLIFE Card with Donut Chart -->
+        <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit; width: 100%;">
+          <div class="donut-card d-flex flex-row align-items-center p-3 w-100" style="min-width: 0;">
+            <i class="fas fa-leaf fa-2x text-warning me-3"></i>
+            <div class="d-flex flex-column align-items-center w-100">
+              <h5 class="mb-1">SoiLIFE</h5>
+              <canvas id="soiLifeChart" width="100" height="100"></canvas>
+              <p class="mb-0">Sample Tested {{sl_api_counts}}</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+  <style>
+    #devisesInfoCard {
+      float: right;
+      margin-right: 0;
+    }
+    #devisesInfoCard .d-flex.flex-column.gap-3 > a {
+      width: 100%;
+      margin-bottom: 0.7rem;
+    }
+    #devisesInfoCard .donut-card {
+      width: 100%;
+      min-width: 0;
+      max-width: none;
+      margin-bottom: 0.7rem;
+    }
+    @media (max-width: 991.98px) {
+      #devisesInfoCard {
+        float: none;
+        margin: 0 auto;
+        width: 100%;
+      }
+      #devisesInfoCard .d-flex.flex-column.gap-3 > a {
+        width: 100%;
+        margin-bottom: 1rem;
+      }
+      #devisesInfoCard .donut-card {
+        margin-right: 0 !important;
+        margin-bottom: 1rem;
+      }
+    }
+  </style>
+  
+<!-- Impact Overview Card with Donut Chart 1 -->
+<div class="row justify-content-end mb-4">
+  <div class="col-md-4 d-flex justify-content-end">
+    <div class="card p-3 d-flex flex-column w-100" style="height: 355px; border-radius: 4px;">
+      <div class="d-flex justify-content-between align-items-center mb-2 w-100">
+        <h5 class="mb-0">Impact Overview</h5>
+        <select class="form-select form-select-sm w-auto" style="min-width: 90px;">
+          <option>Yearly</option>
+          <option>Monthly</option>
+          <option>Weekly</option>
+        </select>
+      </div>
+      <div class="d-flex flex-column align-items-center w-100">
+        <div id="impactDonutChartApex1" style="width:220px;height:110px;"></div>
+        <div class="fw-bold fs-4 mt-n3 mb-2" style="margin-top: -110px;">100 Kgs CO₂e Saved</div>
+      </div>
+      <div class="d-flex justify-content-around mt-2 w-100" style="font-size: 0.95rem;">
+        <span class="d-flex align-items-center">
+          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#4e79a7,#76b7b2);border-radius:50%;margin-right:6px;"></span>
+          GHG Reduced 30%
+        </span>
+        <span class="d-flex align-items-center">
+          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#f28e2b,#f6c85f);border-radius:50%;margin-right:6px;"></span>
+          Fertilizer Reduced 20%
+        </span>
+        <span class="d-flex align-items-center">
+          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#76b7b2,#4fc3f7);border-radius:50%;margin-right:6px;"></span>
+          Water Optimized 50%
+        </span>
+      </div>
+      <div class="text-muted mt-1" style="font-size: 0.92rem; margin-top: -10px;">
+        Reduced greenhouse gas and fertilizer use, with optimized water for crop growth.
+      </div>
+    </div>
+  </div>
+  <!-- Impact Overview Card with Donut Chart 2 -->
+  <div class="col-md-4 d-flex justify-content-end">
+    <div class="card p-3 d-flex flex-column w-100" style="height: 355px; border-radius: 4px;">
+      <div class="d-flex justify-content-between align-items-center mb-2 w-100">
+        <h5 class="mb-0">Impact Overview</h5>
+        <select class="form-select form-select-sm w-auto" style="min-width: 90px;">
+          <option>Yearly</option>
+          <option>Monthly</option>
+          <option>Weekly</option>
+        </select>
+      </div>
+      <div class="d-flex flex-column align-items-center w-100">
+        <div id="impactDonutChartApex2" style="width:220px;height:110px;"></div>
+        <div class="fw-bold fs-4 mt-n3 mb-2" style="margin-top: -110px;">100 Kgs CO₂e Saved</div>
+      </div>
+      <div class="d-flex justify-content-around mt-2 w-100" style="font-size: 0.95rem;">
+        <span class="d-flex align-items-center">
+          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#4e79a7,#76b7b2);border-radius:50%;margin-right:6px;"></span>
+          GHG Reduced 30%
+        </span>
+        <span class="d-flex align-items-center">
+          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#f28e2b,#f6c85f);border-radius:50%;margin-right:6px;"></span>
+          Fertilizer Reduced 20%
+        </span>
+        <span class="d-flex align-items-center">
+          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#76b7b2,#4fc3f7);border-radius:50%;margin-right:6px;"></span>
+          Water Optimized 50%
+        </span>
+      </div>
+      <div class="text-muted mt-1" style="font-size: 0.92rem; margin-top: -10px;">
+        Reduced greenhouse gas and fertilizer use, with optimized water for crop growth.
+      </div>
+    </div>
+  </div>
+  <!-- Impact Overview Card with Donut Chart 3 -->
+  <div class="col-md-4 d-flex justify-content-end">
+    <div class="card p-3 d-flex flex-column w-100" style="height: 355px; border-radius: 4px;">
+      <div class="d-flex justify-content-between align-items-center mb-2 w-100">
+        <h5 class="mb-0">Impact Overview</h5>
+        <select class="form-select form-select-sm w-auto" style="min-width: 90px;">
+          <option>Yearly</option>
+          <option>Monthly</option>
+          <option>Weekly</option>
+        </select>
+      </div>
+      <div class="d-flex flex-column align-items-center w-100">
+        <div id="impactDonutChartApex3" style="width:220px;height:110px;"></div>
+        <div class="fw-bold fs-4 mt-n3 mb-2" style="margin-top: -110px;">100 Kgs CO₂e Saved</div>
+      </div>
+      <div class="d-flex justify-content-around mt-2 w-100" style="font-size: 0.95rem;">
+        <span class="d-flex align-items-center">
+          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#4e79a7,#76b7b2);border-radius:50%;margin-right:6px;"></span>
+          GHG Reduced 30%
+        </span>
+        <span class="d-flex align-items-center">
+          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#f28e2b,#f6c85f);border-radius:50%;margin-right:6px;"></span>
+          Fertilizer Reduced 20%
+        </span>
+        <span class="d-flex align-items-center">
+          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#76b7b2,#4fc3f7);border-radius:50%;margin-right:6px;"></span>
+          Water Optimized 50%
+        </span>
+      </div>
+      <div class="text-muted mt-1" style="font-size: 0.92rem; margin-top: -10px;">
+        Reduced greenhouse gas and fertilizer use, with optimized water for crop growth.
+      </div>
+    </div>
   </div>
 </div>
 
-
-    <!-- Impact Overview Card Column -->
-    <div class="col-md-4 mb-4">
-      <div class="card p-3 d-flex flex-column w-100" style="height: 355px; border-radius: 4px;">
-        <div class="d-flex justify-content-between align-items-center mb-2 w-100">
-          <h5 class="mb-0">Impact Overview</h5>
-          <select class="form-select form-select-sm w-auto" style="min-width: 90px;">
-            <option>Yearly</option>
-            <option>Monthly</option>
-            <option>Weekly</option>
-          </select>
-        </div>
-        <div class="d-flex flex-column align-items-center w-100">
-          <div id="impactDonutChartApex" style="width:220px;height:110px;"></div>
-          <div class="fw-bold fs-4 mt-n3 mb-2" style="margin-top: -110px;">100 Kgs CO₂e Saved</div>
-        </div>
-        <div class="d-flex justify-content-around mt-2 w-100" style="font-size: 0.95rem;">
-          <span class="d-flex align-items-center">
-            <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#4e79a7,#76b7b2);border-radius:50%;margin-right:6px;"></span>
-            GHG Reduced 30%
-          </span>
-          <span class="d-flex align-items-center">
-            <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#f28e2b,#f6c85f);border-radius:50%;margin-right:6px;"></span>
-            Fertilizer Reduced 20%
-          </span>
-          <span class="d-flex align-items-center">
-            <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#76b7b2,#4fc3f7);border-radius:50%;margin-right:6px;"></span>
-            Water Optimized 50%
-          </span>
-        </div>
-        <div class="text-muted mt-1" style="font-size: 0.92rem; margin-top: -10px;">
-          Reduced greenhouse gas and fertilizer use, with optimized water for crop growth.
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ApexCharts CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-  <script>
+<!-- ApexCharts CDN -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+function renderImpactDonutChart(selector) {
   var options = {
     chart: {
       type: 'donut',
@@ -150,11 +287,10 @@
     },
     series: [30, 20, 50],
     labels: ['GHG Reduced', 'Fertilizer Reduced', 'Water Optimized'],
-    // Use solid colors
     colors: [
-      'url(#ghgGradient)',    // GHG Reduced
-      'url(#fertilizerGradient)', // Fertilizer Reduced
-      'url(#waterGradient)'   // Water Optimized
+      'url(#ghgGradient)',
+      'url(#fertilizerGradient)',
+      'url(#waterGradient)'
     ],
     legend: { show: false },
     dataLabels: { enabled: false },
@@ -177,13 +313,11 @@
     }
   };
 
-  // Render chart first, then inject SVG gradients
-  var chart = new ApexCharts(document.querySelector("#impactDonutChartApex"), options);
+  var chart = new ApexCharts(document.querySelector(selector), options);
   chart.render().then(function() {
-    // Inject SVG gradients for each segment
-    var svg = document.querySelector("#impactDonutChartApex svg defs") || document.querySelector("#impactDonutChartApex svg").insertAdjacentHTML('afterbegin', '<defs></defs>');
-    if (document.querySelector("#impactDonutChartApex svg defs")) {
-      document.querySelector("#impactDonutChartApex svg defs").innerHTML = `
+    var svgDefs = document.querySelector(selector + " svg defs");
+    if (svgDefs) {
+      svgDefs.innerHTML = `
         <linearGradient id="ghgGradient" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#4e79a7"/>
           <stop offset="100%" stop-color="#76b7b2"/>
@@ -199,82 +333,22 @@
       `;
     }
   });
-  </script>
+}
 
-  <!-- Donut Chart Container for Devices -->
-  <div id="devisesInfoCard" class="col-md-12 mb-4 d-flex flex-row justify-content-start align-items-stretch" style="width: 100%;">
-    <div class="d-flex flex-row gap-3 w-100">
-      <!-- SoiLENZ Card with Donut Chart -->
-      <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit; flex: 1;">
-        <div class="donut-card d-flex flex-row align-items-center p-3 me-3 w-100" style="min-width: 0;">
-          <i class="fas fa-temperature-low fa-2x text-success me-3"></i>
-          <div class="d-flex flex-column align-items-center w-100">
-            <h5 class="mb-1">SoiLENZ</h5>
-            <canvas id="soilSaathiChart" width="100" height="100"></canvas>
-            <p class="mb-0">Sample Tested {{ ss_api_counts}}</p>
-          </div>
-        </div>
-      </a>
+// Render for each card
+renderImpactDonutChart("#impactDonutChartApex1");
+renderImpactDonutChart("#impactDonutChartApex2");
+renderImpactDonutChart("#impactDonutChartApex3");
+</script>
 
-      <!-- SoilSparsh Card with Donut Chart -->
-      <a href="{% url 'atmos-sense-dashboard' %}" style="text-decoration: none; color: inherit; flex: 1;">
-        <div class="donut-card d-flex flex-row align-items-center p-3 me-3 w-100" style="min-width: 0;">
-          <i class="fas fa-wind fa-2x text-info me-3"></i>
-          <div class="d-flex flex-column align-items-center w-100">
-            <h5 class="mb-1">SoilSparsh</h5>
-            <canvas id="atmoSenseChart" width="100" height="100"></canvas>
-            <p class="mb-0">Sample Tested {{ as_api_counts }}</p>
-          </div>
-        </div>
-      </a>
-
-      <!-- SoiLIFE Card with Donut Chart -->
-      <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit; flex: 1;">
-        <div class="donut-card d-flex flex-row align-items-center p-3 w-100" style="min-width: 0;">
-          <i class="fas fa-leaf fa-2x text-warning me-3"></i>
-          <div class="d-flex flex-column align-items-center w-100">
-            <h5 class="mb-1">SoiLIFE</h5>
-            <canvas id="soiLifeChart" width="100" height="100"></canvas>
-            <p class="mb-0">Sample Tested {{sl_api_counts}}</p>
-          </div>
-        </div>
-      </a>
-    </div>
-  </div>
-  <style>
-    #devisesInfoCard .donut-card {
-      width: 100%;
-      min-width: 0;
-      flex: 1 1 0;
-      max-width: none;
-    }
-    #devisesInfoCard .d-flex.flex-row.gap-3 > a {
-      flex: 1 1 0;
-      min-width: 0;
-    }
-    @media (max-width: 991.98px) {
-      #devisesInfoCard .d-flex.flex-row.gap-3 {
-        flex-direction: column;
-        gap: 1rem;
-      }
-      #devisesInfoCard .donut-card {
-        margin-right: 0 !important;
-      }
-    }
-  </style>
-
-  <div class="row" style="margin-top: 30px;">
-    <div id="map" class="col-md-12 mb-12">
-      <div id="leaflet-map" style="height: 400px;"></div>
-    </div>
-  </div>
-</div>
-</div>
-<!-- For chart -->
+<!-- Map Section Start -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Leaflet.js Script -->
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+<!-- Add the map container -->
+<div id="leaflet-map" style="width: 100%; height: 400px; margin-bottom: 24px; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.10);"></div>
 
 <!-- Map script -->
 <script>
@@ -308,6 +382,8 @@
     }).addTo(map).bindPopup(device.name);
   });
 </script>
+
+<!-- Map Section End -->
 
 <!-- Chart script -->
 <script>
