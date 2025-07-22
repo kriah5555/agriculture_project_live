@@ -88,7 +88,7 @@
   <div class="row" style="margin-top: -85px;">
     <!-- API Calls Line Chart Column -->
     <div id="graphCard" class="col-md-8 mb-4">
-      <div class="card p-3 w-100" style="max-width: 100%;">
+      <div class="card p-3 w-100" style="max-width: 100%; min-height: 615px;">
         <div class="d-flex justify-content-end">
           <select id="timeframeSelector" class="form-select form-select-sm mb-3 w-auto">
             <option value="weekly">Weekly</option>
@@ -97,45 +97,45 @@
           </select>
         </div>
         <!-- Updated canvas height and width -->
-        <canvas id="apiCallsLineChart" style="background-color: white; height: 280px; width: 100%;"></canvas>
+        <canvas id="apiCallsLineChart" style="background-color: white; height: 540px; width: 100%;"></canvas>
       </div>
     </div>
     <!-- Donut Chart Container for Devices -->
     <div id="devisesInfoCard" class="col-md-4 mb-4 d-flex flex-column align-items-end">
-      <div class="d-flex flex-column gap-3 w-100 align-items-end">
-        <!-- SoiLENZ Card with Donut Chart -->
-        <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit; width: 100%;">
-          <div class="donut-card d-flex flex-row align-items-center p-3 mb-3 w-100" style="min-width: 0;">
-            <i class="fas fa-temperature-low fa-2x text-success me-3"></i>
-            <div class="d-flex flex-column align-items-center w-100">
-              <h5 class="mb-1">SoiLENZ</h5>
-              <canvas id="soilSaathiChart" width="100" height="100"></canvas>
-              <p class="mb-0">Sample Tested {{ ss_api_counts}}</p>
-            </div>
-          </div>
-        </a>
-        <!-- SoilSparsh Card with Donut Chart -->
-        <a href="{% url 'atmos-sense-dashboard' %}" style="text-decoration: none; color: inherit; width: 100%;">
-          <div class="donut-card d-flex flex-row align-items-center p-3 mb-3 w-100" style="min-width: 0;">
-            <i class="fas fa-wind fa-2x text-info me-3"></i>
-            <div class="d-flex flex-column align-items-center w-100">
-              <h5 class="mb-1">SoilSparsh</h5>
-              <canvas id="atmoSenseChart" width="100" height="100"></canvas>
-              <p class="mb-0">Sample Tested {{ as_api_counts }}</p>
-            </div>
-          </div>
-        </a>
-        <!-- SoiLIFE Card with Donut Chart -->
-        <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit; width: 100%;">
-          <div class="donut-card d-flex flex-row align-items-center p-3 w-100" style="min-width: 0;">
-            <i class="fas fa-leaf fa-2x text-warning me-3"></i>
-            <div class="d-flex flex-column align-items-center w-100">
-              <h5 class="mb-1">SoiLIFE</h5>
-              <canvas id="soiLifeChart" width="100" height="100"></canvas>
-              <p class="mb-0">Sample Tested {{sl_api_counts}}</p>
-            </div>
-          </div>
-        </a>
+      <div class="d-flex flex-column gap-2 w-100 align-items-end">
+      <!-- SoiLENZ Card with Donut Chart -->
+      <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit; width: 100%;">
+        <div class="donut-card d-flex flex-row align-items-center p-3 mb-2 w-100" style="min-width: 0;">
+        <i class="fas fa-temperature-low fa-2x text-success me-3"></i>
+        <div class="d-flex flex-column align-items-center w-100">
+          <h5 class="mb-1">SoiLENZ</h5>
+          <canvas id="soilSaathiChart" width="100" height="100"></canvas>
+          <p class="mb-0">Sample Tested {{ ss_api_counts}}</p>
+        </div>
+        </div>
+      </a>
+      <!-- SoilSparsh Card with Donut Chart -->
+      <a href="{% url 'atmos-sense-dashboard' %}" style="text-decoration: none; color: inherit; width: 100%;">
+        <div class="donut-card d-flex flex-row align-items-center p-3 mb-2 w-100" style="min-width: 0;">
+        <i class="fas fa-wind fa-2x text-info me-3"></i>
+        <div class="d-flex flex-column align-items-center w-100">
+          <h5 class="mb-1">SoilSparsh</h5>
+          <canvas id="atmoSenseChart" width="100" height="100"></canvas>
+          <p class="mb-0">Sample Tested {{ as_api_counts }}</p>
+        </div>
+        </div>
+      </a>
+      <!-- SoiLIFE Card with Donut Chart -->
+      <a href="{% url 'soil-saathi-dashboard' %}" style="text-decoration: none; color: inherit; width: 100%;">
+        <div class="donut-card d-flex flex-row align-items-center p-3 w-100" style="min-width: 0;">
+        <i class="fas fa-leaf fa-2x text-warning me-3"></i>
+        <div class="d-flex flex-column align-items-center w-100">
+          <h5 class="mb-1">SoiLIFE</h5>
+          <canvas id="soiLifeChart" width="100" height="100"></canvas>
+          <p class="mb-0">Sample Tested {{sl_api_counts}}</p>
+        </div>
+        </div>
+      </a>
       </div>
     </div>
   </div>
@@ -192,14 +192,6 @@
           <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#4e79a7,#76b7b2);border-radius:50%;margin-right:6px;"></span>
           GHG Reduced 30%
         </span>
-        <span class="d-flex align-items-center">
-          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#f28e2b,#f6c85f);border-radius:50%;margin-right:6px;"></span>
-          Fertilizer Reduced 20%
-        </span>
-        <span class="d-flex align-items-center">
-          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#76b7b2,#4fc3f7);border-radius:50%;margin-right:6px;"></span>
-          Water Optimized 50%
-        </span>
       </div>
       <div class="text-muted mt-1" style="font-size: 0.92rem; margin-top: -10px;">
         Reduced greenhouse gas and fertilizer use, with optimized water for crop growth.
@@ -223,16 +215,8 @@
       </div>
       <div class="d-flex justify-content-around mt-2 w-100" style="font-size: 0.95rem;">
         <span class="d-flex align-items-center">
-          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#4e79a7,#76b7b2);border-radius:50%;margin-right:6px;"></span>
-          GHG Reduced 30%
-        </span>
-        <span class="d-flex align-items-center">
           <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#f28e2b,#f6c85f);border-radius:50%;margin-right:6px;"></span>
           Fertilizer Reduced 20%
-        </span>
-        <span class="d-flex align-items-center">
-          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#76b7b2,#4fc3f7);border-radius:50%;margin-right:6px;"></span>
-          Water Optimized 50%
         </span>
       </div>
       <div class="text-muted mt-1" style="font-size: 0.92rem; margin-top: -10px;">
@@ -257,14 +241,6 @@
       </div>
       <div class="d-flex justify-content-around mt-2 w-100" style="font-size: 0.95rem;">
         <span class="d-flex align-items-center">
-          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#4e79a7,#76b7b2);border-radius:50%;margin-right:6px;"></span>
-          GHG Reduced 30%
-        </span>
-        <span class="d-flex align-items-center">
-          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#f28e2b,#f6c85f);border-radius:50%;margin-right:6px;"></span>
-          Fertilizer Reduced 20%
-        </span>
-        <span class="d-flex align-items-center">
           <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#76b7b2,#4fc3f7);border-radius:50%;margin-right:6px;"></span>
           Water Optimized 50%
         </span>
@@ -279,66 +255,152 @@
 <!-- ApexCharts CDN -->
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-function renderImpactDonutChart(selector) {
-  var options = {
-    chart: {
-      type: 'donut',
-      height: 200,
-    },
-    series: [30, 20, 50],
-    labels: ['GHG Reduced', 'Fertilizer Reduced', 'Water Optimized'],
-    colors: [
-      'url(#ghgGradient)',
-      'url(#fertilizerGradient)',
-      'url(#waterGradient)'
-    ],
-    legend: { show: false },
-    dataLabels: { enabled: false },
-    stroke: { width: 0 },
-    plotOptions: {
-      pie: {
-        startAngle: -90,
-        endAngle: 90,
-        donut: {
-          size: '70%',
-        }
-      }
-    },
-    tooltip: {
-      y: {
-        formatter: function(val, opts) {
-          return opts.w.globals.labels[opts.seriesIndex] + ': ' + val + '%';
-        }
+// Chart 1: GHG Reduced
+var options1 = {
+  chart: {
+    type: 'donut',
+    height: 200,
+  },
+  series: [30, 70], // 30% reduced, 70% remaining
+  labels: ['GHG Reduced', 'Remaining'],
+  colors: [
+    'url(#ghgGradient)',
+    'url(#ghgGradientRemaining)'
+  ],
+  legend: { show: false },
+  dataLabels: { enabled: false },
+  stroke: { width: 0 },
+  plotOptions: {
+    pie: {
+      startAngle: -90,
+      endAngle: 90,
+      donut: {
+        size: '70%',
       }
     }
-  };
-
-  var chart = new ApexCharts(document.querySelector(selector), options);
-  chart.render().then(function() {
-    var svgDefs = document.querySelector(selector + " svg defs");
-    if (svgDefs) {
-      svgDefs.innerHTML = `
-        <linearGradient id="ghgGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#4e79a7"/>
-          <stop offset="100%" stop-color="#76b7b2"/>
-        </linearGradient>
-        <linearGradient id="fertilizerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#f28e2b"/>
-          <stop offset="100%" stop-color="#f6c85f"/>
-        </linearGradient>
-        <linearGradient id="waterGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#76b7b2"/>
-          <stop offset="100%" stop-color="#4fc3f7"/>
-        </linearGradient>
-      `;
+  },
+  tooltip: {
+    y: {
+      formatter: function(val, opts) {
+        return opts.w.globals.labels[opts.seriesIndex] + ': ' + val + '%';
+      }
     }
-  });
-}
+  }
+};
+var chart1 = new ApexCharts(document.querySelector("#impactDonutChartApex1"), options1);
+chart1.render().then(function() {
+  var svgDefs = document.querySelector("#impactDonutChartApex1 svg defs");
+  if (svgDefs) {
+    svgDefs.innerHTML = `
+      <linearGradient id="ghgGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4e79a7"/>
+        <stop offset="100%" stop-color="#76b7b2"/>
+      </linearGradient>
+      <linearGradient id="ghgGradientRemaining" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#b0b7c3"/>
+        <stop offset="100%" stop-color="#e0e4ea"/>
+      </linearGradient>
+    `;
+  }
+});
 
-// Render for each card
-renderImpactDonutChart("#impactDonutChartApex1");
-renderImpactDonutChart("#impactDonutChartApex2");
-renderImpactDonutChart("#impactDonutChartApex3");
+// Chart 2: Fertilizer Reduced
+var options2 = {
+  chart: {
+    type: 'donut',
+    height: 200,
+  },
+  series: [20, 80], // 20% reduced, 80% remaining
+  labels: ['Fertilizer Reduced', 'Remaining'],
+  colors: [
+    'url(#fertilizerGradient)',
+    'url(#ghgGradientRemaining)'
+  ],
+  legend: { show: false },
+  dataLabels: { enabled: false },
+  stroke: { width: 0 },
+  plotOptions: {
+    pie: {
+      startAngle: -90,
+      endAngle: 90,
+      donut: {
+        size: '70%',
+      }
+    }
+  },
+  tooltip: {
+    y: {
+      formatter: function(val, opts) {
+        return opts.w.globals.labels[opts.seriesIndex] + ': ' + val + '%';
+      }
+    }
+  }
+};
+var chart2 = new ApexCharts(document.querySelector("#impactDonutChartApex2"), options2);
+chart2.render().then(function() {
+  var svgDefs = document.querySelector("#impactDonutChartApex2 svg defs");
+  if (svgDefs) {
+    svgDefs.innerHTML = `
+      <linearGradient id="fertilizerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#f28e2b"/>
+        <stop offset="100%" stop-color="#f6c85f"/>
+      </linearGradient>
+      <linearGradient id="ghgGradientRemaining" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#b0b7c3"/>
+        <stop offset="100%" stop-color="#e0e4ea"/>
+      </linearGradient>      
+    `;
+  }
+});
+
+// Chart 3: Water Optimized
+var options3 = {
+  chart: {
+    type: 'donut',
+    height: 200,
+  },
+  series: [50, 50], // 50% optimized, 50% remaining
+  labels: ['Water Optimized', 'Remaining'],
+  colors: [
+    'url(#waterGradient)',
+    'url(#ghgGradientRemaining)'
+  ],
+  legend: { show: false },
+  dataLabels: { enabled: false },
+  stroke: { width: 0 },
+  plotOptions: {
+    pie: {
+      startAngle: -90,
+      endAngle: 90,
+      donut: {
+        size: '70%',
+      }
+    }
+  },
+  tooltip: {
+    y: {
+      formatter: function(val, opts) {
+        return opts.w.globals.labels[opts.seriesIndex] + ': ' + val + '%';
+      }
+    }
+  }
+};
+var chart3 = new ApexCharts(document.querySelector("#impactDonutChartApex3"), options3);
+chart3.render().then(function() {
+  var svgDefs = document.querySelector("#impactDonutChartApex3 svg defs");
+  if (svgDefs) {
+    svgDefs.innerHTML = `
+      <linearGradient id="waterGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#76b7b2"/>
+        <stop offset="100%" stop-color="#4fc3f7"/>
+      </linearGradient>
+      <linearGradient id="ghgGradientRemaining" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#b0b7c3"/>
+        <stop offset="100%" stop-color="#e0e4ea"/>
+      </linearGradient>
+    `;
+  }
+});
 </script>
 
 <!-- Map Section Start -->
