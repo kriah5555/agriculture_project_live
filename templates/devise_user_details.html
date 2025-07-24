@@ -1,6 +1,7 @@
 {% include "soil_saathi_parm_comparison_popup_bar_chart.html" %}
 {% include "map_popup.html" %}
 {% include "form_popup.html" %}
+{% load static %}
 
 <head>
     <meta charset="UTF-8" />
@@ -11,8 +12,33 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
 
-<body  style="margin: 20px; background-color: #e7e6e6;">
-
+<body  style="background-color: #F5F5DC;">
+<div style="
+  background: url('{% static 'home/images/cc9.jpg' %}') no-repeat top center;
+  background-size: cover;
+  height: 300px;
+  width: 100%;
+  position: relative;
+  filter: brightness(1.1) drop-shadow(0 0 10px #4F7942);
+">
+</div>
+    </div>
+    <div style="position: absolute; right: 30px; top: 40px; transform: translateY(-50%); height: 90px; display: flex; align-items: center; justify-content: flex-end; width: 100%;">
+      <img src="{% static 'home/images/arkashine-transparent-logo.png' %}" alt="Logo" style="height: 45px;"/>
+    </div>
+    <div style="position: absolute; left: 30px; top: 40px; transform: translateY(-50%); height: 90px; display: flex; align-items: center; z-index: 2;">
+      <span id="live-time" style="font-size: 1.3rem; color: rgba(255,255,255,0.6)"></span>
+    </div>
+    <script>
+      function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        document.getElementById('live-time').textContent = timeString;
+      }
+      setInterval(updateTime, 1000);
+      updateTime();
+    </script>
+    
     <!-- Popup code -->
     <div>
         <!-- Background Overlay -->
@@ -24,7 +50,7 @@
             <div id="logoutPopup" 
                 style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
                 background: white; padding: 20px; box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
-                border-radius: 8px; text-align: center; z-index: 1000; width: 60%; height: 80%; overflow-y: auto;">
+                border-radius: 4px; text-align: center; z-index: 1000; width: 60%; height: 80%; overflow-y: auto;">
 
             <div id="popupContent" style="display: flex; align-items: center; justify-content: space-around;">
                 <!-- Left Side: Image + Data Fields -->
@@ -39,7 +65,7 @@
                 </div>
             </div>
 
-            <button onclick="hidePopup()" style="margin-top: 10px; padding: 10px 20px; background: gray; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            <button onclick="hidePopup()" style="margin-top: 10px; padding: 10px 20px; background: gray; color: white; border: none; border-radius: 4px; cursor: pointer;">
                 Close
             </button>
 
@@ -50,19 +76,17 @@
    
     <div class="header" style="display: flex; justify-content: flex-end; padding: 10px;">
         <a href="{% url 'logout' %}" class="nav-link" title="Logout" 
-           style="text-decoration: none; color: #000; font-weight: bold; display: flex; align-items: center; gap: 5px;">
-            <i class="fas fa-sign-out-alt" style="font-size: 18px;"></i>
-            <span class="nav-text">Logout</span>
+           style="text-decoration: none; color: #000; font-weight: bold; display: flex; align-items: center; gap: 5px; background-color: #ffffff">
+            <span class="fa fa-sign-out"> Logout</span>
         </a>    
     </div>
     
-    <div>
         <div class="row" style="display: flex;" >
     
             <!-- Left Column (User Details and Device List) -->
             <div class="col-lg-4 d-flex flex-column" >
                 <!-- User Details Card -->
-                <div class="card mb-4 bg-light flex-fill" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <div class="card mb-4 bg-light flex-fill" style="border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-left: 20px; height:50px;">
                     <div class="card-body text-center">
                         <!-- Centering the image -->
                         <div class="d-flex justify-content-center mb-3">
@@ -130,7 +154,7 @@
     
     
                 <!-- Device List Card -->
-                <div class="card bg-light flex-fill" style="overflow-y: auto;max-height: 300px;border-radius: 1%; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <div class="card bg-light flex-fill" style="margin-left: 20px; overflow-y: auto;max-height: 300px;border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                     <div class="card-body">
                 
                         <h5 class="text-primary">Devises linked </h5>
@@ -190,7 +214,8 @@
             </div>
     
             <!-- Right Column (Device Details) -->
-            <div class="col-lg-8 d-flex flex-column bg-white rounded-3 shadow-sm" style="padding: 20px;">
+        <div class="col-lg-8">
+            <div class="d-flex flex-column bg-white rounded-3 shadow-sm" style="padding: 20px; margin-right: 20px; height: 600px;">
                 <div class="container mt-4">
                     <div class="row">
                         <!-- Device Name Section -->
@@ -200,7 +225,7 @@
                     <div class="row">
                         <!-- Device Info Section -->
                         <div class="col-md-6 mb-3">
-                            <div class="card h-100 shadow-sm border-0 rounded-3" style="background-color: #ffffff; height: 100%;">
+                            <div class="card h-100 shadow-sm border-0 rounded-3" style="background-color: #ffffff;">
                                 <div class="card-header bg-primary text-white rounded-3">
                                     <h4 class="mb-0">Device Information</h4>
                                 </div>
@@ -242,13 +267,13 @@
     
                     </div>
                 </div>
+            </div> 
             </div>
-             
         </div>
     
        
         <!-- Bottom Division for API Call Details -->
-        <div id="api-details-container" class="mt-4" style="display: none;">
+        <div id="api-details-container" class="mt-4 custom-margin" style="display: none;">
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex align-items-center">
                     <h5 class="mb-0 flex-grow-1">
@@ -274,10 +299,14 @@
                 </div>
             </div>
         </div>
-
-    </div>
 </body>
-
+<style>
+    html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* important to prevent horizontal scroll */
+}
+</style>
 <!-- Add Hover Effects for Icons -->
 <style>
     .fa-pencil-alt:hover, .fa-key:hover {
@@ -574,7 +603,7 @@
 
         // 🔹 Show Image if Needed
         if (selected_devise.devise_type === 'atmo_sense' && api.image_path) {
-            popupImageDiv.innerHTML = `<img src="${api.image_path}" style="width: 400px; height: 400px; border-radius: 8px;">`;
+            popupImageDiv.innerHTML = `<img src="${api.image_path}" style="width: 400px; height: 400px; border-radius: 4px;">`;
         }
 
         // 🔹 Add PDF Download Icon if devise type is 'soilsaathi'
