@@ -43,3 +43,15 @@ def get_recommendation(request):
     # The model is dependent on pandas module and it is required above example format type to be sent
 #            result = run_modal(soil_nutrients)
 #            return render({'recommendation': result})
+
+from .models import Crop  # import the class you just created
+
+def dashboard_view(request):
+    crops = [
+        Crop(name='Beans', image_name='crop1-beans.png'),
+        Crop(name='Paddy', image_name='crop2-paddy.png'),
+        Crop(name='Ragi', image_name='crop3-ragi.png'),
+        Crop(name='Rice', image_name='crop4-rice.png'),
+        Crop(name='Wheat', image_name='crop5-wheat.png'),
+    ]
+    return render(request, 'crop_recom_dashb.html', {'crops': crops})
