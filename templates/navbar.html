@@ -11,10 +11,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   </head>
   <body>
-    
-    <div class="header-image">
-      <img src="{% static 'home/images/cc9.jpg' %}" alt="Header Image">
-    </div>
     <div class="wrapper">
       <nav id="sidebar" class="collapsed">
         <ul class="list-unstyled">
@@ -68,7 +64,7 @@
         <ul class="list-unstyled">
           
       </nav>
-      <div id="content" class="container-fluid mt-5">
+      <div id="content" class="container-fluid">
         <!-- Main Content -->
         {% if messages %}
         {% for message in messages %}
@@ -267,32 +263,11 @@
 
   <!-- header image style -->
    <style>
-    /* Style the image at the top */
-    .header-image {
-      position: absolute;
-      top: 0; /* Place the image at the very top of the viewport */
-      left: 0;
-      width: 100%;
-      height: 10vh; /* 10% of the viewport height */
-      z-index: -1; /* Ensure the image is behind the content */
-    }
-
-    .header-image img {
-      width: 100%; /* Make the image take up the full width */
-      height: 100%; /* Make the image take up the full height */
-      object-fit: cover; /* Ensure the image is cropped and covers the container */
-    }
 
     /* Ensure other content is not affected by the image */
     .wrapper {
       position: relative;
       z-index: 1; /* Make sure the wrapper content is above the image */
-    }
-
-    @media (max-width: 768px) {
-      .header-image {
-        height: 10vh; /* Image will still cover 10% of the viewport */
-      }
     }
    </style>
 </html>

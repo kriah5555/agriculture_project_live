@@ -66,7 +66,6 @@ urlpatterns = [
 
     path('user-page/', login_required(v.userPage), name = "user-page"),
     path('api-threshold/<int:pk>/', v.create_or_update_threshold, name='create-or-update-threshold'),
-    
-    
+    path('get-all-npk-values/', v.get_all_NPK_values, name='create-or-update-threshold'),
 
 ]
