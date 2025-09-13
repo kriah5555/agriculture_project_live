@@ -628,6 +628,40 @@ def create_or_update_threshold(request, pk):
     else:
         return JsonResponse(serializer.errors, status=400)
 
+def get_all_NPK_values(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Only GET allowed."}, status=405)
+
+    queryset = DeviseApis.objects.filter(
+        latitude__isnull=False,
+        longitude__isnull=False
+    ).exclude(
+        latitude=0,
+        longitude=0
+    ).filter(
+        nitrogen__gt=0
+    ) | DeviseApis.objects.filter(
+        latitude__isnull=False,
+        longitude__isnull=False
+    ).exclude(
+        latitude=0,
+        longitude=0
+    ).filter(
+        phosphorous__gt=0
+    ) | DeviseApis.objects.filter(
+        latitude__isnull=False,
+        longitude__isnull=False
+    ).exclude(
+        latitude=0,
+        longitude=0
+    ).filter(
+        potassium__gt=0
+    )
+
+    data = list(queryset.values('latitude', 'longitude', 'nitrogen', 'phosphorous', 'potassium'))
+
+    return JsonResponse({'data': data})
+
 def change_password(request, uid):
     # resp = user_login_access(request)
     # if  resp:

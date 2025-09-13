@@ -37,6 +37,6 @@ urlpatterns = [
     path('', include('agriapp.urls')),
     path('', include('map.urls')),
     path('api/', include('devise_apis.urls')),
-    path('predicter/', include('predicter.urls')),
+    path('', include('predicter.urls')),
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 

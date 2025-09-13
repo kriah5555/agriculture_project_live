@@ -441,127 +441,85 @@
             document.getElementById('device-name').textContent = 'Device not found';
             document.getElementById('device-info').innerHTML = '';
         }
-}
+    }
 
-    async function fetchData(id) {
-    try {
-        const response = await fetch(`${url}/${id}`);
+    async function fetchData(id) 
+    {
+        try {
+            const response = await fetch(`${url}/${id}`);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        // Parse the JSON data
-        const deviseData = await response.json();
-
-        // Update the headers dynamically
-        const apiDetailsHeaders = document.getElementById('api-details-headers');
-        apiDetailsHeaders.innerHTML = ""; // Clear existing headers
-        for (const [key, value] of Object.entries(deviseData.headers)) {
-            const th = document.createElement('th');
-            th.textContent = value;
-            apiDetailsHeaders.appendChild(th);
-        }
-
-        // Populate the API details table rows
-        const apiDetailsTable = document.getElementById('api-details-table');
-        apiDetailsTable.innerHTML = ""; // Clear existing rows
-        deviseData.data.forEach(api => {
-            const row = document.createElement('tr');
-            let rowContent = '';
-
-            // Dynamically create table cells based on the headers
-            for (const headerKey in deviseData.headers) {
-                const cellValue = api[headerKey] !== undefined ? api[headerKey] : '';
-
-                // Check if the header is for an image, if so, generate image HTML
-                if (headerKey === 'image_path') {
-                    rowContent += `<td>${api.image_path ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />` : ''}</td>`;
-                }
-                else if (headerKey === 'recommendation') {
-rowContent += `<td class='no-redirect-cell'>
-    <button class="btn btn-sm predict-btn" data-api-id="${api.id}" style="background-color:rgb(31, 139, 255); color: #ffffff; border-radius: 0; height:30px; width: 95px;">
-        click to view
-    </button></td>`;
-                }
-                else {
-                    rowContent += `<td>${cellValue}</td>`;
-                }
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-// Make the entire row clickable
-row.style.cursor = "pointer";  // Changes the cursor to pointer when hovering over the row
+            // Parse the JSON data
+            const deviseData = await response.json();
 
-// Don't redirect when recommendation cell is clicked, Only redirect when the "click to view" button is clicked
-
-/*
-row.addEventListener("click", function (event) {
-    const td = event.target.closest('.no-redirect-cell');
-    const isButton = event.target.classList.contains('predict-btn');
-
-    if (td) {
-        // If clicked inside the cell but NOT on the button
-        if (!isButton) {
-            // Check if message already exists
-            if (!td.querySelector('.predict-msg')) {
-                const msg = document.createElement('div');
-                msg.className = 'predict-msg';
-                msg.style.color = 'red';
-                msg.style.marginTop = '5px';
-                msg.style.fontStyle = 'italic';
-                msg.style.size = '10px';
-                msg.textContent = 'click on the button';
-                td.appendChild(msg);
-
-                // Optional: remove after 3 seconds
-                setTimeout(() => {
-                    msg.remove();
-                }, 2000);
+            // Update the headers dynamically
+            const apiDetailsHeaders = document.getElementById('api-details-headers');
+            apiDetailsHeaders.innerHTML = ""; // Clear existing headers
+            for (const [key, value] of Object.entries(deviseData.headers)) {
+                const th = document.createElement('th');
+                th.textContent = value;
+                apiDetailsHeaders.appendChild(th);
             }
+
+            if (selected_devise.devise_type === 'soilsaathi') {
+                const th = document.createElement('th');
+                th.textContent = 'Recommendation';
+                apiDetailsHeaders.appendChild(th);
+            }
+
+            // Populate the API details table rows
+            const apiDetailsTable = document.getElementById('api-details-table');
+            apiDetailsTable.innerHTML = ""; // Clear existing rows
+            deviseData.data.forEach(api => {
+                const row = document.createElement('tr');
+                let rowContent = '';
+
+                // Dynamically create table cells based on the headers
+                for (const headerKey in deviseData.headers) {
+                    const cellValue = api[headerKey] !== undefined ? api[headerKey] : '';
+
+                    // Check if the header is for an image, if so, generate image HTML
+                    if (headerKey === 'image_path') {
+                        rowContent += `<td>${api.image_path ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />` : ''}</td>`;
+                    }
+                    else {
+                        rowContent += `<td>${cellValue}</td>`;
+                    }
+                }
+                if (selected_devise.devise_type === 'soilsaathi') {
+                    rowContent += `<td class="no-redirect-cell">
+                        <a target="_blank" href="/crop-recommendation-dashboard/?api_id=${api.id}" style="text-decoration: none; font-size: 1.5rem;">👁️</a>
+                    </td>`;                
+                }
+                // Make the entire row clickable
+                row.style.cursor = "pointer";  // Changes the cursor to pointer when hovering over the row
+
+                row.addEventListener("click", function (event) {
+                    // If click happened inside a cell that should not trigger redirect
+                    if (event.target.closest('.no-redirect-cell')) {
+                        return; // Stop — don't redirect
+                    }
+
+                    redirectToEdit(api.id);
+                });
+
+                    // Insert the row into the table
+                    row.innerHTML = rowContent;
+                    apiDetailsTable.appendChild(row);
+
+
+                    // Insert the row into the table
+                    row.innerHTML = rowContent;
+                    apiDetailsTable.appendChild(row);
+            });
+
+        } catch (error) {
+            console.error('Error:', error);
         }
-
-        return; // prevent row redirection regardless of where in the cell
     }
-
-    // Outside of no-redirect-cell: allow row redirect
-    redirectToEdit(api.id);
-});
-*/
-
-row.addEventListener("click", function (event) {
-    // If click happened inside a cell that should not trigger redirect
-    if (event.target.closest('.no-redirect-cell')) {
-        return; // Stop — don't redirect
-    }
-
-    redirectToEdit(api.id);
-});
-/*
-// When the row is clicked, trigger redirectToEdit
-row.addEventListener("click", (event) => {
-    if (event.target.classList.contains('predict-btn')) {
-        // Let the .predict-btn handler handle it
-        return;
-    }
-
-    redirectToEdit(api.id);
-});
-*/
-
-// Insert the row into the table
-row.innerHTML = rowContent;
-apiDetailsTable.appendChild(row);
-
-
-            // Insert the row into the table
-            row.innerHTML = rowContent;
-            apiDetailsTable.appendChild(row);
-        });
-
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
 
 
     function redirectToEdit(id) {
