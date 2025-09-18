@@ -111,6 +111,7 @@
                         <div class="row">
                             <div class="col-lg-6 mb-3">
                                 <label class="form-label">Purchased Date <b>*</b></label>
+                                {{purchase_date}}
                                 <input type="date" class="form-control" name="purchase_date" required value="{{ purchase_date }}">
                                 {% if field_errors.purchase_date %}
                                     <span style="color: red;">{{ field_errors.purchase_date }}</span>
