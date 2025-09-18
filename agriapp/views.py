@@ -338,7 +338,17 @@ def edit_devise(request, **kwargs):
                 'land'           : request.POST['land'],
                 'devise_type'    : request.POST['devise_type'],
             }
-            return render(request, 'add_devise.html', {'field_errors': field_errors, 'devise' : devise, 'disabled' : 'disabled'})
+            
+            context1 = {
+                'field_errors' : field_errors,
+                'devise'       : default_values,
+                'disabled'     : 'readonly',
+                'warrenty'     : request.POST['warrenty'],
+                'purchase_date': request.POST['purchase_date'],
+                'time_of_sale' : request.POST['time_of_sale'],
+            }
+
+            return render(request, 'add_devise.html', context1)
     return render(request, template_name = template_name, context=context)
 
 def notifications(request, **kwargs):
@@ -519,7 +529,7 @@ class UpdateApi(UpdateView):
     model         = DeviseApis
     fields        = '__all__'
     template_name = 'update-api.html'
-    
+
     def get_context_data(self, **kwargs):
         context = super(UpdateApi, self).get_context_data(**kwargs)
         pk      = self.kwargs['pk']
