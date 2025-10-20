@@ -11,7 +11,8 @@
   <div class="device-list" style="width: 30%; background-color: #ffffff; padding: 15px; border-radius: 8px; height: 100%;">
     <h3>Devices</h3>
     <input type="text" id="device-search" placeholder="Search Devices" style="width: 100%; margin-bottom: 10px; padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
-    <ul id="device-list" style="list-style-type: none; padding: 0; max-height: 65vh; overflow-y: auto;">
+
+    <!-- <ul id="device-list" style="list-style-type: none; padding: 0; max-height: 65vh; overflow-y: auto;">
       {% for device in devices %}
         <li style="margin-bottom: 10px; cursor: pointer;" class="device-item" data-device-id="{{ device.id }}">
           <button style="width: 100%; text-align: left; padding: 10px; border: none; border-radius: 5px; position: relative;">
@@ -22,7 +23,36 @@
           </button>
         </li>
       {% endfor %}
-    </ul>
+    </ul> -->
+
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <thead style="position: sticky; top: 0; background-color: #f5f5f5; z-index: 1;">
+        <tr>
+          <th style="padding: 10px; border-bottom: 1px solid #ddd;">#</th>
+          <th style="padding: 10px; border-bottom: 1px solid #ddd;">Device Name</th>
+          <th style="padding: 10px; border-bottom: 1px solid #ddd;">Device ID</th>
+          <th style="padding: 10px; border-bottom: 1px solid #ddd;">API Count</th>
+          <th style="padding: 10px; border-bottom: 1px solid #ddd;">Username</th>
+        </tr>
+      </thead>
+      <tbody id="device-list">
+        {% for device in devices %}
+        <tr class="device-item" 
+            data-device-id="{{ device.id }}" 
+            style="cursor: pointer; transition: background 0.2s;">
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ forloop.counter }}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ device.name }}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ device.devise_id }}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ device.api_count }}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ device.user }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" style="text-align: center; padding: 20px; color: gray;">No devices found</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 
   <!-- Right Section: API Table -->
@@ -87,23 +117,33 @@
     const apiHeaders = JSON.parse(`{{ api_headers_json|escapejs }}`);
 
     deviceItems.forEach((item) => {
-      item.addEventListener("click", function () {
-        const deviceId = this.dataset.deviceId;
-        const apiData  = deviceApis[deviceId] || [];
+      item.addEventListener("click", async () => {
+        const deviceId = item.dataset.deviceId;
+        let   apiData  = []; // declare outside
 
-        apiDetailsContainer.innerHTML = "";
-        apiData.forEach((api) => {
-          let row = `<tr onclick="redirectToEdit('${api.id}')" style="cursor: pointer;">`;
-          Object.keys(apiHeaders).forEach((key) => {
-            if (key === "image_path") {
-              row += `<td>${api[key] ? `<img src="${api[key]}" alt="Image" style="width: 50px; height: 50px; object-fit: cover;">` : "No image"}</td>`;
-            } else {
-              row += `<td>${api[key] || ""}</td>`;
-            }
-          });
-          row += "</tr>";
-          apiDetailsContainer.innerHTML += row;
+        try {
+          const devise_apis_data = response = await fetch(`/api/get-apis-by-devise-id/?device_id=${deviceId}`);
+          const data             = await response.json();
+          apiData                = data.device_apis || [];
+        } catch (err) {
+          console.error("Error fetching:", err);
+          apiDetailsContainer.innerHTML = `<tr><td colspan="${Object.keys(apiHeaders).length}" style="text-align:center;color:red;">Error loading data</td></tr>`;
+          return;
+        }
+        
+         apiData.forEach((api) => {
+            let row = `<tr onclick="redirectToEdit('${api.id}')" style="cursor: pointer;">`;
+            Object.keys(apiHeaders).forEach((key) => {
+                if (key === "image_path") {
+                    row += `<td>${api[key] ? `<img src="${api[key]}" alt="Image" style="width:50px;height:50px;">` : "No image"}</td>`;
+                } else {
+                    row += `<td>${api[key] || ""}</td>`;
+                }
+            });
+            row += "</tr>";
+            apiDetailsContainer.innerHTML += row;
         });
+
       });
     });
   });

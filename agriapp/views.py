@@ -698,27 +698,8 @@ class AtmoSSenseDashboard(TemplateView):
         device_apis       = {}
         device_api_counts = {}
         for device in devices:
-            api_fields             = DeviseApisFields.objects.filter(device=device)
-            device_apis[device.id] = [
-                {
-                    'id'        : field.pk,
-                    'image_path': field.image_path,
-                    'field1'    : field.field1,
-                    'field2'    : field.field2,
-                    'field3'    : field.field3,
-                    'field4'    : field.field4,
-                    'field5'    : field.field5,
-                    'field6'    : field.field6,
-                    'field7'    : field.field7,
-                    'field8'    : field.field8,
-                    'field9'    : field.field9,
-                    'field10'   : field.field10,
-                    'crop_type' : field.crop_type,
-                    'created_at': field.created_at.strftime('%Y-%m-%d %H:%M:%S')
-                }
-                for field in api_fields
-            ]
-            device.api_count = api_fields.count()  # Add count directly to device object
+            api_fields                   = DeviseApisFields.objects.filter(device=device)
+            device.api_count             = api_fields.count()                              # Add count directly to device object
             device_api_counts[device.id] = api_fields.count()
 
 
@@ -729,7 +710,6 @@ class AtmoSSenseDashboard(TemplateView):
         context['device_apis']       = json.dumps(device_apis)  # Convert API data to JSON
         context['device_api_counts'] = device_api_counts  # Pass the device API counts to the template
         context['active_page']       = 'atmos-sense'  # Pass the device API counts to the template
-        device_api_counts_json       = json.dumps(device_api_counts)
         return context
 
 class AtmoSSenseAPIDetails(TemplateView):
@@ -738,29 +718,9 @@ class AtmoSSenseAPIDetails(TemplateView):
     def get_context_data(self, **kwargs):
         context           = super().get_context_data(**kwargs)
         devices           = Devise.objects.filter(devise_type='atmo_sense')
-        device_apis       = {}
         device_api_counts = {}
         for device in devices:
             api_fields             = DeviseApisFields.objects.filter(device=device)
-            device_apis[device.id] = [
-                {
-                    'id'        : field.pk,
-                    'image_path': field.image_path,
-                    'field1'    : field.field1,
-                    'field2'    : field.field2,
-                    'field3'    : field.field3,
-                    'field4'    : field.field4,
-                    'field5'    : field.field5,
-                    'field6'    : field.field6,
-                    'field7'    : field.field7,
-                    'field8'    : field.field8,
-                    'field9'    : field.field9,
-                    'field10'   : field.field10,
-                    'crop_type' : field.crop_type,
-                    'created_at': field.created_at.strftime('%Y-%m-%d %H:%M:%S')
-                }
-                for field in api_fields
-            ]
             device.api_count             = api_fields.count()  # Add count directly to device object
             device_api_counts[device.id] = api_fields.count()
 
@@ -779,29 +739,9 @@ class SoilLifeDashboard(TemplateView):
     def get_context_data(self, **kwargs):
         context           = super().get_context_data(**kwargs)
         devices           = Devise.objects.filter(devise_type='soil_life')
-        device_apis       = {}
         device_api_counts = {}
         for device in devices:
             api_fields             = DeviseApisFields.objects.filter(device=device)
-            device_apis[device.id] = [
-                {
-                    'id'        : field.pk,
-                    'image_path': field.image_path,
-                    'field1'    : field.field1,
-                    'field2'    : field.field2,
-                    'field3'    : field.field3,
-                    'field4'    : field.field4,
-                    'field5'    : field.field5,
-                    'field6'    : field.field6,
-                    'field7'    : field.field7,
-                    'field8'    : field.field8,
-                    'field9'    : field.field9,
-                    'field10'   : field.field10,
-                    'crop_type' : field.crop_type,
-                    'created_at': field.created_at.strftime('%Y-%m-%d %H:%M:%S')
-                }
-                for field in api_fields
-            ]
             device.api_count             = api_fields.count()  # Add count directly to device object
             device_api_counts[device.id] = api_fields.count()
 
@@ -809,7 +749,6 @@ class SoilLifeDashboard(TemplateView):
         context['devices']           = devices
         context['api_headers_json']  = json.dumps(SOIL_LIFE_FIELDS)  # Convert headers to JSON
         context['api_headers']       = SOIL_LIFE_FIELDS  # Pass the dictionary directly
-        context['device_apis']       = json.dumps(device_apis)  # Convert API data to JSON
         context['device_api_counts'] = device_api_counts  # Pass the device API counts to the template
         context['active_page']       = 'soil-life'  # Pass the device API counts to the template
         device_api_counts_json       = json.dumps(device_api_counts)
