@@ -122,9 +122,9 @@
         let   apiData  = []; // declare outside
 
         try {
-          const devise_apis_data = response = await fetch(`/api/get-apis-by-devise-id/?device_id=${deviceId}`);
+          const devise_apis_data = response = await fetch(`/devise-api-calls/${deviceId}`);
           const data             = await response.json();
-          apiData                = data.device_apis || [];
+          apiData                = data.data || [];
         } catch (err) {
           console.error("Error fetching:", err);
           apiDetailsContainer.innerHTML = `<tr><td colspan="${Object.keys(apiHeaders).length}" style="text-align:center;color:red;">Error loading data</td></tr>`;
