@@ -112,12 +112,38 @@
         let   apiData  = []; // declare outside
 
         try {
+          apiDetailsContainer.innerHTML = `
+            <tr>
+              <td colspan="${Object.keys(apiHeaders).length}" style="text-align:center; color:gray;">
+                <div class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #ccc; border-top-color:#007bff; border-radius:50%; animation: spin 1s linear infinite;"></div>
+                <span style="margin-left:8px;">Loading...</span>
+              </td>
+            </tr>
+          `;
+
           const devise_apis_data = response = await fetch(`/devise-api-calls/${deviceId}`);
           const data             = await response.json();
           apiData                = data.data || [];
         } catch (err) {
           console.error("Error fetching:", err);
-          apiDetailsContainer.innerHTML = `<tr><td colspan="${Object.keys(apiHeaders).length}" style="text-align:center;color:red;">Error loading data</td></tr>`;
+          apiDetailsContainer.innerHTML = `
+              <tr>
+                <td colspan="${Object.keys(apiHeaders).length}" style="text-align:center;color:red;">
+                  Error loading data
+                </td>
+              </tr>
+            `;
+            return;         
+        }
+
+        if (apiData.length === 0) {
+          apiDetailsContainer.innerHTML = `
+            <tr>
+              <td colspan="${Object.keys(apiHeaders).length}" style="text-align:center;color:gray;">
+                No API data found for this device
+              </td>
+            </tr>
+          `;
           return;
         }
         

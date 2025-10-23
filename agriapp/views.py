@@ -42,6 +42,8 @@ from .serializers import APICountThresholdSerializer
 import pytz
 from django.utils import timezone
 
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 # Admin access only decorator
 def admin_required(function):
     return user_passes_test(lambda user: user.is_superuser)(function)
@@ -1096,7 +1098,9 @@ class AddDeviceLocation(CreateView):
         'devise':self.kwargs['pk'],
     }
 
-class GetDeviseApiCallsJsonData(View):
+class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
+    login_url           = '/login/'  # redirect if not logged in
+    redirect_field_name = 'next'
 
     def get(self, *args, **kwargs):
         id             = kwargs.get('id')  # Use 'id' instead of 'pk'
@@ -1133,7 +1137,10 @@ class GetDeviseApiCallsJsonData(View):
 
         return JsonResponse({'headers': headers, 'data': api_calls_data, 'devise_type': devise.devise_type, 'field_thresholds': field_thresholds})
 
-class GetDeviseApiCallsJsonDataForChart(View):
+class GetDeviseApiCallsJsonDataForChart(LoginRequiredMixin, View):
+    login_url           = '/login/'  # redirect if not logged in
+    redirect_field_name = 'next'
+
     def get(self, *args, **kwargs):
         from django.views import View
         from django.utils.dateformat import DateFormat
