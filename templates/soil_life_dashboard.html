@@ -69,76 +69,80 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    // Device List Search
     const deviceSearch = document.getElementById("device-search");
     const deviceList   = document.getElementById("device-list");
     const deviceItems  = document.querySelectorAll(".device-item");
 
+    const apiSearch           = document.getElementById("api-search");
+    const apiDetailsContainer = document.getElementById("api-details");
+
+    // ---- DEVICE SEARCH ----
     deviceSearch.addEventListener("input", function () {
       const query = this.value.toLowerCase();
       deviceItems.forEach((item) => {
         const deviceName = item.textContent.toLowerCase();
-        if (deviceName.includes(query)) {
-          item.style.display = "";
-        } else {
-          item.style.display = "none";
-        }
+        item.style.display = deviceName.includes(query) ? "" : "none";
       });
     });
 
-    // API Table Search
-    const apiSearch           = document.getElementById("api-search");
-    const apiDetailsContainer = document.getElementById("api-details");
-
+    // ---- API SEARCH ----
     apiSearch.addEventListener("input", function () {
       const query = this.value.toLowerCase();
       const rows  = apiDetailsContainer.querySelectorAll("tr");
       rows.forEach((row) => {
-        const rowText = row.textContent.toLowerCase();
-        if (rowText.includes(query)) {
-          row.style.display = "";
-        } else {
-          row.style.display = "none";
-        }
+        row.style.display = row.textContent.toLowerCase().includes(query) ? "" : "none";
       });
     });
 
-    // Click event for loading API data
     const apiHeaders = JSON.parse(`{{ api_headers_json|escapejs }}`);
 
-    deviceItems.forEach((item) => {
-      item.addEventListener("click", async () => {
-        const deviceId = item.dataset.deviceId;
-        let   apiData  = []; // declare outside
+    let   currentDeviceId = null;
+    let   currentPage     = 1;
+    let   totalPages      = 1;
+    let   isLoading       = false;
+    const perPage         = 100;
 
-        try {
-          apiDetailsContainer.innerHTML = `
-            <tr>
-              <td colspan="${Object.keys(apiHeaders).length}" style="text-align:center; color:gray;">
-                <div class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #ccc; border-top-color:#007bff; border-radius:50%; animation: spin 1s linear infinite;"></div>
-                <span style="margin-left:8px;">Loading...</span>
-              </td>
-            </tr>
-          `;
+    // Create "Load More" button
+    const loadMoreBtn = document.createElement("button");
+    loadMoreBtn.textContent = "Load More";
+    loadMoreBtn.style = `
+      display:none;
+      margin:10px auto;
+      background:#007bff;
+      color:white;
+      border:none;
+      border-radius:5px;
+      padding:8px 16px;
+      cursor:pointer;
+    `;
+    apiDetailsContainer.parentElement.appendChild(loadMoreBtn);
 
-          const devise_apis_data = response = await fetch(`/devise-api-calls/${deviceId}`);
-          const data             = await response.json();
-          apiData                = data.data || [];
-        } catch (err) {
-          console.error("Error fetching:", err);
-          apiDetailsContainer.innerHTML = `
-              <tr>
-                <td colspan="${Object.keys(apiHeaders).length}" style="text-align:center;color:red;">
-                  Error loading data
-                </td>
-              </tr>
-            `;
-            return;         
-        }
+    // Function to fetch API data with pagination
+    async function fetchDeviceApis(deviceId, page = 1) {
+      if (isLoading) return;
+      isLoading = true;
 
-        apiDetailsContainer.innerHTML = "";
+      if (page === 1) {
+        apiDetailsContainer.innerHTML = `
+          <tr>
+            <td colspan="${Object.keys(apiHeaders).length}" style="text-align:center; color:gray;">
+              <div class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #ccc; border-top-color:#007bff; border-radius:50%; animation: spin 1s linear infinite;"></div>
+              <span style="margin-left:8px;">Loading...</span>
+            </td>
+          </tr>
+        `;
+      }
 
-        if (apiData.length === 0) {
+      try {
+        const response = await fetch(`/devise-api-calls/${deviceId}/?page=${page}&per_page=${perPage}`);
+        const data = await response.json();
+
+        const apiData = data.data || [];
+        totalPages = data.pagination?.total_pages || 1;
+
+        if (page === 1) apiDetailsContainer.innerHTML = ""; // clear first page
+
+        if (apiData.length === 0 && page === 1) {
           apiDetailsContainer.innerHTML = `
             <tr>
               <td colspan="${Object.keys(apiHeaders).length}" style="text-align:center;color:gray;">
@@ -146,29 +150,74 @@
               </td>
             </tr>
           `;
+          loadMoreBtn.style.display = "none";
           return;
         }
-        
-         apiData.forEach((api) => {
-            let row = `<tr onclick="redirectToEdit('${api.id}')" style="cursor: pointer;">`;
-            Object.keys(apiHeaders).forEach((key) => {
-                if (key === "image_path") {
-                    row += `<td>${api[key] ? `<img src="${api[key]}" alt="Image" style="width:50px;height:50px;">` : "No image"}</td>`;
-                } else {
-                    row += `<td>${api[key] || ""}</td>`;
-                }
-            });
-            row += "</tr>";
-            apiDetailsContainer.innerHTML += row;
+
+        apiData.forEach((api) => {
+          let row = `<tr onclick="redirectToEdit('${api.id}')" style="cursor:pointer;">`;
+          Object.keys(apiHeaders).forEach((key) => {
+            if (key === "image_path") {
+              row += `<td>${api[key] ? `<img src="${api[key]}" alt="Image" style="width:50px;height:50px;">` : "No image"}</td>`;
+            } else {
+              row += `<td>${api[key] || ""}</td>`;
+            }
+          });
+          row += "</tr>";
+          apiDetailsContainer.innerHTML += row;
         });
 
+        // Show or hide load more button
+        if (currentPage < totalPages) {
+          loadMoreBtn.style.display = "block";
+        } else {
+          loadMoreBtn.style.display = "none";
+        }
+
+      } catch (err) {
+        console.error("Error fetching:", err);
+        apiDetailsContainer.innerHTML = `
+          <tr>
+            <td colspan="${Object.keys(apiHeaders).length}" style="text-align:center;color:red;">
+              Error loading data
+            </td>
+          </tr>
+        `;
+        loadMoreBtn.style.display = "none";
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    // ---- DEVICE ROW CLICK ----
+    deviceItems.forEach((item) => {
+      item.addEventListener("click", async () => {
+        currentDeviceId = item.dataset.deviceId;
+        currentPage = 1;
+        await fetchDeviceApis(currentDeviceId, currentPage);
       });
+    });
+
+    // ---- LOAD MORE ----
+    loadMoreBtn.addEventListener("click", async () => {
+      if (currentDeviceId && currentPage < totalPages) {
+        currentPage++;
+        await fetchDeviceApis(currentDeviceId, currentPage);
+      }
     });
   });
 
+  // ---- REDIRECT FUNCTION ----
   function redirectToEdit(id) {
     window.location.href = `/soil-life-api-overview/${id}/`;
   }
+
+  // ---- SPINNER ANIMATION ----
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes spin { to { transform: rotate(360deg); } }
+  `;
+  document.head.appendChild(style);
 </script>
 
 {% endblock %}
