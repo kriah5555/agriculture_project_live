@@ -445,82 +445,98 @@
 
     async function fetchData(id) 
     {
+        const apiDetailsHeaders = document.getElementById('api-details-headers');
+        const apiDetailsTable   = document.getElementById('api-details-table');
+        const perPage           = 100; // Items per page
+        let currentPage         = 1;
+        let totalPages          = 1;
+        let isLoading           = false;
+
+        // Clear headers and table initially
+        apiDetailsHeaders.innerHTML = "";
+        apiDetailsTable.innerHTML   = "";
+
+        // Show loading spinner while fetching
+        const loadingRow = document.createElement('tr');
+        loadingRow.id = "loading-row"; // Add an ID for easy removal
+        loadingRow.innerHTML = `
+            <td colspan="100%" style="text-align:center;">
+                <div class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #ccc; border-top-color:#007bff; border-radius:50%; animation: spin 1s linear infinite;"></div>
+                <span style="margin-left:8px;">Loading...</span>
+            </td>
+        `;
+        apiDetailsTable.appendChild(loadingRow);
+
         try {
-            const response = await fetch(`${url}/${id}`);
+            while (currentPage <= totalPages) {
+                if (isLoading) break;
+                isLoading = true;
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+                const response = await fetch(`${url}/${id}/?page=${currentPage}&per_page=${perPage}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const deviseData = await response.json();
 
-            // Parse the JSON data
-            const deviseData = await response.json();
+                // Remove loading row on first page
+                if (currentPage === 1) {
+                    const row = document.getElementById("loading-row");
+                    if (row) row.remove();
+                }
 
-            // Update the headers dynamically
-            const apiDetailsHeaders = document.getElementById('api-details-headers');
-            apiDetailsHeaders.innerHTML = ""; // Clear existing headers
-            for (const [key, value] of Object.entries(deviseData.headers)) {
-                const th = document.createElement('th');
-                th.textContent = value;
-                apiDetailsHeaders.appendChild(th);
-            }
-
-            if (selected_devise.devise_type === 'soilsaathi') {
-                const th = document.createElement('th');
-                th.textContent = 'Recommendation';
-                apiDetailsHeaders.appendChild(th);
-            }
-
-            // Populate the API details table rows
-            const apiDetailsTable = document.getElementById('api-details-table');
-            apiDetailsTable.innerHTML = ""; // Clear existing rows
-            deviseData.data.forEach(api => {
-                const row = document.createElement('tr');
-                let rowContent = '';
-
-                // Dynamically create table cells based on the headers
-                for (const headerKey in deviseData.headers) {
-                    const cellValue = api[headerKey] !== undefined ? api[headerKey] : '';
-
-                    // Check if the header is for an image, if so, generate image HTML
-                    if (headerKey === 'image_path') {
-                        rowContent += `<td>${api.image_path ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />` : ''}</td>`;
+                // Set headers only once
+                if (currentPage === 1) {
+                    for (const [key, value] of Object.entries(deviseData.headers)) {
+                        const th = document.createElement('th');
+                        th.textContent = value;
+                        apiDetailsHeaders.appendChild(th);
                     }
-                    else {
-                        rowContent += `<td>${cellValue}</td>`;
+                    if (selected_devise.devise_type === 'soilsaathi') {
+                        const th = document.createElement('th');
+                        th.textContent = 'Recommendation';
+                        apiDetailsHeaders.appendChild(th);
                     }
                 }
-                if (selected_devise.devise_type === 'soilsaathi') {
-                    rowContent += `<td class="no-redirect-cell">
-                        <a target="_blank" href="/crop-recommendation-dashboard/?api_id=${api.id}" style="text-decoration: none; font-size: 1.5rem;">👁️</a>
-                    </td>`;                
-                }
-                // Make the entire row clickable
-                row.style.cursor = "pointer";  // Changes the cursor to pointer when hovering over the row
 
-                row.addEventListener("click", function (event) {
-                    // If click happened inside a cell that should not trigger redirect
-                    if (event.target.closest('.no-redirect-cell')) {
-                        return; // Stop — don't redirect
+                // Populate rows
+                const apiData = deviseData.data || [];
+                apiData.forEach(api => {
+                    const row = document.createElement('tr');
+                    let rowContent = '';
+
+                    for (const headerKey in deviseData.headers) {
+                        const cellValue = api[headerKey] !== undefined ? api[headerKey] : '';
+                        if (headerKey === 'image_path') {
+                            rowContent += `<td>${api.image_path ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />` : ''}</td>`;
+                        } else {
+                            rowContent += `<td>${cellValue}</td>`;
+                        }
                     }
 
-                    redirectToEdit(api.id);
+                    if (selected_devise.devise_type === 'soilsaathi') {
+                        rowContent += `<td class="no-redirect-cell">
+                            <a target="_blank" href="/crop-recommendation-dashboard/?api_id=${api.id}" style="text-decoration: none; font-size: 1.5rem;">👁️</a>
+                        </td>`;
+                    }
+
+                    row.style.cursor = "pointer";
+                    row.addEventListener("click", function(event) {
+                        if (event.target.closest('.no-redirect-cell')) return;
+                        redirectToEdit(api.id);
+                    });
+
+                    row.innerHTML = rowContent;
+                    apiDetailsTable.appendChild(row);
                 });
 
-                    // Insert the row into the table
-                    row.innerHTML = rowContent;
-                    apiDetailsTable.appendChild(row);
-
-
-                    // Insert the row into the table
-                    row.innerHTML = rowContent;
-                    apiDetailsTable.appendChild(row);
-            });
-
+                // Update pagination
+                totalPages = deviseData.pagination?.total_pages || 1;
+                currentPage++;
+                isLoading = false;
+            }
         } catch (error) {
             console.error('Error:', error);
+            apiDetailsTable.innerHTML = `<tr><td colspan="100%" style="text-align:center;color:red;">Error loading data</td></tr>`;
         }
     }
-
 
     function redirectToEdit(id) {
         let endpoint = ''; 
