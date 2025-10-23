@@ -105,26 +105,11 @@
 
     const apiHeaders = JSON.parse(`{{ api_headers_json|escapejs }}`);
 
-    let   currentDeviceId = null;
-    let   currentPage     = 1;
-    let   totalPages      = 1;
-    let   isLoading       = false;
-    const perPage         = 100;
-
-    // Create "Load More" button
-    const loadMoreBtn = document.createElement("button");
-    loadMoreBtn.textContent = "Load More";
-    loadMoreBtn.style = `
-      display:none;
-      margin:10px auto;
-      background:#007bff;
-      color:white;
-      border:none;
-      border-radius:5px;
-      padding:8px 16px;
-      cursor:pointer;
-    `;
-    apiDetailsContainer.parentElement.appendChild(loadMoreBtn);
+    let currentDeviceId = null;
+    let currentPage     = 1;
+    let totalPages      = 1;
+    let isLoading       = false;
+    const perPage       = 100;
 
     // Function to fetch API data with pagination
     async function fetchDeviceApis(deviceId, page = 1) {
@@ -136,7 +121,7 @@
           <tr>
             <td colspan="${Object.keys(apiHeaders).length}" style="text-align:center; color:gray;">
               <div class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #ccc; border-top-color:#007bff; border-radius:50%; animation: spin 1s linear infinite;"></div>
-              <span style="margin-left:8px;">Loading...</span>
+              <span style="margin-left:8px;">Loading data...</span>
             </td>
           </tr>
         `;
@@ -149,7 +134,8 @@
         const apiData = data.data || [];
         totalPages = data.pagination?.total_pages || 1;
 
-        if (page === 1) apiDetailsContainer.innerHTML = ""; // clear first page
+        // Clear on first page
+        if (page === 1) apiDetailsContainer.innerHTML = "";
 
         if (apiData.length === 0 && page === 1) {
           apiDetailsContainer.innerHTML = `
@@ -159,7 +145,6 @@
               </td>
             </tr>
           `;
-          loadMoreBtn.style.display = "none";
           return;
         }
 
@@ -176,13 +161,6 @@
           apiDetailsContainer.innerHTML += row;
         });
 
-        // Show or hide load more button
-        if (currentPage < totalPages) {
-          loadMoreBtn.style.display = "block";
-        } else {
-          loadMoreBtn.style.display = "none";
-        }
-
       } catch (err) {
         console.error("Error fetching:", err);
         apiDetailsContainer.innerHTML = `
@@ -192,9 +170,20 @@
             </td>
           </tr>
         `;
-        loadMoreBtn.style.display = "none";
       } finally {
         isLoading = false;
+      }
+    }
+
+    // ---- AUTO LOAD ALL PAGES ----
+    async function autoLoadAll(deviceId) {
+      currentPage = 1;
+      await fetchDeviceApis(deviceId, currentPage);
+
+      // Loop until all pages are fetched
+      while (currentPage < totalPages) {
+        currentPage++;
+        await fetchDeviceApis(deviceId, currentPage);
       }
     }
 
@@ -203,16 +192,8 @@
       item.addEventListener("click", async () => {
         currentDeviceId = item.dataset.deviceId;
         currentPage = 1;
-        await fetchDeviceApis(currentDeviceId, currentPage);
+        await autoLoadAll(currentDeviceId); // automatically load all pages
       });
-    });
-
-    // ---- LOAD MORE ----
-    loadMoreBtn.addEventListener("click", async () => {
-      if (currentDeviceId && currentPage < totalPages) {
-        currentPage++;
-        await fetchDeviceApis(currentDeviceId, currentPage);
-      }
     });
   });
 
