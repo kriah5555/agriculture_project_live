@@ -52,43 +52,7 @@ def admin_required(function):
 def staff_required(function):
     return user_passes_test(lambda user: user.is_staff)(function)
 
-# Create your views here.
-# def user_login_access(request):
-#     user = request.user
-
-#     if not user.is_staff and user.is_authenticated:
-        # devise = get_object_or_404(Devise, devise_id=user.username)
-        # apis   = DeviseApis.objects.filter(device=devise).count()
-
-        # api_thresholds = APICountThreshold.objects.filter(devise=devise).first()
-        # remaining = max(0, api_thresholds.red - apis) if api_thresholds else 0
-
-        # session_data = {
-        #     'pk'            : devise.pk,
-        #     'name'          : devise.name,
-        #     'serial_no'     : devise.serial_no,
-        #     'devise_id'     : devise.devise_id,
-        #     'chipset_no'    : devise.chipset_no,
-        #     'email'         : devise.email,
-        #     'phone'         : devise.phone,
-        #     'address1'      : devise.address1,
-        #     'address2'      : devise.address2,
-        #     'land'          : devise.land,
-        #     'purchase_date' : str(devise.purchase_date),
-        #     'time_of_sale'  : str(devise.time_of_sale),
-        #     'warrenty'      : str(devise.warrenty),
-        #     'amount_paid'   : devise.amount_paid,
-        #     'balance_amount': devise.balance_amount,
-        #     'api_usage'     : apis,
-        #     'api_threshold' : bool(api_thresholds),
-        #     'used'          : apis,
-        #     'color'         : get_marker_color(devise),
-        #     'remaining'     : remaining,
-        # }
-
-        # request.session.update(session_data)
-
-        # return redirect('/devise_user_details/')
+from django.core.paginator import Paginator
         
 def home(request):
     if request.method == 'GET':
@@ -104,25 +68,6 @@ def home(request):
         
         template_name = 'home1.html'
         return render(request, template_name, {'message' : 'Contact details has been added successfully'})
-
-# def login(request):
-#     context = dict()
-#     if request.method == 'GET':
-#         template_name = 'login1.html'
-#     elif request.method == 'POST':
-#         username = request.POST['username']
-#         password = request.POST['password']
-#         user     = auth.authenticate(username = username, password = password)
-#         if user is not None:
-#             auth.login(request,user)
-#             resp = user_login_access(request)
-#             if  resp:
-#                 return resp
-#             return redirect('/dashboard/')
-#         else:
-#             template_name = 'login1.html'
-#             context       =  {'error' : 'Invalid username or password'}
-#     return render(request, template_name, context = context)
 
 def dashboard(request):
     return redirect('/welcome/')
@@ -248,9 +193,6 @@ def create_user(request):
 
 @login_required
 def add_devise(request, uid=None):
-    # resp = user_login_access(request)  
-    # if resp:
-    #     return resp
         
     context = {'message': ''}
     user    = UserFunctions.get_user_by_username(uid)
@@ -295,9 +237,6 @@ def add_devise(request, uid=None):
     return render(request, template_name, context)
 
 def edit_devise(request, **kwargs):
-    # resp = user_login_access(request)
-    # if  resp:
-    #     return resp
     context              = {'message' : ''}
     devise               = Devise.objects.get(pk = kwargs['pk'])
     devise.purchase_date = datetime.strptime(str(devise.purchase_date), '%Y-%m-%d')
@@ -368,9 +307,6 @@ def notifications(request, **kwargs):
     return render(request, template_name = template_name, context = context)
 
 def devise_list(request, **kwargs):
-    # resp = user_login_access(request)
-    # if  resp:
-    #     return resp
     if request.method == 'POST':
         pk = request.POST['pk']
         if pk:
@@ -389,14 +325,8 @@ def devise_list(request, **kwargs):
     return render(request, template_name = template_name, context = context)
 
 def api_list(request, **kwargs):
-    # resp = user_login_access(request)
-    # if  resp:
-    #     return resp
     n, p, k, name = '', '', '', ''
     if request.method == 'POST':
-        # n = request.POST['n']
-        # p = request.POST['p']
-        # k = request.POST['k']
         name = request.POST['area_name']
         
     devise = Devise.objects.get(pk = kwargs['pk'])
@@ -410,9 +340,6 @@ def api_list(request, **kwargs):
     return render(request, template_name = template_name, context = context)
 
 def devise_details(request, **kwargs):
-    # resp = user_login_access(request)
-    # if  resp:
-    #     return resp
     devise  = Devise.objects.get(pk = kwargs['pk'])
 
     if devise.devise_type == 'soilsaathi':
@@ -440,9 +367,6 @@ def devise_details(request, **kwargs):
     return render(request, template_name = template_name, context=context)
 
 def user_details(request, **kwargs):
-    # resp = user_login_access(request)
-    # if resp: 
-    #     return resp
     username       = kwargs.get('uid')
     user           = get_object_or_404(User, username=username)
     linked_devices = Devise.objects.filter(user=user)  # Fetch all devices linked to the user
@@ -675,10 +599,6 @@ def get_all_NPK_values(request):
     return JsonResponse({'data': data})
 
 def change_password(request, uid):
-    # resp = user_login_access(request)
-    # if  resp:
-    #     return resp
-        
     template_name = 'change_password.html'
     context       = dict()
     if request.method == 'GET':
@@ -1036,9 +956,6 @@ def download_api_response_csv(request, **kwargs):
     return response
 
 def dynamic_fields(request, **kwargs):
-    # resp = user_login_access(request)
-    # if  resp:
-    #     return resp
     template_name = 'dynamic_fields.html'
     columns       = UserFunctions.get_all_dynamic_fields()
     context       = {
@@ -1054,9 +971,6 @@ def delete_field(request, id):
     return redirect('/dynamic-fields/')
 
 def add_field(request):
-    # resp = user_login_access(request)
-    # if  resp:
-    #     return resp
     template_name = "add_field.html"
     if request.method== 'GET':
         return render(request, template_name = template_name)
@@ -1102,27 +1016,37 @@ class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
     login_url           = '/login/'  # redirect if not logged in
     redirect_field_name = 'next'
 
-    def get(self, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         id             = kwargs.get('id')  # Use 'id' instead of 'pk'
         headers        = {}
         api_calls_data = []  # Initialize the list for api calls data
+
+        page             = int(request.GET.get('page', 1))
+        per_page         = int(request.GET.get('per_page', 100))  # default 100 records per page
+        field_thresholds = {}
+
         try:
             devise           = Devise.objects.get(pk=id)  # Use 'id' to fetch the Devise object
-            field_thresholds = {}
             match devise.devise_type:
                 case "soilsaathi":
                     headers          = SOIL_SAATHI_FIELDS
                     field_thresholds = SOIL_SAATHI_FIELD_THRESHOLDS
-                    api_calls_data   = list(DeviseApis.objects.filter(device=devise).values())
+                    queryset         = DeviseApis.objects.filter(device=devise).order_by('-created_at')
                 case "atmo_sense": 
                     headers        = ATMO_SENSE_FIELDS
-                    api_calls_data = list(DeviseApisFields.objects.filter(device=devise).values())
+                    queryset = DeviseApisFields.objects.filter(device=devise).order_by('-created_at')
                 case "soil_life": 
                     headers        = SOIL_LIFE_FIELDS
-                    api_calls_data = list(DeviseApisFields.objects.filter(device=devise).values())
+                    queryset = DeviseApisFields.objects.filter(device=devise).order_by('-created_at')
                 case _:
-                    headers = []
+                    return JsonResponse({'error': 'Invalid device type'}, status=400)
 
+            # ✅ Pagination
+            paginator      = Paginator(queryset, per_page)
+            page_obj       = paginator.get_page(page)
+            api_calls_data = list(page_obj.object_list.values())
+
+            # ✅ Convert timestamps to local timezone
             bangalore_tz = pytz.timezone('Asia/Kolkata')
             for item in api_calls_data:
                 if item.get('created_at'):
@@ -1135,7 +1059,19 @@ class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
         except Devise.DoesNotExist:
             return JsonResponse({'error': 'Devise not found'}, status=404)
 
-        return JsonResponse({'headers': headers, 'data': api_calls_data, 'devise_type': devise.devise_type, 'field_thresholds': field_thresholds})
+        # ✅ Final response
+        return JsonResponse({
+            'headers': headers,
+            'data': api_calls_data,
+            'devise_type': devise.devise_type,
+            'field_thresholds': field_thresholds,
+            'pagination': {
+                'current_page': page,
+                'per_page': per_page,
+                'total_pages': paginator.num_pages,
+                'total_records': paginator.count
+            }
+        })
 
 class GetDeviseApiCallsJsonDataForChart(LoginRequiredMixin, View):
     login_url           = '/login/'  # redirect if not logged in
