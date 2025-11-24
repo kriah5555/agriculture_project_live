@@ -1,13 +1,13 @@
 
 crops = {
     "rice_or_paddy": {
-        "frequency": "Quarterly",
-        "npk": ["100:60:60"],
+        "frequency"   : "Quarterly",
+        "npk"         : ["100:60:60"],
         "target_yield": ["18-19 Quintals per acre"],
     },
     "wheat": {
-        "frequency": "Annual",
-        "npk": ["40:30:20"],
+        "frequency"   : "Annual",
+        "npk"         : ["40:30:20"],
         "target_yield": ["10 to 15 Quintals per acre"],
     },
     # "jowar": {
@@ -21,170 +21,325 @@ crops = {
     #     "target_yield": [""],
     # },
     "ginger": {
-        "frequency": "Annual",
-        "npk": ["40:20:20"],
+        "frequency"   : "Annual",
+        "npk"         : ["40:20:20"],
         "target_yield": ["15-20 tons per acre h"],
     },
     "tomato_hybrid": {
-        "frequency": "Annual",
-        "npk": ["100:100:100"],
-        # "npk": "hybrid- 100:100:100",
+        "frequency"   : "Annual",
+        "npk"         : ["100:100:100"],
         "target_yield": ["24 - 30 tons per acre hybrid"],
     },
     "tomato_improved_varieties": {
-        "frequency": "Annual",
-        "npk": ["46:40:24"],
+        "frequency"   : "Annual",
+        "npk"         : ["46:40:24"],
         "target_yield": ["10-12 tons per acre"],
     },
     "garlic": {
-        "frequency": "Annual",
-        "npk": ["50:25:25"],
+        "frequency"   : "Annual",
+        "npk"         : ["50:25:25"],
         "target_yield": ["3.2 tons per acre"],
     },
     "urad": {
-        "frequency": "Annual",
-        "npk": ["10:20:10"],
+        "frequency"   : "Annual",
+        "npk"         : ["10:20:10"],
         "target_yield": ["4-7 Quintals per acre"],
     },
     "chilli": {
-        "npk": ["60:30:30"],
+        "npk"         : ["60:30:30"],
         "target_yield": ["Green chilli- 14 to 16 ton per acre", "Red Chilli- 1.4 to 1.6 ton per acre"],
-        "frequency": "Half"
+        "frequency"   : "Half"
     },
     "cotton": {
-        "npk": ["60:30:30"],
+        "npk"         : ["60:30:30"],
         "target_yield": ["Black Soil- 7 to 8 Quintals per acre", "Sandy Soil- 5 to 6 Quintls per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "chana": {
-        "npk": ["10:20:20"],
+        "npk"         : ["10:20:20"],
         "target_yield": ["6 to 8 Quintals per acre"],
-        "frequency": "Quartely"
+        "frequency"   : "Quartely"
     },
     "sunflower": {
-        "npk": ["36:36:25"],
+        "npk"         : ["36:36:25"],
         "target_yield": ["8 to 10 Quintasl per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "onion": {
-        "npk": ["15:30:50"],
+        "npk"         : ["15:30:50"],
         "target_yield": ["8 to 10 tonns per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "moong": {
-        "npk": ["10:20:20"],
+        "npk"         : ["10:20:20"],
         "target_yield": ["4 to 5 Quintals/acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "masoori": {
-        "npk": ["10:20:10"],
+        "npk"         : ["10:20:10"],
         "target_yield": ["5 to 6 Quintal/acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "ragi": {
-        "npk": ["40:20:20"],
+        "npk"         : ["40:20:20"],
         "target_yield": ["12 to 18 Quintals per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "sugarcane": {
-        "npk": ["100:40:50"],
+        "npk"         : ["100:40:50"],
         "target_yield": ["60 to 70 tonns per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "arabica_coffee": {
-        "npk": ["15:24:12", "20:30:15", "30:47:23", "56:36:56", "64:48:64"],
-        "duration": ["1st year", "2nd year", "3rd year", "4th year", "5th year"],
-        # "npk": "1st year-15:24:12\n2nd year-20:30:15\n3rd year-30:47:23\n4th year- 56:36:56\n5th year-64:48:64",
+        "npk"         : ["15:24:12", "20:30:15", "30:47:23", "56:36:56", "64:48:64"],
+        "duration"    : ["1st year", "2nd year", "3rd year", "4th year", "5th year"],
         "target_yield": ["800 tonns per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "maize_dry_land": {
-        "npk": ["40:30:16"],
-        "duration": ["Dry land"],
-        # "npk": "Dry land-40:30:16\nIrrigated 60:30:15",
+        "npk"         : ["40:30:16"],
+        "duration"    : ["Dry land"],
         "target_yield": ["32- 35 tonns per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "maize_irrigated": {
-        "npk": ["60:30:15"],
-        "duration": ["Irrigated"],
-        # "npk": "Dry land-40:30:16\nIrrigated 60:30:15",
+        "npk"         : ["60:30:15"],
+        "duration"    : ["Irrigated"],
         "target_yield": ["30-33 tonns per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "groundnut": {
-        "npk": ["10:30:15"],
+        "npk"         : ["10:30:15"],
         "target_yield": ["8 to 10 tonns per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "sesame": {
-        "npk": ["15:10:10"],
+        "npk"         : ["15:10:10"],
         "target_yield": ["1.6 to 2 tonns per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "arecanut": {
-        "npk": ["100:40:140"],
+        "npk"         : ["100:40:140"],
         "target_yield": ["500 to 600 kg per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "rubber": {
-        "npk": ["25:25:10", "90:90:40", "110:110:50", "90:90:40", "140: 90:60"],
-        "duration": ["1st year gm per tree", "2nd year gm per tree", "3rd year gm per tree", "4th year gm per tree", "5th year"],
-        # "npk": "1st year-25:25:10 gm per tree, 2nd year- 90:90:40 gm per tree, 3rd year- 110:110:50 gm per tree, 4th year- 90:90:40 gm per tree, 5th year- 140: 90:60",
+        "npk"         : ["25:25:10", "90:90:40", "110:110:50", "90:90:40", "140: 90:60"],
+        "duration"    : ["1st year gm per tree", "2nd year gm per tree", "3rd year gm per tree", "4th year gm per tree", "5th year"],
         "target_yield": ["300-400 kg/acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "banana_pache_variety": {
-        "npk": ["260:130:270"],
-        "duration": ["pache variety"],
-        # "npk": "pache variety- 260:130:270, kandu variety- 175:105:220, other varieties- 160:96:200",
+        "npk"         : ["260:130:270"],
+        "duration"    : ["pache variety"],
         "target_yield": ["8-12 tonns per acre for pache variety"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "banana_kandu_variety": {
-        "npk":["175:105:220"],
-        "duration": ["kandu variety"],
-        # "npk": "pache variety- 260:130:270, kandu variety- 175:105:220, other varieties- 160:96:200",
+        "npk"         : ["175:105:220"],
+        "duration"    : ["kandu variety"],
         "target_yield": ["12-14 tonns per acre for kandu variety"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "banana_other_varieties": {
-        "npk": ["160:96:200"],
-        "duration": ["other varieties"],
-        # "npk": "pache variety- 260:130:270, kandu variety- 175:105:220, other varieties- 160:96:200",
+        "npk"         : ["160:96:200"],
+        "duration"    : ["other varieties"],
         "target_yield": ["12-16 tonns per acre for other varieties"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "cow_pea_or_aldisandi": {
-        "npk": ["10:20:10"],
+        "npk"         : ["10:20:10"],
         "target_yield": ["5 to 6 Quintals per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "kusume_or_safflower": {
-        "npk":["16:16:05"],
+        "npk"         : ["16:16:05"],
         "target_yield": ["4 to 5 Quintals per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "soyabean": {
-        "npk": ["12:32:15"],
+        "npk"         : ["12:32:15"],
         "target_yield": ["10-12 Quintals per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "castor": {
-        "npk": ["15:15:10"],
+        "npk"         : ["15:15:10"],
         "target_yield": ["Hybrids-5 to 7 Quintals per acre", "Improved varities-4 to 5 Quintal per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "coriander": {
-        "npk": ["14:14:14"],
+        "npk"         : ["14:14:14"],
         "target_yield": ["Seed- 200 to 300 Kg per acre", "plant- 3.4 to 4 tonns per acre"],
-        "frequency": "Annual"
+        "frequency"   : "Annual"
     },
     "turmeric": {
-        "npk": ["60:50:100"],
-        "target_yield":[ "8 to 10 tonns per acre"],
-        "frequency": "Annual"
-    }
+        "npk"         : ["60:50:100"],
+        "target_yield": [ "8 to 10 tonns per acre"],
+        "frequency"   : "Annual"
+    },
+
+
+
+    "cardamom": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "arecanut": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "coffee": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "banana": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "tomatoes": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "okra": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "brinjal": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "pepper": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "tapioca": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "groundnut": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "ginger": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "greater_yam": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "coco": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "nutmeg": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "lemon": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "rubber": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "mango_tree": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "turmeric": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "avacado": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "bitter_gourd": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "snake_gourd": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "water_melon": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "cow_pea": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "red_gram": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "maize": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "sesame": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "chilli": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "rice": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "sweet_potato": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "black_gram": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "cabbage": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
+    "castor": {
+        "frequency": "Annual",
+        "npk": ["100:60:60"],
+        "target_yield": ["18-19 Quintals per acre"],
+    },
 }
 
 
