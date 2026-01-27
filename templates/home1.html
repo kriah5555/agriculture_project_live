@@ -291,12 +291,14 @@
             <div class="col-lg-3 mb-4">
                 <div class="product-item mb-2">
                     <div class="product-img-1">
-                        <img class="img-fluid" src="{% static '/home/images/SoiLENZ.jpg' %}" alt="SoiLENZ" style="height: 250px; width: 250px;">
-                        <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong7">
-                            <i class="fa fa-2x fa-plus text-white"></i>
+                        <a href="javascript:void(0);" data-toggle="modal" data-target="#exampleModalLong7">
+                            <img class="img-fluid"
+                                src="{% static '/home/images/SoiLENZ.jpg' %}"
+                                alt="SoiLENZ"
+                                style="height: 250px; width: 250px; cursor: pointer;">
                         </a>
                     </div>
-                    <div class="bg-secondary text-center p-4">
+                    <div class="text-center p-4">
                         <h3 class="m-0">SoiLENZ</h3>
                     </div>
                 </div>
@@ -305,13 +307,15 @@
             <div class="col-lg-3 mb-4">
                 <div class="product-item mb-2">
                     <div class="product-img-2">
-                        <img class="img-fluid" src="{% static '/home/images/Soil_Life.jpg' %}" alt="SoilLife" style="height: 250px; width: 250px;">
-                        <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong2">
-                            <i class="fa fa-2x fa-plus text-white"></i>
+                        <a href="javascript:void(0);" data-toggle="modal" data-target="#exampleModalLong2">
+                            <img class="img-fluid"
+                                src="{% static '/home/images/Soil_Life.jpg' %}"
+                                alt="SoilLife"
+                                style="height: 250px; width: 250px; cursor: pointer;">
                         </a>
                     </div>
-                    <div class="bg-secondary text-center p-4">
-                        <h3 class="m-0">SOILIFE</h3>
+                    <div class="text-center p-4">
+                        <h3 class="m-0">SOILIFE <b>₹35,000</b></h3>
                     </div>
                 </div>
             </div>
@@ -319,27 +323,32 @@
             <div class="col-lg-3 mb-4">
                 <div class="product-item mb-2">
                     <div class="product-img-3">
-                        <img class="img-fluid" src="{% static '/home/images/Soil_Sparsh.jpg' %}" alt="SoilSparsh" style="height: 250px; width: 250px;">
-                        <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong3">
-                            <i class="fa fa-2x fa-plus text-white"></i>
+                        <a href="javascript:void(0);" data-toggle="modal" data-target="#exampleModalLong3">
+                            <img class="img-fluid"
+                                src="{% static '/home/images/Soil_Sparsh.jpg' %}"
+                                alt="SoilSparsh"
+                                style="height: 250px; width: 250px; cursor: pointer;">
                         </a>
                     </div>
-                    <div class="bg-secondary text-center p-4">
-                        <h3 class="m-0">SOILSPARSH</h3>
+                    <div class="text-center p-4">
+                        <h3 class="m-0">SOILSPARSH <b>₹20,000</b></h3>
                     </div>
                 </div>
             </div>
            <!-- Product 4: Dashboard -->
            <div class="col-lg-3 mb-4">
-            <div class="product-item mb-2">
-                <div class="product-img-4">
-                    <img class="img-fluid" src="{% static '/home/images/Dashboard.png' %}" alt="Dashboard " style="height: 200px; width: 250px;">
-                    <a type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong4">
-                        <i class="fa fa-2x fa-plus text-white"></i>
-                    </a>
-                </div>
-                <div class="bg-secondary text-center p-4">
-                    <h3 class="m-0">DASHBOARD</h3>
+                <div class="product-item mb-2">
+                    <div class="product-img-4">
+                        <a href="javascript:void(0);" data-toggle="modal" data-target="#exampleModalLong4">
+                            <img class="img-fluid"
+                                src="{% static '/home/images/Dashboard.png' %}"
+                                alt="Dashboard"
+                                style="height: 250px; width: 250px; cursor: pointer;">
+                        </a>
+                    </div>
+                    <div class="text-center p-4">
+                        <h3 class="m-0">DASHBOARD</h3>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1059,7 +1068,7 @@
         <!-- First Row: 2 Columns -->
         <div class="col-12 mb-3 px-3">
             <div class="row mb-3 p-3 footer-overlay justify-content-center">
-                <div class="col-md-6 col-12 mb-3 mb-md-0 d-flex flex-column align-items-center">
+                <div class="col-md-4 col-12 mb-3 mb-md-0 d-flex flex-column align-items-center">
                     <h5 class="footer-title text-uppercase mb-1" style="letter-spacing: 5px; font-size: 1.1rem;">Our Office Location</h5>
                     <p class="footer-address mb-0 text-center" style="font-size: 0.95rem; line-height: 1.4;">H. NO.9.1 2-226, 11th Cross,
                         Bhawani Rice Mill Road,
@@ -1067,7 +1076,17 @@
                         Bidar, Karnataka,
                         India, 585403</p>
                 </div>
-                <div class="col-md-6 col-12 mb-3 mb-md-0 d-flex flex-column align-items-center">
+
+                <div class="col-md-4 col-12 mb-3 d-flex flex-column align-items-center">
+                    <div class="d-flex flex-column align-items-left footer-products">
+                        <a class="text-white btn-scroll mb-1" href="javascript:void(0);" data-toggle="modal" data-target="#shipping-policy">Shipping Policy</a>
+                        <a class="text-white btn-scroll mb-1" href="javascript:void(0);" data-toggle="modal" data-target="#terms-and-conditions">Terms & Conditions</a>
+                        <a class="text-white btn-scroll mb-1" href="javascript:void(0);" data-toggle="modal" data-target="#privacy-policy">Privacy </a>
+                        <a class="text-white btn-scroll mb-1" href="javascript:void(0);" data-toggle="modal" data-target="#cancellation-refund-policy">Cancellation & Refund Policy</a>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-12 mb-3 mb-md-0 d-flex flex-column align-items-center">
                     <h5 class="footer-title text-uppercase mb-1" style="letter-spacing: 5px; font-size: 1.1rem;">Contact Us</h5>
                     <p class="footer-email mb-0 text-center" style="font-size: 0.95rem;">karbari.rsudha@gmail.com</p>
                     <p class="footer-phone m-0 text-center" style="font-size: 0.95rem;">+91 9611297893</p>
@@ -1112,6 +1131,250 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Start for shipping-policy -->
+<div class="modal fade" id="shipping-policy" tabindex="-1" role="dialog" aria-labelledby="shipping-policy" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width:850px;">
+        <div class="modal-content" style="border-radius:10px; box-shadow:0 8px 25px rgba(0,0,0,0.2);">
+            
+            <div class="modal-header" style="background:#f5f7fa; border-bottom:1px solid #ddd;">
+                <h5 class="modal-title" id="shipping-policy" style="font-weight:600; color:#2c3e50;">
+                    Shipping Policy
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body" style="font-size:15px; line-height:1.7; color:#444;">
+                
+                <p>
+                    ArkaShine Innovations Pvt. Ltd. (“we”, “our”, “us”) is committed to delivering
+                    SoilENZ devices and related products safely and in a timely manner.
+                </p>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Service Coverage</h5>
+                <p>
+                    We currently ship across India. International shipping, if applicable, will be
+                    communicated separately.
+                </p>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Order Processing</h5>
+                <ul style="padding-left:20px;">
+                    <li style="margin-bottom:6px;">
+                        Orders are processed within <b>20 working days</b> after payment confirmation.
+                    </li>
+                    <li style="margin-bottom:6px;">
+                        Customized or bulk orders may require additional processing time.
+                    </li>
+                </ul>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Shipping Timelines</h5>
+                <ul style="padding-left:20px;">
+                    <li style="margin-bottom:6px;">
+                        Estimated delivery: <b>7–14 working days</b> from dispatch.
+                    </li>
+                    <li style="margin-bottom:6px;">
+                        Delays due to logistics or unforeseen events are beyond our control.
+                    </li>
+                </ul>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Shipping Charges</h5>
+                <ul style="padding-left:20px;">
+                    <li style="margin-bottom:6px;">
+                        Charges (if any) will be communicated at order confirmation.
+                    </li>
+                    <li style="margin-bottom:6px;">
+                        Promotional orders may include free shipping.
+                    </li>
+                </ul>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Delivery & Acceptance</h5>
+                <ul style="padding-left:20px;">
+                    <li style="margin-bottom:6px;">
+                        Inspect the package at the time of delivery.
+                    </li>
+                    <li style="margin-bottom:6px;">
+                        Report visible damage within <b>48 hours</b>.
+                    </li>
+                </ul>
+
+            </div>
+
+            <div class="modal-footer" style="border-top:1px solid #ddd;">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- Modal End for shipping-policy -->
+
+<!-- Modal Start for terms-and-conditions -->
+<div class="modal fade" id="terms-and-conditions" tabindex="-1" role="dialog" aria-labelledby="terms-and-conditions" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width:850px;">
+        <div class="modal-content" style="border-radius:10px; box-shadow:0 8px 25px rgba(0,0,0,0.2);">
+
+            <div class="modal-header" style="background:#f5f7fa; border-bottom:1px solid #ddd;">
+                <h5 class="modal-title" style="font-weight:600; color:#2c3e50;">
+                    Terms & Conditions
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body" style="font-size:15px; line-height:1.7; color:#444;">
+
+                <p>
+                    By accessing or using our website and products, you agree to comply with these
+                    Terms and Conditions.
+                </p>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Product Usage</h5>
+                <ul style="padding-left:20px;">
+                    <li>SoilENZ is intended for soil testing and advisory purposes only.</li>
+                    <li>Results are indicative and should be used along with agronomic best practices.</li>
+                </ul>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Pricing & Payments</h5>
+                <ul style="padding-left:20px;">
+                    <li>All prices are in INR and exclusive of applicable taxes unless stated otherwise.</li>
+                    <li>Full payment must be made before dispatch.</li>
+                </ul>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Intellectual Property</h5>
+                <ul style="padding-left:20px;">
+                    <li>All content, designs, software, and algorithms are the property of ArkaShine Innovations Pvt. Ltd.</li>
+                    <li>Unauthorized reproduction or usage is prohibited.</li>
+                </ul>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Limitation of Liability</h5>
+                <ul style="padding-left:20px;">
+                    <li>We are not responsible for crop loss or decisions made solely on SoilENZ results.</li>
+                    <li>Liability, if any, is limited to the product value paid.</li>
+                </ul>
+
+            </div>
+
+            <div class="modal-footer" style="border-top:1px solid #ddd;">
+                <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- Modal End for terms-and-conditions -->
+
+<!-- Modal Start for privacy-policy -->
+<div class="modal fade" id="privacy-policy" tabindex="-1" role="dialog" aria-labelledby="privacy-policy" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width:850px;">
+        <div class="modal-content" style="border-radius:10px; box-shadow:0 8px 25px rgba(0,0,0,0.2);">
+
+            <div class="modal-header" style="background:#f5f7fa; border-bottom:1px solid #ddd;">
+                <h5 class="modal-title" style="font-weight:600; color:#2c3e50;">
+                    Privacy Policy
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body" style="font-size:15px; line-height:1.7; color:#444;">
+
+                <p>
+                    We respect your privacy and are committed to protecting your personal information.
+                </p>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Information Collected</h5>
+                <ul style="padding-left:20px;">
+                    <li>Name, phone number, email address</li>
+                    <li>Location details (for service and reporting)</li>
+                    <li>Soil test data generated using SoilENZ</li>
+                </ul>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Use of Information</h5>
+                <ul style="padding-left:20px;">
+                    <li>Providing services and reports</li>
+                    <li>Improving product performance and analytics</li>
+                    <li>Customer support and communication</li>
+                </ul>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Data Protection</h5>
+                <ul style="padding-left:20px;">
+                    <li>Data is stored securely and accessed only by authorised personnel.</li>
+                    <li>No selling or sharing of personal data without consent, except as required by law.</li>
+                </ul>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">User Rights</h5>
+                <p>
+                    Users may request access, correction, or deletion of personal data by contacting us.
+                </p>
+
+            </div>
+
+            <div class="modal-footer" style="border-top:1px solid #ddd;">
+                <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- Modal End for privacy-policy -->
+
+<!-- Modal Start for cancellation-refund-policy -->
+<div class="modal fade" id="cancellation-refund-policy" tabindex="-1" role="dialog" aria-labelledby="cancellation-refund-policy" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width:850px;">
+        <div class="modal-content" style="border-radius:10px; box-shadow:0 8px 25px rgba(0,0,0,0.2);">
+
+            <div class="modal-header" style="background:#f5f7fa; border-bottom:1px solid #ddd;">
+                <h5 class="modal-title" style="font-weight:600; color:#2c3e50;">
+                    Cancellation & Refund Policy
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body" style="font-size:15px; line-height:1.7; color:#444;">
+
+                <h5 style="font-weight:600; color:#1a237e;">Order Cancellation</h5>
+                <ul style="padding-left:20px;">
+                    <li>Orders can be cancelled before dispatch by contacting us.</li>
+                    <li>Cancellation is not allowed once the product is dispatched.</li>
+                </ul>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Refunds</h5>
+                <ul style="padding-left:20px;">
+                    <li>Approved refunds will be processed within <b>7–10 working days</b>.</li>
+                    <li>Shipping charges are non-refundable.</li>
+                </ul>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Non-Refundable Items</h5>
+                <ul style="padding-left:20px;">
+                    <li>Used devices, consumables, chemicals, and cartridges</li>
+                    <li>Orders cancelled after dispatch</li>
+                    <li>Damage due to misuse or improper handling</li>
+                </ul>
+
+                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Replacement</h5>
+                <p>
+                    Manufacturing defects will be handled through repair or replacement
+                    as per warranty or AMC terms.
+                </p>
+
+            </div>
+
+            <div class="modal-footer" style="border-top:1px solid #ddd;">
+                <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- Modal End for cancellation-refund-policy -->
 
 <style>
 .footer-custom .row > [class^="col-"] {

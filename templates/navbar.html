@@ -52,6 +52,16 @@
               <span class="nav-text">Users</span>
             </a>
           </li>
+          <li class="nav-item {% if active_page == 'versions' %}active{% endif %}" data-page="versions">
+              <a href="{% url 'version_list' %}"
+                class="nav-link"
+                title="App Versions"
+                target="_blank">
+                  <i class="fas fa-code-branch"></i>
+                  <span class="nav-text">Versions</span>
+              </a>
+          </li>
+
           <li class="nav-item" data-page="logout">
             <a href="{% url 'logout' %}" class="nav-link" title="Logout">
               <i class="fas fa-sign-out-alt"></i>
