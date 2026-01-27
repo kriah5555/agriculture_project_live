@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'devise_apis',
     # 'rest_framework.authtoken',
-    'predicter'
+    'predicter',
+    'versions',
 ]
 
 MIDDLEWARE = [
