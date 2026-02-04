@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Transactions</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #f5f5f5;
+        }
+        .success { color: green; }
+        .failed { color: red; }
+    </style>
+</head>
+<body>
+
+<h2>Payment Transactions</h2>
+
+<table>
+    <tr>
+        <th>Txn ID</th>
+        <th>Payment ID</th>
+        <th>Status</th>
+        <th>Amount</th>
+        <th>Created</th>
+    </tr>
+
+    {% for p in payments %}
+    <tr>
+        <td>{{ p.txn_id }}</td>
+        <td>{{ p.payment_id|default:"-" }}</td>
+        <td class="{{ p.status }}">{{ p.status }}</td>
+        <td>
+            {% if p.amount %}
+                ₹{{ p.amount|floatformat:2 }}
+            {% else %}
+                -
+            {% endif %}
+        </td>
+        <td>{{ p.created_at }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">No payments yet</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>
