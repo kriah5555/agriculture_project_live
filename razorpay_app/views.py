@@ -81,7 +81,7 @@ def razorpay_webhook(request):
 
     # ================= FAILED =================
     elif event_type == "payment.failed":
-        payment = event["payload"]["payment"]["entity"]
+        payment = event.get("payload", {}).get("payment", {}).get("entity", {})
         pay_id  = payment["id"]
 
         try:
