@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     # 'rest_framework.authtoken',
     'predicter',
     'versions',
+    'razorpay_app',
 ]
 
 MIDDLEWARE = [
@@ -179,3 +180,7 @@ LOGIN_URL = '/'
 # 300 MB upload safety
 DATA_UPLOAD_MAX_MEMORY_SIZE = 314572800  # 300MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760   # 10MB (rest streams to disk)
+
+RAZORPAY_API_KEY    = ''
+RAZORPAY_SECRET_KEY = ''
+WEBHOOK_SECRET      = ''

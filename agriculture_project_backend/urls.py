@@ -39,5 +39,6 @@ urlpatterns = [
     path('api/', include('devise_apis.urls')),
     path('', include('predicter.urls')),
     path('', include('versions.urls')),
+    path('', include('razorpay_app.urls')),
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 
