@@ -1,5 +1,6 @@
 import json
 import hmac
+import base64
 import hashlib
 import razorpay
 
@@ -30,11 +31,13 @@ def razorpay_webhook(request):
     if not signature:
         return JsonResponse({"error": "Missing signature"}, status=400)
 
-    expected_signature = hmac.new(
-        settings.WEBHOOK_SECRET.encode(),
-        payload,
-        hashlib.sha256
-    ).hexdigest()
+    expected_signature = base64.b64encode(
+        hmac.new(
+            settings.WEBHOOK_SECRET.encode(),
+            payload,
+            hashlib.sha256
+        ).digest()
+    ).decode()
 
     if not hmac.compare_digest(expected_signature, signature):
         return JsonResponse({"error": "Invalid signature"}, status=400)
