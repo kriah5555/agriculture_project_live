@@ -21,13 +21,33 @@ def is_admin(user):
 @csrf_exempt
 def razorpay_webhook(request):
     if request.method != "POST":
-        return JsonResponse({"status" : "ignored","message": "Only POST accepted"})
+        return JsonResponse({
+            "ack": True,
+            "status": "ignored",
+            "message": "Only POST accepted"
+        })
 
     payload   = request.body
     signature = request.headers.get("X-Razorpay-Signature")
 
+    # Parse event safely
+    event = json.loads(payload.decode("utf-8"))
+    event_type = event.get("event")
+
+    payment = event.get("payload", {}).get("payment", {}).get("entity", {})
+    pay_id  = payment.get("id")
+    amount  = payment.get("amount")
+
+    # ---- Signature check ----
     if not signature:
-        return JsonResponse({"status": "ignored","message": "Missing signature"})
+        return JsonResponse({
+            "ack": True,
+            "event": event_type,
+            "pay_id": pay_id,
+            "amount": amount,
+            "status": "ignored",
+            "message": "Missing signature"
+        })
 
     expected_signature = base64.b64encode(
         hmac.new(
@@ -38,69 +58,71 @@ def razorpay_webhook(request):
     ).decode()
 
     if not hmac.compare_digest(expected_signature, signature):
-        return JsonResponse({"status": "ignored","message": "Invalid signature"})
+        return JsonResponse({
+            "ack": True,
+            "event": event_type,
+            "pay_id": pay_id,
+            "amount": amount,
+            "status": "ignored",
+            "message": "Invalid signature"
+        })
 
-    event      = json.loads(payload.decode("utf-8"))
-    event_type = event["event"]
+    # ---- Fetch payment ----
+    try:
+        full_payment = client.payment.fetch(pay_id)
+    except Exception:
+        return JsonResponse({
+            "ack": True,
+            "event": event_type,
+            "pay_id": pay_id,
+            "amount": amount,
+            "status": "ignored",
+            "message": "Unable to fetch payment"
+        })
 
-    print("[EVENT]", event_type)
+    txn_id = full_payment.get("notes", {}).get("txn_id")
 
-    payment = event["payload"]["payment"]["entity"]
-    pay_id  = payment["id"]
+    if not txn_id:
+        return JsonResponse({
+            "ack": True,
+            "event": event_type,
+            "pay_id": pay_id,
+            "amount": amount,
+            "status": "ignored",
+            "message": "txn_id missing"
+        })
 
-    return JsonResponse({"error": pay_id}, status=400)
+    obj, _ = PaymentTransaction.objects.get_or_create(
+        txn_id=txn_id,
+        defaults={"raw_event": event}
+    )
 
     # ================= SUCCESS =================
     if event_type == "payment.captured":
-        payment = event["payload"]["payment"]["entity"]
-        pay_id  = payment["id"]
-        try:
-            full_payment = client.payment.fetch(pay_id)
-        except Exception as e:
-            print("[ERROR] Razorpay fetch failed:", e)
-            return JsonResponse({
-                "event"  : event_type,
-                "pay_id" : pay_id,
-                "status" : "ignored",
-                "message": "Unable to fetch payment from Razorpay"
-            })
-            
-        txn_id = full_payment.get("notes", {}).get("txn_id")
-        if not txn_id:
-            print("[FATAL] txn_id missing")
-            return JsonResponse({
-                "event"  : event_type,
-                "pay_id" : pay_id,
-                "status" : "ignored",
-                "message": "txn_id missing"
-            })
-
-        obj, created = PaymentTransaction.objects.get_or_create(
-            txn_id=txn_id,
-            defaults={"raw_event": event}
-        )
-
-        # do not overwrite final state
         if obj.status in ("success", "failed"):
             return JsonResponse({
-                "event"  : event_type,
-                "txn_id" : txn_id,
-                "pay_id" : pay_id,
-                "status" : "ignored",
-                "message": f"Payment already processed with status '{obj.status}'"
+                "ack": True,
+                "event": event_type,
+                "txn_id": txn_id,
+                "pay_id": pay_id,
+                "amount": amount,
+                "status": "ignored",
+                "message": f"Already processed as {obj.status}"
             })
 
         obj.payment_id = pay_id
-        obj.amount     = payment.get("amount")
+        obj.amount     = amount
         obj.status     = "success"
         obj.raw_event  = event
         obj.save()
 
         return JsonResponse({
-            "event"  : event_type,
-            "txn_id" : txn_id,
-            "pay_id" : pay_id,
-            "status" : "success",
+            "ack": True,
+            "event": event_type,
+            "txn_id": txn_id,
+            "pay_id": pay_id,
+            "amount": amount,
+            "status": "success",
             "message": "Payment captured and saved"
         })
 
@@ -108,12 +130,13 @@ def razorpay_webhook(request):
     if event_type == "payment.failed":
         if obj.status == "success":
             return JsonResponse({
-                "event"  : event_type,
-                "txn_id" : txn_id,
-                "pay_id" : pay_id,
-                "amount" : amount,
-                "status" : "ignored",
-                "message": "Payment already marked success"
+                "ack": True,
+                "event": event_type,
+                "txn_id": txn_id,
+                "pay_id": pay_id,
+                "amount": amount,
+                "status": "ignored",
+                "message": "Already marked success"
             })
 
         obj.payment_id     = pay_id
@@ -124,21 +147,23 @@ def razorpay_webhook(request):
         obj.save()
 
         return JsonResponse({
-            "event"  : event_type,
-            "txn_id" : txn_id,
-            "pay_id" : pay_id,
-            "amount" : amount,
-            "status" : "failed",
+            "ack": True,
+            "event": event_type,
+            "txn_id": txn_id,
+            "pay_id": pay_id,
+            "amount": amount,
+            "status": "failed",
             "message": "Payment failed"
         })
 
     # ================= UNKNOWN =================
     return JsonResponse({
-        "event"  : event_type,
-        "txn_id" : txn_id,
-        "pay_id" : pay_id,
-        "amount" : amount,
-        "status" : "ignored",
+        "ack": True,
+        "event": event_type,
+        "txn_id": txn_id,
+        "pay_id": pay_id,
+        "amount": amount,
+        "status": "ignored",
         "message": "Event not handled"
     })
 
