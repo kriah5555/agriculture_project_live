@@ -170,7 +170,7 @@ def is_admin(user):
 @login_required
 @user_passes_test(is_admin)
 def payment_list(request):
-    payments = PaymentTransaction.objects.order_by("-created_at")
+    payments = Payment.objects.order_by("-created_at")
     return render(request, "razorpay/payment_list.html", {
         "payments": payments
     })
