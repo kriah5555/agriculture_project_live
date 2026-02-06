@@ -199,14 +199,17 @@ def create_payment(request):
         txn_id     = txn_id,
         amount     = amount,
         status     = "pending",
-        created_at = time.time()
+        raw_event = {
+            "request": data,
+            "razorpay_link": link
+        } 
     )
 
     return JsonResponse({
-    "txn_id": txn_id,
-    "qr_url": link["short_url"],
-    "amount": amount
-})
+        "txn_id": txn_id,
+        "qr_url": link["short_url"],
+        "amount": amount
+    })
 
 @csrf_exempt
 def webhook(request):
