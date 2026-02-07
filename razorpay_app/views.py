@@ -185,61 +185,106 @@ import json, uuid, time, hmac, hashlib
 @csrf_exempt
 def create_payment(request):
 
-    data   = json.loads(request.body)
-    amount = int(data["amount"])
-    txn_id = str(uuid.uuid4())
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=400)
 
-    link = client.payment_link.create({
-        "amount": amount * 100,
-        "currency": "INR",
-        "notes": {"txn_id": txn_id}
-    })
+    try:
+        data = json.loads(request.body)
+        amount = int(data.get("amount", 0))
 
-    Payment.objects.create(
-        txn_id     = txn_id,
-        amount     = amount,
-        status     = "pending",
-        raw_event = {
-            "request": data,
-            "razorpay_link": link
-        } 
-    )
+        if amount <= 0:
+            return JsonResponse({"error": "Invalid amount"}, status=400)
 
-    return JsonResponse({
-        "txn_id": txn_id,
-        "qr_url": link["short_url"],
-        "amount": amount
-    })
+        txn_id = str(uuid.uuid4())
+        link = client.payment_link.create({
+            "amount": amount * 100,
+            "currency": "INR",
+            "notes": {"txn_id": txn_id}
+        })
+
+        Payment.objects.create(
+            txn_id=txn_id,
+            amount=amount,
+            status="pending",
+            raw_event = {
+                "request": data,
+                "razorpay_link": link
+            } 
+        )
+
+        return JsonResponse({
+            "txn_id": txn_id,
+            "qr_url": link["short_url"],
+            "amount": amount
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "error": "Create failed",
+            "msg": str(e)
+        }, status=500)
 
 @csrf_exempt
 def webhook(request):
-    payload  = request.body
-    sign     = request.headers["X-Razorpay-Signature"]
-    expected = hmac.new(
-        settings.WEBHOOK_SECRET.encode(),
-        payload,
-        hashlib.sha256
-    ).hexdigest()
 
-    if not hmac.compare_digest(expected, sign):
-        return JsonResponse({"error": "invalid"}, status=400)
+    try:
+        payload = request.body
+        sign    = request.headers.get("X-Razorpay-Signature")
 
-    data    = json.loads(payload)
-    event   = data["event"]
-    payment = data["payload"]["payment"]["entity"]
-    txn_id  = payment["notes"]["txn_id"]
-    obj     = Payment.objects.get(txn_id=txn_id)
+        if not sign:
+            return JsonResponse({"error": "No signature"}, status=400)
 
-    if event == "payment.captured":
-        obj.status = "success"
-    elif event == "payment.failed":
-        obj.status = "failed"
-    obj.save()
+        expected = hmac.new(
+            settings.WEBHOOK_SECRET.encode(),
+            payload,
+            hashlib.sha256
+        ).hexdigest()
 
-    return JsonResponse({"ok": True})
+        if not hmac.compare_digest(expected, sign):
+            return JsonResponse({"error": "Invalid signature"}, status=400)
+
+        data    = json.loads(payload)
+        event   = data.get("event")
+        payment = data.get("payload", {}).get("payment", {}).get("entity", {})
+        txn_id  = payment.get("notes", {}).get("txn_id")
+
+        if not txn_id:
+            return JsonResponse({"status": "ignored"})
+
+        obj = Payment.objects.filter(txn_id=txn_id).first()
+
+        if not obj:
+            return JsonResponse({"status": "not_found"})
+
+        # Prevent duplicate processing
+        if obj.status in ("success", "failed"):
+            return JsonResponse({"status": "already_done"})
+
+        if event == "payment.captured":
+            obj.status = "success"
+
+        elif event == "payment.failed":
+            obj.status = "failed"
+        obj.save()
+        return JsonResponse({"ok": True})
+
+    except Exception as e:
+        return JsonResponse({
+            "error": "Webhook failed",
+            "msg": str(e)
+        }, status=500)
 
 def status(request, txn_id):
     obj = Payment.objects.filter(txn_id=txn_id).first()
     if not obj:
         return JsonResponse({"status": "pending"})
-    return JsonResponse({"status": obj.status})
+    # Auto timeout (2 min)
+    if obj.status == "pending":
+        if time.time() - obj.created_at > 120:
+            obj.status = "failed"
+            obj.save()
+
+    return JsonResponse({
+        "status": obj.status,
+        "amount": obj.amount
+    })
