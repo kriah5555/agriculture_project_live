@@ -17,10 +17,6 @@ class PaymentTransaction(models.Model):
         null=True,
         blank=True
     )
-    razorpay_response = models.JSONField(
-        null=True,
-        blank=True
-    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         null=True,

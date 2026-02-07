@@ -29,18 +29,14 @@
         <th>Payment ID</th>
         <th>Status</th>
         <th>Amount</th>
-        <th>Payment Link</th>
         <th>Created</th>
     </tr>
 
     {% for p in payments %}
     <tr>
         <td>{{ p.txn_id }}</td>
-
         <td>{{ p.payment_id|default:"-" }}</td>
-
         <td class="{{ p.status }}">{{ p.status }}</td>
-
         <td>
             {% if p.amount %}
                 ₹{{ p.amount|floatformat:2 }}
@@ -48,23 +44,11 @@
                 -
             {% endif %}
         </td>
-
-        <!-- SAFE LINK DISPLAY -->
-        <td>
-            {% if p.raw_event and p.raw_event.razorpay_link and p.raw_event.razorpay_link.short_url %}
-                <a href="{{ p.raw_event.razorpay_link.short_url }}" target="_blank">
-                    Open Link
-                </a>
-            {% else %}
-                -
-            {% endif %}
-        </td>
-
         <td>{{ p.created_at }}</td>
     </tr>
     {% empty %}
     <tr>
-        <td colspan="6">No payments yet</td>
+        <td colspan="5">No payments yet</td>
     </tr>
     {% endfor %}
 </table>
