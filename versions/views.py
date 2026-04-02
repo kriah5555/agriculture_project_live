@@ -3,6 +3,11 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import AppVersion
 from .forms import AppVersionForm
 
+
+@login_required
+def api_docs(request):
+    return render(request, 'versions/api_docs.html')
+
 def is_admin(user):
     return user.is_staff or user.is_superuser
 

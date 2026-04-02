@@ -60,12 +60,13 @@ urlpatterns = [
     path('devise-api-calls/<int:id>/', GetDeviseApiCallsJsonData.as_view(), name = "devise-api-calls"), # api data for page
     path('devise-api-calls-chart/<int:id>/', GetDeviseApiCallsJsonDataForChart.as_view(), name = "devise-api-calls-chart"), # api data for page
     path('get-api-fields/<str:devise_type>', GetApiFieldsJsonData.as_view(), name = "get-api-fields"), # api data for page
-    path('save-api-data/<int:devise_id>', SaveApiFieldsJsonData.as_view(), name = "save-api-data"), # api data for page
-    path('update-api-data/<int:devise_id>/<int:api_id>', SaveApiFieldsJsonData.as_view(), name = "save-api-data"), # api data for page
+    path('save-api-data/<int:devise_id>', SaveApiFieldsJsonData.as_view(), name = "save-api-data"),
+    path('update-api-data/<int:devise_id>/<int:api_id>', SaveApiFieldsJsonData.as_view(), name = "update-api-data"),
     path('get-api-data/<int:devise_id>/<int:api_id>', GetApiDataJsonData.as_view(), name = "api-data"), # api data for page
 
     path('user-page/', login_required(v.userPage), name = "user-page"),
-    path('api-threshold/<int:pk>/', v.create_or_update_threshold, name='create-or-update-threshold'),
-    path('get-all-npk-values/', v.get_all_NPK_values, name='create-or-update-threshold'),
+    path('api-threshold/<int:pk>/', login_required(v.create_or_update_threshold), name='api-threshold'),
+    path('get-all-npk-values/', login_required(v.get_all_NPK_values), name='get-all-npk-values'),
+    path('docs/', login_required(v.docs), name='docs'),
 
 ]

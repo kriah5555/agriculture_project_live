@@ -27,19 +27,16 @@ def encode_to_base64(value):
 
 def decode_from_base64(encoded_string):
     """
-    Decode a base64-encoded string to its original value.
-    
-    :param encoded_string: The base64-encoded string.
-    :param data_type: The data type to convert the decoded value to (str or int).
-    :return: The decoded value.
+    Decode a base64-encoded string to its original integer value.
+    Returns None on invalid or missing input.
     """
-    decoded_bytes = base64.b64decode(encoded_string)
-
-    # If you want to convert the bytes back to a string (assuming it was originally encoded from a string)
-    original_string = decoded_bytes.decode('utf-8')
-
-    # If you want to convert the bytes back to an integer (assuming it was originally encoded from an integer)
-    return int(decoded_bytes)
+    if not encoded_string:
+        return None
+    try:
+        decoded_bytes = base64.b64decode(encoded_string)
+        return int(decoded_bytes)
+    except (ValueError, TypeError, base64.binascii.Error):
+        return None
 
 # Create your views here.
 
@@ -91,10 +88,11 @@ def authenticate(request):
 def add_location(request):
     try:
         if 'device_key' in request.POST and 'latitude' in request.POST and 'longitude' in request.POST:
-            device_key =  request.POST['device_key']
             latitude   =  request.POST['latitude']
             longitude  =  request.POST['longitude']
             device_key = decode_from_base64(request.POST['device_key'])
+            if device_key is None:
+                return Response({'message': 'Invalid device key.'}, status=status.HTTP_400_BAD_REQUEST)
             if device_key and longitude and longitude:
                  # Check if the Devise object with the given device_key exists
                 devise = Devise.objects.filter(pk=device_key).first()
@@ -118,7 +116,9 @@ def add_soil_data(request):
     try:
         # Get the device_key from the POST data and decode if needed
         device_key = request.POST.get('device_key', '')
-        devise_pk = decode_from_base64(device_key)
+        devise_pk  = decode_from_base64(device_key)
+        if devise_pk is None:
+            return Response({'message': 'Invalid device key.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
         devise     = Devise.objects.get(pk = devise_pk)
@@ -334,3 +334,11 @@ def add_location_data(request):
     except  Exception as e:
         error_message = f'Something went wrong: {str(e)}'
         return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def list_all_apis(request):
+    """Return a list of all available device API endpoint names."""
+    from devise_apis import urls as _urls
+    endpoints = [p.name for p in _urls.urlpatterns if hasattr(p, 'name') and p.name]
+    return JsonResponse({'data': endpoints})

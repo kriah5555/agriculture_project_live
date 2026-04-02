@@ -1,11 +1,18 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from django.shortcuts import get_object_or_404
 from django.http import FileResponse, Http404
 from .models import AppVersion
 import urllib.parse
+import mimetypes
 import os
+
+CONTENT_TYPE_MAP = {
+    '.zip'   : 'application/zip',
+    '.apk'   : 'application/vnd.android.package-archive',
+    '.rar'   : 'application/vnd.rar',
+    '.tar.gz': 'application/gzip',
+}
 
 # API 1: Check if given version is active
 
@@ -79,16 +86,16 @@ def download_active_version(request):
     # Get the original file extension
     original_filename = os.path.basename(version_obj.zip_file.name)
     _, ext = os.path.splitext(original_filename)
-    version_filename = f"{version_obj.version}{ext}"  # e.g., v1.1.1.zip or v1.1.1.rar
+    version_filename        = f"{version_obj.version}{ext}"
     version_filename_quoted = urllib.parse.quote(version_filename)
+    content_type            = CONTENT_TYPE_MAP.get(ext.lower(), 'application/octet-stream')
 
     try:
-        response = FileResponse(
-            version_obj.zip_file.open('rb'),
-            content_type='application/zip'  # still fine for most zip-like files
+        response = FileResponse(version_obj.zip_file.open('rb'), content_type=content_type)
+        response['Content-Disposition'] = (
+            f'attachment; filename="{version_filename}"; '
+            f"filename*=UTF-8''{version_filename_quoted}"
         )
-        # Add robust Content-Disposition headers
-        response['Content-Disposition'] = f'attachment; filename="{version_filename}"; filename*=UTF-8\'\'{version_filename_quoted}'
         return response
     except FileNotFoundError:
         raise Http404("File not found on server")

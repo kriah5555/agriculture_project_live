@@ -1,73 +1,357 @@
-<div style="max-width:600px; margin:40px auto; font-family:Arial, sans-serif;
-            background:#fff; padding:25px; border-radius:8px;
-            box-shadow:0 6px 18px rgba(0,0,0,0.1);">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} — ArkaShine</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root { --brand: #2046ad; }
+    body { background: #f0f4ff; font-family: Arial, sans-serif; min-height: 100vh; }
 
-    <h2 style="margin-top:0; margin-bottom:20px; color:#2c3e50;">
-        {{ title }}
-    </h2>
+    .page-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 16px 60px;
+    }
 
-    {# 🔴 FORM-LEVEL ERROR (ONLY ONE ACTIVE VERSION OR OTHER NON-FIELD ERRORS) #}
-    {% if form.non_field_errors %}
-        <div style="
-            background:#fdecea;
-            border:1px solid #f5c6cb;
-            color:#611a15;
-            padding:12px 14px;
-            border-radius:6px;
-            margin-bottom:20px;
-            font-size:14px;
-        ">
-            {% for error in form.non_field_errors %}
-                <div>⚠ {{ error }}</div>
-            {% endfor %}
+    .form-shell {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    /* ── Header card ── */
+    .form-header {
+      background: linear-gradient(135deg, #1a3a9f 0%, #2046ad 50%, #0d7cf5 100%);
+      border-radius: 16px 16px 0 0;
+      padding: 28px 32px 24px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .form-header::before {
+      content:'';
+      position:absolute; inset:0;
+      background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M20 0v40M0 20h40' stroke='%23fff' stroke-opacity='.07' stroke-width='1'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    .form-header-icon {
+      width: 52px; height: 52px; border-radius: 13px;
+      background: rgba(255,255,255,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 14px;
+    }
+    .form-header h4 { font-weight: 800; margin: 0 0 4px; font-size: 1.3rem; }
+    .form-header p  { margin: 0; opacity: .8; font-size: 13px; }
+
+    /* ── Body card ── */
+    .form-body {
+      background: #fff;
+      border-radius: 0 0 16px 16px;
+      padding: 32px;
+      box-shadow: 0 8px 32px rgba(32,70,173,.12);
+    }
+
+    /* ── Field rows ── */
+    .field-row {
+      margin-bottom: 22px;
+    }
+    .field-label {
+      font-weight: 600;
+      font-size: 13px;
+      color: #374151;
+      margin-bottom: 7px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .field-label .licon {
+      width: 22px; height: 22px; border-radius: 6px;
+      background: var(--brand); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+    }
+    .field-label .req { color: #dc3545; margin-left: 2px; }
+
+    /* Style Django-rendered inputs */
+    .field-row input[type=text],
+    .field-row input[type=number],
+    .field-row textarea,
+    .field-row select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #111;
+      background: #fafbff;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    .field-row input:focus,
+    .field-row textarea:focus,
+    .field-row select:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(32,70,173,.12);
+      background: #fff;
+    }
+    .field-row textarea { min-height: 90px; resize: vertical; }
+
+    /* Checkbox field */
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #f0f4ff;
+      border: 1.5px solid #d0d9f5;
+      border-radius: 10px;
+      padding: 14px 16px;
+      cursor: pointer;
+    }
+    .checkbox-field input[type=checkbox] {
+      width: 18px; height: 18px;
+      accent-color: var(--brand);
+      cursor: pointer;
+    }
+    .checkbox-field .cb-label { font-size: 14px; font-weight: 600; color: #1a3a9f; }
+    .checkbox-field .cb-hint  { font-size: 12px; color: #6c757d; margin-top: 2px; }
+
+    /* File upload zone */
+    .file-zone {
+      border: 2px dashed #c5d4f5;
+      border-radius: 10px;
+      padding: 20px 16px;
+      text-align: center;
+      background: #f7f9ff;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      position: relative;
+    }
+    .file-zone:hover, .file-zone.dragover {
+      border-color: var(--brand);
+      background: #eef2ff;
+    }
+    .file-zone input[type=file] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .file-zone-icon { font-size: 28px; color: var(--brand); margin-bottom: 8px; }
+    .file-zone-text { font-size: 13px; color: #555; }
+    .file-zone-text strong { color: var(--brand); }
+    .file-name-preview {
+      display: none;
+      margin-top: 10px; padding: 8px 12px;
+      background: #e8f0fe; border-radius: 8px;
+      font-size: 13px; color: #1a3a9f;
+      align-items: center; gap: 8px;
+    }
+
+    /* Error feedback */
+    .field-error {
+      color: #dc3545; font-size: 12px;
+      margin-top: 5px; display: flex; align-items: center; gap: 5px;
+    }
+    .field-help { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+    /* Action buttons */
+    .action-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-top: 28px; padding-top: 22px;
+      border-top: 1px solid #f0f0f0;
+    }
+    .btn-save {
+      background: linear-gradient(135deg, var(--brand), #0d7cf5);
+      color: #fff; border: none;
+      padding: 11px 28px; border-radius: 9px;
+      font-weight: 700; font-size: 14px;
+      cursor: pointer; display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 4px 14px rgba(32,70,173,.3);
+      transition: opacity .2s, transform .1s;
+    }
+    .btn-save:hover { opacity: .92; transform: translateY(-1px); }
+    .btn-save:active { transform: translateY(0); }
+    .btn-back {
+      color: #6c757d; text-decoration: none; font-size: 14px;
+      display: flex; align-items: center; gap: 6px;
+      padding: 11px 16px; border-radius: 9px;
+      border: 1.5px solid #e0e0e0; background: #fff;
+      font-weight: 500; transition: background .15s;
+    }
+    .btn-back:hover { background: #f5f5f5; color: #333; }
+
+    .badge-admin {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,.18); border-radius: 14px;
+      padding: 3px 10px; font-size: 11px; margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <div class="form-shell">
+
+    <!-- Header -->
+    <div class="form-header">
+      <div class="form-header-icon">
+        {% if 'Edit' in title %}<i class="fas fa-pencil-alt"></i>
+        {% else %}<i class="fas fa-plus"></i>{% endif %}
+      </div>
+      <h4>{{ title }}</h4>
+      <p>
+        {% if 'Edit' in title %}Update the version details and replace the file if needed.
+        {% else %}Upload a new firmware or app release to the platform.{% endif %}
+      </p>
+      <span class="badge-admin"><i class="fas fa-shield-alt"></i> Admin access only</span>
+    </div>
+
+    <!-- Body -->
+    <div class="form-body">
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger d-flex align-items-start gap-2 mb-4">
+          <i class="fas fa-exclamation-triangle mt-1"></i>
+          <div>
+            {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+          </div>
         </div>
-    {% endif %}
+      {% endif %}
 
-    <form method="post" enctype="multipart/form-data">
+      <form method="post" enctype="multipart/form-data" id="versionForm">
         {% csrf_token %}
 
         {% for field in form %}
-            <div style="margin-bottom:16px;">
-                <label style="display:block; margin-bottom:6px;
-                              font-weight:bold; color:#333;">
-                    {{ field.label }}
-                </label>
+          <div class="field-row">
 
-                {# If this is the zip_file field, restrict to .zip #}
-                {% if field.name == "zip_file" %}
-                    <input type="file" name="{{ field.name }}" accept=".zip">
+            {% if field.widget_type == "CheckboxInput" or field.field.widget.input_type == "checkbox" %}
+              <!-- ── Active checkbox ── -->
+              <label class="checkbox-field" for="{{ field.id_for_label }}">
+                {{ field }}
+                <div>
+                  <div class="cb-label"><i class="fas fa-toggle-on me-1"></i>{{ field.label }}</div>
+                  <div class="cb-hint">Mark this as the currently active version. Only one version can be active at a time.</div>
+                </div>
+              </label>
+
+            {% elif field.name == "zip_file" %}
+              <!-- ── File upload ── -->
+              <div class="field-label">
+                <div class="licon"><i class="fas fa-file-archive"></i></div>
+                {{ field.label }}
+                {% if field.field.required %}<span class="req">*</span>{% endif %}
+              </div>
+              <div class="file-zone" id="fileZone">
+                <input type="file" name="{{ field.name }}"
+                       accept=".zip,.apk,.rar,.tar.gz"
+                       id="{{ field.id_for_label }}"
+                       onchange="showFileName(this)">
+                <div class="file-zone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                <div class="file-zone-text">
+                  <strong>Click to browse</strong> or drag &amp; drop a file here<br>
+                  <span style="font-size:12px;color:#9ca3af;">Accepted: .zip &nbsp; .apk &nbsp; .rar &nbsp; .tar.gz</span>
+                </div>
+                <div class="file-name-preview" id="filePreview">
+                  <i class="fas fa-file-archive"></i>
+                  <span id="fileNameText"></span>
+                </div>
+              </div>
+              {% if field.help_text %}<div class="field-help">{{ field.help_text }}</div>{% endif %}
+              {% if field.errors %}
+                <div class="field-error"><i class="fas fa-times-circle"></i>{% for e in field.errors %}{{ e }}{% endfor %}</div>
+              {% endif %}
+
+            {% elif field.name == "description" %}
+              <!-- ── Description textarea ── -->
+              <div class="field-label">
+                <div class="licon"><i class="fas fa-align-left"></i></div>
+                {{ field.label }}
+              </div>
+              <textarea name="{{ field.name }}"
+                        id="{{ field.id_for_label }}"
+                        placeholder="Describe what's new in this release…"
+                        class="{% if field.errors %}border-danger{% endif %}">{{ field.value|default:'' }}</textarea>
+              {% if field.help_text %}<div class="field-help">{{ field.help_text }}</div>{% endif %}
+              {% if field.errors %}
+                <div class="field-error"><i class="fas fa-times-circle"></i>{% for e in field.errors %}{{ e }}{% endfor %}</div>
+              {% endif %}
+
+            {% else %}
+              <!-- ── Default text/number fields ── -->
+              <div class="field-label">
+                {% if field.name == "version" %}
+                  <div class="licon"><i class="fas fa-tag"></i></div>
                 {% else %}
-                    {{ field }}
+                  <div class="licon"><i class="fas fa-pen"></i></div>
                 {% endif %}
+                {{ field.label }}
+                {% if field.field.required %}<span class="req">*</span>{% endif %}
+              </div>
+              {{ field }}
+              {% if field.name == "version" %}
+                <div class="field-help">Use semantic versioning, e.g. <code>v1.2.0</code> or <code>v2.0.0-beta</code></div>
+              {% endif %}
+              {% if field.help_text %}<div class="field-help">{{ field.help_text }}</div>{% endif %}
+              {% if field.errors %}
+                <div class="field-error"><i class="fas fa-times-circle"></i>{% for e in field.errors %}{{ e }}{% endfor %}</div>
+              {% endif %}
+            {% endif %}
 
-                {% if field.help_text %}
-                    <small style="color:#777; display:block; margin-top:4px;">
-                        {{ field.help_text }}
-                    </small>
-                {% endif %}
-
-                {% if field.errors %}
-                    <div style="color:#d32f2f; font-size:13px; margin-top:4px;">
-                        {{ field.errors }}
-                    </div>
-                {% endif %}
-            </div>
+          </div>
         {% endfor %}
 
-        <div style="margin-top:25px;">
-            <button type="submit"
-                    style="background:#1a73e8; color:#fff; border:none;
-                           padding:10px 18px; font-size:14px;
-                           border-radius:5px; cursor:pointer;">
-                Save
-            </button>
-
-            <a href="{% url 'version_list' %}"
-               style="margin-left:15px; text-decoration:none;
-                      color:#555; font-size:14px;">
-                Back
-            </a>
+        <div class="action-row">
+          <button type="submit" class="btn-save">
+            <i class="fas fa-save"></i>
+            {% if 'Edit' in title %}Update Version{% else %}Add Version{% endif %}
+          </button>
+          <a href="{% url 'version_list' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Back to list
+          </a>
         </div>
-    </form>
 
+      </form>
+    </div>
+
+    <!-- Bottom help -->
+    <div class="text-center mt-4" style="font-size:12px; color:#9ca3af;">
+      <i class="fas fa-info-circle me-1"></i>
+      Devices poll <code>/versions/api/check-active-version/</code> to detect updates.
+      <a href="{% url 'api_docs' %}" target="_blank" style="color:#2046ad;">API Docs</a>
+    </div>
+
+  </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function showFileName(input) {
+    const preview = document.getElementById('filePreview');
+    const nameEl  = document.getElementById('fileNameText');
+    if (input.files && input.files[0]) {
+      nameEl.textContent = input.files[0].name;
+      preview.style.display = 'flex';
+    } else {
+      preview.style.display = 'none';
+    }
+  }
+
+  // Drag & drop styling
+  const zone = document.getElementById('fileZone');
+  if (zone) {
+    zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop',      e => {
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      const fi = zone.querySelector('input[type=file]');
+      if (fi && e.dataTransfer.files.length) {
+        fi.files = e.dataTransfer.files;
+        showFileName(fi);
+      }
+    });
+  }
+</script>
+</body>
+</html>

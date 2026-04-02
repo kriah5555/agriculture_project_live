@@ -2,55 +2,86 @@
 {% load static %}
 {% block content %}
 
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .device-item.selected { background-color: #dbeafe !important; font-weight: 600; }
+  .device-item:hover:not(.selected) { background-color: #f0f4ff; }
+  #btn-prev:disabled, #btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+</style>
+
 <div class="header">
-  <h2 class="bg-primary" style=" color:white; text-align: center; padding: 10px;">SoilLife</h2>
+  <h2 class="bg-primary" style="color:white; text-align:center; padding:10px; margin:0;">
+    SoilLife
+    <small style="font-size:14px; font-weight:normal; margin-left:10px; opacity:0.85;">
+      {{ devices|length }} device{{ devices|length|pluralize }}
+    </small>
+  </h2>
 </div>
 
-<div class="content-wrapper" style="display: flex; gap: 20px; padding: 20px; height: 80vh; overflow: hidden;">
+<div style="display:flex; gap:16px; padding:16px; height:calc(100vh - 100px); overflow:hidden;">
 
-  <!-- Left Section: Device List -->
-  <div class="device-list" style="width: 30%; background-color: #ffffff; padding: 15px; border-radius: 8px; height: 100%;">
-    <h3>Devices</h3>
-    <input type="text" id="device-search" placeholder="Search Devices" style="width: 100%; margin-bottom: 10px; padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
-    
-    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-      <thead style="position: sticky; top: 0; background-color: #f5f5f5; z-index: 1;">
-        <tr>
-          <th style="padding: 10px; border-bottom: 1px solid #ddd;">#</th>
-          <th style="padding: 10px; border-bottom: 1px solid #ddd;">Device Name</th>
-          <th style="padding: 10px; border-bottom: 1px solid #ddd;">Device ID</th>
-          <th style="padding: 10px; border-bottom: 1px solid #ddd;">API Count</th>
-          <th style="padding: 10px; border-bottom: 1px solid #ddd;">Username</th>
-        </tr>
-      </thead>
-      <tbody id="device-list">
-        {% for device in devices %}
-        <tr class="device-item" 
-            data-device-id="{{ device.id }}" 
-            style="cursor: pointer; transition: background 0.2s;">
-          <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ forloop.counter }}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ device.name }}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ device.devise_id }}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ device.api_count }}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ device.user }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="4" style="text-align: center; padding: 20px; color: gray;">No devices found</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <!-- Left: Device List -->
+  <div style="width:30%; background:#fff; padding:14px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+      <h5 style="margin:0;">Devices <span class="badge bg-secondary">{{ devices|length }}</span></h5>
+    </div>
+    <input type="text" id="device-search" placeholder="Search devices…" class="form-control form-control-sm mb-2">
 
+    <div style="overflow-y:auto; flex:1;">
+      <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <thead style="position:sticky; top:0; background:#f5f5f5; z-index:1;">
+          <tr>
+            <th style="padding:7px 8px; border-bottom:1px solid #ddd;">#</th>
+            <th style="padding:7px 8px; border-bottom:1px solid #ddd;">Name</th>
+            <th style="padding:7px 8px; border-bottom:1px solid #ddd;">Device ID</th>
+            <th style="padding:7px 8px; border-bottom:1px solid #ddd; text-align:center;">APIs</th>
+            <th style="padding:7px 8px; border-bottom:1px solid #ddd;">User</th>
+          </tr>
+        </thead>
+        <tbody id="device-list">
+          {% for device in devices %}
+          <tr class="device-item" data-device-id="{{ device.id }}" data-device-name="{{ device.name }}" style="cursor:pointer; transition:background 0.15s;">
+            <td style="padding:7px 8px; border-bottom:1px solid #eee;">{{ forloop.counter }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid #eee;">{{ device.name }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid #eee;">{{ device.devise_id }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid #eee; text-align:center;">{{ device.api_count }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid #eee;">{{ device.user }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" style="text-align:center; padding:24px; color:gray;">No devices found</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- Right Section: API Table -->
-  <div class="device-api-list" style="width: 70%; background-color: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); overflow-y: auto; height: 100%;">
+  <!-- Right: API Table -->
+  <div style="width:70%; background:#fff; padding:14px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); display:flex; flex-direction:column;">
 
-    <h3>API Call's</h3>
-    <input type="text" id="api-search" placeholder="Search API Fields" style="width: 100%; margin-bottom: 10px; padding: 5px; border-radius: 5px; border: 1px solid #ccc;">
-    <div style="max-height: 65vh; overflow-y: auto; padding: 1rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-      <table class="table table-bordered">
+    <!-- Header row -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+      <h5 style="margin:0;">
+        API Calls
+        <span id="selected-device-name" style="font-size:13px; color:#6c757d; font-weight:normal; margin-left:6px;"></span>
+      </h5>
+      <input type="text" id="api-search" placeholder="Search…" class="form-control form-control-sm" style="width:200px;">
+    </div>
+
+    <!-- Pagination bar -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; min-height:28px;">
+      <span id="total-records" style="color:#6c757d; font-size:12px;"></span>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button id="btn-prev" class="btn btn-sm btn-outline-primary" disabled>&#8249; Prev</button>
+        <span id="page-info" style="font-size:13px; white-space:nowrap;"></span>
+        <button id="btn-next" class="btn btn-sm btn-outline-primary" disabled>Next &#8250;</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div style="overflow-y:auto; flex:1;">
+      <table class="table table-bordered table-sm" style="margin:0;">
         <thead>
           <tr>
             {% for key, header in api_headers.items %}
@@ -59,146 +90,139 @@
           </tr>
         </thead>
         <tbody id="api-details">
-          <!-- API details will be dynamically loaded -->
+          <tr>
+            <td colspan="{{ api_headers|length }}" style="text-align:center; color:#6c757d; padding:30px;">
+              Select a device on the left to view its API calls
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
+
   </div>
-  
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const deviceSearch = document.getElementById("device-search");
-    const deviceList   = document.getElementById("device-list");
-    const deviceItems  = document.querySelectorAll(".device-item");
+document.addEventListener("DOMContentLoaded", function () {
+  const deviceItems    = document.querySelectorAll(".device-item");
+  const apiContainer   = document.getElementById("api-details");
+  const deviceSearch   = document.getElementById("device-search");
+  const apiSearch      = document.getElementById("api-search");
+  const selectedNameEl = document.getElementById("selected-device-name");
+  const totalRecordsEl = document.getElementById("total-records");
+  const pageInfoEl     = document.getElementById("page-info");
+  const btnPrev        = document.getElementById("btn-prev");
+  const btnNext        = document.getElementById("btn-next");
 
-    const apiSearch           = document.getElementById("api-search");
-    const apiDetailsContainer = document.getElementById("api-details");
+  const apiHeaders = JSON.parse(`{{ api_headers_json|escapejs }}`);
+  const colCount   = Object.keys(apiHeaders).length;
+  const perPage    = 50;
 
-    // ---- DEVICE SEARCH ----
-    deviceSearch.addEventListener("input", function () {
-      const query = this.value.toLowerCase();
-      deviceItems.forEach((item) => {
-        const deviceName = item.textContent.toLowerCase();
-        item.style.display = deviceName.includes(query) ? "" : "none";
-      });
-    });
+  let loadToken = 0;
+  let state     = { deviceId: null, page: 1, totalPages: 1, totalRecords: 0 };
 
-    // ---- API SEARCH ----
-    apiSearch.addEventListener("input", function () {
-      const query = this.value.toLowerCase();
-      const rows  = apiDetailsContainer.querySelectorAll("tr");
-      rows.forEach((row) => {
-        row.style.display = row.textContent.toLowerCase().includes(query) ? "" : "none";
-      });
-    });
-
-    const apiHeaders = JSON.parse(`{{ api_headers_json|escapejs }}`);
-
-    let currentDeviceId = null;
-    let currentPage     = 1;
-    let totalPages      = 1;
-    let isLoading       = false;
-    const perPage       = 100;
-
-    // Function to fetch API data with pagination
-    async function fetchDeviceApis(deviceId, page = 1) {
-      if (isLoading) return;
-      isLoading = true;
-
-      if (page === 1) {
-        apiDetailsContainer.innerHTML = `
-          <tr>
-            <td colspan="${Object.keys(apiHeaders).length}" style="text-align:center; color:gray;">
-              <div class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #ccc; border-top-color:#007bff; border-radius:50%; animation: spin 1s linear infinite;"></div>
-              <span style="margin-left:8px;">Loading data...</span>
-            </td>
-          </tr>
-        `;
-      }
-
-      try {
-        const response = await fetch(`/devise-api-calls/${deviceId}/?page=${page}&per_page=${perPage}`);
-        const data = await response.json();
-
-        const apiData = data.data || [];
-        totalPages = data.pagination?.total_pages || 1;
-
-        // Clear on first page
-        if (page === 1) apiDetailsContainer.innerHTML = "";
-
-        if (apiData.length === 0 && page === 1) {
-          apiDetailsContainer.innerHTML = `
-            <tr>
-              <td colspan="${Object.keys(apiHeaders).length}" style="text-align:center;color:gray;">
-                No API data found for this device
-              </td>
-            </tr>
-          `;
-          return;
-        }
-
-        apiData.forEach((api) => {
-          let row = `<tr onclick="redirectToEdit('${api.id}')" style="cursor:pointer;">`;
-          Object.keys(apiHeaders).forEach((key) => {
-            if (key === "image_path") {
-              row += `<td>${api[key] ? `<img src="${api[key]}" alt="Image" style="width:50px;height:50px;">` : "No image"}</td>`;
-            } else {
-              row += `<td>${api[key] || ""}</td>`;
-            }
-          });
-          row += "</tr>";
-          apiDetailsContainer.innerHTML += row;
-        });
-
-      } catch (err) {
-        console.error("Error fetching:", err);
-        apiDetailsContainer.innerHTML = `
-          <tr>
-            <td colspan="${Object.keys(apiHeaders).length}" style="text-align:center;color:red;">
-              Error loading data
-            </td>
-          </tr>
-        `;
-      } finally {
-        isLoading = false;
-      }
-    }
-
-    // ---- AUTO LOAD ALL PAGES ----
-    async function autoLoadAll(deviceId) {
-      currentPage = 1;
-      await fetchDeviceApis(deviceId, currentPage);
-
-      // Loop until all pages are fetched
-      while (currentPage < totalPages) {
-        currentPage++;
-        await fetchDeviceApis(deviceId, currentPage);
-      }
-    }
-
-    // ---- DEVICE ROW CLICK ----
-    deviceItems.forEach((item) => {
-      item.addEventListener("click", async () => {
-        currentDeviceId = item.dataset.deviceId;
-        currentPage = 1;
-        await autoLoadAll(currentDeviceId); // automatically load all pages
-      });
+  deviceSearch.addEventListener("input", function () {
+    const q = this.value.toLowerCase();
+    deviceItems.forEach(item => {
+      item.style.display = item.textContent.toLowerCase().includes(q) ? "" : "none";
     });
   });
 
-  // ---- REDIRECT FUNCTION ----
-  function redirectToEdit(id) {
-    window.location.href = `/soil-life-api-overview/${id}/`;
+  apiSearch.addEventListener("input", function () {
+    const q = this.value.toLowerCase();
+    apiContainer.querySelectorAll("tr").forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+  });
+
+  function buildRow(api) {
+    let cells = '';
+    Object.keys(apiHeaders).forEach(key => {
+      if (key === "image_path") {
+        cells += `<td>${api[key] ? `<img src="${api[key]}" alt="img" style="width:50px;height:50px;object-fit:cover;">` : "—"}</td>`;
+      } else {
+        const v = api[key];
+        cells += `<td>${v !== null && v !== undefined ? v : "—"}</td>`;
+      }
+    });
+    return `<tr onclick="redirectToEdit('${api.id}')" style="cursor:pointer;">${cells}</tr>`;
   }
 
-  // ---- SPINNER ANIMATION ----
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes spin { to { transform: rotate(360deg); } }
-  `;
-  document.head.appendChild(style);
+  function setPagination(page, totalPages, totalRecords) {
+    pageInfoEl.textContent     = totalRecords > 0 ? `Page ${page} of ${totalPages}` : '';
+    totalRecordsEl.textContent = totalRecords > 0 ? `${totalRecords} record${totalRecords !== 1 ? 's' : ''}` : '';
+    btnPrev.disabled = page <= 1;
+    btnNext.disabled = page >= totalPages;
+  }
+
+  async function loadPage(deviceId, page, token) {
+    if (token !== loadToken) return;
+
+    apiContainer.innerHTML = `
+      <tr>
+        <td colspan="${colCount}" style="text-align:center;color:#6c757d;padding:24px;">
+          <div style="display:inline-block;width:18px;height:18px;border:3px solid #ccc;border-top-color:#007bff;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;"></div>
+          <span style="margin-left:8px;">Loading…</span>
+        </td>
+      </tr>`;
+    setPagination(page, 1, 0);
+
+    try {
+      const res = await fetch(`/devise-api-calls/${deviceId}/?page=${page}&per_page=${perPage}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (token !== loadToken) return;
+
+      const data = await res.json();
+      const pg   = data.pagination || {};
+      state = {
+        deviceId,
+        page        : pg.current_page   || page,
+        totalPages  : pg.total_pages    || 1,
+        totalRecords: pg.total_records  || 0,
+      };
+
+      const apiData = data.data || [];
+      if (apiData.length === 0) {
+        apiContainer.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:#6c757d;padding:24px;">No API data found for this device</td></tr>`;
+      } else {
+        apiContainer.innerHTML = apiData.map(buildRow).join('');
+      }
+      setPagination(state.page, state.totalPages, state.totalRecords);
+
+    } catch (err) {
+      if (token !== loadToken) return;
+      console.error("Fetch error:", err);
+      apiContainer.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:red;padding:24px;">Error loading data. Please try again.</td></tr>`;
+      setPagination(1, 1, 0);
+    }
+  }
+
+  deviceItems.forEach(item => {
+    item.addEventListener("click", () => {
+      deviceItems.forEach(d => d.classList.remove("selected"));
+      item.classList.add("selected");
+      selectedNameEl.textContent = `— ${item.dataset.deviceName || ''}`;
+      apiSearch.value = '';
+      state.page = 1;
+      loadPage(item.dataset.deviceId, 1, ++loadToken);
+    });
+  });
+
+  btnPrev.addEventListener("click", () => {
+    if (state.page > 1 && state.deviceId) {
+      loadPage(state.deviceId, state.page - 1, ++loadToken);
+    }
+  });
+  btnNext.addEventListener("click", () => {
+    if (state.page < state.totalPages && state.deviceId) {
+      loadPage(state.deviceId, state.page + 1, ++loadToken);
+    }
+  });
+});
+
+function redirectToEdit(id) {
+  window.location.href = `/soil-life-api-overview/${id}/`;
+}
 </script>
 
 {% endblock %}

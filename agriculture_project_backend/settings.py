@@ -184,3 +184,8 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760   # 10MB (rest streams to disk)
 RAZORPAY_API_KEY    = ''
 RAZORPAY_SECRET_KEY = ''
 WEBHOOK_SECRET      = ''
+
+
+# RAZORPAY_API_KEY    = 'rzp_live_S9ffa56iaiMZyO'
+# RAZORPAY_SECRET_KEY = '8BMVK58P8DD7CAsaLrFenNqc'
+# WEBHOOK_SECRET      = 'arkashine_webhook_secret'

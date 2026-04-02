@@ -11,4 +11,7 @@ urlpatterns = [
     # API endpoints
     path('versions/api/check-active-version/', api_views.check_active_version, name='api_check_active_version'),
     path('versions/api/download-version/', api_views.download_active_version, name='api_download_version'),
+
+    # API documentation
+    path('api/docs/', views.api_docs, name='api_docs'),
 ]

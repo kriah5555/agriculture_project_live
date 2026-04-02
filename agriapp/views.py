@@ -72,6 +72,10 @@ def home(request):
 def dashboard(request):
     return redirect('/welcome/')
 
+@login_required
+def docs(request):
+    return render(request, 'docs.html', {'active_page': 'docs'})
+
 def userPage(request):
     linked_devices = Devise.objects.filter(user__username=request.user.username)  # Fetch all devices linked to the user
     for devise in linked_devices:
@@ -238,7 +242,7 @@ def add_devise(request, uid=None):
 
 def edit_devise(request, **kwargs):
     context              = {'message' : ''}
-    devise               = Devise.objects.get(pk = kwargs['pk'])
+    devise               = get_object_or_404(Devise, pk=kwargs['pk'])
     devise.purchase_date = datetime.strptime(str(devise.purchase_date), '%Y-%m-%d')
     devise.warrenty      = datetime.strptime(str(devise.warrenty), '%Y-%m-%d')
     if request.method == 'GET':
@@ -292,9 +296,10 @@ def edit_devise(request, **kwargs):
             return render(request, 'add_devise.html', context1)
     return render(request, template_name = template_name, context=context)
 
+@login_required
 def notifications(request, **kwargs):
     if (kwargs):
-       data = ContactDetails.objects.get(pk = kwargs['pk'])
+       data = get_object_or_404(ContactDetails, pk=kwargs['pk'])
        data.status = False
        data.save()
     
@@ -306,6 +311,7 @@ def notifications(request, **kwargs):
     }
     return render(request, template_name = template_name, context = context)
 
+@login_required
 def devise_list(request, **kwargs):
     if request.method == 'POST':
         pk = request.POST['pk']
@@ -324,12 +330,13 @@ def devise_list(request, **kwargs):
     }
     return render(request, template_name = template_name, context = context)
 
+@login_required
 def api_list(request, **kwargs):
     n, p, k, name = '', '', '', ''
     if request.method == 'POST':
         name = request.POST['area_name']
         
-    devise = Devise.objects.get(pk = kwargs['pk'])
+    devise = get_object_or_404(Devise, pk=kwargs['pk'])
     apis = DeviseApis.objects.filter(device__pk=kwargs['pk'], area_name__contains=name)
     template_name     = 'api_list.html'
     context = {
@@ -339,8 +346,9 @@ def api_list(request, **kwargs):
     }
     return render(request, template_name = template_name, context = context)
 
+@login_required
 def devise_details(request, **kwargs):
-    devise  = Devise.objects.get(pk = kwargs['pk'])
+    devise  = get_object_or_404(Devise, pk=kwargs['pk'])
 
     if devise.devise_type == 'soilsaathi':
         apis = DeviseApis.objects.filter(device=devise)
@@ -362,7 +370,7 @@ def devise_details(request, **kwargs):
         'used'          : len(apis),
         'color'         : get_marker_color(devise),
         'remaining'     : remaining,
-        'location'      : DeviseLocation.objects.filter(devise=devise)
+        'location'      : DeviseLocation.objects.filter(devise=devise).first()
     }
     return render(request, template_name = template_name, context=context)
 
@@ -395,12 +403,13 @@ def user_details(request, **kwargs):
     template_name = "user_details.html"
     return render(request, template_name=template_name, context=context)
 
+@login_required
 def api_overview(request, **kwargs):
     template_name = ''
     context       = dict()
     if "soil-life-api-overview" in request.path:
         template_name   = 'soil_life_api_details.html'
-        devise_data     = DeviseApisFields.objects.get(pk=kwargs['pk'])
+        devise_data     = get_object_or_404(DeviseApisFields, pk=kwargs['pk'])
         fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
         devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
         fields.pop('device', None)
@@ -416,7 +425,7 @@ def api_overview(request, **kwargs):
 
     elif "atmos-sense-api-overview" in request.path:
         template_name   = 'atmos_sense_api_details.html'
-        devise_data     = DeviseApisFields.objects.get(pk=kwargs['pk'])
+        devise_data     = get_object_or_404(DeviseApisFields, pk=kwargs['pk'])
         fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
         devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
         fields.pop('device', None)
@@ -431,7 +440,7 @@ def api_overview(request, **kwargs):
         }
 
     else :
-        api                = DeviseApis.objects.get(pk=kwargs['pk'])
+        api                = get_object_or_404(DeviseApis, pk=kwargs['pk'])
         template_name      = "api_soil_sathi_details.html"
         all_dynamic_fields = UserFunctions.get_all_dynamic_fields()
         dynamic_field_data = {field.field_name : (UserFunctions.get_all_dynamic_field_value(api, field).field_value if UserFunctions.get_all_dynamic_field_value(api, field) else 0.0) for field in all_dynamic_fields}
@@ -471,15 +480,6 @@ class CreateApi(CreateView):
     fields        = '__all__'
     template_name = 'update-api.html'
     success_url   = '/add-api'
-    
-    # def get_context_data(self, **kwargs):
-    #     context = super(UpdateApi, self).get_context_data(**kwargs)
-    #     pk = self.kwargs['pk']
-    #     messages.success(self.request, "API updated successfully")
-    #     return context
-
-    # def get_success_url(self):
-    #     return reverse('welcome')
 
 def api_thresholds_validation(data):
     red, orange, blue, green = data['red'], data['orange'], data['blue'], data['green']
@@ -501,7 +501,7 @@ class APIThresholdForm(CreateView):
         return reverse('device-details', kwargs={'pk': self.kwargs['pk']})
     
     def get_initial(self):
-        devise = Devise.objects.get(pk = self.kwargs['pk'])
+        devise = get_object_or_404(Devise, pk=self.kwargs['pk'])
         return {'devise' : devise}
 
     def form_valid(self, form):
@@ -534,6 +534,7 @@ class APIThresholdFormUpdate(UpdateView):
 from django.http import JsonResponse
 import json
 
+@login_required
 def create_or_update_threshold(request, pk):
     if request.method != "POST":
         return JsonResponse({"error": "Only POST allowed."}, status=405)
@@ -565,10 +566,12 @@ def create_or_update_threshold(request, pk):
     else:
         return JsonResponse(serializer.errors, status=400)
 
+@login_required
 def get_all_NPK_values(request):
     if request.method != "GET":
         return JsonResponse({"error": "Only GET allowed."}, status=405)
 
+    from django.db.models import Q
     queryset = DeviseApis.objects.filter(
         latitude__isnull=False,
         longitude__isnull=False
@@ -576,29 +579,14 @@ def get_all_NPK_values(request):
         latitude=0,
         longitude=0
     ).filter(
-        nitrogen__gt=0
-    ) | DeviseApis.objects.filter(
-        latitude__isnull=False,
-        longitude__isnull=False
-    ).exclude(
-        latitude=0,
-        longitude=0
-    ).filter(
-        phosphorous__gt=0
-    ) | DeviseApis.objects.filter(
-        latitude__isnull=False,
-        longitude__isnull=False
-    ).exclude(
-        latitude=0,
-        longitude=0
-    ).filter(
-        potassium__gt=0
+        Q(nitrogen__gt=0) | Q(phosphorous__gt=0) | Q(potassium__gt=0)
     )
 
     data = list(queryset.values('latitude', 'longitude', 'nitrogen', 'phosphorous', 'potassium'))
 
     return JsonResponse({'data': data})
 
+@login_required
 def change_password(request, uid):
     template_name = 'change_password.html'
     context       = dict()
@@ -607,8 +595,10 @@ def change_password(request, uid):
             'username' : uid
         }
     elif request.method == 'POST':
-        UserFunctions.change_password(uid, request.POST['password'])
-        messages.success(request, "password changes successfully")
+        if UserFunctions.change_password(uid, request.POST['password']):
+            messages.success(request, "Password changed successfully")
+        else:
+            messages.error(request, "User not found")
         return redirect(f"/user-details/{uid}/")
     return render(request, template_name = template_name, context=context)
 
@@ -621,18 +611,17 @@ class AtmoSSenseDashboard(TemplateView):
         device_apis       = {}
         device_api_counts = {}
         for device in devices:
-            api_fields                   = DeviseApisFields.objects.filter(device=device)
-            device.api_count             = api_fields.count()                              # Add count directly to device object
-            device_api_counts[device.id] = api_fields.count()
-
+            count                        = DeviseApisFields.objects.filter(device=device).count()
+            device.api_count             = count
+            device_api_counts[device.id] = count
 
         # Serialize both headers and APIs to JSON
         context['devices']           = devices
-        context['api_headers_json']  = json.dumps(ATMO_SENSE_FIELDS)  # Convert headers to JSON
-        context['api_headers']       = ATMO_SENSE_FIELDS  # Pass the dictionary directly
-        context['device_apis']       = json.dumps(device_apis)  # Convert API data to JSON
-        context['device_api_counts'] = device_api_counts  # Pass the device API counts to the template
-        context['active_page']       = 'atmos-sense'  # Pass the device API counts to the template
+        context['api_headers_json']  = json.dumps(ATMO_SENSE_FIELDS)
+        context['api_headers']       = ATMO_SENSE_FIELDS
+        context['device_apis']       = json.dumps(device_apis)
+        context['device_api_counts'] = device_api_counts
+        context['active_page']       = 'atmos-sense'
         return context
 
 class AtmoSSenseAPIDetails(TemplateView):
@@ -643,17 +632,14 @@ class AtmoSSenseAPIDetails(TemplateView):
         devices           = Devise.objects.filter(devise_type='atmo_sense')
         device_api_counts = {}
         for device in devices:
-            api_fields             = DeviseApisFields.objects.filter(device=device)
-            device.api_count             = api_fields.count()  # Add count directly to device object
-            device_api_counts[device.id] = api_fields.count()
+            count                        = DeviseApisFields.objects.filter(device=device).count()
+            device.api_count             = count
+            device_api_counts[device.id] = count
 
-        # Serialize both headers and APIs to JSON
         context['devices']           = devices
-        context['api_headers_json']  = json.dumps(ATMO_SENSE_FIELDS)  # Convert headers to JSON
-        context['api_headers']       = ATMO_SENSE_FIELDS  # Pass the dictionary directly
-        context['device_apis']       = json.dumps(device_apis)  # Convert API data to JSON
-        context['device_api_counts'] = device_api_counts  # Pass the device API counts to the template
-        device_api_counts_json       = json.dumps(device_api_counts)
+        context['api_headers_json']  = json.dumps(ATMO_SENSE_FIELDS)
+        context['api_headers']       = ATMO_SENSE_FIELDS
+        context['device_api_counts'] = device_api_counts
         return context
 
 class SoilLifeDashboard(TemplateView):
@@ -664,17 +650,15 @@ class SoilLifeDashboard(TemplateView):
         devices           = Devise.objects.filter(devise_type='soil_life')
         device_api_counts = {}
         for device in devices:
-            api_fields             = DeviseApisFields.objects.filter(device=device)
-            device.api_count             = api_fields.count()  # Add count directly to device object
-            device_api_counts[device.id] = api_fields.count()
+            count                        = DeviseApisFields.objects.filter(device=device).count()
+            device.api_count             = count
+            device_api_counts[device.id] = count
 
-        # Serialize both headers and APIs to JSON
         context['devices']           = devices
-        context['api_headers_json']  = json.dumps(SOIL_LIFE_FIELDS)  # Convert headers to JSON
-        context['api_headers']       = SOIL_LIFE_FIELDS  # Pass the dictionary directly
-        context['device_api_counts'] = device_api_counts  # Pass the device API counts to the template
-        context['active_page']       = 'soil-life'  # Pass the device API counts to the template
-        device_api_counts_json       = json.dumps(device_api_counts)
+        context['api_headers_json']  = json.dumps(SOIL_LIFE_FIELDS)
+        context['api_headers']       = SOIL_LIFE_FIELDS
+        context['device_api_counts'] = device_api_counts
+        context['active_page']       = 'soil-life'
         return context
 
 class SoiLENZDashboard(TemplateView):
@@ -765,74 +749,6 @@ def get_downloadable_data_format(crops_data, crop, time):
             rows.append(['', fym])
     return rows
     
-# # To doload PDF response for API
-# def download_api_response_pdf(request, **kwargs):
-#     from django.http import FileResponse
-#     import io
-#     from reportlab.pdfgen import canvas
-#     from reportlab.lib.units import inch
-#     from reportlab.lib.pagesizes import letter
-#     from django.http import FileResponse
-#     import os
-
-#     api   = DeviseApis.objects.get(pk = kwargs['pk'])
-#     lines = []
-
-#     # craete byte streem buffer
-#     beffer = io.BytesIO()
-#     # create canvas
-#     c     = canvas.Canvas(beffer, pagesize = (595.27,841.89), bottomup = 0)
-#     image = os.path.join(os.getcwd(), 'static/logo3.PNG')
-#     c.drawImage(image, 450, 50, 100, 40) # adding image x, y, width, eight
-#     # create a text object
-#     textob = c.beginText()
-#     textob.setTextOrigin(inch, inch)
-#     textob.setFont('Helvetica', 14)
-
-#     textob.textLine(f'                 ArkaShine Innovations Pvt Ltd')
-#     textob.setFont('Helvetica', 10)
-#     if 'pk' in  kwargs:
-#         api = DeviseApis.objects.get(pk=kwargs['pk'])
-#         crops_data = FertilizerCalculation.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
-#         device_location = DeviseLocation.objects.filter(devise=api.device)
-#         textob.textLine(f'API call time :  {api.created_at}')
-#         textob.textLine(f'Crop          :  {api.crop_type}')
-#         textob.textLine(f'N             :  {api.nitrogen}')
-#         textob.textLine(f'P             :  {api.phosphorous}')
-#         textob.textLine(f'K             :  {api.potassium}')
-#         textob.textLine(f'PH            :  {api.ph}')
-#         textob.textLine(f'EC            :  {api.ec}')
-#         textob.textLine(f'OC            :  {api.oc}')
-#         if (device_location) : 
-#             device_location = device_location.first()
-#             textob.textLine(f'latitude          :  {device_location.latitude}')
-#             textob.textLine(f'longitude          :  {device_location.longitude}')
-#         textob.textLine(f'Phone         :  +91 9611297893')
-#         textob.textLine(f'Area name     :  {api.area_name}')
-#         textob.textLine(f'THE RECOMMENDED DOSES OF FERTILIZER FOR CROP "{api.crop_type}" ARE:')
-#         for crop_fertilizer_data in crops_data['crop_fertilizer']:
-#             for crop_data in crop_fertilizer_data:
-#                 textob.textLine('---->'+crop_data)
-#             textob.textLine(' ')
-#         textob.textLine('Remedy, Fertility, Fym and Target yield')
-#         for crop_fym_data in crops_data['fym']:
-#             for fym in crop_fym_data:
-#                 textob.textLine('---->'+fym)
-#     else:
-#         textob.textLine('no data available')
-
-#     textob.setFillColorCMYK(0.8,0,0,0.3)
-#     textob.textLine(' ')
-#     textob.textLine('Address : H. NO.9.1 2-226, 11th Cross, Bhawani Rice Mill Road')
-#     textob.textLine('Vidyanagar colony, Bidar, Karnataka, lndia, 585403')
-#     c.drawText(textob)
-#     c.showPage()
-#     c.save()
-#     beffer.seek(0)
-
-#     return FileResponse(beffer, as_attachment=True, filename="recomanded.pdf")
-
-# To doload PDF response for API
 def draw_gauge(value, label):
     fig, ax = plt.subplots(figsize=(2.5, 1.5))
     ax.set_xlim(-1, 1)
@@ -882,7 +798,7 @@ def download_api_response_pdf(request, **kwargs):
     c.drawString(50, 772, "Vidyanagar colony, Bidar, Karnataka, India, 585403")
 
     if 'pk' in kwargs:
-        api = DeviseApis.objects.get(pk=kwargs['pk'])
+        api = get_object_or_404(DeviseApis, pk=kwargs['pk'])
         location = DeviseLocation.objects.filter(devise=api.device).first()
 
         # Left Column
@@ -948,7 +864,7 @@ def download_api_response_csv(request, **kwargs):
     response['Content-Disposition'] = 'attachment; filename = response.csv'
     writer                          = csv.writer(response)
     if 'pk' in  kwargs:
-        api        = DeviseApis.objects.get(pk=kwargs['pk'])
+        api        = get_object_or_404(DeviseApis, pk=kwargs['pk'])
         crops_data = FertilizerCalculation.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
         rows       = get_downloadable_data_format(crops_data, api.crop_type, api.created_at)
     else:

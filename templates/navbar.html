@@ -20,7 +20,7 @@
             </a>
           </li>
         </ul>
-        <div class="account_style nav-text fw-light">Sudha</div>
+        <div class="account_style nav-text fw-light">{{ request.user.get_full_name|default:request.user.username }}</div>
         <ul class="list-unstyled">
           <li class="nav-item {% if active_page == 'dashboard' %}active{% endif %}" data-page="dashboard">
             <a href="{% url 'welcome' %}" class="nav-link " title="Dashboard">
@@ -72,6 +72,13 @@
               </a>
           </li>
 
+          <li class="nav-item {% if active_page == 'docs' %}active{% endif %}" data-page="docs">
+            <a href="{% url 'docs' %}" class="nav-link" title="Documentation">
+              <i class="fas fa-book"></i>
+              <span class="nav-text">Documentation</span>
+            </a>
+          </li>
+
           <li class="nav-item" data-page="logout">
             <a href="{% url 'logout' %}" class="nav-link" title="Logout">
               <i class="fas fa-sign-out-alt"></i>
@@ -81,8 +88,6 @@
         </ul>
 
         <div class="sidebar-header"></div>
-        <ul class="list-unstyled">
-          
       </nav>
       <div id="content" class="container-fluid">
         <!-- Main Content -->
@@ -208,14 +213,13 @@
   
   #sidebar ul li a  {
     font-weight: bold;
-    color:#ffff
-    !important
+    color: #fff !important;
   }
-  
+
   #sidebar .nav-text {
     display: inline;
   }
-  
+
   #sidebar.collapsed .nav-text {
     display: none;
   }

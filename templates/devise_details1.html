@@ -38,7 +38,7 @@
               <div>
                 <p class="mb-1"><a href="{% url 'map-devise' devise.pk %}" class="text-decoration-none text-dark">Device current location</a></p>
                 {% if location %}
-                  <p class="mb-0"><a href="{% url 'update-location' devise.pk %}" class="text-decoration-none text-dark">Update device location</a></p>
+                  <p class="mb-0"><a href="{% url 'update-location' location.pk %}" class="text-decoration-none text-dark">Update device location</a></p>
                 {% else %}
                   <p class="mb-0"><a href="{% url 'add-location' devise.pk %}" class="text-decoration-none text-dark">Add device location</a></p>
                 {% endif %}

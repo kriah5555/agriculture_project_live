@@ -58,9 +58,13 @@ def send_message(to, body):
                     )
 
 def change_password(username, password):
-    user = User.objects.get(username=username)
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return False
     user.set_password(password)
     user.save()
+    return True
 
 def get_all_dynamic_fields():
     return ColumnName.objects.all()

@@ -102,7 +102,7 @@
                     <ul class="list-group">
                         {% for device in linked_devices %}
 
-                        <li class="list-group-item" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="showDeviceDetails({
+                        <li class="list-group-item device-list-item" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.15s;" onclick="showDeviceDetails({
                             pk: '{{ device.pk }}',
                             id: '{{ device.devise_id }}',
                             devise_type: '{{ device.devise_type }}',
@@ -122,7 +122,7 @@
                             longitude: '{{ device.longitude }} ',
                             api_limit: '{{ device.api_limit }} ',
                             api_used: '{{ device.api_used }} ',
-                        })">
+                        }, this)">
                             <span>{{ device.name }} ({{device.type_display_name}})</span>
                             <div>
                                 <a href="{% url 'device-details' device.pk %}" 
@@ -237,30 +237,34 @@
     <!-- Bottom Division for API Call Details -->
     <div id="api-details-container" class="mt-4" style="display: none;">
         <div class="card">
-            <div class="card-header bg-primary text-white d-flex align-items-center">
+            <div class="card-header bg-primary text-white d-flex align-items-center gap-2">
                 <h5 class="mb-0 flex-grow-1">
-                    API Calls for Selected Device 
-                    <span id="selectedDeviceName" style="font-weight: normal; font-size: 90%; margin-left: 8px; color: white;"></span>
+                    API Calls
+                    <span id="selectedDeviceName" style="font-weight:normal; font-size:90%; margin-left:8px; opacity:0.85;"></span>
                 </h5>
-                <input type="text" id="searchInput" class="form-control w-50" placeholder="Search..." onkeyup="searchTable()">
-
-                <!-- Plus Icon Button -->
-                <button onclick="openFormPopup()" class="btn btn-light text-primary rounded-circle" title="Add API Call">
+                <input type="text" id="searchInput" class="form-control form-control-sm" style="width:220px;" placeholder="Search…" onkeyup="searchTable()">
+                <button onclick="openFormPopup()" class="btn btn-light btn-sm text-primary" title="Add API Call">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
-            
-            <div class="card-body">
+
+            <!-- Pagination bar -->
+            <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="background:#f8f9fa;">
+                <span id="api-total-records" style="color:#6c757d; font-size:13px;"></span>
+                <div class="d-flex align-items-center gap-2">
+                    <button id="api-btn-prev" class="btn btn-sm btn-outline-primary" disabled>&#8249; Prev</button>
+                    <span id="api-page-info" style="font-size:13px; white-space:nowrap;"></span>
+                    <button id="api-btn-next" class="btn btn-sm btn-outline-primary" disabled>Next &#8250;</button>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
                 <div class="table-container">
-                    <table class="table table-striped table-bordered">
+                    <table class="table table-striped table-bordered mb-0">
                         <thead class="sticky-header">
-                            <tr id="api-details-headers">
-                                <!-- Headers will be dynamically inserted here -->
-                            </tr>
+                            <tr id="api-details-headers"></tr>
                         </thead>
-                        <tbody id="api-details-table">
-                            <!-- Rows will be dynamically inserted here -->
-                        </tbody>
+                        <tbody id="api-details-table"></tbody>
                     </table>
                 </div>
             </div>
@@ -268,7 +272,6 @@
     </div>
 
 </div>
-<div id="predictionModalContainer"></div>
 <!-- Add Hover Effects for Icons -->
 <style>
     .fa-pencil-alt:hover, .fa-key:hover {
@@ -367,220 +370,193 @@
 </script>
 
 <!-- script to show devise details -->
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .device-list-item.active { background-color: #dbeafe !important; font-weight: 600; }
+  .small-img { width:50px; height:50px; object-fit:cover; transition:all 0.3s ease; cursor:zoom-in; }
+  .small-img:hover { width:130px; height:130px; position:relative; z-index:10; }
+  #api-btn-prev:disabled, #api-btn-next:disabled { opacity:0.4; cursor:not-allowed; }
+</style>
+
 <script>
-    // Function to dynamically change the device details based on selected device
     const base_url        = `${window.location.protocol}//${window.location.host}`;
-    const url             = `${base_url}/devise-api-calls`;
+    const apiUrl          = `${base_url}/devise-api-calls`;
     let   selected_devise = {};
     let   devise_type     = null;
     let   devise_id       = null;
+    let   mapInstance     = null;
+    let   fetchToken      = 0;
+    let   apiState        = { page: 1, totalPages: 1, totalRecords: 0, headersSet: false };
+    const perPage         = 50;
 
-    // Initialize a map variable to store the map instance
-    let mapInstance = null;
-
-    function showDeviceDetails(device) {
-        if (device) {
-            selected_devise = device;
-            devise_type     = device.devise_type
-            devise_id       = device.pk
-            document.getElementById('selectedDeviceName').innerText = selected_devise.name || '';
-            document.getElementById('device-name').textContent   = device.name;
-            document.getElementById('serialNo').textContent      = device.serialNo;
-            document.getElementById('chipsetNo').textContent     = device.chipsetNo;
-            document.getElementById('deviseId').textContent      = device.id;
-            document.getElementById('email').textContent         = device.email;
-            document.getElementById('phone').textContent         = device.phone;
-            document.getElementById('address1').textContent      = device.address1;
-            document.getElementById('address2').textContent      = device.address2;
-            document.getElementById('purchaseDate').textContent  = device.purchaseDate;
-            document.getElementById('warranty').textContent      = device.warranty;
-            document.getElementById('amountPaid').textContent    = device.amountPaid;
-            document.getElementById('balanceAmount').textContent = device.balanceAmount;
-            document.getElementById('land').textContent          = device.land;
-            document.getElementById('api_limit').textContent     = device.api_limit;
-            document.getElementById('api_used').textContent      = device.api_used;
-
-            // Check if the map instance already exists and remove the old one
-            if (mapInstance) {
-                mapInstance.remove(); // Removes the previous map
-            }
-
-            // Initialize the map if it doesn't exist yet
-            if (device.latitude && device.longitude) {
-                mapInstance = L.map('leaflet-map').setView([device.latitude, device.longitude], 5); // Center on the device's location
-
-                // Add a tile layer (OpenStreetMap)
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                }).addTo(mapInstance);
-
-                // Add a marker at the device's location
-                L.circleMarker([device.latitude, device.longitude], {
-                    radius     : 8,
-                    fillColor  : 'green',
-                    color      : 'green',
-                    weight     : 2,
-                    opacity    : 1,
-                    fillOpacity: 0.6
-                }).addTo(mapInstance).bindPopup(device.name); // Correct the popup binding
-            }
-
-            // Display the API details container
-            const apiDetailsContainer         = document.getElementById('api-details-container');
-            apiDetailsContainer.style.display = 'block';
-
-            // Clear previous API data
-            const apiDetailsHeaders     = document.getElementById('api-details-headers');
-            apiDetailsHeaders.innerHTML = "";
-            const apiDetailsTable       = document.getElementById('api-details-table');
-            apiDetailsTable.innerHTML   = "";
-
-            // Fetch the device API data
-            fetchData(device.pk);
-        } else {
+    function showDeviceDetails(device, clickedEl) {
+        if (!device) {
             document.getElementById('device-name').textContent = 'Device not found';
-            document.getElementById('device-info').innerHTML = '';
+            return;
         }
+
+        // Highlight selected device
+        document.querySelectorAll('.device-list-item').forEach(el => el.classList.remove('active'));
+        if (clickedEl) clickedEl.classList.add('active');
+
+        selected_devise = device;
+        devise_type     = device.devise_type;
+        devise_id       = device.pk;
+
+        document.getElementById('selectedDeviceName').innerText = device.name || '';
+        document.getElementById('device-name').textContent      = device.name;
+        document.getElementById('serialNo').textContent         = device.serialNo;
+        document.getElementById('chipsetNo').textContent        = device.chipsetNo;
+        document.getElementById('deviseId').textContent         = device.id;
+        document.getElementById('email').textContent            = device.email;
+        document.getElementById('phone').textContent            = device.phone;
+        document.getElementById('address1').textContent         = device.address1;
+        document.getElementById('address2').textContent         = device.address2;
+        document.getElementById('purchaseDate').textContent     = device.purchaseDate;
+        document.getElementById('warranty').textContent         = device.warranty;
+        document.getElementById('amountPaid').textContent       = device.amountPaid;
+        document.getElementById('balanceAmount').textContent    = device.balanceAmount;
+        document.getElementById('land').textContent             = device.land;
+        document.getElementById('api_limit').textContent        = device.api_limit;
+        document.getElementById('api_used').textContent         = device.api_used;
+
+        if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+        if (device.latitude && device.longitude) {
+            mapInstance = L.map('leaflet-map').setView([parseFloat(device.latitude), parseFloat(device.longitude)], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(mapInstance);
+            L.circleMarker([parseFloat(device.latitude), parseFloat(device.longitude)], {
+                radius: 8, fillColor: 'green', color: 'green', weight: 2, opacity: 1, fillOpacity: 0.6
+            }).addTo(mapInstance).bindPopup(device.name);
+        }
+
+        document.getElementById('api-details-container').style.display = 'block';
+
+        // Reset headers and load page 1
+        apiState.headersSet = false;
+        document.getElementById('api-details-headers').innerHTML = '';
+        fetchApiPage(device.pk, 1, ++fetchToken);
     }
 
-    async function fetchData(id) 
-    {
-        const apiDetailsHeaders = document.getElementById('api-details-headers');
-        const apiDetailsTable   = document.getElementById('api-details-table');
-        const perPage           = 100; // Items per page
-        let currentPage         = 1;
-        let totalPages          = 1;
-        let isLoading           = false;
+    async function fetchApiPage(id, page, token) {
+        if (token !== fetchToken) return;
 
-        // Clear headers and table initially
-        apiDetailsHeaders.innerHTML = "";
-        apiDetailsTable.innerHTML   = "";
-
-        // Show loading spinner while fetching
-        const loadingRow = document.createElement('tr');
-        loadingRow.id = "loading-row"; // Add an ID for easy removal
-        loadingRow.innerHTML = `
-            <td colspan="100%" style="text-align:center;">
-                <div class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #ccc; border-top-color:#007bff; border-radius:50%; animation: spin 1s linear infinite;"></div>
-                <span style="margin-left:8px;">Loading...</span>
-            </td>
-        `;
-        apiDetailsTable.appendChild(loadingRow);
+        const tbody = document.getElementById('api-details-table');
+        tbody.innerHTML = `
+            <tr>
+              <td colspan="20" style="text-align:center; padding:20px;">
+                <div style="display:inline-block;width:18px;height:18px;border:3px solid #ccc;border-top-color:#007bff;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;"></div>
+                <span style="margin-left:8px;">Loading…</span>
+              </td>
+            </tr>`;
+        setApiPagination(page, 1, 0);
 
         try {
-            while (currentPage <= totalPages) {
-                if (isLoading) break;
-                isLoading = true;
+            const res = await fetch(`${apiUrl}/${id}/?page=${page}&per_page=${perPage}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            if (token !== fetchToken) return;
 
-                const response = await fetch(`${url}/${id}/?page=${currentPage}&per_page=${perPage}`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const deviseData = await response.json();
+            const deviseData = await res.json();
+            const pg         = deviseData.pagination || {};
+            apiState = {
+                page        : pg.current_page  || page,
+                totalPages  : pg.total_pages   || 1,
+                totalRecords: pg.total_records || 0,
+                headersSet  : true,
+            };
 
-                // Remove loading row on first page
-                if (currentPage === 1) {
-                    const row = document.getElementById("loading-row");
-                    if (row) row.remove();
+            // Build headers once
+            if (!document.getElementById('api-details-headers').children.length) {
+                const headerRow = document.getElementById('api-details-headers');
+                for (const [, label] of Object.entries(deviseData.headers || {})) {
+                    const th = document.createElement('th');
+                    th.textContent = label;
+                    headerRow.appendChild(th);
                 }
-
-                // Set headers only once
-                if (currentPage === 1) {
-                    for (const [key, value] of Object.entries(deviseData.headers)) {
-                        const th = document.createElement('th');
-                        th.textContent = value;
-                        apiDetailsHeaders.appendChild(th);
-                    }
-                    if (selected_devise.devise_type === 'soilsaathi') {
-                        const th = document.createElement('th');
-                        th.textContent = 'Recommendation';
-                        apiDetailsHeaders.appendChild(th);
-                    }
+                if (selected_devise.devise_type === 'soilsaathi') {
+                    const th = document.createElement('th');
+                    th.textContent = 'Recommendation';
+                    headerRow.appendChild(th);
                 }
+            }
 
-                // Populate rows
-                const apiData = deviseData.data || [];
+            const apiData = deviseData.data || [];
+            if (apiData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="20" style="text-align:center;color:#6c757d;padding:20px;">No API data found for this device</td></tr>`;
+            } else {
+                const fragment = document.createDocumentFragment();
                 apiData.forEach(api => {
                     const row = document.createElement('tr');
-                    let rowContent = '';
-
-                    for (const headerKey in deviseData.headers) {
-                        const cellValue = api[headerKey] !== undefined ? api[headerKey] : '';
-                        if (headerKey === 'image_path') {
-                            rowContent += `<td>${api.image_path ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />` : ''}</td>`;
+                    row.style.cursor = 'pointer';
+                    let html = '';
+                    for (const key of Object.keys(deviseData.headers || {})) {
+                        const val = api[key];
+                        if (key === 'image_path') {
+                            html += `<td>${val ? `<img src="${val}" class="small-img" />` : '—'}</td>`;
                         } else {
-                            rowContent += `<td>${cellValue}</td>`;
+                            html += `<td>${val !== null && val !== undefined ? val : '—'}</td>`;
                         }
                     }
-
                     if (selected_devise.devise_type === 'soilsaathi') {
-                        rowContent += `<td class="no-redirect-cell">
-                            <a target="_blank" href="/crop-recommendation-dashboard/?api_id=${api.id}" style="text-decoration: none; font-size: 1.5rem;">👁️</a>
-                        </td>`;
+                        html += `<td class="no-redirect-cell"><a target="_blank" href="/crop-recommendation-dashboard/?api_id=${api.id}" style="text-decoration:none;font-size:1.3rem;">👁️</a></td>`;
                     }
-
-                    row.style.cursor = "pointer";
-                    row.addEventListener("click", function(event) {
-                        if (event.target.closest('.no-redirect-cell')) return;
+                    row.innerHTML = html;
+                    row.addEventListener('click', function (e) {
+                        if (e.target.closest('.no-redirect-cell')) return;
                         redirectToEdit(api.id);
                     });
-
-                    row.innerHTML = rowContent;
-                    apiDetailsTable.appendChild(row);
+                    fragment.appendChild(row);
                 });
-
-                // Update pagination
-                totalPages = deviseData.pagination?.total_pages || 1;
-                currentPage++;
-                isLoading = false;
+                tbody.innerHTML = '';
+                tbody.appendChild(fragment);
             }
-        } catch (error) {
-            console.error('Error:', error);
-            apiDetailsTable.innerHTML = `<tr><td colspan="100%" style="text-align:center;color:red;">Error loading data</td></tr>`;
+            setApiPagination(apiState.page, apiState.totalPages, apiState.totalRecords);
+
+        } catch (err) {
+            if (token !== fetchToken) return;
+            console.error('Error:', err);
+            document.getElementById('api-details-table').innerHTML =
+                `<tr><td colspan="20" style="text-align:center;color:red;padding:20px;">Error loading data. Please try again.</td></tr>`;
+            setApiPagination(1, 1, 0);
         }
     }
+
+    function setApiPagination(page, totalPages, totalRecords) {
+        document.getElementById('api-page-info').textContent     = totalRecords > 0 ? `Page ${page} of ${totalPages}` : '';
+        document.getElementById('api-total-records').textContent = totalRecords > 0 ? `${totalRecords} record${totalRecords !== 1 ? 's' : ''}` : '';
+        document.getElementById('api-btn-prev').disabled = page <= 1;
+        document.getElementById('api-btn-next').disabled = page >= totalPages;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('api-btn-prev').addEventListener('click', () => {
+            if (apiState.page > 1 && devise_id) {
+                fetchApiPage(devise_id, apiState.page - 1, ++fetchToken);
+            }
+        });
+        document.getElementById('api-btn-next').addEventListener('click', () => {
+            if (apiState.page < apiState.totalPages && devise_id) {
+                fetchApiPage(devise_id, apiState.page + 1, ++fetchToken);
+            }
+        });
+    });
 
     function redirectToEdit(id) {
-        let endpoint = ''; 
-        
-        if (selected_devise.devise_type === 'soilsaathi') {
-            endpoint = '/api-overview';
-        } else if (selected_devise.devise_type === 'atmo_sense') {
-            endpoint = '/atmos-sense-api-overview';
-        } else if (selected_devise.devise_type === 'soil_life') {
-            endpoint = '/soil-life-api-overview';
-        }
-        
+        const endpoints = {
+            soilsaathi : '/api-overview',
+            atmo_sense : '/atmos-sense-api-overview',
+            soil_life  : '/soil-life-api-overview',
+        };
+        const endpoint = endpoints[selected_devise.devise_type];
         if (endpoint) {
             window.location.href = `${endpoint}/${id}/`;
-        } else {
-            console.error('Unknown device type for redirection');
         }
     }
 
-    // CSS for the image hover effect
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .small-img {
-            width: 50px;
-            height: 50px;
-            transition: all 0.3s ease;
-        }
-
-        .big-img {
-            width: 150px;
-            height: 150px;
-        }
-
-        .edit-btn {
-            cursor: pointer;
-        }
-    `;
-    document.head.appendChild(style);
-
-    function openFormPopup()
-    {
-        showDynamicAPIForm(devise_type, devise_id)
+    function openFormPopup() {
+        showDynamicAPIForm(devise_type, devise_id);
     }
-
 </script>
 
 
