@@ -1,129 +1,308 @@
 {% extends "navbar.html" %}
 {% load static %}
-
 {% block content %}
-<body style="background-color: #f8f9fa;">  <!-- Light gray background -->
-
-    <div class="header">
-        <h2 class="bg-primary" style=" color:white; text-align: center; padding: 10px;"><i class="fa fa-bell"></i> Notifications</h2>
-    </div>
-
-  <div class="container mt-4">
-
-      <div class="row justify-content-center">
-          <!-- Left Column (Notification List & Filters) -->
-          <div class="col-md-4 p-3" style="background-color: white; height: 80vh; overflow-y: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-              <h5 class="text-center">📢 All Notifications</h5>
-
-              <!-- Filter Box -->
-              <div class="mb-3">
-                  <input type="text" id="filterPhone" class="form-control" placeholder="🔍 Filter by Phone" onkeyup="applyFilter()">
-              </div>
-              <div class="mb-3">
-                  <input type="text" id="filterEmail" class="form-control" placeholder="📧 Filter by Email" onkeyup="applyFilter()">
-              </div>
-
-              <!-- Notifications List -->
-              <div id="notificationsList">
-                    {% if notification_active %}
-                        <span>Unread notification</span>
-                    {% endif %}
-                  {% for notif in notification_active %}
-                  <div class="alert alert-info notification d-flex justify-content-between align-items-center" style="cursor: pointer;" 
-                       onclick="showDetails('{{ notif.pk }}', '{{ notif.name }}', '{{ notif.phone }}', '{{ notif.mail }}', '{{ notif.message }}', true)">
-                      <div>
-                          <b>{{ notif.name }}</b> | <span class="phone">{{ notif.phone }}</span> → <span class="email">{{ notif.mail }}</span>
-                      </div>
-                      <a class="btn btn-outline-success btn-sm mark-read" href="{% url 'notifications' notif.pk %}" class="btn btn-outline-success btn-sm" title="Mark as read">
-                        <i class="fa fa-check-circle"></i>
-                    </a>
-                  </div>
-                  {% endfor %}
-
-                  {% if notification_inactive %}
-                        <span>Notification</span>
-                    {% endif %}
-                  {% for notif in notification_inactive %}
-                  <div class="alert alert-success notification" style="cursor: pointer;" 
-                       onclick="showDetails('{{ notif.pk }}', '{{ notif.name }}', '{{ notif.phone }}', '{{ notif.mail }}', '{{ notif.message }}', false)">
-                      <b>{{ notif.name }}</b> | <span class="phone">{{ notif.phone }}</span> → <span class="email">{{ notif.mail }}</span>
-                  </div>
-                  {% endfor %}
-              </div>
-          </div>
-
-          <!-- Right Column (Notification Details) -->
-          <div class="col-md-7 offset-md-1 p-3" style="background-color: white; height: 80  vh; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-              <h5 class="text-center">📩 Details</h5>
-              <div id="notificationDetails" class="p-3 text-center">
-                  <p class="text-muted">Click on a notification to view details here.</p>
-              </div>
-          </div>
-      </div>
-  </div>
-
-<script>
-    function applyFilter() {
-        let phoneFilter = document.getElementById("filterPhone").value.toLowerCase();
-        let emailFilter = document.getElementById("filterEmail").value.toLowerCase();
-
-        document.querySelectorAll(".notification").forEach(notification => {
-            let phone = notification.querySelector(".phone").textContent.toLowerCase();
-            let email = notification.querySelector(".email").textContent.toLowerCase();
-            
-            if ((phone.includes(phoneFilter) || phoneFilter === "") && 
-                (email.includes(emailFilter) || emailFilter === "")) {
-                notification.style.display = "";
-            } else {
-                notification.style.display = "none";
-            }
-        });
-    }
-
-    function showDetails(id, name, phone, mail, message, isActive) {
-        let detailsHTML = `
-            <p><b>Name:</b> ${name}</p>
-            <p><b>Phone:</b> ${phone}</p>
-            <p><b>Email:</b> ${mail}</p>
-            <p><b>Message:</b> ${message}</p>`;
-
-        document.getElementById("notificationDetails").innerHTML = detailsHTML;
-    }
-
-    function markAsRead(event, notifId) {
-        event.stopPropagation(); // Prevent triggering the main click event
-        fetch(`/mark-as-read/${notifId}/`, {
-            method: 'POST',
-            headers: { 'X-CSRFToken': getCSRFToken() },
-        })
-        .then(response => {
-            if (response.ok) {
-                location.reload(); // Reload the page to update notifications
-            }
-        })
-        .catch(error => console.error("Error:", error));
-    }
-
-    function getCSRFToken() {
-        return document.cookie.split('; ')
-            .find(row => row.startsWith('csrftoken='))
-            ?.split('=')[1];
-    }
-</script>
 
 <style>
-    .notification:hover {
-        background-color: #e9ecef;
-    }
-
-    .mark-read {
-        visibility: hidden;
-    }
-
-    .notification:hover .mark-read {
-        visibility: visible;
-    }
+  .notif-card { border-radius:12px; border:none; box-shadow:0 2px 12px rgba(0,0,0,.07); }
+  .notif-item {
+    display:flex; align-items:flex-start; gap:12px;
+    padding:14px 16px; border-bottom:1px solid #f3f4f6;
+    cursor:pointer; transition:background .15s;
+  }
+  .notif-item:last-child { border-bottom:none; }
+  .notif-item:hover { background:#f8f9ff; }
+  .notif-item.selected { background:#eff3ff; }
+  .notif-dot { width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px; }
+  .dot-unread  { background:#dc3545; }
+  .dot-read    { background:#adb5bd; }
+  .dot-pending { background:#fd7e14; }
+  .dot-resolved{ background:#28a745; }
+  .badge-type {
+    display:inline-block;font-size:10px;font-weight:700;
+    padding:2px 8px;border-radius:10px;letter-spacing:.4px;
+  }
+  .badge-forgot  { background:#fff3cd;color:#664d03; }
+  .badge-change  { background:#cfe2ff;color:#084298; }
+  .badge-contact { background:#e2e3e5;color:#383d41; }
+  .detail-panel { background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.07);padding:28px; }
+  .detail-label { font-size:12px;color:#6c757d;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px; }
+  .detail-value { font-size:15px;color:#111;margin-bottom:16px; }
+  .section-pill {
+    display:inline-flex;align-items:center;gap:6px;
+    background:#f0f3ff;color:#2046ad;border-radius:20px;
+    padding:4px 14px;font-size:12px;font-weight:600;margin-bottom:12px;
+  }
+  .tab-btn { cursor:pointer;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;border:none;background:none;color:#6c757d; }
+  .tab-btn.active { background:#2046ad;color:#fff; }
+  .empty-state { text-align:center;padding:40px 20px;color:#9ca3af; }
+  .empty-state i { font-size:36px;margin-bottom:10px;display:block; }
 </style>
 
-</body>
+<div class="header">
+  <h2 class="bg-primary" style="color:white;text-align:center;padding:10px;margin:0;">
+    <i class="fas fa-bell me-2"></i>Notifications
+  </h2>
+</div>
+
+<div class="container-fluid mt-4" style="max-width:1100px;">
+  <div class="row g-3">
+
+    <!-- ── LEFT PANEL: notification list ── -->
+    <div class="col-md-5">
+      <div class="notif-card p-0" style="height:78vh;overflow:hidden;display:flex;flex-direction:column;">
+
+        <!-- Tabs -->
+        <div class="d-flex gap-2 p-3 border-bottom bg-light">
+          <button class="tab-btn active" id="tab-requests" onclick="switchTab('requests')">
+            User Requests
+            {% if user_requests_pending %}
+              <span class="badge bg-danger ms-1">{{ user_requests_pending|length }}</span>
+            {% endif %}
+          </button>
+          <button class="tab-btn" id="tab-contact" onclick="switchTab('contact')">
+            Contact
+            {% if notification_active %}
+              <span class="badge bg-danger ms-1">{{ notification_active|length }}</span>
+            {% endif %}
+          </button>
+        </div>
+
+        <!-- Search -->
+        <div class="px-3 pt-3 pb-2">
+          <input type="text" id="searchInput" class="form-control form-control-sm"
+                 placeholder="&#128269; Search by name / email…" oninput="filterList()">
+        </div>
+
+        <!-- List -->
+        <div id="notifList" style="flex:1;overflow-y:auto;">
+
+          <!-- USER REQUESTS TAB -->
+          <div id="panel-requests">
+            {% if user_requests_pending or user_requests_resolved %}
+
+              {% if user_requests_pending %}
+                <div class="px-3 pt-2 pb-1">
+                  <span class="section-pill"><i class="fas fa-circle-dot"></i>Pending ({{ user_requests_pending|length }})</span>
+                </div>
+                {% for req in user_requests_pending %}
+                  <div class="notif-item"
+                       data-search="{{ req.username|lower }} {{ req.email|lower }}"
+                       onclick="showRequest({{ req.pk }}, '{{ req.username }}', '{{ req.email }}', '{{ req.phone }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'pending', '{% url 'resolve-user-request' req.pk %}')">
+                    <span class="notif-dot dot-pending"></span>
+                    <div style="flex:1;min-width:0;">
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <strong style="font-size:14px;">{{ req.username }}</strong>
+                        {% if req.request_type == 'forgot_password' %}
+                          <span class="badge-type badge-forgot">Forgot PW</span>
+                        {% else %}
+                          <span class="badge-type badge-change">Change PW</span>
+                        {% endif %}
+                      </div>
+                      <div style="font-size:12px;color:#6c757d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ req.email }} &nbsp;·&nbsp; {{ req.created_at|date:"d M, H:i" }}
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% endif %}
+
+              {% if user_requests_resolved %}
+                <div class="px-3 pt-3 pb-1">
+                  <span class="section-pill" style="background:#e8f5e9;color:#1b5e20;"><i class="fas fa-check-circle"></i>Resolved ({{ user_requests_resolved|length }})</span>
+                </div>
+                {% for req in user_requests_resolved %}
+                  <div class="notif-item"
+                       data-search="{{ req.username|lower }} {{ req.email|lower }}"
+                       onclick="showRequest({{ req.pk }}, '{{ req.username }}', '{{ req.email }}', '{{ req.phone }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'resolved', '')">
+                    <span class="notif-dot dot-resolved"></span>
+                    <div style="flex:1;min-width:0;">
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <strong style="font-size:14px;color:#6c757d;">{{ req.username }}</strong>
+                        {% if req.request_type == 'forgot_password' %}
+                          <span class="badge-type badge-forgot">Forgot PW</span>
+                        {% else %}
+                          <span class="badge-type badge-change">Change PW</span>
+                        {% endif %}
+                      </div>
+                      <div style="font-size:12px;color:#adb5bd;">
+                        {{ req.email }} &nbsp;·&nbsp; {{ req.created_at|date:"d M, H:i" }}
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% endif %}
+
+            {% else %}
+              <div class="empty-state"><i class="fas fa-inbox"></i>No user requests yet.</div>
+            {% endif %}
+          </div>
+
+          <!-- CONTACT TAB -->
+          <div id="panel-contact" style="display:none;">
+            {% if notification_active %}
+              <div class="px-3 pt-2 pb-1">
+                <span class="section-pill"><i class="fas fa-circle-dot"></i>Unread ({{ notification_active|length }})</span>
+              </div>
+              {% for notif in notification_active %}
+                <div class="notif-item"
+                     data-search="{{ notif.name|lower }} {{ notif.mail|lower }} {{ notif.phone|lower }}"
+                     onclick="showContact('{{ notif.name|escapejs }}','{{ notif.phone }}','{{ notif.mail }}','{{ notif.message|escapejs }}', true, '{% url 'notifications' notif.pk %}')">
+                  <span class="notif-dot dot-unread"></span>
+                  <div style="flex:1;min-width:0;">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <strong style="font-size:14px;">{{ notif.name }}</strong>
+                      <span class="badge-type badge-contact">Contact</span>
+                    </div>
+                    <div style="font-size:12px;color:#6c757d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      {{ notif.mail }} &nbsp;·&nbsp; {{ notif.phone }}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+
+            {% if notification_inactive %}
+              <div class="px-3 pt-3 pb-1">
+                <span class="section-pill" style="background:#e8f5e9;color:#1b5e20;"><i class="fas fa-check-circle"></i>Read</span>
+              </div>
+              {% for notif in notification_inactive %}
+                <div class="notif-item"
+                     data-search="{{ notif.name|lower }} {{ notif.mail|lower }} {{ notif.phone|lower }}"
+                     onclick="showContact('{{ notif.name|escapejs }}','{{ notif.phone }}','{{ notif.mail }}','{{ notif.message|escapejs }}', false, '')">
+                  <span class="notif-dot dot-read"></span>
+                  <div style="flex:1;min-width:0;">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <strong style="font-size:14px;color:#6c757d;">{{ notif.name }}</strong>
+                      <span class="badge-type badge-contact">Contact</span>
+                    </div>
+                    <div style="font-size:12px;color:#adb5bd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      {{ notif.mail }}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+
+            {% if not notification_active and not notification_inactive %}
+              <div class="empty-state"><i class="fas fa-inbox"></i>No contact notifications.</div>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RIGHT PANEL: detail view ── -->
+    <div class="col-md-7">
+      <div class="detail-panel" style="height:78vh;overflow-y:auto;">
+        <div id="detailContent" class="text-center" style="padding-top:60px;">
+          <i class="fas fa-hand-pointer" style="font-size:40px;color:#d1d5db;margin-bottom:14px;display:block;"></i>
+          <p class="text-muted">Select a notification to view details.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function switchTab(tab) {
+    document.getElementById('panel-requests').style.display = tab === 'requests' ? '' : 'none';
+    document.getElementById('panel-contact').style.display  = tab === 'contact'  ? '' : 'none';
+    document.getElementById('tab-requests').classList.toggle('active', tab === 'requests');
+    document.getElementById('tab-contact').classList.toggle('active',  tab === 'contact');
+    document.getElementById('searchInput').value = '';
+    filterList();
+  }
+
+  function filterList() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.notif-item').forEach(el => {
+      el.style.display = (el.dataset.search || '').includes(q) ? '' : 'none';
+    });
+  }
+
+  function showRequest(id, username, email, phone, typeName, message, date, status, resolveUrl) {
+    document.querySelectorAll('.notif-item').forEach(el => el.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+
+    const isPending = status === 'pending';
+    const typeLabel = typeName.includes('Forgot')
+      ? '<span style="background:#fff3cd;color:#664d03;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">Forgot Password</span>'
+      : '<span style="background:#cfe2ff;color:#084298;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">Change Password</span>';
+
+    document.getElementById('detailContent').innerHTML = `
+      <div style="text-align:left;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#1a3a9f,#0d7cf5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;">
+            <i class="fas fa-key"></i>
+          </div>
+          <div>
+            <div style="font-size:1.1rem;font-weight:700;">${username}</div>
+            <div>${typeLabel}</div>
+          </div>
+          ${isPending
+            ? `<span style="margin-left:auto;background:#fff3cd;color:#664d03;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;">● Pending</span>`
+            : `<span style="margin-left:auto;background:#d1e7dd;color:#0a3622;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;">✓ Resolved</span>`
+          }
+        </div>
+        <hr>
+        <div class="detail-label">Email</div>
+        <div class="detail-value">${email || '—'}</div>
+        <div class="detail-label">Phone</div>
+        <div class="detail-value">${phone || '—'}</div>
+        <div class="detail-label">Message</div>
+        <div class="detail-value" style="white-space:pre-wrap;">${message || '—'}</div>
+        <div class="detail-label">Submitted</div>
+        <div class="detail-value">${date}</div>
+        ${isPending ? `
+          <hr>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <a href="/change-password/${username}/"
+               class="btn btn-primary"
+               style="background:linear-gradient(135deg,#1a3a9f,#0d7cf5);border:none;border-radius:8px;font-weight:700;">
+              <i class="fas fa-key me-1"></i> Reset Password
+            </a>
+            <a href="${resolveUrl}"
+               class="btn btn-success"
+               style="border-radius:8px;font-weight:700;">
+              <i class="fas fa-check me-1"></i> Mark Resolved
+            </a>
+          </div>` : ''
+        }
+      </div>`;
+  }
+
+  function showContact(name, phone, mail, message, isUnread, markUrl) {
+    document.querySelectorAll('.notif-item').forEach(el => el.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+
+    document.getElementById('detailContent').innerHTML = `
+      <div style="text-align:left;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <div style="width:48px;height:48px;border-radius:12px;background:#6c757d;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;">
+            <i class="fas fa-user"></i>
+          </div>
+          <div>
+            <div style="font-size:1.1rem;font-weight:700;">${name}</div>
+            <span style="background:#e2e3e5;color:#383d41;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">Contact</span>
+          </div>
+        </div>
+        <hr>
+        <div class="detail-label">Phone</div>
+        <div class="detail-value">${phone}</div>
+        <div class="detail-label">Email</div>
+        <div class="detail-value">${mail}</div>
+        <div class="detail-label">Message</div>
+        <div class="detail-value" style="white-space:pre-wrap;">${message || '—'}</div>
+        ${isUnread && markUrl ? `
+          <hr>
+          <a href="${markUrl}" class="btn btn-outline-success" style="border-radius:8px;">
+            <i class="fas fa-check me-1"></i> Mark as Read
+          </a>` : ''
+        }
+      </div>`;
+  }
+</script>
+
 {% endblock %}

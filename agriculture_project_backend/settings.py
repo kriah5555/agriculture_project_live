@@ -38,11 +38,11 @@ INSTALLED_APPS = [
     'authapp',
     'agriapp',
     'map',
-    # 'knox',
-    # 'djoser',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'drf_spectacular',
     'devise_apis',
-    # 'rest_framework.authtoken',
     'predicter',
     'versions',
     'razorpay_app',
@@ -99,12 +99,59 @@ DATABASES = {
 #      }
 # }
 
-# for authentication
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': (
-#         'knox.auth.TokenAuthentication',
-#     ),
-# }
+# ── REST Framework ──────────────────────────────────────────────────────────
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50,
+}
+
+# ── JWT Token Settings ───────────────────────────────────────────────────────
+# Edit MOBILE_TOKEN_SETTINGS to change expiry values from a single place.
+from datetime import timedelta
+MOBILE_TOKEN_SETTINGS = {
+    'ACCESS_TOKEN_LIFETIME_DAYS' : 2,    # change here to adjust access token expiry
+    'REFRESH_TOKEN_LIFETIME_DAYS': 15,   # change here to adjust refresh token expiry
+}
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME' : timedelta(days=MOBILE_TOKEN_SETTINGS['ACCESS_TOKEN_LIFETIME_DAYS']),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=MOBILE_TOKEN_SETTINGS['REFRESH_TOKEN_LIFETIME_DAYS']),
+    'ROTATE_REFRESH_TOKENS' : True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'TOKEN_OBTAIN_SERIALIZER': 'devise_apis.mobile_serializers.MobileTokenObtainSerializer',
+}
+
+# ── DRF Spectacular (Swagger / ReDoc) ────────────────────────────────────────
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'ArkaShine Mobile API',
+    'DESCRIPTION': (
+        'Complete REST API for the ArkaShine agricultural IoT platform. '
+        'Supports JWT authentication, device management, sensor readings, '
+        'thresholds, recommendations, and OTA firmware updates.'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'CONTACT': {'name': 'ArkaShine Team'},
+    'TAGS': [
+        {'name': 'Auth',          'description': 'Login, token refresh, logout'},
+        {'name': 'Device Types',  'description': 'List all device types with lock/unlock status'},
+        {'name': 'Devices',       'description': 'User device listing and details'},
+        {'name': 'API Calls',     'description': 'Sensor readings per device'},
+        {'name': 'Thresholds',    'description': 'Alert threshold management'},
+        {'name': 'Recommendations','description': 'Crop & fertilizer recommendations'},
+        {'name': 'Firmware',      'description': 'OTA version check and download'},
+    ],
+    'SCHEMA_PATH_PREFIX': '/api/',
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SORT_OPERATIONS': False,
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

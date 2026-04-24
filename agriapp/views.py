@@ -5,7 +5,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .forms import ContactForm, DeviseForm
-from .models import ContactDetails, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES
+from .models import ContactDetails, UserRequest, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES
 
 from . import UserFunctions
 from django.views.generic import UpdateView, TemplateView, CreateView, View
@@ -187,7 +187,7 @@ def create_user(request):
             messages.success(request,"User created successfully")
 
             # Redirect to the users list page (or success page)
-            return redirect('/users')
+            return redirect('/users/')
         else:
             # If the form is invalid, render the form again with errors
             return render(request, 'create-user.html', {'form': form})
@@ -298,16 +298,19 @@ def edit_devise(request, **kwargs):
 
 @login_required
 def notifications(request, **kwargs):
-    if (kwargs):
-       data = get_object_or_404(ContactDetails, pk=kwargs['pk'])
-       data.status = False
-       data.save()
-    
-    notifications_all = ContactDetails.objects.all()
-    template_name     = 'notifications.html'
-    context           = {
-        'notification_active'   : notifications_all.filter(status=True),
-        'notification_inactive' : notifications_all.filter(status=False),
+    if kwargs.get('pk'):
+        data = get_object_or_404(ContactDetails, pk=kwargs['pk'])
+        data.status = False
+        data.save()
+
+    notifications_all  = ContactDetails.objects.all()
+    user_requests_all  = UserRequest.objects.all()
+    template_name      = 'notifications.html'
+    context            = {
+        'notification_active'    : notifications_all.filter(status=True),
+        'notification_inactive'  : notifications_all.filter(status=False),
+        'user_requests_pending'  : user_requests_all.filter(status=UserRequest.STATUS_PENDING),
+        'user_requests_resolved' : user_requests_all.filter(status=UserRequest.STATUS_RESOLVED),
     }
     return render(request, template_name = template_name, context = context)
 
@@ -1162,3 +1165,85 @@ class GetApiDataJsonData(View):
             print(f"Error: {str(e)}")  # Print the exception for debugging
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
+
+
+# ── Forgot-password request (web form) ───────────────────────────────────────
+
+def forgot_password_request(request):
+    """
+    Public view — no login required.
+    User fills in username/email and optionally phone.
+    Creates a UserRequest(type=forgot_password) so the admin sees it in Notifications.
+    """
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email    = request.POST.get('email', '').strip()
+        phone    = request.POST.get('phone', '').strip()
+
+        if not username or not email:
+            messages.error(request, "Username and email are required.")
+            return render(request, 'forgot_password.html')
+
+        user = User.objects.filter(username=username, email=email).first()
+
+        UserRequest.objects.create(
+            user         = user,
+            username     = username,
+            email        = email,
+            phone        = phone,
+            request_type = UserRequest.FORGOT_PASSWORD,
+            message      = f"User '{username}' has requested a password reset.",
+        )
+        messages.success(request, "Your request has been sent. An admin will reset your password shortly.")
+        return render(request, 'forgot_password.html', {'submitted': True})
+
+    return render(request, 'forgot_password.html')
+
+
+# ── Change-password request (web — logged-in user notifies admin) ─────────────
+
+@login_required
+def change_password_request(request):
+    """
+    Logged-in user requests an admin-assisted password change.
+    Creates a UserRequest(type=change_password) visible in admin Notifications.
+    """
+    if request.method == 'POST':
+        message = request.POST.get('message', '').strip()
+        user    = request.user
+
+        # Prevent duplicate pending requests
+        existing = UserRequest.objects.filter(
+            user=user,
+            request_type=UserRequest.CHANGE_PASSWORD,
+            status=UserRequest.STATUS_PENDING,
+        ).exists()
+
+        if existing:
+            messages.warning(request, "You already have a pending password change request. Please wait for the admin to process it.")
+        else:
+            UserRequest.objects.create(
+                user         = user,
+                username     = user.username,
+                email        = user.email,
+                phone        = '',
+                request_type = UserRequest.CHANGE_PASSWORD,
+                message      = message or f"User '{user.username}' has requested a password change.",
+            )
+            messages.success(request, "Your request has been sent to the admin.")
+
+        return redirect(f"/user-details/{user.username}/")
+
+    return render(request, 'change_password_request.html')
+
+
+# ── Resolve a UserRequest (admin action from notifications) ───────────────────
+
+@login_required
+def resolve_user_request(request, pk):
+    """Mark a UserRequest as resolved from the notifications page."""
+    req = get_object_or_404(UserRequest, pk=pk)
+    req.status = UserRequest.STATUS_RESOLVED
+    req.save()
+    messages.success(request, f"Request from '{req.username}' marked as resolved.")
+    return redirect('notifications')

@@ -211,6 +211,48 @@ class APICountThreshold(models.Model):
         return self.devise.name
 
 
+class UserRequest(models.Model):
+    """
+    Stores user-initiated requests (forgot password, change password).
+    Each entry appears in the admin Notifications page as an unread item
+    until an admin marks it resolved.
+    """
+    FORGOT_PASSWORD  = 'forgot_password'
+    CHANGE_PASSWORD  = 'change_password'
+    REQUEST_TYPES = [
+        (FORGOT_PASSWORD, 'Forgot Password'),
+        (CHANGE_PASSWORD, 'Change Password Request'),
+    ]
+    STATUS_PENDING  = 'pending'
+    STATUS_RESOLVED = 'resolved'
+    STATUS_CHOICES  = [
+        (STATUS_PENDING,  'Pending'),
+        (STATUS_RESOLVED, 'Resolved'),
+    ]
+
+    user         = models.ForeignKey(
+        'auth.User', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='requests'
+    )
+    username     = models.CharField(max_length=150)
+    email        = models.EmailField()
+    phone        = models.CharField(max_length=20, blank=True, default='')
+    request_type = models.CharField(max_length=50, choices=REQUEST_TYPES)
+    message      = models.CharField(max_length=500, blank=True, default='')
+    status       = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_request_type_display()} — {self.username}"
+
+    @property
+    def is_pending(self):
+        return self.status == self.STATUS_PENDING
+
+
 class ColumnName(models.Model):
     field_name = models.CharField(max_length = 255, unique=True)
 

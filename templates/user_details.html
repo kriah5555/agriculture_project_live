@@ -44,6 +44,9 @@
                         <a href="{% url 'change-password' user.username %}" class="text-danger" style="font-size: 18px;" title="Reset Password" >
                             <i class="fas fa-key" title="Reset password"></i>
                         </a>
+                        <a href="{% url 'change-password-request' %}" class="text-warning ms-3" style="font-size: 18px;" title="Request Password Change (notifies admin)">
+                            <i class="fas fa-bell" title="Request password change"></i>
+                        </a>
                     </div>
                     
 

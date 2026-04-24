@@ -9,7 +9,6 @@ from agriapp import UserFunctions, FertilizerCalculation as f
 from .encryption_utils import encrypt_device_id, decrypt_device_id
 from django.contrib import auth
 import base64
-from map.views import get_marker_color
 import copy
 from django.core.files.storage import FileSystemStorage
 from django.core.files.base import ContentFile
@@ -121,10 +120,12 @@ def add_soil_data(request):
             return Response({'message': 'Invalid device key.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-        devise     = Devise.objects.get(pk = devise_pk)
-        api_limit  = get_marker_color(devise)
-        if (api_limit == 'red'):
-            return Response({'message': 'You have exceeded the limit of api calls please contact the admin for more clarification'}, status=status.HTTP_200_OK)
+        devise        = Devise.objects.get(pk=devise_pk)
+        api_threshold = APICountThreshold.objects.filter(devise=devise).first()
+        if api_threshold:
+            api_used = DeviseApis.objects.filter(device=devise).count()
+            if api_used >= api_threshold.red:
+                return Response({'message': 'API usage limit reached for this device. Please contact admin.'}, status=status.HTTP_403_FORBIDDEN)
 
 
         # Modify request.data to include the Devise object
@@ -257,9 +258,11 @@ def add_soil_data_open(request):
         if (not devise):
             return Response({'message': 'Invslid devise ID'}, status=status.HTTP_400_BAD_REQUEST)
 
-        api_limit  = get_marker_color(devise)
-        if (api_limit == 'red'):
-            return Response({'message': 'You have exceeded the limit of api calls please contact the admin for more clarification'}, status=status.HTTP_400_BAD_REQUEST)
+        api_threshold = APICountThreshold.objects.filter(devise=devise).first()
+        if api_threshold:
+            api_used = DeviseApis.objects.filter(device=devise).count()
+            if api_used >= api_threshold.red:
+                return Response({'message': 'API usage limit reached for this device. Please contact admin.'}, status=status.HTTP_403_FORBIDDEN)
 
 
         # Modify request.data to include the Devise object

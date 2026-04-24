@@ -31,13 +31,30 @@
       <h4 class="mb-0 fw-bold"><i class="fas fa-book me-2 text-primary"></i>API Documentation</h4>
       <small class="text-muted">ArkaShine Device & Firmware APIs — v1</small>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="/api/swagger/" target="_blank" class="btn btn-sm btn-success">
+        <i class="fas fa-flask me-1"></i> Swagger UI
+      </a>
+      <a href="/api/redoc/" target="_blank" class="btn btn-sm btn-info text-white">
+        <i class="fas fa-book-open me-1"></i> ReDoc
+      </a>
       <a href="{% url 'version_list' %}" class="btn btn-sm btn-outline-secondary">
         <i class="fas fa-code-branch me-1"></i> Versions
       </a>
       <a href="/" class="btn btn-sm btn-outline-primary">
         <i class="fas fa-home me-1"></i> Dashboard
       </a>
+    </div>
+  </div>
+
+  <!-- Interactive docs banner -->
+  <div class="alert mb-4 d-flex align-items-center gap-3" style="background:linear-gradient(135deg,#0f2460,#1a3a9f);color:#fff;border:none;border-radius:12px;">
+    <div style="font-size:28px;flex-shrink:0;"><i class="fas fa-bolt"></i></div>
+    <div>
+      <strong>Interactive API Explorer available!</strong>
+      Use <a href="/api/swagger/" target="_blank" class="text-warning fw-bold">Swagger UI</a> or
+      <a href="/api/redoc/"   target="_blank" class="text-warning fw-bold">ReDoc</a>
+      to test all Mobile APIs directly from your browser — no extra tools needed.
     </div>
   </div>
 
@@ -57,6 +74,14 @@
           <a class="nav-link py-1 px-2" href="#section-firmware">Firmware / Version APIs</a>
           <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-check-version">→ check-active-version</a>
           <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-download">→ download-version</a>
+          <a class="nav-link py-1 px-2" href="#section-mobile" style="color:#0d6efd;font-weight:600;">📱 Mobile APIs</a>
+          <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-m-login">→ login</a>
+          <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-m-refresh">→ refresh</a>
+          <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-m-types">→ device-types</a>
+          <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-m-devices">→ devices</a>
+          <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-m-calls">→ api-calls</a>
+          <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-m-threshold">→ threshold</a>
+          <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-m-rec">→ recommendations</a>
           <a class="nav-link py-1 px-2" href="#section-auth">Authentication</a>
           <a class="nav-link py-1 px-2" href="#section-errors">Error Codes</a>
         </nav>
@@ -288,6 +313,164 @@ Content-Disposition: attachment; filename="v1.2.0.zip"</pre>
               <tr><td><code>.tar.gz</code></td><td><code>application/gzip</code></td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           MOBILE API SECTION
+      ═══════════════════════════════════════════════ -->
+      <div id="section-mobile" class="section-header mb-3" style="border-left-color:#6f42c1;background:#f3f0ff;">
+        <span class="fw-bold">📱 Mobile REST APIs</span>
+        <span class="text-muted ms-2" style="font-size:12px;">
+          Prefix: <code>/api/mobile/</code> &nbsp;·&nbsp; JWT Bearer auth &nbsp;·&nbsp;
+          <a href="/api/swagger/" target="_blank" class="text-primary fw-bold">Try in Swagger ↗</a>
+          &nbsp;·&nbsp;
+          <a href="/api/redoc/" target="_blank" class="text-primary fw-bold">ReDoc ↗</a>
+        </span>
+      </div>
+
+      <!-- Token config info -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-body d-flex gap-3 align-items-start">
+          <div style="font-size:24px;flex-shrink:0;">⚙️</div>
+          <div>
+            <strong>Token Lifetimes are centrally configurable</strong>
+            <p class="mb-1 mt-1" style="font-size:13px;">
+              Edit <code>MOBILE_TOKEN_SETTINGS</code> in <code>settings.py</code> to change expiry from a single place:
+            </p>
+            <pre class="mb-0">MOBILE_TOKEN_SETTINGS = {
+    'ACCESS_TOKEN_LIFETIME_DAYS' : 2,   # access token
+    'REFRESH_TOKEN_LIFETIME_DAYS': 15,  # refresh token
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Login -->
+      <div id="ep-m-login" class="card shadow-sm mb-3">
+        <div class="card-header bg-white d-flex align-items-center gap-2 py-2">
+          <span class="method-badge method-post">POST</span>
+          <code class="fs-6">/api/mobile/auth/login/</code>
+          <span class="ms-auto text-muted" style="font-size:12px;">Login — returns access + refresh tokens</span>
+        </div>
+        <div class="card-body">
+          <table class="table table-sm param-table mb-3">
+            <thead class="table-light"><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>username</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Django username</td></tr>
+              <tr><td><code>password</code></td><td>string</td><td><span class="required-badge">required</span></td><td>User password</td></tr>
+            </tbody>
+          </table>
+          <h6 class="fw-semibold">Response (200)</h6>
+          <pre>{"access": "&lt;jwt-token&gt;", "refresh": "&lt;jwt-token&gt;", "user": {"id": 1, "username": "...", "email": "...", "full_name": "..."}}</pre>
+          <p class="text-muted mb-0" style="font-size:12px;">Use the <code>access</code> token as <code>Authorization: Bearer &lt;access&gt;</code> on all subsequent requests.</p>
+        </div>
+      </div>
+
+      <!-- Refresh -->
+      <div id="ep-m-refresh" class="card shadow-sm mb-3">
+        <div class="card-header bg-white d-flex align-items-center gap-2 py-2">
+          <span class="method-badge method-post">POST</span>
+          <code class="fs-6">/api/mobile/auth/refresh/</code>
+          <span class="ms-auto text-muted" style="font-size:12px;">Get a new access token</span>
+        </div>
+        <div class="card-body">
+          <table class="table table-sm param-table mb-3">
+            <thead class="table-light"><tr><th>Field</th><th>Type</th><th>Required</th></tr></thead>
+            <tbody><tr><td><code>refresh</code></td><td>string</td><td><span class="required-badge">required</span></td></tr></tbody>
+          </table>
+          <pre>{"access": "&lt;new-jwt-token&gt;", "refresh": "&lt;rotated-refresh-token&gt;"}</pre>
+        </div>
+      </div>
+
+      <!-- Device Types -->
+      <div id="ep-m-types" class="card shadow-sm mb-3">
+        <div class="card-header bg-white d-flex align-items-center gap-2 py-2">
+          <span class="method-badge method-get">GET</span>
+          <code class="fs-6">/api/mobile/device-types/</code>
+          <span class="ms-auto text-muted" style="font-size:12px;">Page 1 — all device types with lock status</span>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-3">Returns all device types. <code>locked: true</code> when the user owns no device of that type. Scalable — new types appear automatically.</p>
+          <pre>[
+  {"type_key": "soilsaathi", "type_name": "SoiLENZ",    "locked": false, "device_count": 2},
+  {"type_key": "atmo_sense", "type_name": "SoilSparsh", "locked": true,  "device_count": 0},
+  {"type_key": "soil_life",  "type_name": "SoilLIFE",   "locked": false, "device_count": 1}
+]</pre>
+        </div>
+      </div>
+
+      <!-- Devices -->
+      <div id="ep-m-devices" class="card shadow-sm mb-3">
+        <div class="card-header bg-white d-flex align-items-center gap-2 py-2">
+          <span class="method-badge method-get">GET</span>
+          <code class="fs-6">/api/mobile/devices/</code>
+          <span class="ms-auto text-muted" style="font-size:12px;">List user devices</span>
+        </div>
+        <div class="card-body">
+          <table class="table table-sm param-table mb-3">
+            <thead class="table-light"><tr><th>Query Param</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>type</code></td><td><span class="optional-badge">optional</span></td><td>Filter: <code>soilsaathi</code> | <code>atmo_sense</code> | <code>soil_life</code></td></tr>
+              <tr><td><code>page</code></td><td><span class="optional-badge">optional</span></td><td>Page number</td></tr>
+              <tr><td><code>per_page</code></td><td><span class="optional-badge">optional</span></td><td>Default 50, max 200</td></tr>
+            </tbody>
+          </table>
+          <p class="mb-1" style="font-size:13px;"><strong>GET</strong> <code>/api/mobile/devices/&lt;id&gt;/</code> — Full device details + location + threshold</p>
+          <p class="mb-0" style="font-size:13px;"><strong>GET</strong> <code>/api/mobile/devices/&lt;id&gt;/location/</code> — GPS coordinates only</p>
+        </div>
+      </div>
+
+      <!-- API Calls -->
+      <div id="ep-m-calls" class="card shadow-sm mb-3">
+        <div class="card-header bg-white d-flex align-items-center gap-2 py-2">
+          <span class="method-badge method-get">GET</span>
+          <span class="method-badge method-post ms-1">POST</span>
+          <code class="fs-6">/api/mobile/devices/&lt;id&gt;/api-calls/</code>
+          <span class="ms-auto text-muted" style="font-size:12px;">List or create sensor readings</span>
+        </div>
+        <div class="card-body">
+          <ul class="mb-3" style="font-size:13px;">
+            <li><strong>GET</strong> — paginated list of all readings for the device</li>
+            <li><strong>POST</strong> — create a new reading; validates threshold before saving</li>
+            <li><strong>GET</strong> <code>/api-calls/create/</code> — dedicated create endpoint</li>
+            <li><strong>GET</strong> <code>/api-calls/&lt;cid&gt;/</code> — single reading detail</li>
+          </ul>
+          <p class="text-muted mb-1" style="font-size:12px;">For <strong>SoiLENZ</strong>: fields are nitrogen, phosphorous, potassium, calcium, ph, ec, oc, crop_type, latitude, longitude …</p>
+          <p class="text-muted mb-0" style="font-size:12px;">For <strong>SoilSparsh / SoilLIFE</strong>: fields are field1–field8 (mapped to sensor-specific labels in the response)</p>
+        </div>
+      </div>
+
+      <!-- Threshold -->
+      <div id="ep-m-threshold" class="card shadow-sm mb-3">
+        <div class="card-header bg-white d-flex align-items-center gap-2 py-2">
+          <span class="method-badge method-get">GET</span>
+          <span class="method-badge method-post ms-1">POST</span>
+          <code class="fs-6">/api/mobile/devices/&lt;id&gt;/threshold/</code>
+          <span class="ms-auto text-muted" style="font-size:12px;">Read or set alert thresholds</span>
+        </div>
+        <div class="card-body">
+          <pre>{"red": 500, "orange": 400, "blue": 200, "green": 100}</pre>
+          <p class="text-muted mb-0" style="font-size:12px;">
+            POST to <code>/threshold/set/</code> to update. Creating a record also checks current count against <code>red</code> limit — returns HTTP 403 if exceeded.
+          </p>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div id="ep-m-rec" class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex align-items-center gap-2 py-2">
+          <span class="method-badge method-get">GET</span>
+          <code class="fs-6">/api/mobile/devices/&lt;id&gt;/recommendations/</code>
+          <span class="ms-auto text-muted" style="font-size:12px;">Fertilizer recommendations — SoiLENZ only</span>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-2" style="font-size:13px;">Runs the existing <code>FertilizerCalculation</code> engine against the latest (or a specific) reading and returns structured recommendations.</p>
+          <table class="table table-sm param-table mb-3">
+            <thead class="table-light"><tr><th>Query Param</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody><tr><td><code>call_id</code></td><td><span class="optional-badge">optional</span></td><td>Specific reading ID. Omit to use latest.</td></tr></tbody>
+          </table>
+          <pre>{"device_id": 1, "reading_id": 42, "crop_type": "wheat", "npk": {...}, "recommendations": {...}}</pre>
         </div>
       </div>
 
