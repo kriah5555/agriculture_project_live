@@ -1,0 +1,177 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+{% include "agriapp/form_popup.html" %}
+
+<div>
+
+  <!-- Top bar -->
+  <div style="display:flex; flex-direction:row; gap:2rem; margin-bottom:2rem; justify-content:space-between; align-items:center; background-color:#fff; padding:1rem; border-radius:8px;">
+    <div style="flex:1; text-align:center;">
+      <span style="font-size:18px; font-weight:600; color:#198754;">PHBottle — API Overview</span>
+    </div>
+    <div style="text-align:right;">
+      <a href="javascript:void(0)" onclick="showDynamicAPIForm('ph_bottle', '{{ device.pk }}', '{{ fields_api_data.id }}')" style="padding:0.75rem 1.5rem; text-decoration:none; border-radius:8px;">
+        <i class="fas fa-edit" style="font-size:24px;"></i>
+      </a>
+      <a href="javascript:history.back()" style="padding:0.75rem 1.5rem;">
+        <i class="fas fa-arrow-left" style="font-size:24px;"></i>
+      </a>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:row; gap:2rem;">
+
+    <!-- Left: sensor cards + map -->
+    <div style="flex:0 0 65%; background-color:#f9f9f9; padding:2rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+
+      <!-- Device header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:20px; color:#333; margin-bottom:1.5rem;">
+        <div><strong>Device:</strong> {{ device.name }}</div>
+        <div>
+          <span style="margin-right:1rem;">Device ID: {{ device.devise_id }}</span>
+          <span>Tag: {{ fields_api_data.tag }}</span>
+        </div>
+      </div>
+
+      <!-- Sensor cards row -->
+      <div class="row g-3 mb-4">
+
+        <!-- pH Value -->
+        <div class="col-md-3">
+          <div class="card text-center h-100" style="border-radius:15px; background-color:#d4edda; border:none;">
+            <div class="card-body">
+              <h6 class="card-title text-success">pH Value</h6>
+              <i class="fas fa-flask" style="font-size:28px; color:#198754; margin:8px 0;"></i>
+              <p class="card-text fs-4 fw-bold" style="color:#198754;">{{ fields_api_data.field1 }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- pH Voltage -->
+        <div class="col-md-3">
+          <div class="card text-center h-100" style="border-radius:15px; background-color:#cce5ff; border:none;">
+            <div class="card-body">
+              <h6 class="card-title text-primary">pH Voltage</h6>
+              <i class="fas fa-bolt" style="font-size:28px; color:#0056b3; margin:8px 0;"></i>
+              <p class="card-text fs-4 fw-bold" style="color:#0056b3;">{{ fields_api_data.field2 }} <small style="font-size:13px;">mV</small></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- EC Value -->
+        <div class="col-md-3">
+          <div class="card text-center h-100" style="border-radius:15px; background-color:#fff3cd; border:none;">
+            <div class="card-body">
+              <h6 class="card-title" style="color:#856404;">EC Value</h6>
+              <i class="fas fa-water" style="font-size:28px; color:#856404; margin:8px 0;"></i>
+              <p class="card-text fs-4 fw-bold" style="color:#856404;">{{ fields_api_data.field3 }} <small style="font-size:13px;">mS/cm</small></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- EC Voltage -->
+        <div class="col-md-3">
+          <div class="card text-center h-100" style="border-radius:15px; background-color:#f8d7da; border:none;">
+            <div class="card-body">
+              <h6 class="card-title text-danger">EC Voltage</h6>
+              <i class="fas fa-bolt" style="font-size:28px; color:#842029; margin:8px 0;"></i>
+              <p class="card-text fs-4 fw-bold" style="color:#842029;">{{ fields_api_data.field4 }} <small style="font-size:13px;">mV</small></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Map -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-body" style="padding:0;">
+              <h5 class="card-title" style="padding:12px 16px 0;">Location Map</h5>
+              <div id="map" style="height:320px; width:100%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: chart -->
+    <div style="flex:1; background-color:#f9f9f9; padding:2rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1); display:flex; flex-direction:column; justify-content:space-between;">
+      <h5 style="color:#333;">Sensor Overview</h5>
+      <div style="flex-grow:1; display:flex; justify-content:center; align-items:center; overflow:hidden;">
+        <canvas id="circleChart" style="max-width:100%; max-height:400px;"></canvas>
+      </div>
+      <div style="margin-top:1rem; font-size:13px; color:#6c757d; text-align:center;">
+        Reading recorded at: {{ fields_api_data.created_at }}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const api_data = JSON.parse(`{{ fields_data_json|escapejs }}`);
+  const fields   = JSON.parse(`{{ fields|escapejs }}`);
+
+  const labels = [];
+  const data   = [];
+  const colors = ['rgba(25, 135, 84, 0.7)', 'rgba(0, 86, 179, 0.7)', 'rgba(133, 100, 4, 0.7)', 'rgba(132, 32, 41, 0.7)'];
+
+  Object.keys(fields).forEach(key => {
+    if (api_data.hasOwnProperty(key) && api_data[key] !== null && !['id', 'created_at'].includes(key)) {
+      labels.push(fields[key]);
+      data.push(api_data[key]);
+    }
+  });
+
+  const ctx = document.getElementById('circleChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label          : 'Sensor Reading',
+        data           : data,
+        backgroundColor: colors.slice(0, data.length),
+        borderColor    : colors.slice(0, data.length).map(c => c.replace('0.7', '1')),
+        borderWidth    : 1,
+        borderRadius   : 6,
+      }],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function (item) { return `${item.label}: ${item.raw}`; }
+          }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#e9ecef' } },
+        x: { grid: { display: false } },
+      },
+    },
+  });
+});
+
+// Map
+var mapInstance = L.map('map').setView([{{ latitude|default:"15.3173" }}, {{ longitude|default:"75.7139" }}], 5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(mapInstance);
+L.circleMarker([{{ latitude|default:"15.3173" }}, {{ longitude|default:"75.7139" }}], {
+  radius: 8, fillColor: '#198754', color: '#198754', weight: 2, opacity: 1, fillOpacity: 0.6
+}).addTo(mapInstance).bindPopup('{{ device.name }}');
+</script>
+
+{% endblock %}

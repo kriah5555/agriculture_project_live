@@ -221,6 +221,10 @@ def process_device_data(request, device_type, success_message):
         modified_data               = request.data.copy()
         modified_data['image_path'] = file_url
         modified_data['device']     = devise.pk
+        if latitude:
+            modified_data['latitude']  = latitude
+        if longitude:
+            modified_data['longitude'] = longitude
 
         # Serialize and save data
         serializer = DeviseFieldsApiSerializer(data=modified_data)

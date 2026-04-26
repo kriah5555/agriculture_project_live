@@ -26,6 +26,7 @@ from rest_framework import serializers as drf_serializers
 from agriapp.models import (
     Devise, DeviseApis, DeviseApisFields, DeviseLocation,
     APICountThreshold, DEVICE_NAMES,
+    SOIL_SAATHI_FIELDS, ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS,
 )
 from agriapp import FertilizerCalculation
 from .mobile_serializers import (
@@ -126,7 +127,7 @@ def _get_user_device(request, device_id):
     tags=['Device Types'],
     summary='List all device types',
     description=(
-        'Returns all supported device types (currently 3: SoiLENZ, SoilSparsh, SoilLIFE). '
+        'Returns all supported device types (SoiLENZ, SoilSparsh, SoilLIFE, PHBottle). '
         'Each entry includes `locked: true` when the user does not own any device of that type. '
         'Designed to render a "Page 1" device selector in the mobile app. '
         'Scalable — new device types added to the backend appear automatically.'
@@ -152,6 +153,51 @@ def device_types(request):
     return Response(DeviceTypeSerializer(result, many=True).data)
 
 
+# ── Device field schema ───────────────────────────────────────────────────────
+
+_FIELD_SCHEMA_MAP = {
+    'soilsaathi': SOIL_SAATHI_FIELDS,
+    'atmo_sense': ATMO_SENSE_FIELDS,
+    'soil_life' : SOIL_LIFE_FIELDS,
+    'ph_bottle' : PH_BOTTLE_FIELDS,
+}
+
+@extend_schema(
+    tags=['Device Types'],
+    summary='Get field label map for a device type',
+    description=(
+        'Returns the mapping of sensor field keys to their human-readable labels for any device type. '
+        'Use this to display column headers or form labels without needing an actual reading. '
+        '\n\n'
+        'Valid `type_key` values: `soilsaathi`, `atmo_sense`, `soil_life`, `ph_bottle`. '
+        '\n\n'
+        '**SoiLENZ (`soilsaathi`)** returns named keys like `nitrogen`, `phosphorous`, `ph`, etc. '
+        '**All other types** return generic keys `field1`–`fieldN` with their label mapping '
+        '(e.g. for `ph_bottle`: `field1` → `"pH Value"`, `field2` → `"pH Voltage (mV)"`, etc.).'
+    ),
+    responses={
+        200: inline_serializer(
+            name='FieldSchemaResponse',
+            fields={'schema': drf_serializers.DictField(child=drf_serializers.CharField())},
+        ),
+        400: OpenApiResponse(description='Unknown device type key'),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def device_field_schema(request, type_key):
+    """Return the field-key → label map for any device type."""
+    schema = _FIELD_SCHEMA_MAP.get(type_key)
+    if schema is None:
+        return Response(
+            {'detail': f'Unknown device type "{type_key}". '
+                       f'Valid types: {list(_FIELD_SCHEMA_MAP.keys())}'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    exclude = {'id', 'tag', 'image_path', 'created_at'}
+    return Response({'schema': {k: v for k, v in schema.items() if k not in exclude}})
+
+
 # ── Devices ───────────────────────────────────────────────────────────────────
 
 @extend_schema(
@@ -160,7 +206,7 @@ def device_types(request):
     parameters=[
         OpenApiParameter(
             'type', OpenApiTypes.STR, OpenApiParameter.QUERY,
-            description='Filter by device type: soilsaathi | atmo_sense | soil_life',
+            description='Filter by device type: soilsaathi | atmo_sense | soil_life | ph_bottle',
             required=False,
         )
     ],
@@ -182,6 +228,15 @@ def device_list(request):
 @extend_schema(
     tags=['Devices'],
     summary='Get device details',
+    description=(
+        'Returns full details for a single device. '
+        '\n\n'
+        '**Important — `device_id` vs `devise_id`:** '
+        'The `<device_id>` in this URL is the **integer primary key** (`id`) of the device record. '
+        'This is different from the `devise_id` string field shown on the device details page, '
+        'which is a human-readable identifier (e.g. a serial tag). '
+        'Always use the integer `id` returned by the device list endpoint when calling this API.'
+    ),
     responses={
         200: DeviceDetailSerializer,
         404: OpenApiResponse(description='Device not found or not owned by user'),

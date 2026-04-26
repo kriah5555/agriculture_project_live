@@ -1,6 +1,13 @@
 """
 SoiLENZ (soilsaathi) mobile API endpoints.
 
+Routes (mounted under /api/mobile/devices/<id>/soilsaathi/):
+  GET  /                      List readings
+  POST /create/               Create reading
+  GET  /<cid>/                Reading detail
+  GET  /recommendations/      Fertilizer recommendations (FertilizerCalculation engine)
+  GET  /ai-recommendation/    ML crop recommendation (?call_id=<id>)
+
 All routes are mounted under /api/mobile/devices/<id>/  via mobile_urls.py.
 Every write operation checks APICountThreshold before saving.
 """
@@ -158,4 +165,62 @@ def soilsaathi_recommendations(request, device_id):
             'oc'         : reading.oc,
         },
         'recommendations': crops_data,
+    })
+
+
+# ── AI crop recommendation ────────────────────────────────────────────────────
+
+@extend_schema(
+    tags=['SoiLENZ'],
+    summary='AI crop recommendation (ML model)',
+    description=(
+        'Runs the ML model against a SoiLENZ reading and returns a crop recommendation. '
+        'Use `?call_id=<id>` to target a specific reading; omit for the latest reading.'
+    ),
+    parameters=[
+        OpenApiParameter('call_id', OpenApiTypes.INT, description='Specific reading ID (optional; defaults to latest)'),
+    ],
+    responses={
+        200: OpenApiResponse(description='AI recommendation result'),
+        404: OpenApiResponse(description='No readings found'),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def soilsaathi_ai_recommendation(request, device_id):
+    """ML-based crop recommendation using N, P, K, pH values from a reading."""
+    from predicter.ai_model.model import run_model
+
+    device  = get_user_device(request, device_id)
+    call_id = request.query_params.get('call_id')
+
+    if call_id:
+        reading = get_object_or_404(DeviseApis, pk=call_id, device=device)
+    else:
+        reading = DeviseApis.objects.filter(device=device).order_by('-created_at').first()
+        if not reading:
+            return Response({'detail': 'No readings found for this device.'}, status=status.HTTP_404_NOT_FOUND)
+
+    soil_nutrients = {
+        'N'          : [reading.nitrogen],
+        'P'          : [reading.phosphorous],
+        'K'          : [reading.potassium],
+        'temperature': [10],
+        'humidity'   : [10],
+        'ph'         : [reading.ph],
+        'rainfall'   : [10],
+    }
+    result = run_model(soil_nutrients)
+
+    return Response({
+        'device_id'        : device.id,
+        'reading_id'       : reading.id,
+        'reading_date'     : reading.created_at,
+        'recommended_crop' : result,
+        'input_nutrients'  : {
+            'nitrogen'   : reading.nitrogen,
+            'phosphorous': reading.phosphorous,
+            'potassium'  : reading.potassium,
+            'ph'         : reading.ph,
+        },
     })

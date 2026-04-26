@@ -129,15 +129,19 @@ class SoilSaathiReadingCreateSerializer(serializers.ModelSerializer):
 
 FIELD_LABELS = {
     'atmo_sense': {
-        'field1': 'Soil Temp (°C)',     'field2': 'Soil Moisture (%)',
-        'field3': 'Atmos Temp (°C)',    'field4': 'Atmos Humidity (%)',
+        'field1': 'Soil Temp (°C)',      'field2': 'Soil Moisture (%)',
+        'field3': 'Atmos Temp (°C)',     'field4': 'Atmos Humidity (%)',
         'field5': 'Light Intensity (lux)',
     },
     'soil_life': {
-        'field1': 'CO₂ (ppm)',          'field2': 'Methane (ppm)',
-        'field3': 'Ammonia (ppm)',       'field4': 'Nitrous Oxide (ppm)',
-        'field5': 'Temperature (°C)',    'field6': 'Humidity (%)',
-        'field7': 'Atmos Pressure (hPa)','field8': 'Microbial Content (%)',
+        'field1': 'CO₂ (ppm)',           'field2': 'Methane (ppm)',
+        'field3': 'Ammonia (ppm)',        'field4': 'Nitrous Oxide (ppm)',
+        'field5': 'Temperature (°C)',     'field6': 'Humidity (%)',
+        'field7': 'Atmos Pressure (hPa)', 'field8': 'Microbial Content (%)',
+    },
+    'ph_bottle': {
+        'field1': 'pH Value',            'field2': 'pH Voltage (mV)',
+        'field3': 'EC Value (mS/cm)',    'field4': 'EC Voltage (mV)',
     },
 }
 
@@ -148,10 +152,11 @@ class FieldsReadingSerializer(serializers.ModelSerializer):
     class Meta:
         model  = DeviseApisFields
         fields = [
-            'id', 'tag', 'image_path', 'crop_type', 'created_at',
+            'id', 'tag', 'image_path', 'crop_type',
+            'latitude', 'longitude',
             'field1', 'field2', 'field3', 'field4', 'field5',
             'field6', 'field7', 'field8',
-            'labeled_fields',
+            'labeled_fields', 'created_at',
         ]
         read_only_fields = ['id', 'created_at', 'labeled_fields']
 
@@ -165,6 +170,7 @@ class FieldsReadingCreateSerializer(serializers.ModelSerializer):
         model  = DeviseApisFields
         fields = [
             'tag', 'image_path', 'crop_type',
+            'latitude', 'longitude',
             'field1', 'field2', 'field3', 'field4', 'field5',
             'field6', 'field7', 'field8',
         ]

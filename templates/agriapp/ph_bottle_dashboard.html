@@ -1,0 +1,222 @@
+{% extends "navbar.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .device-item.selected { background-color: #dbeafe !important; font-weight: 600; }
+  .device-item:hover:not(.selected) { background-color: #f0f4ff; }
+  #btn-prev:disabled, #btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+</style>
+
+<div class="header">
+  <h2 class="bg-success" style="color:white; text-align:center; padding:10px; margin:0;">
+    PHBottle
+    <small style="font-size:14px; font-weight:normal; margin-left:10px; opacity:0.85;">
+      {{ devices|length }} device{{ devices|length|pluralize }}
+    </small>
+  </h2>
+</div>
+
+<div style="display:flex; gap:16px; padding:16px; height:calc(100vh - 100px); overflow:hidden;">
+
+  <!-- Left: Device List -->
+  <div style="width:30%; background:#fff; padding:14px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+      <h5 style="margin:0;">Devices <span class="badge bg-secondary">{{ devices|length }}</span></h5>
+    </div>
+    <input type="text" id="device-search" placeholder="Search devices…" class="form-control form-control-sm mb-2">
+
+    <div style="overflow-y:auto; flex:1;">
+      <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <thead style="position:sticky; top:0; background:#f5f5f5; z-index:1;">
+          <tr>
+            <th style="padding:7px 8px; border-bottom:1px solid #ddd;">#</th>
+            <th style="padding:7px 8px; border-bottom:1px solid #ddd;">Name</th>
+            <th style="padding:7px 8px; border-bottom:1px solid #ddd;">Device ID</th>
+            <th style="padding:7px 8px; border-bottom:1px solid #ddd; text-align:center;">APIs</th>
+            <th style="padding:7px 8px; border-bottom:1px solid #ddd;">User</th>
+          </tr>
+        </thead>
+        <tbody id="device-list">
+          {% for device in devices %}
+          <tr class="device-item" data-device-id="{{ device.id }}" data-device-name="{{ device.name }}" style="cursor:pointer; transition:background 0.15s;">
+            <td style="padding:7px 8px; border-bottom:1px solid #eee;">{{ forloop.counter }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid #eee;">{{ device.name }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid #eee;">{{ device.devise_id }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid #eee; text-align:center;">{{ device.api_count }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid #eee;">{{ device.user }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" style="text-align:center; padding:24px; color:gray;">No devices found</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Right: API Table -->
+  <div style="width:70%; background:#fff; padding:14px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); display:flex; flex-direction:column;">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+      <h5 style="margin:0;">
+        API Calls
+        <span id="selected-device-name" style="font-size:13px; color:#6c757d; font-weight:normal; margin-left:6px;"></span>
+      </h5>
+      <input type="text" id="api-search" placeholder="Search…" class="form-control form-control-sm" style="width:200px;">
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; min-height:28px;">
+      <span id="total-records" style="color:#6c757d; font-size:12px;"></span>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button id="btn-prev" class="btn btn-sm btn-outline-success" disabled>&#8249; Prev</button>
+        <span id="page-info" style="font-size:13px; white-space:nowrap;"></span>
+        <button id="btn-next" class="btn btn-sm btn-outline-success" disabled>Next &#8250;</button>
+      </div>
+    </div>
+
+    <div style="overflow-y:auto; flex:1;">
+      <table class="table table-bordered table-sm" style="margin:0;">
+        <thead>
+          <tr>
+            {% for key, header in api_headers.items %}
+              <th>{{ header }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody id="api-details">
+          <tr>
+            <td colspan="{{ api_headers|length }}" style="text-align:center; color:#6c757d; padding:30px;">
+              Select a device on the left to view its API calls
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const deviceItems    = document.querySelectorAll(".device-item");
+  const apiContainer   = document.getElementById("api-details");
+  const deviceSearch   = document.getElementById("device-search");
+  const apiSearch      = document.getElementById("api-search");
+  const selectedNameEl = document.getElementById("selected-device-name");
+  const totalRecordsEl = document.getElementById("total-records");
+  const pageInfoEl     = document.getElementById("page-info");
+  const btnPrev        = document.getElementById("btn-prev");
+  const btnNext        = document.getElementById("btn-next");
+
+  const apiHeaders = JSON.parse(`{{ api_headers_json|escapejs }}`);
+  const colCount   = Object.keys(apiHeaders).length;
+  const perPage    = 50;
+
+  let loadToken = 0;
+  let state     = { deviceId: null, page: 1, totalPages: 1, totalRecords: 0 };
+
+  deviceSearch.addEventListener("input", function () {
+    const q = this.value.toLowerCase();
+    deviceItems.forEach(item => {
+      item.style.display = item.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+  });
+
+  apiSearch.addEventListener("input", function () {
+    const q = this.value.toLowerCase();
+    apiContainer.querySelectorAll("tr").forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+  });
+
+  function buildRow(api) {
+    let cells = '';
+    Object.keys(apiHeaders).forEach(key => {
+      const v = api[key];
+      cells += `<td>${v !== null && v !== undefined ? v : "—"}</td>`;
+    });
+    return `<tr onclick="redirectToDetail('${api.id}')" style="cursor:pointer;">${cells}</tr>`;
+  }
+
+  function setPagination(page, totalPages, totalRecords) {
+    pageInfoEl.textContent     = totalRecords > 0 ? `Page ${page} of ${totalPages}` : '';
+    totalRecordsEl.textContent = totalRecords > 0 ? `${totalRecords} record${totalRecords !== 1 ? 's' : ''}` : '';
+    btnPrev.disabled = page <= 1;
+    btnNext.disabled = page >= totalPages;
+  }
+
+  async function loadPage(deviceId, page, token) {
+    if (token !== loadToken) return;
+
+    apiContainer.innerHTML = `
+      <tr>
+        <td colspan="${colCount}" style="text-align:center;color:#6c757d;padding:24px;">
+          <div style="display:inline-block;width:18px;height:18px;border:3px solid #ccc;border-top-color:#28a745;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;"></div>
+          <span style="margin-left:8px;">Loading…</span>
+        </td>
+      </tr>`;
+    setPagination(page, 1, 0);
+
+    try {
+      const res = await fetch(`/devise-api-calls/${deviceId}/?page=${page}&per_page=${perPage}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (token !== loadToken) return;
+
+      const data = await res.json();
+      const pg   = data.pagination || {};
+      state = {
+        deviceId,
+        page        : pg.current_page  || page,
+        totalPages  : pg.total_pages   || 1,
+        totalRecords: pg.total_records || 0,
+      };
+
+      const apiData = data.data || [];
+      if (apiData.length === 0) {
+        apiContainer.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:#6c757d;padding:24px;">No API data found for this device</td></tr>`;
+      } else {
+        apiContainer.innerHTML = apiData.map(buildRow).join('');
+      }
+      setPagination(state.page, state.totalPages, state.totalRecords);
+
+    } catch (err) {
+      if (token !== loadToken) return;
+      apiContainer.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:red;padding:24px;">Error loading data. Please try again.</td></tr>`;
+      setPagination(1, 1, 0);
+    }
+  }
+
+  deviceItems.forEach(item => {
+    item.addEventListener("click", () => {
+      deviceItems.forEach(d => d.classList.remove("selected"));
+      item.classList.add("selected");
+      const name = item.dataset.deviceName || '';
+      selectedNameEl.textContent = name ? `— ${name}` : '';
+      apiSearch.value = '';
+      state.page = 1;
+      const token = ++loadToken;
+      loadPage(item.dataset.deviceId, 1, token);
+    });
+  });
+
+  btnPrev.addEventListener("click", () => {
+    if (state.page > 1 && state.deviceId) {
+      loadPage(state.deviceId, state.page - 1, ++loadToken);
+    }
+  });
+  btnNext.addEventListener("click", () => {
+    if (state.page < state.totalPages && state.deviceId) {
+      loadPage(state.deviceId, state.page + 1, ++loadToken);
+    }
+  });
+});
+
+function redirectToDetail(id) {
+  window.location.href = `/ph-bottle-api-overview/${id}/`;
+}
+</script>
+
+{% endblock %}

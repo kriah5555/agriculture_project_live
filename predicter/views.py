@@ -23,4 +23,4 @@ def get_recommendation(request):
         result         = run_model(soil_nutrients)
     else:
         result = 'No data found for the provided api id.'
-    return render(request, 'crop_recom_dashb.html', {'recommendation': result, 'soil_nutrients': api_data})
+    return render(request, 'predicter/crop_recom_dashb.html', {'recommendation': result, 'soil_nutrients': api_data})

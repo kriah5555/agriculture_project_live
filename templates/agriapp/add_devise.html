@@ -1,0 +1,187 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+{% load static %}
+
+<div class="container py-5">
+    <form action="" method="POST" class="bg-white shadow-sm rounded p-4">
+        {% csrf_token %}
+
+        <!-- Title and Buttons -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="h5">Device Information</h3>
+            <div class="d-flex gap-2">
+              <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">
+                  <i class="fas fa-arrow-left"></i> Back
+              </a>
+              <button type="submit" class="btn btn-primary btn-sm">
+                  <i class="fas fa-save"></i> Save
+              </button>
+            </div>
+        </div>
+
+        <!-- Grid Layout for All Sections -->
+        <div class="row gx-4 gy-4">
+
+            <!-- Basic Information -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <b>Basic Information</b>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Name of individual or organization <b>*</b></label>
+                                <input type="text" class="form-control" name="name" required value="{{ devise.name }}" {{disabled}}>
+                                {% if field_errors.name %}
+                                    <span style="color: red;">{{ field_errors.name }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Device type <b>*</b></label>
+                                <select class="form-control" name="devise_type" required {{disabled}}>
+                                    <option value="soilsaathi" {% if devise.devise_type == "soilsaathi" %}selected{% endif %}>SoiLENZ</option>
+                                    <option value="atmo_sense" {% if devise.devise_type == "atmo_sense" %}selected{% endif %}>SoilSparsh</option>
+                                    <option value="soil_life" {% if devise.devise_type == "soil_life" %}selected{% endif %}>SoilLIFE</option>
+                                    <option value="ph_bottle" {% if devise.devise_type == "ph_bottle" %}selected{% endif %}>PHBottle</option>
+                                </select>
+                                {% if field_errors.devise_type %}
+                                    <span style="color: red;">{{ field_errors.devise_type }}</span>
+                                {% endif %}
+                            </div>                           
+
+                            <div class="col-lg-6 mb-3">
+                                <label class="form-label"> Device ID <b>*</b></label>
+                                <input type="text" class="form-control" name="devise_id" required value="{{ devise.devise_id }}" {{disabled}}>
+                                {% if field_errors.devise_id %}
+                                    <span style="color: red;">{{ field_errors.devise_id }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-lg-6 mb-3">
+                                <label class="form-label">Serial ID <b>*</b></label>
+                                <input type="text" class="form-control" name="serial_no" required value="{{ devise.serial_no }}" {{disabled}}>
+                                {% if field_errors.serial_no %}
+                                    <span style="color: red;">{{ field_errors.serial_no }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-lg-6 mb-3">
+                                <label class="form-label">Chipset Number <b>*</b></label>
+                                <input type="text" class="form-control" name="chipset_no" required value="{{ devise.chipset_no }}" {{disabled}}>
+                                {% if field_errors.chipset_no %}
+                                    <span style="color: red;">{{ field_errors.chipset_no }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-lg-6 mb-3">
+                                <label class="form-label">Email <b>*</b></label>
+                                <input type="email" class="form-control" name="email" required value="{{ devise.email }}">
+                                {% if field_errors.email %}
+                                    <span style="color: red;">{{ field_errors.email }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-lg-6 mb-3">
+                                <label class="form-label">Phone Number <b>*</b></label>
+                                <input type="phone" class="form-control" name="phone" required value="{{ devise.phone }}">
+                                {% if field_errors.phone %}
+                                    <span style="color: red;">{{ field_errors.phone }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <b>Address</b>
+                        <div class="mb-3">
+                            <label class="form-label">Address Line 1 <b>*</b></label>
+                            <input type="text" class="form-control" name="address1" required value="{{ devise.address1 }}">
+                            {% if field_errors.address1 %}
+                                <span style="color: red;">{{ field_errors.address1 }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address Line 2</label>
+                            <input type="text" class="form-control" name="address2" value="{{ devise.address2 }}">
+                            {% if field_errors.address2 %}
+                                <span style="color: red;">{{ field_errors.address2 }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6 mb-3">
+                                <label class="form-label">Purchased Date <b>*</b></label>
+                                {{purchase_date}}
+                                <input type="date" class="form-control" name="purchase_date" required value="{{ purchase_date }}">
+                                {% if field_errors.purchase_date %}
+                                    <span style="color: red;">{{ field_errors.purchase_date }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-lg-6 mb-3">
+                                <label class="form-label">Time of Sale <b>*</b></label>
+                                <input type="time" class="form-control" name="time_of_sale" required value="{{ time_of_sale }}">
+                                {% if field_errors.time_of_sale %}
+                                    <span style="color: red;">{{ field_errors.time_of_sale }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warranty and Land info -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <b>Warranty & Land Info</b>
+                        <div class="row">
+                            <div class="col-lg-6 mb-3">
+                                <label class="form-label">Warranty Expiry <b>*</b></label>
+                                <input type="date" class="form-control" name="warrenty" required value="{{ warrenty }}">
+                                {% if field_errors.warrenty %}
+                                    <span style="color: red;">{{ field_errors.warrenty }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-lg-6 mb-3">
+                                <label class="form-label">Land in acres <b>*</b></label>
+                                <input type="text" class="form-control" name="land" required value="{{ devise.land }}">
+                                {% if field_errors.land %}
+                                    <span style="color: red;">{{ field_errors.land }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <b>Payment Information</b>
+                        <div class="row">
+                            <div class="col-lg-6 mb-3">
+                                <label class="form-label">Amount Paid <b>*</b></label>
+                                <input type="text" class="form-control" name="amount_paid" required value="{{ devise.amount_paid }}">
+                                {% if field_errors.amount_paid %}
+                                    <span style="color: red;">{{ field_errors.amount_paid }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-lg-6 mb-3">
+                                <label class="form-label">Balance Amount <b>*</b></label>
+                                <input type="text" class="form-control" name="balance_amount" required value="{{ devise.balance_amount }}">
+                                {% if field_errors.balance_amount %}
+                                    <span style="color: red;">{{ field_errors.balance_amount }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+{% endblock %}

@@ -14,11 +14,6 @@ def get_all_states():
     return_states.sort()
     return return_states
 
-    # from countryinfo import CountryInfo
-    # name    = "India"
-    # country = CountryInfo(name)
-    # data    = country.info()
-    # return data["provinces"]
 
 def is_coordinates_of_the_state(latitude, longitude, state):
     # Import the required library

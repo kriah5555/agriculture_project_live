@@ -1,0 +1,582 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+{% include "agriapp/soil_saathi_parm_comparison_popup_bar_chart.html" %}
+{% include "agriapp/map_popup.html" %}
+{% include "agriapp/form_popup.html" %}
+
+<style>
+  /* ── shared card style ── */
+  .ud-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .ud-card-header {
+    background: linear-gradient(135deg, #1a2f6b, #1a73e8);
+    color: #fff;
+    padding: 13px 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ud-card-header h6 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    opacity: .9;
+  }
+
+  /* ── user avatar ── */
+  .user-avatar-lg {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a2f6b, #1a73e8);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ── action links in user card ── */
+  .user-action {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    text-decoration: none; transition: opacity .2s;
+  }
+  .user-action:hover { opacity: .8; }
+
+  /* ── device list items ── */
+  .device-list-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f0f2f5;
+    cursor: pointer;
+    transition: background .15s;
+    gap: 10px;
+  }
+  .device-list-item:last-child { border-bottom: none; }
+  .device-list-item:hover { background: #f5f7ff; }
+  .device-list-item.active { background: #dbeafe; }
+
+  .device-type-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .device-item-name { font-size: 13px; font-weight: 600; color: #222; flex: 1; }
+  .device-item-type { font-size: 11px; color: #888; }
+
+  .device-item-actions a {
+    color: #aaa;
+    padding: 0 4px;
+    font-size: 13px;
+    transition: color .15s;
+  }
+  .device-item-actions a:hover { color: #1a73e8; }
+
+  /* ── right panel ── */
+  .info-row {
+    display: flex;
+    padding: 9px 18px;
+    border-bottom: 1px solid #f0f2f5;
+    font-size: 13px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { width: 40%; font-weight: 600; color: #666; flex-shrink: 0; }
+  .info-value { color: #222; }
+
+  /* ── API table ── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #api-btn-prev:disabled, #api-btn-next:disabled { opacity: .4; cursor: not-allowed; }
+  .table-container { max-height: 520px; overflow-y: auto; }
+  .sticky-header { position: sticky; top: 0; background: #fff; z-index: 5; }
+  .small-img { width: 48px; height: 48px; object-fit: cover; cursor: zoom-in; border-radius: 4px; transition: all .3s; }
+  .small-img:hover { width: 120px; height: 120px; position: relative; z-index: 10; }
+
+  /* ── empty state ── */
+  .empty-state {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 48px 24px; color: #aaa;
+  }
+  .empty-state i { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+</style>
+
+<div style="padding: 8px 4px 24px;">
+
+  <!-- ── Page header ── -->
+  <div class="d-flex align-items-center gap-3 mb-4 px-2">
+    <div style="width:44px;height:44px;border-radius:10px;background:#1a2f6b;display:flex;align-items:center;justify-content:center;">
+      <i class="fas fa-user text-white" style="font-size:18px;"></i>
+    </div>
+    <div>
+      <h4 class="mb-0 fw-bold">{{ user.get_full_name|default:user.username }}</h4>
+      <span class="text-muted" style="font-size:13px;">{{ user.username }}</span>
+    </div>
+    <a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary ms-auto">
+      <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+  </div>
+
+  <div class="row g-3">
+
+    <!-- ══ Left column ══════════════════════════════════════ -->
+    <div class="col-lg-4">
+
+      <!-- User profile card -->
+      <div class="ud-card">
+        <div class="ud-card-header">
+          <i class="fas fa-id-card"></i>
+          <h6>User Profile</h6>
+        </div>
+        <div class="p-4 text-center">
+          <div class="user-avatar-lg mx-auto mb-3">
+            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+          </div>
+          <h5 class="mb-0 fw-bold">{{ user.get_full_name|default:user.username }}</h5>
+          <p class="text-muted mb-1" style="font-size:13px;">@{{ user.username }}</p>
+          <p class="text-muted mb-3" style="font-size:13px;">{{ user.email }}</p>
+          <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a href="{% url 'change-password' user.username %}"
+               class="user-action"
+               style="background:#fff0f0; color:#dc3545; border:1px solid #f5c6cb;">
+              <i class="fas fa-key"></i> Reset Password
+            </a>
+            {% if not request.user.is_superuser %}
+            <a href="{% url 'change-password-request' %}"
+               class="user-action"
+               style="background:#fff8e1; color:#e65100; border:1px solid #ffe082;">
+              <i class="fas fa-bell"></i> Request Change
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Devices linked -->
+      <div class="ud-card">
+        <div class="ud-card-header" style="justify-content: space-between;">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-microchip"></i>
+            <h6>Devices Linked</h6>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="{% url 'add-devise' user.username %}" class="text-white" style="font-size:14px;" title="Add Device">
+              <i class="fas fa-plus"></i>
+            </a>
+            <a href="{% url 'export-user-devices' user.username %}" class="text-white" style="font-size:14px;" title="Export Devices">
+              <i class="fas fa-file-excel"></i>
+            </a>
+          </div>
+        </div>
+
+        {% if linked_devices %}
+        <div style="max-height: 340px; overflow-y: auto;">
+          {% for device in linked_devices %}
+          <div class="device-list-item"
+               onclick="showDeviceDetails({
+                 pk           : '{{ device.pk }}',
+                 id           : '{{ device.devise_id }}',
+                 devise_type  : '{{ device.devise_type }}',
+                 name         : '{{ device.name }}',
+                 serialNo     : '{{ device.serial_no }}',
+                 chipsetNo    : '{{ device.chipset_no }}',
+                 email        : '{{ device.email }}',
+                 phone        : '{{ device.phone }}',
+                 address1     : '{{ device.address1 }}',
+                 address2     : '{{ device.address2 }}',
+                 purchaseDate : '{{ device.purchase_date }}',
+                 warranty     : '{{ device.warrenty }}',
+                 amountPaid   : '{{ device.amount_paid }}',
+                 balanceAmount: '{{ device.balance_amount }}',
+                 land         : '{{ device.land }} acres',
+                 latitude     : '{{ device.latitude }}',
+                 longitude    : '{{ device.longitude }}',
+                 api_limit    : '{{ device.api_limit }}',
+                 api_used     : '{{ device.api_used }}',
+               }, this)">
+
+            <!-- color dot by type -->
+            {% if device.devise_type == 'soilsaathi' %}
+              <span class="device-type-dot" style="background:#2e7d32;"></span>
+            {% elif device.devise_type == 'atmo_sense' %}
+              <span class="device-type-dot" style="background:#1565c0;"></span>
+            {% elif device.devise_type == 'soil_life' %}
+              <span class="device-type-dot" style="background:#6a1b9a;"></span>
+            {% else %}
+              <span class="device-type-dot" style="background:#e65100;"></span>
+            {% endif %}
+
+            <div class="flex-fill" style="min-width:0;">
+              <div class="device-item-name text-truncate">{{ device.name }}</div>
+              <div class="device-item-type">{{ device.type_display_name }}</div>
+            </div>
+
+            <div class="device-item-actions d-flex align-items-center">
+              <a href="{% url 'device-details' device.pk %}" onclick="event.stopPropagation();" title="Details"><i class="fas fa-info-circle"></i></a>
+              <a href="{% url 'edit-devise' device.pk %}" onclick="event.stopPropagation();" title="Edit"><i class="fas fa-pencil"></i></a>
+              <a href="{% url 'export-device-apis' device.pk %}" onclick="event.stopPropagation();" title="Export APIs"><i class="fas fa-file-export"></i></a>
+              <a href="#" onclick="event.stopPropagation(); showNpkPopup({{ device.pk }});" title="Compare Nutrients"><i class="fas fa-chart-line"></i></a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fas fa-microchip"></i>
+          <p>No devices linked yet.</p>
+          <a href="{% url 'add-devise' user.username %}" class="btn btn-sm btn-primary">Add Device</a>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- ══ Right column ═════════════════════════════════════ -->
+    <div class="col-lg-8">
+
+      <!-- Placeholder when nothing selected -->
+      <div id="right-placeholder" class="ud-card">
+        <div class="empty-state" style="padding: 80px 24px;">
+          <i class="fas fa-hand-pointer"></i>
+          <p>Select a device on the left to view its details.</p>
+        </div>
+      </div>
+
+      <!-- Device details (hidden until selection) -->
+      <div id="right-panel" style="display:none;">
+
+        <!-- Device header -->
+        <div class="ud-card">
+          <div class="ud-card-header" style="gap:14px;">
+            <div style="width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-microchip" style="font-size:16px;"></i>
+            </div>
+            <div>
+              <div id="device-name" style="font-size:15px; font-weight:700;"></div>
+              <div id="device-type-badge-wrap" style="margin-top:3px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <!-- Device info -->
+          <div class="col-md-6">
+            <div class="ud-card">
+              <div class="ud-card-header"><i class="fas fa-info-circle"></i><h6>Device Information</h6></div>
+              <div class="info-row"><span class="info-label">Serial No</span>     <span class="info-value" id="serialNo" style="font-family:monospace;"></span></div>
+              <div class="info-row"><span class="info-label">Chipset No</span>    <span class="info-value" id="chipsetNo" style="font-family:monospace;"></span></div>
+              <div class="info-row"><span class="info-label">Device ID</span>     <span class="info-value" id="deviseId" style="font-family:monospace;"></span></div>
+              <div class="info-row"><span class="info-label">Email</span>         <span class="info-value" id="email"></span></div>
+              <div class="info-row"><span class="info-label">Phone</span>         <span class="info-value" id="phone"></span></div>
+              <div class="info-row"><span class="info-label">Address 1</span>     <span class="info-value" id="address1"></span></div>
+              <div class="info-row"><span class="info-label">Address 2</span>     <span class="info-value" id="address2"></span></div>
+              <div class="info-row"><span class="info-label">Purchase Date</span> <span class="info-value" id="purchaseDate"></span></div>
+              <div class="info-row"><span class="info-label">Warranty</span>      <span class="info-value" id="warranty"></span></div>
+              <div class="info-row"><span class="info-label">Land</span>          <span class="info-value" id="land"></span></div>
+            </div>
+          </div>
+
+          <!-- Financial + map -->
+          <div class="col-md-6 d-flex flex-column gap-3">
+            <div class="ud-card">
+              <div class="ud-card-header"><i class="fas fa-rupee-sign"></i><h6>Financial & Usage</h6></div>
+              <div class="info-row"><span class="info-label">Amount Paid</span>    <span class="info-value" id="amountPaid"></span></div>
+              <div class="info-row"><span class="info-label">Balance Amount</span> <span class="info-value" id="balanceAmount"></span></div>
+              <div class="info-row"><span class="info-label">API Limit</span>      <span class="info-value" id="api_limit"></span></div>
+              <div class="info-row"><span class="info-label">API Used</span>       <span class="info-value" id="api_used"></span></div>
+            </div>
+            <div class="ud-card flex-fill" style="min-height:200px;">
+              <div id="leaflet-map" style="height:200px; width:100%;"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!-- /right-panel -->
+
+    </div>
+  </div>
+
+  <!-- ══ Full-width API calls table ══════════════════════════ -->
+  <div id="api-details-container" class="ud-card mt-3" style="display:none;">
+    <div class="ud-card-header" style="justify-content:space-between; flex-wrap:wrap; gap:8px;">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-table"></i>
+        <h6 style="margin:0;">API Calls <span id="selectedDeviceName" style="font-weight:400; opacity:.8; font-size:12px;"></span></h6>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <input type="text" id="searchInput" class="form-control form-control-sm"
+               style="width:200px; background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.3); color:#fff;"
+               placeholder="Search…" onkeyup="searchTable()">
+        <button onclick="openFormPopup()" class="btn btn-sm btn-light" title="Add API Call">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+    </div>
+    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="background:#f8f9fa;">
+      <span id="api-total-records" style="color:#6c757d; font-size:13px;"></span>
+      <div class="d-flex align-items-center gap-2">
+        <button id="api-btn-prev" class="btn btn-sm btn-outline-primary" disabled>&#8249; Prev</button>
+        <span id="api-page-info" style="font-size:13px; white-space:nowrap;"></span>
+        <button id="api-btn-next" class="btn btn-sm btn-outline-primary" disabled>Next &#8250;</button>
+      </div>
+    </div>
+    <div class="p-0">
+      <div class="table-container">
+        <table class="table table-hover mb-0" style="font-size:13px; width:100%;">
+          <thead class="sticky-header" style="background:#f5f7fa;">
+            <tr id="api-details-headers"></tr>
+          </thead>
+          <tbody id="api-details-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="predictionModalContainer"></div>
+
+<!-- ══ Scripts (unchanged logic) ══════════════════════════════ -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<script>
+  const base_url        = `${window.location.protocol}//${window.location.host}`;
+  const apiUrl          = `${base_url}/devise-api-calls`;
+  let   selected_devise = {};
+  let   devise_type     = null;
+  let   devise_id       = null;
+  let   mapInstance     = null;
+  let   fetchToken      = 0;
+  let   apiState        = { page: 1, totalPages: 1, totalRecords: 0 };
+  const perPage         = 50;
+
+  const TYPE_META = {
+    soilsaathi: { color: '#2e7d32', label: 'SoiLENZ',    icon: 'fa-leaf'          },
+    atmo_sense: { color: '#1565c0', label: 'SoilSparsh',  icon: 'fa-wind'          },
+    soil_life : { color: '#6a1b9a', label: 'SoilLIFE',    icon: 'fa-seedling'      },
+    ph_bottle : { color: '#e65100', label: 'PHBottle',    icon: 'fa-flask'         },
+  };
+
+  function showDeviceDetails(device, clickedEl) {
+    if (!device) return;
+
+    document.querySelectorAll('.device-list-item').forEach(el => el.classList.remove('active'));
+    if (clickedEl) clickedEl.classList.add('active');
+
+    selected_devise = device;
+    devise_type     = device.devise_type;
+    devise_id       = device.pk;
+
+    // Show right panel, hide placeholder
+    document.getElementById('right-placeholder').style.display  = 'none';
+    document.getElementById('right-panel').style.display        = 'block';
+
+    // Device name + type badge
+    document.getElementById('device-name').textContent = device.name;
+    const meta  = TYPE_META[device.devise_type] || {};
+    const wrap  = document.getElementById('device-type-badge-wrap');
+    wrap.innerHTML = meta.label
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;
+                       padding:3px 8px;border-radius:20px;background:rgba(255,255,255,0.2);color:#fff;">
+           <i class="fas ${meta.icon}"></i> ${meta.label}
+         </span>`
+      : '';
+
+    document.getElementById('selectedDeviceName').innerText = device.name || '';
+    document.getElementById('serialNo').textContent      = device.serialNo;
+    document.getElementById('chipsetNo').textContent     = device.chipsetNo;
+    document.getElementById('deviseId').textContent      = device.id;
+    document.getElementById('email').textContent         = device.email;
+    document.getElementById('phone').textContent         = device.phone;
+    document.getElementById('address1').textContent      = device.address1;
+    document.getElementById('address2').textContent      = device.address2;
+    document.getElementById('purchaseDate').textContent  = device.purchaseDate;
+    document.getElementById('warranty').textContent      = device.warranty;
+    document.getElementById('amountPaid').textContent    = device.amountPaid;
+    document.getElementById('balanceAmount').textContent = device.balanceAmount;
+    document.getElementById('land').textContent          = device.land;
+    document.getElementById('api_limit').textContent     = device.api_limit;
+    document.getElementById('api_used').textContent      = device.api_used;
+
+    if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+    const lat = parseFloat(device.latitude);
+    const lng = parseFloat(device.longitude);
+    if (lat && lng) {
+      mapInstance = L.map('leaflet-map').setView([lat, lng], 10);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(mapInstance);
+      L.circleMarker([lat, lng], {
+        radius: 8, fillColor: meta.color || 'green', color: meta.color || 'green',
+        weight: 2, opacity: 1, fillOpacity: 0.6
+      }).addTo(mapInstance).bindPopup(device.name);
+    }
+
+    document.getElementById('api-details-container').style.display = 'block';
+    document.getElementById('api-details-headers').innerHTML = '';
+    apiState.headersSet = false;
+    fetchApiPage(device.pk, 1, ++fetchToken);
+  }
+
+  async function fetchApiPage(id, page, token) {
+    if (token !== fetchToken) return;
+
+    const tbody = document.getElementById('api-details-table');
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="20" style="text-align:center;padding:24px;">
+          <div style="display:inline-block;width:18px;height:18px;border:3px solid #ccc;
+                      border-top-color:#1a73e8;border-radius:50%;animation:spin 1s linear infinite;
+                      vertical-align:middle;"></div>
+          <span style="margin-left:8px;color:#888;font-size:13px;">Loading…</span>
+        </td>
+      </tr>`;
+    setApiPagination(page, 1, 0);
+
+    try {
+      const res = await fetch(`${apiUrl}/${id}/?page=${page}&per_page=${perPage}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (token !== fetchToken) return;
+
+      const deviseData = await res.json();
+      const pg         = deviseData.pagination || {};
+      apiState = {
+        page        : pg.current_page  || page,
+        totalPages  : pg.total_pages   || 1,
+        totalRecords: pg.total_records || 0,
+      };
+
+      if (!document.getElementById('api-details-headers').children.length) {
+        const headerRow = document.getElementById('api-details-headers');
+        for (const [, label] of Object.entries(deviseData.headers || {})) {
+          const th = document.createElement('th');
+          th.textContent = label;
+          th.style.cssText = 'padding:10px 12px;font-weight:600;color:#444;white-space:nowrap;';
+          headerRow.appendChild(th);
+        }
+        if (selected_devise.devise_type === 'soilsaathi') {
+          const th = document.createElement('th');
+          th.textContent = 'Recommendation';
+          th.style.cssText = 'padding:10px 12px;font-weight:600;color:#444;';
+          headerRow.appendChild(th);
+        }
+      }
+
+      const apiData = deviseData.data || [];
+      if (apiData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="20" style="text-align:center;color:#6c757d;padding:32px;">No records found.</td></tr>`;
+      } else {
+        const fragment = document.createDocumentFragment();
+        apiData.forEach(api => {
+          const row = document.createElement('tr');
+          row.style.cursor = 'pointer';
+          let html = '';
+          for (const key of Object.keys(deviseData.headers || {})) {
+            const val = api[key];
+            if (key === 'image_path') {
+              html += `<td style="padding:8px 12px;">${val ? `<img src="${val}" class="small-img" />` : '—'}</td>`;
+            } else {
+              html += `<td style="padding:8px 12px;">${val !== null && val !== undefined ? val : '—'}</td>`;
+            }
+          }
+          if (selected_devise.devise_type === 'soilsaathi') {
+            html += `<td class="no-redirect-cell" style="padding:8px 12px;">
+                       <a target="_blank" href="/crop-recommendation-dashboard/?api_id=${api.id}"
+                          style="text-decoration:none;font-size:1.2rem;">👁️</a>
+                     </td>`;
+          }
+          row.innerHTML = html;
+          row.addEventListener('click', function(e) {
+            if (e.target.closest('.no-redirect-cell')) return;
+            redirectToEdit(api.id);
+          });
+          fragment.appendChild(row);
+        });
+        tbody.innerHTML = '';
+        tbody.appendChild(fragment);
+      }
+      setApiPagination(apiState.page, apiState.totalPages, apiState.totalRecords);
+    } catch (err) {
+      if (token !== fetchToken) return;
+      document.getElementById('api-details-table').innerHTML =
+        `<tr><td colspan="20" style="text-align:center;color:red;padding:24px;">Error loading data. Please try again.</td></tr>`;
+      setApiPagination(1, 1, 0);
+    }
+  }
+
+  function setApiPagination(page, totalPages, totalRecords) {
+    document.getElementById('api-page-info').textContent     = totalRecords > 0 ? `Page ${page} of ${totalPages}` : '';
+    document.getElementById('api-total-records').textContent = totalRecords > 0 ? `${totalRecords} record${totalRecords !== 1 ? 's' : ''}` : '';
+    document.getElementById('api-btn-prev').disabled = page <= 1;
+    document.getElementById('api-btn-next').disabled = page >= totalPages;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('api-btn-prev').addEventListener('click', () => {
+      if (apiState.page > 1 && devise_id) fetchApiPage(devise_id, apiState.page - 1, ++fetchToken);
+    });
+    document.getElementById('api-btn-next').addEventListener('click', () => {
+      if (apiState.page < apiState.totalPages && devise_id) fetchApiPage(devise_id, apiState.page + 1, ++fetchToken);
+    });
+  });
+
+  function redirectToEdit(id) {
+    const endpoints = {
+      soilsaathi: '/api-overview',
+      atmo_sense: '/atmos-sense-api-overview',
+      soil_life : '/soil-life-api-overview',
+    };
+    const endpoint = endpoints[selected_devise.devise_type];
+    if (endpoint) window.location.href = `${endpoint}/${id}/`;
+  }
+
+  function openFormPopup() { showDynamicAPIForm(devise_type, devise_id); }
+
+  function searchTable() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#api-details-table tr').forEach(row => {
+      const match = Array.from(row.cells).some(cell => cell.textContent.toLowerCase().includes(input));
+      row.style.display = match ? '' : 'none';
+    });
+  }
+</script>
+
+<script>
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    if (target.classList.contains('predict-btn')) {
+      const apiId = target.dataset.apiId;
+      fetch(`/predicter/api/predict/${apiId}/`)
+        .then(r => r.text())
+        .then(html => {
+          const container = document.getElementById('predictionModalContainer');
+          container.innerHTML = html;
+          const modal = document.getElementById('predictionModal');
+          if (modal) {
+            modal.style.display = 'block';
+            const closeBtn = modal.querySelector('.close');
+            if (closeBtn) closeBtn.onclick = () => { modal.style.display = 'none'; };
+            window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
+          }
+        })
+        .catch(() => alert('Prediction failed.'));
+      event.stopPropagation();
+    }
+  });
+</script>
+
+<style>
+  .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background:rgba(0,0,0,0.5); }
+  .modal-content { background:#fefefe; margin:10% auto; padding:20px; border-radius:8px; width:50%; box-shadow:0 5px 15px rgba(0,0,0,0.3); }
+  .close { position:absolute; right:15px; top:10px; font-size:24px; cursor:pointer; }
+</style>
+
+{% endblock %}

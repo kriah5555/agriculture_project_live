@@ -10,7 +10,8 @@ CROP_LIST      = f.get_crop_list()
 DEVICE_NAMES = {
     'soilsaathi': 'SoiLENZ',
     'atmo_sense': 'SoilSparsh',
-    'soil_life' : 'SoilLIFE'
+    'soil_life' : 'SoilLIFE',
+    'ph_bottle' : 'PHBottle',
 }
 
 DEVICE_CHOICES = list(DEVICE_NAMES.items())
@@ -71,6 +72,8 @@ ATMO_SENSE_FIELDS = {
     'field3'    : "Atmos Temp (°C)",
     'field4'    : "Atmos Humidity (%)",
     'field5'    : "Light Intensity (lux)",
+    'latitude'  : 'Latitude',
+    'longitude' : 'Longitude',
     'created_at': 'Requested At',
 }
 
@@ -86,6 +89,20 @@ SOIL_LIFE_FIELDS = {
     'field6'    : "Humidity (%)",
     'field7'    : "Atmospheric Pressure (hPa)",
     'field8'    : "Microbial Content (%)",
+    'latitude'  : 'Latitude',
+    'longitude' : 'Longitude',
+    'created_at': 'Requested At',
+}
+
+PH_BOTTLE_FIELDS = {
+    'id'        : 'ID',
+    'tag'       : 'Tag',
+    'field1'    : "pH Value",
+    'field2'    : "pH Voltage (mV)",
+    'field3'    : "EC Value (mS/cm)",
+    'field4'    : "EC Voltage (mV)",
+    'latitude'  : 'Latitude',
+    'longitude' : 'Longitude',
     'created_at': 'Requested At',
 }
 
@@ -162,11 +179,11 @@ class DeviseApisFields(models.Model):
     device     = models.ForeignKey(to='Devise', on_delete=models.CASCADE)
     tag        = models.CharField( max_length=255, null=True, blank=True, default=None)
     image_path = models.CharField(max_length=255, null=True, blank=True)
-    field1     = models.FloatField(default=0.0) # Soil Temp
-    field2     = models.FloatField(default=0.0) # soil Moisture
-    field3     = models.FloatField(default=0.0) # Atmos Temp
-    field4     = models.FloatField(default=0.0) # Atmos Humidity
-    field5     = models.FloatField(default=0.0) # Light Intensity
+    field1     = models.FloatField(default=0.0)
+    field2     = models.FloatField(default=0.0)
+    field3     = models.FloatField(default=0.0)
+    field4     = models.FloatField(default=0.0)
+    field5     = models.FloatField(default=0.0)
     field6     = models.FloatField(default=0.0)
     field7     = models.FloatField(default=0.0)
     field8     = models.FloatField(default=0.0)
@@ -181,7 +198,9 @@ class DeviseApisFields(models.Model):
     field17    = models.FloatField(default=0.0)
     field18    = models.FloatField(default=0.0)
     field19    = models.FloatField(default=0.0)
-    crop_type = models.CharField(max_length=255, choices=CROP_LIST, null=True, blank=True, default=None)
+    crop_type  = models.CharField(max_length=255, choices=CROP_LIST, null=True, blank=True, default=None)
+    latitude   = models.FloatField(null=True, blank=True, default=None)
+    longitude  = models.FloatField(null=True, blank=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

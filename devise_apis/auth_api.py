@@ -2,6 +2,7 @@
 Mobile authentication and account request endpoints.
 
 Routes (all mounted under /api/mobile/ via mobile_urls.py):
+  POST  /auth/register/                     Register new user → access + refresh tokens
   POST  /auth/login/                        Login → access + refresh tokens
   POST  /auth/refresh/                      Get new access token
   POST  /auth/logout/                       Blacklist refresh token
@@ -270,5 +271,112 @@ def change_password_request(request):
 
     return Response(
         {'detail': 'Your request has been sent to the admin.'},
+        status=status.HTTP_201_CREATED,
+    )
+
+
+# ── User registration ─────────────────────────────────────────────────────────
+
+_register_request = inline_serializer(
+    name='RegisterRequest',
+    fields={
+        'username'  : drf_serializers.CharField(help_text='Unique username'),
+        'password'  : drf_serializers.CharField(help_text='Password (min 6 chars)'),
+        'email'     : drf_serializers.EmailField(help_text='Email address'),
+        'first_name': drf_serializers.CharField(required=False, allow_blank=True),
+        'last_name' : drf_serializers.CharField(required=False, allow_blank=True),
+        'phone'     : drf_serializers.CharField(required=False, allow_blank=True),
+    },
+)
+
+_register_response = inline_serializer(
+    name='RegisterResponse',
+    fields={
+        'access' : drf_serializers.CharField(help_text='JWT access token'),
+        'refresh': drf_serializers.CharField(help_text='JWT refresh token'),
+        'user'   : inline_serializer(name='RegisterUserInfo', fields={
+            'id'       : drf_serializers.IntegerField(),
+            'username' : drf_serializers.CharField(),
+            'email'    : drf_serializers.EmailField(),
+            'full_name': drf_serializers.CharField(),
+        }),
+    },
+)
+
+
+@extend_schema(
+    tags=['Auth'],
+    summary='Register new user',
+    description=(
+        'Create a new user account. The user is automatically added to the '
+        '`deviseowner` group and JWT tokens are returned so the app can '
+        'log the user in immediately after registration.\n\n'
+        'Devices must still be assigned by an admin after registration.'
+    ),
+    request=_register_request,
+    responses={
+        201: _register_response,
+        400: _message_response,
+    },
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def mobile_register(request):
+    """Register a new mobile user and return JWT tokens."""
+    from django.contrib.auth.models import Group
+
+    username   = (request.data.get('username')   or '').strip()
+    password   = (request.data.get('password')   or '').strip()
+    email      = (request.data.get('email')      or '').strip()
+    first_name = (request.data.get('first_name') or '').strip()
+    last_name  = (request.data.get('last_name')  or '').strip()
+
+    if not username or not password or not email:
+        return Response(
+            {'detail': 'username, password, and email are required.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if len(password) < 6:
+        return Response(
+            {'detail': 'Password must be at least 6 characters.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if User.objects.filter(username=username).exists():
+        return Response(
+            {'detail': 'Username already taken.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if User.objects.filter(email=email).exists():
+        return Response(
+            {'detail': 'An account with this email already exists.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user = User.objects.create_user(
+        username   = username,
+        email      = email,
+        password   = password,
+        first_name = first_name,
+        last_name  = last_name,
+    )
+
+    group, _ = Group.objects.get_or_create(name='deviseowner')
+    user.groups.add(group)
+
+    refresh = RefreshToken.for_user(user)
+    return Response(
+        {
+            'access' : str(refresh.access_token),
+            'refresh': str(refresh),
+            'user'   : {
+                'id'       : user.id,
+                'username' : user.username,
+                'email'    : user.email,
+                'full_name': user.get_full_name(),
+            },
+        },
         status=status.HTTP_201_CREATED,
     )

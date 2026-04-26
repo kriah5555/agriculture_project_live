@@ -5,7 +5,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .forms import ContactForm, DeviseForm
-from .models import ContactDetails, UserRequest, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES
+from .models import ContactDetails, UserRequest, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES, PH_BOTTLE_FIELDS
 
 from . import UserFunctions
 from django.views.generic import UpdateView, TemplateView, CreateView, View
@@ -42,15 +42,35 @@ from .serializers import APICountThresholdSerializer
 import pytz
 from django.utils import timezone
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-# Admin access only decorator
+
 def admin_required(function):
-    return user_passes_test(lambda user: user.is_superuser)(function)
+    """Decorator: superuser only. Redirects to /admin-login/ if not authenticated,
+    or /acess_denied/ if authenticated but not a superuser."""
+    def check(user):
+        return user.is_superuser
+    return login_required(login_url='/admin-login/')(
+        user_passes_test(check, login_url='/acess_denied/')(function)
+    )
 
-# Staff access only decorator
-def staff_required(function):
-    return user_passes_test(lambda user: user.is_staff)(function)
+
+def user_login_required(function):
+    """Decorator: any logged-in user. Redirects to /user-login/ if not authenticated."""
+    return login_required(login_url='/user-login/')(function)
+
+
+class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    """Mixin for class-based views: superuser only."""
+    login_url = '/admin-login/'
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        if self.request.user.is_authenticated:
+            return redirect('/acess_denied/')
+        return super().handle_no_permission()
 
 from django.core.paginator import Paginator
         
@@ -72,10 +92,11 @@ def home(request):
 def dashboard(request):
     return redirect('/welcome/')
 
-@login_required
+@admin_required
 def docs(request):
-    return render(request, 'docs.html', {'active_page': 'docs'})
+    return render(request, 'agriapp/docs.html', {'active_page': 'docs'})
 
+@user_login_required
 def userPage(request):
     linked_devices = Devise.objects.filter(user__username=request.user.username)  # Fetch all devices linked to the user
     for devise in linked_devices:
@@ -88,7 +109,7 @@ def userPage(request):
         match devise.devise_type:
             case "soilsaathi":
                 devise.api_used = DeviseApis.objects.filter(device=devise).count()
-            case "atmo_sense" | "soil_life":
+            case "atmo_sense" | "soil_life" | "ph_bottle":
                 devise.api_used = DeviseApisFields.objects.filter(device=devise).count()
             case _:
                 devise.api_used = 0
@@ -96,15 +117,15 @@ def userPage(request):
     context = {
         "linked_devices": linked_devices, # Add linked devices to the context"
     }
-    return render(request, 'devise_user_details.html', context)
+    return render(request, 'agriapp/devise_user_details.html', context)
 
 from django.shortcuts import render, redirect
 from django.contrib import auth
 
 def login(request):
     template_mapping = {
-        'user-login': 'login.html',
-        'admin-login': 'login1.html'
+        'user-login': 'authapp/login.html',
+        'admin-login': 'authapp/login1.html'
     }
 
     template_name = 'home1.html'  # Default template for errors
@@ -143,16 +164,24 @@ def logout(request):
     auth.logout(request)
     return redirect('/')
 
-class Users(TemplateView):
-    template_name = "users.html"
-    
+class Users(AdminRequiredMixin, TemplateView):
+    template_name = 'agriapp/users.html'
+
     def get_context_data(self, **kwargs):
-        context                = super().get_context_data(**kwargs)
-        group                  = Group.objects.get(name='deviseowner')
-        users_in_group         = User.objects.filter(groups=group)
+        context        = super().get_context_data(**kwargs)
+        group          = Group.objects.get(name='deviseowner')
+        users_in_group = User.objects.filter(groups=group)
+
+        device_types_by_user = {}
+        for devise in Devise.objects.filter(user__in=users_in_group).values('user_id', 'devise_type'):
+            device_types_by_user.setdefault(devise['user_id'], set()).add(devise['devise_type'])
+
+        users_list = list(users_in_group)
+        for u in users_list:
+            u.device_types = device_types_by_user.get(u.id, set())
+
         context['active_page'] = "users"
-        context['users']       = users_in_group
-        
+        context['users']       = users_list
         return context
 
 class UserForm(forms.Form):
@@ -162,6 +191,7 @@ class UserForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(max_length=15)
 
+@admin_required
 def create_user(request):
     if request.method == "POST":
         form = UserForm(request.POST)
@@ -177,12 +207,12 @@ def create_user(request):
             # Check if the username already exists
             if User.objects.filter(username=username).exists():
                 form.add_error('username', 'Username already exists')
-                return render(request, 'create-user.html', {'form': form})
+                return render(request, 'agriapp/create-user.html', {'form': form})
 
             # Check if the email already exists
             if User.objects.filter(email=email).exists():
                 form.add_error('email', 'Email already exists')
-                return render(request, 'create-user.html', {'form': form})
+                return render(request, 'agriapp/create-user.html', {'form': form})
             UserFunctions.create_user(username, email, first_name, last_name, password)
             messages.success(request,"User created successfully")
 
@@ -190,19 +220,30 @@ def create_user(request):
             return redirect('/users/')
         else:
             # If the form is invalid, render the form again with errors
-            return render(request, 'create-user.html', {'form': form})
+            return render(request, 'agriapp/create-user.html', {'form': form})
     else:
         form = UserForm()  # Empty form for GET request
-        return render(request, 'create-user.html', {'form': form})
+        return render(request, 'agriapp/create-user.html', {'form': form})
 
-@login_required
+@admin_required
+def delete_user(request, uid):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    user = get_object_or_404(User, username=uid)
+    if Devise.objects.filter(user=user).exists():
+        return JsonResponse({'error': 'Cannot delete a user who has devices linked.'}, status=400)
+    user.delete()
+    return JsonResponse({'success': True})
+
+
+@admin_required
 def add_devise(request, uid=None):
         
     context = {'message': ''}
     user    = UserFunctions.get_user_by_username(uid)
 
     if request.method == 'GET':
-        template_name = "add_devise.html"
+        template_name = 'agriapp/add_devise.html'
     elif request.method == 'POST':
         form = DeviseForm(request.POST)
         if form.is_valid():
@@ -236,17 +277,18 @@ def add_devise(request, uid=None):
                 'land'          : request.POST['land'],
                 'devise_type'   : request.POST['devise_type'],
             }
-            return render(request, 'add_devise.html', {'devise': default_values, 'field_errors': field_errors})
+            return render(request, 'agriapp/add_devise.html', {'devise': default_values, 'field_errors': field_errors})
 
     return render(request, template_name, context)
 
+@admin_required
 def edit_devise(request, **kwargs):
     context              = {'message' : ''}
     devise               = get_object_or_404(Devise, pk=kwargs['pk'])
     devise.purchase_date = datetime.strptime(str(devise.purchase_date), '%Y-%m-%d')
     devise.warrenty      = datetime.strptime(str(devise.warrenty), '%Y-%m-%d')
     if request.method == 'GET':
-        template_name = "add_devise.html"
+        template_name = 'agriapp/add_devise.html'
         context       = {
             'devise'        : devise,
             'warrenty'      : str(devise.warrenty.date()),
@@ -293,10 +335,10 @@ def edit_devise(request, **kwargs):
                 'time_of_sale' : request.POST['time_of_sale'],
             }
 
-            return render(request, 'add_devise.html', context1)
+            return render(request, 'agriapp/add_devise.html', context1)
     return render(request, template_name = template_name, context=context)
 
-@login_required
+@admin_required
 def notifications(request, **kwargs):
     if kwargs.get('pk'):
         data = get_object_or_404(ContactDetails, pk=kwargs['pk'])
@@ -305,7 +347,7 @@ def notifications(request, **kwargs):
 
     notifications_all  = ContactDetails.objects.all()
     user_requests_all  = UserRequest.objects.all()
-    template_name      = 'notifications.html'
+    template_name      = 'agriapp/notifications.html'
     context            = {
         'notification_active'    : notifications_all.filter(status=True),
         'notification_inactive'  : notifications_all.filter(status=False),
@@ -314,7 +356,7 @@ def notifications(request, **kwargs):
     }
     return render(request, template_name = template_name, context = context)
 
-@login_required
+@admin_required
 def devise_list(request, **kwargs):
     if request.method == 'POST':
         pk = request.POST['pk']
@@ -325,7 +367,7 @@ def devise_list(request, **kwargs):
     else:
         devises = Devise.objects.filter(devise_type='soilsaathi')
 
-    template_name     = 'device_list.html'
+    template_name     = 'agriapp/device_list.html'
     
     context = {
         'devise_count' :len(devises),
@@ -333,7 +375,7 @@ def devise_list(request, **kwargs):
     }
     return render(request, template_name = template_name, context = context)
 
-@login_required
+@admin_required
 def api_list(request, **kwargs):
     n, p, k, name = '', '', '', ''
     if request.method == 'POST':
@@ -341,7 +383,7 @@ def api_list(request, **kwargs):
         
     devise = get_object_or_404(Devise, pk=kwargs['pk'])
     apis = DeviseApis.objects.filter(device__pk=kwargs['pk'], area_name__contains=name)
-    template_name     = 'api_list.html'
+    template_name     = 'agriapp/api_list.html'
     context = {
         'api_count'   : len(apis),
         'apis'        : apis,
@@ -349,7 +391,7 @@ def api_list(request, **kwargs):
     }
     return render(request, template_name = template_name, context = context)
 
-@login_required
+@admin_required
 def devise_details(request, **kwargs):
     devise  = get_object_or_404(Devise, pk=kwargs['pk'])
 
@@ -358,7 +400,7 @@ def devise_details(request, **kwargs):
     else:
         apis = DeviseApisFields.objects.filter(device=devise)
         
-    template_name = "devise_details1.html"
+    template_name = 'agriapp/devise_details1.html'
     used          = len(apis)
     remaining     = 0
     if (len(apis)):
@@ -377,7 +419,7 @@ def devise_details(request, **kwargs):
     }
     return render(request, template_name = template_name, context=context)
 
-@login_required
+@admin_required
 def user_details(request, **kwargs):
     username       = kwargs.get('uid')
     user           = get_object_or_404(User, username=username)
@@ -393,7 +435,7 @@ def user_details(request, **kwargs):
         match devise.devise_type:
             case "soilsaathi":
                 devise.api_used = DeviseApis.objects.filter(device=devise).count()
-            case "atmo_sense" | "soil_life":
+            case "atmo_sense" | "soil_life" | "ph_bottle":
                 devise.api_used = DeviseApisFields.objects.filter(device=devise).count()
             case _:
                 devise.api_used = 0  
@@ -403,15 +445,15 @@ def user_details(request, **kwargs):
         "linked_devices": linked_devices, # Add linked devices to the context
     }
 
-    template_name = "user_details.html"
+    template_name = 'agriapp/user_details.html'
     return render(request, template_name=template_name, context=context)
 
-@login_required
+@admin_required
 def api_overview(request, **kwargs):
     template_name = ''
     context       = dict()
     if "soil-life-api-overview" in request.path:
-        template_name   = 'soil_life_api_details.html'
+        template_name   = 'agriapp/soil_life_api_details.html'
         devise_data     = get_object_or_404(DeviseApisFields, pk=kwargs['pk'])
         fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
         devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
@@ -427,7 +469,7 @@ def api_overview(request, **kwargs):
         }
 
     elif "atmos-sense-api-overview" in request.path:
-        template_name   = 'atmos_sense_api_details.html'
+        template_name   = 'agriapp/atmos_sense_api_details.html'
         devise_data     = get_object_or_404(DeviseApisFields, pk=kwargs['pk'])
         fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
         devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
@@ -442,9 +484,25 @@ def api_overview(request, **kwargs):
             'longitude'       : devise_location.longitude if devise_location else '',
         }
 
+    elif "ph-bottle-api-overview" in request.path:
+        template_name   = 'agriapp/ph_bottle_api_details.html'
+        devise_data     = get_object_or_404(DeviseApisFields, pk=kwargs['pk'])
+        fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
+        devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
+        fields.pop('device', None)
+        fields.pop('created_at', None)
+        context         = {
+            'device'          : devise_data.device,
+            'fields_api_data' : fields,
+            'fields_data_json': json.dumps(fields),
+            'fields'          : json.dumps(PH_BOTTLE_FIELDS),
+            'latitude'        : devise_location.latitude if devise_location else '',
+            'longitude'       : devise_location.longitude if devise_location else '',
+        }
+
     else :
         api                = get_object_or_404(DeviseApis, pk=kwargs['pk'])
-        template_name      = "api_soil_sathi_details.html"
+        template_name      = 'agriapp/api_soil_sathi_details.html'
         all_dynamic_fields = UserFunctions.get_all_dynamic_fields()
         dynamic_field_data = {field.field_name : (UserFunctions.get_all_dynamic_field_value(api, field).field_value if UserFunctions.get_all_dynamic_field_value(api, field) else 0.0) for field in all_dynamic_fields}
         crops_data         = FertilizerCalculation.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
@@ -464,10 +522,10 @@ def api_overview(request, **kwargs):
 
     return render(request, template_name = template_name, context=context)
 
-class UpdateApi(UpdateView):
+class UpdateApi(AdminRequiredMixin, UpdateView):
     model         = DeviseApis
     fields        = '__all__'
-    template_name = 'update-api.html'
+    template_name = 'agriapp/update-api.html'
 
     def get_context_data(self, **kwargs):
         context = super(UpdateApi, self).get_context_data(**kwargs)
@@ -478,10 +536,10 @@ class UpdateApi(UpdateView):
     def get_success_url(self):
         return reverse('api-overview', kwargs={'pk': self.kwargs['pk']})
 
-class CreateApi(CreateView):
+class CreateApi(AdminRequiredMixin, CreateView):
     model         = DeviseApis
     fields        = '__all__'
-    template_name = 'update-api.html'
+    template_name = 'agriapp/update-api.html'
     success_url   = '/add-api'
 
 def api_thresholds_validation(data):
@@ -491,8 +549,8 @@ def api_thresholds_validation(data):
     else :
         return True
 
-class APIThresholdForm(CreateView):
-    template_name = 'api_threshold_form.html'
+class APIThresholdForm(AdminRequiredMixin, CreateView):
+    template_name = 'agriapp/api_threshold_form.html'
     model         = APICountThreshold
     fields        = '__all__'
 
@@ -514,8 +572,8 @@ class APIThresholdForm(CreateView):
             form.add_error(None, "Please add valid thresholds.)")
             return self.form_invalid(form)
 
-class APIThresholdFormUpdate(UpdateView):
-    template_name = 'api_threshold_form.html'
+class APIThresholdFormUpdate(AdminRequiredMixin, UpdateView):
+    template_name = 'agriapp/api_threshold_form.html'
     model         = APICountThreshold
     fields        = '__all__'   
 
@@ -537,7 +595,7 @@ class APIThresholdFormUpdate(UpdateView):
 from django.http import JsonResponse
 import json
 
-@login_required
+@admin_required
 def create_or_update_threshold(request, pk):
     if request.method != "POST":
         return JsonResponse({"error": "Only POST allowed."}, status=405)
@@ -569,7 +627,7 @@ def create_or_update_threshold(request, pk):
     else:
         return JsonResponse(serializer.errors, status=400)
 
-@login_required
+@admin_required
 def get_all_NPK_values(request):
     if request.method != "GET":
         return JsonResponse({"error": "Only GET allowed."}, status=405)
@@ -589,9 +647,9 @@ def get_all_NPK_values(request):
 
     return JsonResponse({'data': data})
 
-@login_required
+@admin_required
 def change_password(request, uid):
-    template_name = 'change_password.html'
+    template_name = 'agriapp/change_password.html'
     context       = dict()
     if request.method == 'GET':
         context = {
@@ -605,8 +663,8 @@ def change_password(request, uid):
         return redirect(f"/user-details/{uid}/")
     return render(request, template_name = template_name, context=context)
 
-class AtmoSSenseDashboard(TemplateView):
-    template_name = "atmos_sense_dashboard.html"
+class AtmoSSenseDashboard(AdminRequiredMixin, TemplateView):
+    template_name = 'agriapp/atmos_sense_dashboard.html'
 
     def get_context_data(self, **kwargs):
         context           = super().get_context_data(**kwargs)
@@ -627,8 +685,8 @@ class AtmoSSenseDashboard(TemplateView):
         context['active_page']       = 'atmos-sense'
         return context
 
-class AtmoSSenseAPIDetails(TemplateView):
-    template_name = "atmos_sense_api_details.html"
+class AtmoSSenseAPIDetails(AdminRequiredMixin, TemplateView):
+    template_name = 'agriapp/atmos_sense_api_details.html'
 
     def get_context_data(self, **kwargs):
         context           = super().get_context_data(**kwargs)
@@ -645,8 +703,8 @@ class AtmoSSenseAPIDetails(TemplateView):
         context['device_api_counts'] = device_api_counts
         return context
 
-class SoilLifeDashboard(TemplateView):
-    template_name = "soil_life_dashboard.html"
+class SoilLifeDashboard(AdminRequiredMixin, TemplateView):
+    template_name = 'agriapp/soil_life_dashboard.html'
 
     def get_context_data(self, **kwargs):
         context           = super().get_context_data(**kwargs)
@@ -664,17 +722,37 @@ class SoilLifeDashboard(TemplateView):
         context['active_page']       = 'soil-life'
         return context
 
-class SoiLENZDashboard(TemplateView):
-    template_name = "soil-saathi-dashboard.html"
+class PHBottleDashboard(AdminRequiredMixin, TemplateView):
+    template_name = 'agriapp/ph_bottle_dashboard.html'
+
     def get_context_data(self, **kwargs):
         context           = super().get_context_data(**kwargs)
-        notifications_all = ContactDetails.objects.all()
-        devices           = list(Devise.objects.filter(devise_type='soilsaathi').values())
-        locations         = {loc.devise_id: (loc.latitude, loc.longitude) for loc in DeviseLocation.objects.all()}
+        devices           = Devise.objects.filter(devise_type='ph_bottle')
+        device_api_counts = {}
+        for device in devices:
+            count                        = DeviseApisFields.objects.filter(device=device).count()
+            device.api_count             = count
+            device_api_counts[device.id] = count
+
+        context['devices']           = devices
+        context['api_headers_json']  = json.dumps(PH_BOTTLE_FIELDS)
+        context['api_headers']       = PH_BOTTLE_FIELDS
+        context['device_api_counts'] = device_api_counts
+        context['active_page']       = 'ph-bottle'
+        return context
+
+
+class SoiLENZDashboard(AdminRequiredMixin, TemplateView):
+    template_name = 'agriapp/soil-saathi-dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context   = super().get_context_data(**kwargs)
+        devices   = list(Devise.objects.filter(devise_type='soilsaathi').values())
+        locations = {loc.devise_id: (loc.latitude, loc.longitude) for loc in DeviseLocation.objects.all()}
 
         for device in devices:
             device_id           = device.get("id")
-            lat, lng            = locations.get(device_id, (0.0, 0.0))  # Default to (0.0, 0.0) if no location
+            lat, lng            = locations.get(device_id, (0.0, 0.0))
             device["latitude"]  = lat
             device["longitude"] = lng
 
@@ -683,12 +761,12 @@ class SoiLENZDashboard(TemplateView):
             'devise_count'        : len(devices),
             'api_counts'          : DeviseApis.objects.filter(device__devise_type="soilsaathi").count(),
             'active_page'         : 'soil-saathi',
-            'dynamic_fields_count': ColumnName.objects.all().count()
+            'dynamic_fields_count': ColumnName.objects.all().count(),
         }
         return context
 
-class Dashboard(TemplateView):
-    template_name = "admin_panel.html"
+class Dashboard(AdminRequiredMixin, TemplateView):
+    template_name = 'agriapp/admin_panel.html'
     def get_context_data(self, **kwargs):
         devise_name = ''
         chart_date  = []
@@ -709,6 +787,7 @@ class Dashboard(TemplateView):
         ss_api_counts = DeviseApis.objects.filter(device__devise_type="soilsaathi").count()
         sl_api_counts = DeviseApisFields.objects.filter(device__devise_type="soil_life").count()
         as_api_counts = DeviseApisFields.objects.filter(device__devise_type="atmo_sense").count()
+        pb_api_counts = DeviseApisFields.objects.filter(device__devise_type="ph_bottle").count()
         devices = list(Devise.objects.values())
         locations     = {loc.devise_id: (loc.latitude, loc.longitude) for loc in DeviseLocation.objects.all()}
 
@@ -723,7 +802,8 @@ class Dashboard(TemplateView):
             'ss_api_counts'      : ss_api_counts,
             'sl_api_counts'      : sl_api_counts,
             'as_api_counts'      : as_api_counts,
-            'api_counts'         : ss_api_counts + sl_api_counts + as_api_counts,
+            'pb_api_counts'      : pb_api_counts,
+            'api_counts'         : ss_api_counts + sl_api_counts + as_api_counts + pb_api_counts,
             'active_notification': ContactDetails.objects.filter(status=True).exists(),
             'devise_locations'   : json.dumps(locations),
             # 'chart_data'            : chart_date,
@@ -783,6 +863,7 @@ def draw_gauge(value, label):
     buf.seek(0)
     return buf
 
+@admin_required
 def download_api_response_pdf(request, **kwargs):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
@@ -859,6 +940,7 @@ def download_api_response_pdf(request, **kwargs):
     return FileResponse(buffer, as_attachment=True, filename="recommended.pdf")
 
     
+@admin_required
 def download_api_response_csv(request, **kwargs):
     import csv
     from django.http import HttpResponse
@@ -875,8 +957,9 @@ def download_api_response_csv(request, **kwargs):
     writer.writerows(rows)
     return response
 
+@admin_required
 def dynamic_fields(request, **kwargs):
-    template_name = 'dynamic_fields.html'
+    template_name = 'agriapp/dynamic_fields.html'
     columns       = UserFunctions.get_all_dynamic_fields()
     context       = {
         'columns' : columns,
@@ -884,14 +967,16 @@ def dynamic_fields(request, **kwargs):
     }
     return render(request, template_name = template_name, context=context)
 
+@admin_required
 def delete_field(request, id):
     field = ColumnName.objects.get(id=id)
     field.delete()
     messages.success(request, "Field deleted successfully.")
     return redirect('/dynamic-fields/')
 
+@admin_required
 def add_field(request):
-    template_name = "add_field.html"
+    template_name = 'agriapp/add_field.html'
     if request.method== 'GET':
         return render(request, template_name = template_name)
     elif request.method == 'POST':
@@ -905,18 +990,18 @@ def add_field(request):
             return redirect('/add_field/')
 
 
-class UpdateDeviceLocation(UpdateView):
+class UpdateDeviceLocation(AdminRequiredMixin, UpdateView):
     model         = DeviseLocation
     fields        = ['latitude', 'longitude']
-    template_name = 'update_location.html'
+    template_name = 'agriapp/update_location.html'
 
     def get_success_url(self):
         return reverse('device-details', kwargs={'pk': self.request.POST['success']})
 
-class AddDeviceLocation(CreateView):
+class AddDeviceLocation(AdminRequiredMixin, CreateView):
     model         = DeviseLocation
     fields        = ['devise', 'latitude', 'longitude']
-    template_name = 'update_location.html'
+    template_name = 'agriapp/update_location.html'
 
     def get_context_data(self, **kwargs):
         context = super(AddDeviceLocation, self).get_context_data(**kwargs)
@@ -933,7 +1018,7 @@ class AddDeviceLocation(CreateView):
     }
 
 class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
-    login_url           = '/login/'  # redirect if not logged in
+    login_url           = '/user-login/'
     redirect_field_name = 'next'
 
     def get(self, request, *args, **kwargs):
@@ -952,11 +1037,14 @@ class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
                     headers          = SOIL_SAATHI_FIELDS
                     field_thresholds = SOIL_SAATHI_FIELD_THRESHOLDS
                     queryset         = DeviseApis.objects.filter(device=devise).order_by('-created_at')
-                case "atmo_sense": 
-                    headers        = ATMO_SENSE_FIELDS
+                case "atmo_sense":
+                    headers  = ATMO_SENSE_FIELDS
                     queryset = DeviseApisFields.objects.filter(device=devise).order_by('-created_at')
-                case "soil_life": 
-                    headers        = SOIL_LIFE_FIELDS
+                case "soil_life":
+                    headers  = SOIL_LIFE_FIELDS
+                    queryset = DeviseApisFields.objects.filter(device=devise).order_by('-created_at')
+                case "ph_bottle":
+                    headers  = PH_BOTTLE_FIELDS
                     queryset = DeviseApisFields.objects.filter(device=devise).order_by('-created_at')
                 case _:
                     return JsonResponse({'error': 'Invalid device type'}, status=400)
@@ -994,7 +1082,7 @@ class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
         })
 
 class GetDeviseApiCallsJsonDataForChart(LoginRequiredMixin, View):
-    login_url           = '/login/'  # redirect if not logged in
+    login_url           = '/user-login/'
     redirect_field_name = 'next'
 
     def get(self, *args, **kwargs):
@@ -1016,10 +1104,13 @@ class GetDeviseApiCallsJsonDataForChart(LoginRequiredMixin, View):
                     headers = SOIL_SAATHI_FIELDS
                     api_calls_data = DeviseApis.objects.filter(device=devise).values()
                 case "atmo_sense":
-                    headers = ATMO_SENSE_FIELDS
+                    headers        = ATMO_SENSE_FIELDS
                     api_calls_data = DeviseApisFields.objects.filter(device=devise).values()
                 case "soil_life":
-                    headers = SOIL_LIFE_FIELDS
+                    headers        = SOIL_LIFE_FIELDS
+                    api_calls_data = DeviseApisFields.objects.filter(device=devise).values()
+                case "ph_bottle":
+                    headers        = PH_BOTTLE_FIELDS
                     api_calls_data = DeviseApisFields.objects.filter(device=devise).values()
                 case _:
                     return JsonResponse({'error': 'Unsupported devise type'}, status=400)
@@ -1064,7 +1155,7 @@ class GetApiHeadersJsonData(View):
                 headers = []
         return JsonResponse({'headers': headers})
 
-class GetApiFieldsJsonData(View):
+class GetApiFieldsJsonData(LoginRequiredMixin, View):
 
     def get(self, *args, **kwargs):
         devise_type = kwargs.get('devise_type', '')  
@@ -1073,8 +1164,12 @@ class GetApiFieldsJsonData(View):
         match devise_type:
             case "soilsaathi":
                 fields = SOIL_SAATHI_FIELDS
-            case "atmo_sense" | "soil_life":
-                fields = ATMO_SENSE_FIELDS if devise_type == "atmo_sense" else SOIL_LIFE_FIELDS
+            case "atmo_sense":
+                fields = ATMO_SENSE_FIELDS
+            case "soil_life":
+                fields = SOIL_LIFE_FIELDS
+            case "ph_bottle":
+                fields = PH_BOTTLE_FIELDS
             case "":
                 fields = SOIL_LIFE_FIELDS
             case _:
@@ -1089,7 +1184,7 @@ class GetApiFieldsJsonData(View):
         return JsonResponse({'data': filtered_data})
 
 @method_decorator(csrf_exempt, name='dispatch')
-class SaveApiFieldsJsonData(View):
+class SaveApiFieldsJsonData(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         try:
@@ -1129,7 +1224,7 @@ class SaveApiFieldsJsonData(View):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
-class GetApiDataJsonData(View):
+class GetApiDataJsonData(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         try:
@@ -1144,11 +1239,14 @@ class GetApiDataJsonData(View):
                 api_data = get_object_or_404(DeviseApis, id=api_id, device=device)
                 field_map = SOIL_SAATHI_FIELDS
             elif device.devise_type == "atmo_sense":
-                api_data = get_object_or_404(DeviseApisFields, id=api_id, device=device)
+                api_data  = get_object_or_404(DeviseApisFields, id=api_id, device=device)
                 field_map = ATMO_SENSE_FIELDS
             elif device.devise_type == "soil_life":
-                api_data = get_object_or_404(DeviseApisFields, id=api_id, device=device)
+                api_data  = get_object_or_404(DeviseApisFields, id=api_id, device=device)
                 field_map = SOIL_LIFE_FIELDS
+            elif device.devise_type == "ph_bottle":
+                api_data  = get_object_or_404(DeviseApisFields, id=api_id, device=device)
+                field_map = PH_BOTTLE_FIELDS
             else:
                 return JsonResponse({'status': 'error', 'message': 'Unknown device type.'}, status=400)
 
@@ -1182,7 +1280,7 @@ def forgot_password_request(request):
 
         if not username or not email:
             messages.error(request, "Username and email are required.")
-            return render(request, 'forgot_password.html')
+            return render(request, 'authapp/forgot_password.html')
 
         user = User.objects.filter(username=username, email=email).first()
 
@@ -1195,14 +1293,14 @@ def forgot_password_request(request):
             message      = f"User '{username}' has requested a password reset.",
         )
         messages.success(request, "Your request has been sent. An admin will reset your password shortly.")
-        return render(request, 'forgot_password.html', {'submitted': True})
+        return render(request, 'authapp/forgot_password.html', {'submitted': True})
 
-    return render(request, 'forgot_password.html')
+    return render(request, 'authapp/forgot_password.html')
 
 
 # ── Change-password request (web — logged-in user notifies admin) ─────────────
 
-@login_required
+@user_login_required
 def change_password_request(request):
     """
     Logged-in user requests an admin-assisted password change.
@@ -1232,14 +1330,14 @@ def change_password_request(request):
             )
             messages.success(request, "Your request has been sent to the admin.")
 
-        return redirect(f"/user-details/{user.username}/")
+        return redirect('user-page')
 
-    return render(request, 'change_password_request.html')
+    return render(request, 'authapp/change_password_request.html')
 
 
 # ── Resolve a UserRequest (admin action from notifications) ───────────────────
 
-@login_required
+@admin_required
 def resolve_user_request(request, pk):
     """Mark a UserRequest as resolved from the notifications page."""
     req = get_object_or_404(UserRequest, pk=pk)

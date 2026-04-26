@@ -1,0 +1,296 @@
+{% extends "navbar.html" %}
+{% load static %}
+
+{% block content %}
+{% include "agriapp/soil_saathi_parm_comparison_popup_bar_chart.html" %}
+<link rel="stylesheet" href="{% static 'home/css/popup.css' %}">
+<link rel="stylesheet" href="{% static 'api_details/css/recomended.css' %}">
+<script src="{% static 'home/js/popup.js' %}"></script>
+<script src="{% static 'api_details/js/recomended.js' %}"></script>
+
+<style>
+  .detail-card      { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.07); overflow:hidden; margin-bottom:16px; }
+  .card-header-grad { background:linear-gradient(135deg,#1a2f6b,#1a73e8); color:#fff; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
+  .card-header-grad h6 { margin:0; font-weight:600; font-size:13px; letter-spacing:.4px; text-transform:uppercase; opacity:.9; }
+  .info-row         { display:flex; padding:9px 20px; border-bottom:1px solid #f0f2f5; font-size:13px; }
+  .info-row:last-child { border-bottom:none; }
+  .info-label       { width:42%; font-weight:600; color:#666; flex-shrink:0; }
+  .info-value       { color:#222; }
+  .nutrient-row     { padding:8px 20px; border-bottom:1px solid #f0f2f5; }
+  .nutrient-row:last-child { border-bottom:none; }
+  .nutrient-label   { font-size:12px; color:#555; margin-bottom:4px; display:flex; justify-content:space-between; }
+  .progress         { height:7px; border-radius:4px; background:#eef0f5; }
+  .action-btn       { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px;
+                      font-size:13px; font-weight:600; text-decoration:none; transition:opacity .2s; border:none; cursor:pointer; }
+  .action-btn:hover { opacity:.85; }
+</style>
+
+<div style="padding:8px 4px 24px;">
+
+  <!-- Page header -->
+  <div class="d-flex align-items-center gap-3 mb-4 px-2 flex-wrap">
+    <div style="width:44px;height:44px;border-radius:10px;background:#1a2f6b;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <i class="fas fa-flask text-white" style="font-size:18px;"></i>
+    </div>
+    <div>
+      <h4 class="mb-0 fw-bold">{{ devise_name }}</h4>
+      {% if api.area_name %}
+      <span class="text-muted" style="font-size:13px;">Area: {{ api.area_name }}</span>
+      {% endif %}
+    </div>
+
+    <!-- Action buttons -->
+    <div class="d-flex flex-wrap gap-2 ms-auto">
+      {% if request.user.is_staff %}
+        <a href="{% url 'api-edit' api.id %}" class="action-btn" style="background:#e8f0fe;color:#1a73e8;">
+          <i class="fas fa-edit"></i> Edit
+        </a>
+      {% endif %}
+      <a href="#popup1" class="action-btn" style="background:#e3f2fd;color:#1565c0;">
+        <i class="fas fa-chart-pie"></i> NPK Chart
+      </a>
+      <a href="#popup2" class="action-btn" style="background:#f3e5f5;color:#6a1b9a;">
+        <i class="fas fa-chart-bar"></i> Full Chart
+      </a>
+      <a href="#recomended-crops" class="action-btn" style="background:#e8f5e9;color:#2e7d32;">
+        <i class="fas fa-seedling"></i> Recommendations
+      </a>
+      <a href="{% url 'download-api-response-pdf' api.pk %}" class="action-btn" style="background:#fce4ec;color:#c62828;">
+        <i class="fas fa-file-pdf"></i> PDF
+      </a>
+      <button onclick="showNpkPopup({{ api.devise_id }})" class="action-btn" style="background:#e8f5e9;color:#1b5e20;">
+        <i class="fas fa-chart-line"></i> Nutrient History
+      </button>
+      <a href="javascript:history.back()" class="action-btn" style="background:#f1f3f8;color:#555;">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3">
+
+    <!-- Left: API meta + core params -->
+    <div class="col-lg-4">
+
+      <!-- Meta info -->
+      <div class="detail-card">
+        <div class="card-header-grad"><h6><i class="fas fa-info-circle me-2"></i>Reading Info</h6></div>
+        <div class="info-row"><span class="info-label">Device ID</span>      <span class="info-value" style="font-family:monospace;">{{ api.devise_id }}</span></div>
+        <div class="info-row"><span class="info-label">Serial No</span>      <span class="info-value" style="font-family:monospace;">{{ api.serial_no }}</span></div>
+        <div class="info-row"><span class="info-label">Crop</span>           <span class="info-value">{{ api.crop_type }}</span></div>
+        <div class="info-row"><span class="info-label">Recorded At</span>    <span class="info-value">{{ api.created_at }}</span></div>
+        {% if api.area_name %}
+        <div class="info-row"><span class="info-label">Area</span>           <span class="info-value">{{ api.area_name }}</span></div>
+        {% endif %}
+        {% if api.tag %}
+        <div class="info-row"><span class="info-label">Tag</span>            <span class="info-value">{{ api.tag }}</span></div>
+        {% endif %}
+        {% if api.latitude and api.longitude %}
+        <div class="info-row"><span class="info-label">Location</span>       <span class="info-value" style="font-family:monospace;">{{ api.latitude }}, {{ api.longitude }}</span></div>
+        {% endif %}
+      </div>
+
+      <!-- Primary NPK -->
+      <div class="detail-card">
+        <div class="card-header-grad"><h6><i class="fas fa-leaf me-2"></i>Primary Nutrients</h6></div>
+        {% with fields=api %}
+        <div class="nutrient-row">
+          <div class="nutrient-label"><span>Nitrogen (N)</span><strong>{{ api.nitrogen }}</strong></div>
+          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.nitrogen 560 100 %}%; background:#2e7d32;"></div></div>
+        </div>
+        <div class="nutrient-row">
+          <div class="nutrient-label"><span>Phosphorous (P)</span><strong>{{ api.phosphorous }}</strong></div>
+          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.phosphorous 56 100 %}%; background:#1565c0;"></div></div>
+        </div>
+        <div class="nutrient-row">
+          <div class="nutrient-label"><span>Potassium (K)</span><strong>{{ api.potassium }}</strong></div>
+          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.potassium 336 100 %}%; background:#e65100;"></div></div>
+        </div>
+        <div class="nutrient-row">
+          <div class="nutrient-label"><span>pH</span><strong>{{ api.ph }}</strong></div>
+          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.ph 14 100 %}%; background:#6a1b9a;"></div></div>
+        </div>
+        <div class="nutrient-row">
+          <div class="nutrient-label"><span>EC (dS/m)</span><strong>{{ api.ec }}</strong></div>
+          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.ec 4 100 %}%; background:#0277bd;"></div></div>
+        </div>
+        <div class="nutrient-row">
+          <div class="nutrient-label"><span>OC (%)</span><strong>{{ api.oc }}</strong></div>
+          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.oc 2 100 %}%; background:#558b2f;"></div></div>
+        </div>
+        {% endwith %}
+      </div>
+
+    </div>
+
+    <!-- Right: Secondary nutrients + dynamic fields -->
+    <div class="col-lg-8">
+
+      <!-- Secondary nutrients -->
+      <div class="detail-card">
+        <div class="card-header-grad"><h6><i class="fas fa-vial me-2"></i>Secondary & Micro Nutrients</h6></div>
+        <div class="row g-0">
+          <div class="col-md-6">
+            <div class="nutrient-row"><div class="nutrient-label"><span>Electrical Conduction</span><strong>{{ api.electrical_conduction }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.electrical_conduction 4 100 %}%;background:#546e7a;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Calcium (meq/100g)</span><strong>{{ api.calcium }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.calcium 5 100 %}%;background:#00838f;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Magnesium (meq/100g)</span><strong>{{ api.magnesium }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.magnesium 4 100 %}%;background:#2e7d32;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Sulphur (ppm)</span><strong>{{ api.sulphur }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.sulphur 30 100 %}%;background:#f57f17;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Zinc (ppm)</span><strong>{{ api.zinc }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.zinc 3 100 %}%;background:#6a1b9a;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Boron (ppm)</span><strong>{{ api.boron }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.boron 3 100 %}%;background:#1565c0;"></div></div></div>
+          </div>
+          <div class="col-md-6" style="border-left:1px solid #f0f2f5;">
+            <div class="nutrient-row"><div class="nutrient-label"><span>Manganese (ppm)</span><strong>{{ api.manganese }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.manganese 12 100 %}%;background:#bf360c;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Iron (ppm)</span><strong>{{ api.iron }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.iron 15 100 %}%;background:#4e342e;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Copper (ppm)</span><strong>{{ api.copper }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.copper 3 100 %}%;background:#e65100;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Molybdenum (ppm)</span><strong>{{ api.molybdenum }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.molybdenum 1 100 %}%;background:#37474f;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Chlorine (ppm)</span><strong>{{ api.chlorine }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.chlorine 10 100 %}%;background:#00695c;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Nickel (ppm)</span><strong>{{ api.nickel }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.nickel 1 100 %}%;background:#455a64;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Organic Carbon (%)</span><strong>{{ api.organic_carboa }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.organic_carboa 2 100 %}%;background:#558b2f;"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic fields -->
+      {% if dynamic_fields %}
+      <div class="detail-card">
+        <div class="card-header-grad"><h6><i class="fas fa-sliders-h me-2"></i>Dynamic Fields</h6></div>
+        {% for field_name, field_value in dynamic_fields.items %}
+        <div class="nutrient-row">
+          <div class="nutrient-label"><span>{{ field_name }}</span><strong>{{ field_value }}</strong></div>
+          <div class="progress"><div class="progress-bar bg-info" style="width:{% widthratio field_value 100 100 %}%;"></div></div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Chart popups (CSS-based, kept exactly as original) ── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js'></script>
+
+<script>
+  $(document).ready(function() {
+    new Chart($("#chart-line"), {
+      type: 'pie',
+      data: {
+        labels: ["Nitrogen", "Phosphorous", "Potassium"],
+        datasets: [{ data: [{{api.nitrogen}}, {{api.phosphorous}}, {{api.potassium}}],
+          backgroundColor: ["rgba(46,125,50,0.8)","rgba(21,101,192,0.8)","rgba(230,81,0,0.8)"] }]
+      },
+      options: { title: { display: true, text: 'NPK Distribution' } }
+    });
+
+    new Chart($("#chart-line1"), {
+      type: 'pie',
+      data: {
+        labels: "{{fields}}".split(','),
+        datasets: [{ data: "{{fields_data}}".split(','),
+          backgroundColor: ["rgba(255,0,0,.5)","rgba(100,255,0,.5)","rgba(200,50,255,.5)",
+            "rgba(255,0,0,.5)","rgba(100,255,0,.5)","rgba(200,50,255,.5)",
+            "rgba(255,0,0,.5)","rgba(100,255,0,.5)","rgba(200,50,255,.5)",
+            "rgba(255,0,0,.5)","rgba(100,255,0,.5)","rgba(200,50,255,.5)",
+            "rgba(255,0,0,.5)","rgba(100,255,0,.5)","rgba(200,50,255,.5)",
+            "rgba(255,0,0,.5)","rgba(100,255,0,.5)","rgba(200,50,255,.5)","rgba(220,0,0,.5)"] }]
+      },
+      options: { title: { display: true, text: 'All Fields' } }
+    });
+  });
+</script>
+
+<!-- NPK popup -->
+<div id="popup1" class="overlay1">
+  <div class="popup" style="width:70%;">
+    <center>
+      <a class="close" href="#">&times;</a>
+      <div class="page-content page-container mt-5">
+        <div class="padding">
+          <div class="row">
+            <div class="container-fluid d-flex justify-content-center">
+              <div class="col-sm-8 col-md-6">
+                <div class="card">
+                  <div class="card-header" style="color:#4b2711;">NPK Values</div>
+                  <div class="card-body" style="height:420px;">
+                    <canvas id="chart-line" width="299" height="200"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </center>
+  </div>
+</div>
+
+<!-- Full chart popup -->
+<div id="popup2" class="overlay1">
+  <div class="popup" style="width:70%;">
+    <center>
+      <a class="close" href="#">&times;</a>
+      <div class="page-content page-container mt-5">
+        <div class="padding">
+          <div class="row">
+            <div class="container-fluid d-flex justify-content-center">
+              <div class="col-sm-8 col-md-6">
+                <div class="card">
+                  <div class="card-header" style="color:#4b2711;">All Values</div>
+                  <div class="card-body" style="height:420px;">
+                    <canvas id="chart-line1" width="299" height="200"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </center>
+  </div>
+</div>
+
+<!-- Recommendations popup -->
+<div id="recomended-crops" class="overlay1">
+  <div class="popup" style="width:70%;">
+    <center>
+      <a class="close" href="#">&times;</a>
+      <section>
+        <h4 style="margin:16px 0 8px; color:#1a2f6b;">Fertilizer Recommendations</h4>
+        <div class="tbl-header">
+          <table cellpadding="0" cellspacing="0" border="0">
+            <thead>
+              <tr><th>Recommended fertilizer doses</th></tr>
+            </thead>
+          </table>
+        </div>
+        <div class="tbl-content">
+          <table cellpadding="0" cellspacing="0" border="0">
+            <tbody>
+              {% for crop_fertilizer_data in crops_data.crop_fertilizer %}
+                {% for crop_data in crop_fertilizer_data %}
+                  <tr><td style="width:100px;"></td><td>{{ crop_data }}</td></tr>
+                {% endfor %}
+                <tr style="background:#fff;"><td style="background:#fff;"></td><td style="background:#fff;"></td></tr>
+              {% endfor %}
+
+              <tr style="background:rgba(233,21,17,0.88);">
+                <td style="background:rgba(233,21,17,0.88);"></td>
+                <td style="background:rgba(233,21,17,0.88);"><b>Remedy, Fertility, FYM and Target Yield</b></td>
+              </tr>
+
+              {% for crop_fym_data in crops_data.fym %}
+                {% for fym in crop_fym_data %}
+                  <tr><td style="width:100px;"></td><td>{{ fym }}</td></tr>
+                {% endfor %}
+                <tr style="background:#fff;"><td style="background:#fff;"></td><td style="background:#fff;"></td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </center>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+
+.img_images {
+  width: 15%;
+  height: 100%;
+  object-fit:cover;
+  
+  -webkit-box-reflect:below 2px linear-gradient(transparent, transparent, #0004);
+  
+  transform-origin:center;
+  transform:perspective(800px) rotateY(25deg);
+  transition:0.5s;
+}
+.container_images {
+  max-width:100%;
+  max-height:350px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:20px;
+  
+}
+.container_images:hover img {
+  opacity:0.3;
+}
+.container_images img:hover {
+  transform:perspective(800px)       rotateY(0deg);
+  opacity:1;
+}

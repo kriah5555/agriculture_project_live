@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArkaShine - User Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'login.css' %}">
+  <style>
+    body { background: linear-gradient(to bottom, #f7f5f4, #d1cece); min-height: 100vh; margin: 0; }
+  </style>
+</head>
+<body>
+<section class="login-block" style="height:100vh;">
+  <div class="container" style="padding-top:80px;">
+    <div class="row">
+
+      <!-- Left: form panel -->
+      <div class="col-md-4 login-sec">
+        <h2 class="text-center">User Login</h2>
+
+        <form action="#" class="login-form" method="POST">
+          {% csrf_token %}
+
+          {% if error %}
+          <div class="alert alert-danger text-center" role="alert" style="font-size:14px;">
+            {{ error }}
+          </div>
+          {% endif %}
+
+          {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} text-center" role="alert" style="font-size:14px;">
+              {{ message }}
+            </div>
+            {% endfor %}
+          {% endif %}
+
+          <div class="form-group">
+            <label for="username" class="text-uppercase">Username</label>
+            <input id="username" name="username" type="text" class="form-control" required autofocus>
+          </div>
+          <div class="form-group">
+            <label for="password" class="text-uppercase">Password</label>
+            <input id="password" name="password" type="password" class="form-control" required>
+          </div>
+          <div class="form-group d-flex justify-content-between align-items-center">
+            <a href="{% url 'forgot_password' %}" style="font-size:13px; color:#888;">Forgot Password?</a>
+            <button type="submit" class="btn btn-login">Login</button>
+          </div>
+        </form>
+
+        <div class="copy-text">Welcome to ArkaShine</div>
+      </div>
+
+      <!-- Right: banner image -->
+      <div class="col-md-8 banner-sec">
+        <img class="d-block img-fluid w-100" src="{% static 'login/images/login.jpg' %}"
+             alt="ArkaShine Login" style="height:100vh; object-fit:cover;">
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

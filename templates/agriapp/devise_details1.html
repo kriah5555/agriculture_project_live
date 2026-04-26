@@ -1,0 +1,270 @@
+{% extends "navbar.html" %}
+{% load static %}
+
+{% block content %}
+{% include "agriapp/api_limit_popup.html" %}
+
+<style>
+  .detail-card      { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.07); overflow:hidden; margin-bottom:20px; }
+  .card-header-grad { background: linear-gradient(135deg,#1a2f6b,#1a73e8); color:#fff; padding:16px 20px; }
+  .card-header-grad h6 { margin:0; font-weight:600; font-size:14px; letter-spacing:.4px; text-transform:uppercase; opacity:.85; }
+  .info-row         { display:flex; padding:10px 20px; border-bottom:1px solid #f0f2f5; }
+  .info-row:last-child { border-bottom:none; }
+  .info-label       { width:38%; font-weight:600; font-size:13px; color:#666; flex-shrink:0; }
+  .info-value       { font-size:13px; color:#222; }
+  .threshold-dot    { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; flex-shrink:0; }
+  .threshold-row    { display:flex; align-items:center; padding:8px 20px; border-bottom:1px solid #f0f2f5; font-size:13px; }
+  .threshold-row:last-child { border-bottom:none; }
+  .threshold-val    { margin-left:auto; font-weight:600; font-size:13px; }
+  .action-btn       { display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; transition:background .2s; margin-bottom:8px; border:none; cursor:pointer; width:100%; }
+  .action-btn i     { width:18px; text-align:center; }
+  .action-btn.primary   { background:#1a73e8; color:#fff; }
+  .action-btn.primary:hover { background:#1558b0; color:#fff; }
+  .action-btn.secondary { background:#f1f3f8; color:#333; }
+  .action-btn.secondary:hover { background:#e2e6f0; color:#333; }
+  .action-btn.warning   { background:#fff3e0; color:#e65100; }
+  .action-btn.warning:hover { background:#ffe0b2; color:#e65100; }
+  .device-type-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;
+  }
+</style>
+
+<div style="padding:8px 4px 20px;">
+
+  <!-- ── Page header ──────────────────────────────────────── -->
+  <div class="d-flex align-items-center gap-3 mb-4 px-2">
+    <div style="width:48px;height:48px;border-radius:12px;background:#1a2f6b;display:flex;align-items:center;justify-content:center;">
+      <i class="fas fa-microchip text-white" style="font-size:20px;"></i>
+    </div>
+    <div>
+      <h4 class="mb-0 fw-bold">{{ devise.name }}</h4>
+      <div class="d-flex align-items-center gap-2 mt-1">
+        {% if devise.devise_type == 'soilsaathi' %}
+          <span class="device-type-badge" style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;"><i class="fas fa-leaf"></i> SoiLENZ</span>
+        {% elif devise.devise_type == 'atmo_sense' %}
+          <span class="device-type-badge" style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;"><i class="fas fa-wind"></i> SoilSparsh</span>
+        {% elif devise.devise_type == 'soil_life' %}
+          <span class="device-type-badge" style="background:#f3e5f5;color:#6a1b9a;border:1px solid #ce93d8;"><i class="fas fa-seedling"></i> SoilLIFE</span>
+        {% elif devise.devise_type == 'ph_bottle' %}
+          <span class="device-type-badge" style="background:#fff3e0;color:#e65100;border:1px solid #ffcc80;"><i class="fas fa-flask"></i> PHBottle</span>
+        {% endif %}
+        <span class="text-muted" style="font-size:12px;">{{ devise.serial_no }}</span>
+      </div>
+    </div>
+    <a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary ms-auto">
+      <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+  </div>
+
+  <div class="row g-3">
+
+    <!-- ── Left column ──────────────────────────────────── -->
+    <div class="col-lg-4">
+
+      <!-- Quick actions -->
+      <div class="detail-card p-3">
+        <a href="{% url 'edit-devise' devise.pk %}" class="action-btn primary">
+          <i class="fas fa-edit"></i> Edit Device
+        </a>
+        <a href="{% url 'api-overview' devise.pk %}" class="action-btn secondary">
+          <i class="fas fa-list-alt"></i> View API Calls
+        </a>
+        {% if location %}
+          <a href="{% url 'map-devise' devise.pk %}" class="action-btn secondary">
+            <i class="fas fa-map-marker-alt"></i> View Location
+          </a>
+          <a href="{% url 'update-location' location.pk %}" class="action-btn secondary">
+            <i class="fas fa-map-pin"></i> Update Location
+          </a>
+        {% else %}
+          <a href="{% url 'map-devise' devise.pk %}" class="action-btn secondary">
+            <i class="fas fa-map-marker-alt"></i> View Location
+          </a>
+          <a href="{% url 'add-location' devise.pk %}" class="action-btn secondary">
+            <i class="fas fa-plus-circle"></i> Add Location
+          </a>
+        {% endif %}
+        <button class="action-btn warning"
+          onclick="showFormPopup('{{ devise.pk }}', {
+            red   : {{ api_threshold.red }},
+            orange: {{ api_threshold.orange }},
+            blue  : {{ api_threshold.blue }},
+            green : {{ api_threshold.green }}
+          })">
+          <i class="fas fa-sliders-h"></i> API Threshold Limits
+        </button>
+      </div>
+
+      <!-- API call count stats -->
+      <div class="detail-card">
+        <div class="card-header-grad">
+          <h6><i class="fas fa-chart-bar me-2"></i>API Usage Summary</h6>
+        </div>
+        <div class="d-flex" style="padding:14px 20px; gap:16px;">
+          <div style="flex:1; text-align:center; border-right:1px solid #f0f2f5;">
+            <div style="font-size:28px; font-weight:700; color:#1a73e8;">{{ used }}</div>
+            <div style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:.4px;">Used</div>
+          </div>
+          <div style="flex:1; text-align:center; border-right:1px solid #f0f2f5;">
+            <div style="font-size:28px; font-weight:700; color:#{{ color|default:'6c757d' }};">{{ remaining }}</div>
+            <div style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:.4px;">Remaining</div>
+          </div>
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:28px; font-weight:700; color:#444;">{{ api_threshold.red|default:"—" }}</div>
+            <div style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:.4px;">Limit</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Threshold levels -->
+      <div class="detail-card">
+        <div class="card-header-grad" style="display:flex; align-items:center; justify-content:space-between;">
+          <h6 style="margin:0;"><i class="fas fa-tachometer-alt me-2"></i>Current Thresholds</h6>
+          <button type="button"
+            style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;"
+            onclick="showFormPopup('{{ devise.pk }}', {
+              red   : {{ api_threshold.red }},
+              orange: {{ api_threshold.orange }},
+              blue  : {{ api_threshold.blue }},
+              green : {{ api_threshold.green }}
+            })">
+            <i class="fas fa-pencil me-1"></i> Edit
+          </button>
+        </div>
+        <div class="threshold-row">
+          <span class="threshold-dot" style="background:#dc3545;"></span>
+          <span>Red — Block limit</span>
+          <span class="threshold-val" style="color:#dc3545;">{{ api_threshold.red }}</span>
+        </div>
+        <div class="threshold-row">
+          <span class="threshold-dot" style="background:#fd7e14;"></span>
+          <span>Orange — High usage</span>
+          <span class="threshold-val" style="color:#fd7e14;">{{ api_threshold.orange }}</span>
+        </div>
+        <div class="threshold-row">
+          <span class="threshold-dot" style="background:#0d6efd;"></span>
+          <span>Blue — Moderate</span>
+          <span class="threshold-val" style="color:#0d6efd;">{{ api_threshold.blue }}</span>
+        </div>
+        <div class="threshold-row">
+          <span class="threshold-dot" style="background:#198754;"></span>
+          <span>Green — Low usage</span>
+          <span class="threshold-val" style="color:#198754;">{{ api_threshold.green }}</span>
+        </div>
+      </div>
+
+      <!-- API usage chart -->
+      <div class="detail-card">
+        <div class="card-header-grad">
+          <h6><i class="fas fa-chart-pie me-2"></i>API Usage</h6>
+        </div>
+        <div class="p-3">
+          <div id="myChart" style="width:100%; height:220px;"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Right column — device info ───────────────────── -->
+    <div class="col-lg-8">
+      <div class="detail-card">
+        <div class="card-header-grad">
+          <h6><i class="fas fa-info-circle me-2"></i>Device Information</h6>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Device Name</span>
+          <span class="info-value">{{ devise.name }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email</span>
+          <span class="info-value">{{ devise.email }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Phone</span>
+          <span class="info-value">{{ devise.phone }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Address 1</span>
+          <span class="info-value">{{ devise.address1 }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Address 2</span>
+          <span class="info-value">{{ devise.address2 }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Device ID</span>
+          <span class="info-value" style="font-family:monospace;">{{ devise.devise_id }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Serial No</span>
+          <span class="info-value" style="font-family:monospace;">{{ devise.serial_no }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Chipset No</span>
+          <span class="info-value" style="font-family:monospace;">{{ devise.chipset_no }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Purchase Date</span>
+          <span class="info-value">{{ devise.purchase_date }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Time of Sale</span>
+          <span class="info-value">{{ devise.time_of_sale }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Warranty</span>
+          <span class="info-value">{{ devise.warrenty }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Land</span>
+          <span class="info-value">{{ devise.land }} acres</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Amount Paid</span>
+          <span class="info-value">₹ {{ devise.amount_paid }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Balance Amount</span>
+          <span class="info-value">₹ {{ devise.balance_amount }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Device Type</span>
+          <span class="info-value">{{ devise.get_devise_type_display|default:devise.devise_type }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Google Charts -->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(drawChart);
+
+  function drawChart() {
+    var data = google.visualization.arrayToDataTable([
+      ['Type', 'Count'],
+      ['Used',      {{ used }}],
+      ['Remaining', {{ remaining }}]
+    ]);
+    var options = {
+      title        : 'API Calls',
+      is3D         : false,
+      pieHole      : 0.4,
+      width        : '100%',
+      height       : 220,
+      colors       : ['{{ color }}', '#e9ecef'],
+      pieSliceText : 'value',
+      legend       : { position: 'bottom', textStyle: { fontSize: 12 } },
+      chartArea    : { width: '90%', height: '80%' },
+    };
+    var chart = new google.visualization.PieChart(document.getElementById('myChart'));
+    chart.draw(data, options);
+  }
+</script>
+
+{% endblock %}
