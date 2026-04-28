@@ -159,7 +159,8 @@ def add_soil_data(request):
 
 from django.core.files.storage import FileSystemStorage
 from django.core.files.base import ContentFile
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 import base64
@@ -239,10 +240,12 @@ def process_device_data(request, device_type, success_message):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])  # legacy open endpoint — add auth here when ready
 def add_atmos_sense_data(request):
     return process_device_data(request, device_type='atmo_sense', success_message='AtmosSense data added successfully')
 
 @api_view(['POST'])
+@permission_classes([AllowAny])  # legacy open endpoint — add auth here when ready
 def add_soil_life_data(request):
     return process_device_data(request, device_type='soil_life', success_message='SoilLife data added successfully')
 
@@ -255,6 +258,7 @@ def get_crops(request):
         return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def add_soil_data_open(request):
     try:
         device_id = request.GET.get('devise_id', '')
@@ -301,6 +305,7 @@ def add_soil_data_open(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def add_location_data(request):
     try:
         if all(key in request.GET for key in ['devise_id', 'latitude', 'longitude']):
@@ -344,6 +349,7 @@ def add_location_data(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def list_all_apis(request):
     """Return a list of all available device API endpoint names."""
     from devise_apis import urls as _urls
