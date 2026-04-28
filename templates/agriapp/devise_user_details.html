@@ -1,9 +1,76 @@
-{% extends "navbar.html" %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Dashboard — ArkaShine</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background: #f0f2f8; margin: 0; }
 
-{% block content %}
+    /* ── Top bar ── */
+    .user-topbar {
+      background: linear-gradient(135deg, #1a2f6b, #1a73e8);
+      color: #fff;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .user-topbar .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 16px; letter-spacing: .3px;
+    }
+    .user-topbar .brand-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .logout-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff; border-radius: 8px;
+      padding: 6px 14px; font-size: 13px; font-weight: 600;
+      text-decoration: none; transition: background .2s;
+      cursor: pointer;
+    }
+    .logout-btn:hover { background: rgba(255,255,255,0.28); color: #fff; }
+
+    /* ── Page wrapper ── */
+    .user-page-wrap { padding: 12px 12px 24px; }
+  </style>
+</head>
+<body>
+
 {% include "agriapp/soil_saathi_parm_comparison_popup_bar_chart.html" %}
 {% include "agriapp/map_popup.html" %}
 {% include "agriapp/form_popup.html" %}
+
+<!-- ══ Top bar ══════════════════════════════════════════════════ -->
+<div class="user-topbar">
+  <div class="brand">
+    <div class="brand-icon"><i class="fas fa-leaf"></i></div>
+    <span>ArkaShine</span>
+  </div>
+  <a href="{% url 'logout' %}" class="logout-btn">
+    <i class="fas fa-sign-out-alt"></i> Logout
+  </a>
+</div>
+
+<!-- ══ Page content ══════════════════════════════════════════════ -->
+<div class="user-page-wrap">
 
 <style>
   /* ── Shared card style ── */
@@ -205,7 +272,7 @@
 <!-- /popup -->
 
 <!-- ══ Page wrapper ══════════════════════════════════════════ -->
-<div style="padding: 8px 4px 24px;">
+<div>
 
   <!-- Page header -->
   <div class="d-flex align-items-center gap-3 mb-4 px-2">
@@ -811,4 +878,8 @@
   }
 </script>
 
-{% endblock %}
+</div><!-- /user-page-wrap -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
