@@ -38,6 +38,7 @@ urlpatterns = [
     path('users/',                                  Users.as_view(),                    name="users"),
     path('create-user/',                            v.create_user,                      name="create-user"),
     path('delete-user/<str:uid>/',                  v.delete_user,                      name="delete-user"),
+    path('delete-devise/<int:pk>/',                 v.delete_devise,                    name="delete-devise"),
     path('user-details/<str:uid>/',                 v.user_details,                     name="user-details"),
     path('admin-panne/',                            v.dashboard,                        name="dashboard"),
     path('resolve-user-request/<int:pk>/',          v.resolve_user_request,             name='resolve-user-request'),

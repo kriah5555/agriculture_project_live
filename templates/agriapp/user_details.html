@@ -223,6 +223,7 @@
               <a href="{% url 'edit-devise' device.pk %}" onclick="event.stopPropagation();" title="Edit"><i class="fas fa-pencil"></i></a>
               <a href="{% url 'export-device-apis' device.pk %}" onclick="event.stopPropagation();" title="Export APIs"><i class="fas fa-file-export"></i></a>
               <a href="#" onclick="event.stopPropagation(); showNpkPopup({{ device.pk }});" title="Compare Nutrients"><i class="fas fa-chart-line"></i></a>
+              <a href="#" onclick="event.stopPropagation(); deleteDevise({{ device.pk }}, this);" title="Delete Device" style="color:#dc3545;"><i class="fas fa-trash"></i></a>
             </div>
           </div>
           {% endfor %}
@@ -528,6 +529,23 @@
       if (apiState.page < apiState.totalPages && devise_id) fetchApiPage(devise_id, apiState.page + 1, ++fetchToken);
     });
   });
+
+  function deleteDevise(pk, el) {
+    if (!confirm('Delete this device? This cannot be undone.\n\nNote: devices with API call records cannot be deleted.')) return;
+    fetch(`/delete-devise/${pk}/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        el.closest('.device-list-item').remove();
+      } else {
+        alert(data.error || 'Could not delete device.');
+      }
+    })
+    .catch(() => alert('Something went wrong.'));
+  }
 
   function deleteApiCall(id, deviceType, el) {
     if (!confirm('Delete this API call record? This cannot be undone.')) return;

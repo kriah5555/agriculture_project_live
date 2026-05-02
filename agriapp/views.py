@@ -236,6 +236,21 @@ def delete_user(request, uid):
 
 
 @admin_required
+def delete_devise(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    device = get_object_or_404(Devise, pk=pk)
+    api_count = (
+        DeviseApis.objects.filter(device=device).count() +
+        DeviseApisFields.objects.filter(device=device).count()
+    )
+    if api_count > 0:
+        return JsonResponse({'error': f'Cannot delete — this device has {api_count} API call record(s) linked to it.'}, status=400)
+    device.delete()
+    return JsonResponse({'success': True})
+
+
+@admin_required
 def add_devise(request, uid=None):
         
     context = {'message': ''}
