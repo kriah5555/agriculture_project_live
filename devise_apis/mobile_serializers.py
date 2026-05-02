@@ -8,6 +8,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from agriapp.models import (
     Devise, DeviseApis, DeviseApisFields, DeviseLocation,
     APICountThreshold, DEVICE_NAMES,
+    ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, SOIL_SAATHI_FIELDS,
 )
 
 
@@ -32,10 +33,11 @@ class MobileTokenObtainSerializer(TokenObtainPairSerializer):
 
 class DeviceTypeSerializer(serializers.Serializer):
     """One entry per device type; locked=True when user owns no device of that type."""
-    type_key    = serializers.CharField()
-    type_name   = serializers.CharField()
-    locked      = serializers.BooleanField()
+    type_key     = serializers.CharField()
+    type_name    = serializers.CharField()
+    locked       = serializers.BooleanField()
     device_count = serializers.IntegerField()
+    api_used     = serializers.IntegerField()
 
 
 # ── Devices ──────────────────────────────────────────────────────────────────
@@ -49,7 +51,8 @@ class DeviceLocationSerializer(serializers.ModelSerializer):
 class DeviceListSerializer(serializers.ModelSerializer):
     """Compact device list for mobile."""
     type_name    = serializers.SerializerMethodField()
-    api_count    = serializers.SerializerMethodField()
+    api_used     = serializers.SerializerMethodField()
+    api_limit    = serializers.SerializerMethodField()
     has_location = serializers.SerializerMethodField()
 
     class Meta:
@@ -57,42 +60,39 @@ class DeviceListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'serial_no', 'devise_id', 'devise_type', 'type_name',
             'address1', 'address2', 'purchase_date', 'land',
-            'api_count', 'has_location', 'created_at',
+            'api_used', 'api_limit', 'has_location', 'created_at',
         ]
 
     def get_type_name(self, obj):
         return DEVICE_NAMES.get(obj.devise_type, obj.devise_type)
 
-    def get_api_count(self, obj):
+    def get_api_used(self, obj):
         if obj.devise_type == 'soilsaathi':
             return DeviseApis.objects.filter(device=obj).count()
         return DeviseApisFields.objects.filter(device=obj).count()
+
+    def get_api_limit(self, obj):
+        t = APICountThreshold.objects.filter(devise=obj).first()
+        return t.red if t else None
 
     def get_has_location(self, obj):
         return DeviseLocation.objects.filter(devise=obj).exists()
 
 
 class DeviceDetailSerializer(DeviceListSerializer):
-    """Full device details including location and threshold."""
-    location  = serializers.SerializerMethodField()
-    threshold = serializers.SerializerMethodField()
+    """Full device details including location and usage."""
+    location = serializers.SerializerMethodField()
 
     class Meta(DeviceListSerializer.Meta):
         fields = DeviceListSerializer.Meta.fields + [
             'email', 'phone', 'chipset_no', 'warrenty',
             'amount_paid', 'balance_amount', 'time_of_sale',
-            'location', 'threshold',
+            'location',
         ]
 
     def get_location(self, obj):
         loc = DeviseLocation.objects.filter(devise=obj).first()
         return DeviceLocationSerializer(loc).data if loc else None
-
-    def get_threshold(self, obj):
-        t = APICountThreshold.objects.filter(devise=obj).first()
-        if not t:
-            return None
-        return {'red': t.red, 'orange': t.orange, 'blue': t.blue, 'green': t.green}
 
 
 # ── Soil Saathi (SoiLENZ) API call ───────────────────────────────────────────
@@ -125,24 +125,16 @@ class SoilSaathiReadingCreateSerializer(serializers.ModelSerializer):
         ]
 
 
-# ── AtmoSense / SoilLIFE (DeviseApisFields) API call ─────────────────────────
+# ── AtmoSense / SoilLIFE / PHBottle (DeviseApisFields) API call ──────────────
+
+def _sensor_fields(field_map):
+    """Extract only field1–field8 entries from a *_FIELDS map."""
+    return {k: v for k, v in field_map.items() if k.startswith('field')}
 
 FIELD_LABELS = {
-    'atmo_sense': {
-        'field1': 'Soil Temp (°C)',      'field2': 'Soil Moisture (%)',
-        'field3': 'Atmos Temp (°C)',     'field4': 'Atmos Humidity (%)',
-        'field5': 'Light Intensity (lux)',
-    },
-    'soil_life': {
-        'field1': 'CO₂ (ppm)',           'field2': 'Methane (ppm)',
-        'field3': 'Ammonia (ppm)',        'field4': 'Nitrous Oxide (ppm)',
-        'field5': 'Temperature (°C)',     'field6': 'Humidity (%)',
-        'field7': 'Atmos Pressure (hPa)', 'field8': 'Microbial Content (%)',
-    },
-    'ph_bottle': {
-        'field1': 'pH Value',            'field2': 'pH Voltage (mV)',
-        'field3': 'EC Value (mS/cm)',    'field4': 'EC Voltage (mV)',
-    },
+    'atmo_sense': _sensor_fields(ATMO_SENSE_FIELDS),
+    'soil_life' : _sensor_fields(SOIL_LIFE_FIELDS),
+    'ph_bottle' : _sensor_fields(PH_BOTTLE_FIELDS),
 }
 
 

@@ -41,6 +41,7 @@ urlpatterns = [
     path('user-details/<str:uid>/',                 v.user_details,                     name="user-details"),
     path('admin-panne/',                            v.dashboard,                        name="dashboard"),
     path('resolve-user-request/<int:pk>/',          v.resolve_user_request,             name='resolve-user-request'),
+    path('delete-api-call/<int:pk>/',               v.delete_api_call,                  name='delete-api-call'),
     path('get-all-npk-values/',                     v.get_all_NPK_values,               name='get-all-npk-values'),
     path('api-threshold/<int:pk>/',                 v.create_or_update_threshold,       name='api-threshold'),
     path('docs/',                                   v.docs,                             name='docs'),

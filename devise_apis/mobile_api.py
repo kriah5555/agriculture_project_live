@@ -28,7 +28,6 @@ from agriapp.models import (
     APICountThreshold, DEVICE_NAMES,
     SOIL_SAATHI_FIELDS, ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS,
 )
-from agriapp import FertilizerCalculation
 from .mobile_serializers import (
     DeviceTypeSerializer,
     DeviceListSerializer,
@@ -37,7 +36,6 @@ from .mobile_serializers import (
     SoilSaathiReadingCreateSerializer,
     FieldsReadingSerializer,
     FieldsReadingCreateSerializer,
-    ThresholdSerializer,
 )
 
 
@@ -74,25 +72,6 @@ _profile_update_response = inline_serializer(
         'first_name': drf_serializers.CharField(),
         'last_name' : drf_serializers.CharField(),
         'full_name' : drf_serializers.CharField(),
-    },
-)
-
-_recommendation_response = inline_serializer(
-    name='RecommendationResponse',
-    fields={
-        'device_id'      : drf_serializers.IntegerField(),
-        'reading_id'     : drf_serializers.IntegerField(),
-        'reading_date'   : drf_serializers.DateTimeField(),
-        'crop_type'      : drf_serializers.CharField(),
-        'npk'            : inline_serializer(name='NPKValues', fields={
-            'nitrogen'   : drf_serializers.FloatField(),
-            'phosphorous': drf_serializers.FloatField(),
-            'potassium'  : drf_serializers.FloatField(),
-            'ph'         : drf_serializers.FloatField(),
-            'ec'         : drf_serializers.FloatField(),
-            'oc'         : drf_serializers.FloatField(),
-        }),
-        'recommendations': drf_serializers.ListField(child=drf_serializers.DictField()),
     },
 )
 
@@ -137,18 +116,23 @@ def _get_user_device(request, device_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def device_types(request):
-    user       = request.user
+    user        = request.user
     owned_types = set(
         Devise.objects.filter(user=user).values_list('devise_type', flat=True)
     )
     result = []
     for type_key, type_name in DEVICE_NAMES.items():
-        count = Devise.objects.filter(user=user, devise_type=type_key).count()
+        devices = Devise.objects.filter(user=user, devise_type=type_key)
+        if type_key == 'soilsaathi':
+            api_used = DeviseApis.objects.filter(device__in=devices).count()
+        else:
+            api_used = DeviseApisFields.objects.filter(device__in=devices).count()
         result.append({
             'type_key'    : type_key,
             'type_name'   : type_name,
             'locked'      : type_key not in owned_types,
-            'device_count': count,
+            'device_count': devices.count(),
+            'api_used'    : api_used,
         })
     return Response(DeviceTypeSerializer(result, many=True).data)
 
@@ -385,113 +369,6 @@ def api_call_detail(request, device_id, call_id):
 
     return Response(serializer.data)
 
-
-# ── Threshold ─────────────────────────────────────────────────────────────────
-
-@extend_schema(
-    tags=['Thresholds'],
-    summary='Get device alert threshold',
-    responses={
-        200: ThresholdSerializer,
-        404: OpenApiResponse(description='No threshold configured for this device'),
-    },
-)
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def device_threshold(request, device_id):
-    """Return the alert threshold levels configured for a device."""
-    device    = _get_user_device(request, device_id)
-    threshold = get_object_or_404(APICountThreshold, devise=device)
-    return Response(ThresholdSerializer(threshold).data)
-
-
-@extend_schema(
-    tags=['Thresholds'],
-    summary='Create or update device alert threshold',
-    request=ThresholdSerializer,
-    responses={
-        200: ThresholdSerializer,
-        400: OpenApiResponse(description='Validation error'),
-    },
-)
-@api_view(['POST', 'PUT'])
-@permission_classes([IsAuthenticated])
-def device_threshold_set(request, device_id):
-    """Create or update the alert threshold for a device."""
-    device       = _get_user_device(request, device_id)
-    threshold, _ = APICountThreshold.objects.get_or_create(devise=device)
-    serializer   = ThresholdSerializer(threshold, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# ── Recommendations (SoiLENZ only) ───────────────────────────────────────────
-
-@extend_schema(
-    tags=['Recommendations'],
-    summary='Get fertilizer recommendations for a device',
-    parameters=[
-        OpenApiParameter(
-            'call_id', OpenApiTypes.INT, OpenApiParameter.QUERY,
-            description='ID of the specific API call record to base recommendations on. '
-                        'If omitted, uses the most recent reading.',
-            required=False,
-        )
-    ],
-    responses={
-        200: _recommendation_response,
-        400: OpenApiResponse(description='Device type does not support recommendations'),
-        404: OpenApiResponse(description='No readings found'),
-    },
-)
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def device_recommendations(request, device_id):
-    """
-    Fertilizer and crop recommendations based on sensor readings.
-    Only available for SoiLENZ (soilsaathi) devices which capture NPK/pH data.
-    """
-    device = _get_user_device(request, device_id)
-
-    if device.devise_type != 'soilsaathi':
-        return Response(
-            {'detail': 'Recommendations are only available for SoiLENZ (soilsaathi) devices.'},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    call_id = request.query_params.get('call_id')
-    if call_id:
-        reading = get_object_or_404(DeviseApis, pk=call_id, device=device)
-    else:
-        reading = DeviseApis.objects.filter(device=device).order_by('-created_at').first()
-        if not reading:
-            return Response(
-                {'detail': 'No readings found for this device.'},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-    crops_data = FertilizerCalculation.get_crop_urea_dap_mop_dose(
-        reading.nitrogen, reading.phosphorous, reading.potassium,
-        reading.ph, reading.ec, reading.oc, reading.crop_type,
-    )
-
-    return Response({
-        'device_id'      : device.id,
-        'reading_id'     : reading.id,
-        'reading_date'   : reading.created_at,
-        'crop_type'      : reading.crop_type,
-        'npk'            : {
-            'nitrogen'   : reading.nitrogen,
-            'phosphorous': reading.phosphorous,
-            'potassium'  : reading.potassium,
-            'ph'         : reading.ph,
-            'ec'         : reading.ec,
-            'oc'         : reading.oc,
-        },
-        'recommendations': crops_data,
-    })
 
 
 # ── Account ───────────────────────────────────────────────────────────────────

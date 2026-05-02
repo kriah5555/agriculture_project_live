@@ -487,12 +487,13 @@
               html += `<td style="padding:8px 12px;">${val !== null && val !== undefined ? val : '—'}</td>`;
             }
           }
-          if (selected_devise.devise_type === 'soilsaathi') {
-            html += `<td class="no-redirect-cell" style="padding:8px 12px;">
-                       <a target="_blank" href="/crop-recommendation-dashboard/?api_id=${api.id}"
-                          style="text-decoration:none;font-size:1.2rem;">👁️</a>
-                     </td>`;
-          }
+          const eyeHref = selected_devise.devise_type === 'soilsaathi'
+            ? `/crop-recommendation-dashboard/?api_id=${api.id}`
+            : `/${selected_devise.devise_type === 'atmo_sense' ? 'atmos-sense' : selected_devise.devise_type.replace('_','-')}-api-overview/${api.id}/`;
+          html += `<td class="no-redirect-cell" style="padding:8px 12px;white-space:nowrap;">
+                     <a target="_blank" href="${eyeHref}" title="View" style="text-decoration:none;font-size:1.1rem;margin-right:8px;">👁️</a>
+                     <span title="Delete" style="cursor:pointer;font-size:1.1rem;color:#dc3545;" onclick="deleteApiCall(${api.id}, '${selected_devise.devise_type}', this)">🗑️</span>
+                   </td>`;
           row.innerHTML = html;
           row.addEventListener('click', function(e) {
             if (e.target.closest('.no-redirect-cell')) return;
@@ -527,6 +528,33 @@
       if (apiState.page < apiState.totalPages && devise_id) fetchApiPage(devise_id, apiState.page + 1, ++fetchToken);
     });
   });
+
+  function deleteApiCall(id, deviceType, el) {
+    if (!confirm('Delete this API call record? This cannot be undone.')) return;
+    const row = el.closest('tr');
+    fetch(`/delete-api-call/${id}/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `device_type=${encodeURIComponent(deviceType)}`
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        row.remove();
+        apiState.totalRecords = Math.max(0, apiState.totalRecords - 1);
+        document.getElementById('api-total-records').textContent =
+          apiState.totalRecords + ' record' + (apiState.totalRecords !== 1 ? 's' : '');
+      } else {
+        alert(data.error || 'Could not delete.');
+      }
+    })
+    .catch(() => alert('Something went wrong.'));
+  }
+
+  function getCsrfToken() {
+    const v = document.cookie.match('(^|;) ?csrftoken=([^;]*)(;|$)');
+    return v ? decodeURIComponent(v[2]) : '';
+  }
 
   function redirectToEdit(id) {
     const endpoints = {

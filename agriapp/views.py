@@ -230,8 +230,7 @@ def delete_user(request, uid):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed.'}, status=405)
     user = get_object_or_404(User, username=uid)
-    if Devise.objects.filter(user=user).exists():
-        return JsonResponse({'error': 'Cannot delete a user who has devices linked.'}, status=400)
+    Devise.objects.filter(user=user).update(user=None)
     user.delete()
     return JsonResponse({'success': True})
 
@@ -1345,3 +1344,17 @@ def resolve_user_request(request, pk):
     req.save()
     messages.success(request, f"Request from '{req.username}' marked as resolved.")
     return redirect('notifications')
+
+
+@admin_required
+def delete_api_call(request, pk):
+    """Delete a single API call record (DeviseApis or DeviseApisFields)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    device_type = request.POST.get('device_type', '')
+    if device_type == 'soilsaathi':
+        obj = get_object_or_404(DeviseApis, pk=pk)
+    else:
+        obj = get_object_or_404(DeviseApisFields, pk=pk)
+    obj.delete()
+    return JsonResponse({'success': True})

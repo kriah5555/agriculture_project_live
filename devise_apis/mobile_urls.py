@@ -49,13 +49,6 @@ PHBottle readings (ph_bottle)                      (devices/ph_bottle.py)
   POST  /api/mobile/devices/<id>/ph-bottle/create/        Create reading
   GET   /api/mobile/devices/<id>/ph-bottle/<cid>/         Single reading
 
-Thresholds    (requires auth)                      (mobile_api.py)
-  GET   /api/mobile/devices/<id>/threshold/          Get threshold
-  POST  /api/mobile/devices/<id>/threshold/set/      Set/update threshold
-
-Recommendations (requires auth, SoiLENZ only)      (mobile_api.py)
-  GET   /api/mobile/devices/<id>/recommendations/    Fertilizer recommendations
-
 Account       (requires auth)                      (mobile_api.py / auth_api.py)
   GET   /api/mobile/account/profile/               Get profile
   PATCH /api/mobile/account/profile/update/        Update profile
@@ -111,13 +104,6 @@ urlpatterns = [
     path('devices/<int:device_id>/ph-bottle/',                       pb.ph_bottle_list,   name='mobile_pb_list'),
     path('devices/<int:device_id>/ph-bottle/create/',                pb.ph_bottle_create, name='mobile_pb_create'),
     path('devices/<int:device_id>/ph-bottle/<int:call_id>/',         pb.ph_bottle_detail, name='mobile_pb_detail'),
-
-    # ── Thresholds ────────────────────────────────────────────────────────────
-    path('devices/<int:device_id>/threshold/',     m.device_threshold,     name='mobile_threshold_get'),
-    path('devices/<int:device_id>/threshold/set/', m.device_threshold_set, name='mobile_threshold_set'),
-
-    # ── Recommendations ───────────────────────────────────────────────────────
-    path('devices/<int:device_id>/recommendations/', m.device_recommendations, name='mobile_recommendations'),
 
     # ── Account ───────────────────────────────────────────────────────────────
     path('account/profile/',         m.account_profile,        name='mobile_profile'),
