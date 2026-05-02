@@ -291,7 +291,13 @@ def add_devise(request, uid=None):
                 'land'          : request.POST['land'],
                 'devise_type'   : request.POST['devise_type'],
             }
-            return render(request, 'agriapp/add_devise.html', {'devise': default_values, 'field_errors': field_errors})
+            return render(request, 'agriapp/add_devise.html', {
+                'devise'       : default_values,
+                'field_errors' : field_errors,
+                'purchase_date': request.POST.get('purchase_date', ''),
+                'time_of_sale' : request.POST.get('time_of_sale', ''),
+                'warrenty'     : request.POST.get('warrenty', ''),
+            })
 
     return render(request, template_name, context)
 

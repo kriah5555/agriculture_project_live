@@ -5,12 +5,17 @@ Every device API that WRITES data must call `check_threshold(device)` before sav
 If the threshold is exceeded it returns a ready-made 403 Response — the caller
 should return it immediately.  If None is returned the write is allowed.
 """
+from django.shortcuts import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
 
 from agriapp.models import (
     DeviseApis, DeviseApisFields, APICountThreshold,
+)
+from devise_apis.mobile_serializers import (
+    FieldsReadingSerializer,
+    FieldsReadingCreateSerializer,
 )
 
 
@@ -71,10 +76,37 @@ class DevicePagination(PageNumberPagination):
 # ── Auth helper ───────────────────────────────────────────────────────────────
 
 def get_user_device(request, device_id):
-    """
-    Returns the Devise object only if it belongs to request.user.
-    Raises Http404 otherwise.
-    """
-    from django.shortcuts import get_object_or_404
+    """Returns the Devise for request.user, raises Http404 otherwise."""
     from agriapp.models import Devise
     return get_object_or_404(Devise, pk=device_id, user=request.user)
+
+
+# ── Generic FieldsReading view logic (used by atmo_sense, soil_life, ph_bottle) ──
+
+def fields_list_view(request, device_id):
+    """Paginated list of DeviseApisFields for a device."""
+    device    = get_user_device(request, device_id)
+    qs        = DeviseApisFields.objects.filter(device=device).order_by('-created_at')
+    paginator = DevicePagination()
+    page      = paginator.paginate_queryset(qs, request)
+    return paginator.get_paginated_response(FieldsReadingSerializer(page, many=True).data)
+
+
+def fields_create_view(request, device_id):
+    """Create a DeviseApisFields record after checking the threshold."""
+    device = get_user_device(request, device_id)
+    blocked = check_threshold(device)
+    if blocked:
+        return blocked
+    serializer = FieldsReadingCreateSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    reading = serializer.save(device=device)
+    return Response(FieldsReadingSerializer(reading).data, status=status.HTTP_201_CREATED)
+
+
+def fields_detail_view(request, device_id, call_id):
+    """Return one DeviseApisFields record."""
+    device  = get_user_device(request, device_id)
+    reading = get_object_or_404(DeviseApisFields, pk=call_id, device=device)
+    return Response(FieldsReadingSerializer(reading).data)
