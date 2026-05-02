@@ -12,6 +12,7 @@ DEVICE_NAMES = {
     'atmo_sense': 'SoilSparsh',
     'soil_life' : 'SoilLIFE',
     'ph_bottle' : 'PHBottle',
+    'soil_map'  : 'SoilMap',
 }
 
 DEVICE_CHOICES = list(DEVICE_NAMES.items())
@@ -104,6 +105,33 @@ PH_BOTTLE_FIELDS = {
     'latitude'  : 'Latitude',
     'longitude' : 'Longitude',
     'created_at': 'Requested At',
+}
+
+SOIL_MAP_FIELDS = {
+    'id'        : 'ID',
+    'tag'       : 'Tag',
+    'field1'    : 'pH',
+    'field2'    : 'EC (dS/m)',
+    'field3'    : 'Nitrogen (kg/ha)',
+    'field4'    : 'Phosphorus (kg/ha)',
+    'field5'    : 'Potassium (kg/ha)',
+    'field6'    : 'Organic Carbon (%)',
+    'field7'    : 'Sulfur (ppm)',
+    'field8'    : 'Iron/Fe (ppm)',
+    'field9'    : 'Zinc/Zn (ppm)',
+    'field10'   : 'Copper/Cu (ppm)',
+    'field11'   : 'Boron/B (ppm)',
+    'field12'   : 'Manganese/Mn (ppm)',
+    'field13'   : 'Sand (%)',
+    'field14'   : 'Clay (%)',
+    'field15'   : 'Silt (%)',
+    'field16'   : 'NDVI',
+    'field17'   : 'Temperature (°C)',
+    'field18'   : 'Rainfall (mm)',
+    'field19'   : 'Elevation (m)',
+    'latitude'  : 'Latitude',
+    'longitude' : 'Longitude',
+    'created_at': 'Uploaded At',
 }
 
 class ContactDetails(models.Model):

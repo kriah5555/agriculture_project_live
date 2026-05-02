@@ -317,6 +317,12 @@
             <span class="nav-text">PHBottle</span>
           </a>
         </li>
+        <li class="nav-item {% if active_page == 'soil-map' %}active{% endif %}">
+          <a href="{% url 'soil-map-dashboard' %}" class="nav-link" title="SoilMap">
+            <i class="fas fa-map-marked-alt"></i>
+            <span class="nav-text">SoilMap</span>
+          </a>
+        </li>
 
         <div class="sidebar-divider"></div>
 

@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/mobile/', include('devise_apis.mobile_urls')),
     path('', include('predicter.urls')),
     path('', include('versions.urls')),
+    path('', include('soilmap.urls')),
     path('pay/', include('razorpay_app.urls')),
 
     # ── Interactive API documentation (Swagger & ReDoc) ───────────────────────

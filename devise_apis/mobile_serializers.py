@@ -8,7 +8,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from agriapp.models import (
     Devise, DeviseApis, DeviseApisFields, DeviseLocation,
     APICountThreshold, DEVICE_NAMES,
-    ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, SOIL_SAATHI_FIELDS,
+    ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_MAP_FIELDS,
 )
 
 
@@ -135,6 +135,7 @@ FIELD_LABELS = {
     'atmo_sense': _sensor_fields(ATMO_SENSE_FIELDS),
     'soil_life' : _sensor_fields(SOIL_LIFE_FIELDS),
     'ph_bottle' : _sensor_fields(PH_BOTTLE_FIELDS),
+    'soil_map'  : _sensor_fields(SOIL_MAP_FIELDS),
 }
 
 

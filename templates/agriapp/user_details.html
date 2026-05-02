@@ -364,6 +364,7 @@
     atmo_sense: { color: '#1565c0', label: 'SoilSparsh',  icon: 'fa-wind'          },
     soil_life : { color: '#6a1b9a', label: 'SoilLIFE',    icon: 'fa-seedling'      },
     ph_bottle : { color: '#e65100', label: 'PHBottle',    icon: 'fa-flask'         },
+    soil_map  : { color: '#2c5e1a', label: 'SoilMap',     icon: 'fa-map-marked-alt'},
   };
 
   function showDeviceDetails(device, clickedEl) {
@@ -419,6 +420,30 @@
         radius: 8, fillColor: meta.color || 'green', color: meta.color || 'green',
         weight: 2, opacity: 1, fillOpacity: 0.6
       }).addTo(mapInstance).bindPopup(device.name);
+    }
+
+    // Show/hide "Open SoilMap" banner for soil_map devices
+    let soilMapBanner = document.getElementById('soil-map-banner');
+    if (device.devise_type === 'soil_map') {
+      if (!soilMapBanner) {
+        soilMapBanner = document.createElement('div');
+        soilMapBanner.id = 'soil-map-banner';
+        soilMapBanner.style.cssText = 'margin-top:16px;';
+        soilMapBanner.innerHTML = `
+          <a id="soil-map-open-btn" href="/soil-map-admin/${device.pk}/" target="_blank"
+             style="display:flex;align-items:center;justify-content:center;gap:10px;
+                    padding:16px 24px;border-radius:12px;text-decoration:none;color:#fff;
+                    background:linear-gradient(135deg,#2c5e1a,#4a7c36);
+                    font-weight:700;font-size:1rem;box-shadow:0 4px 14px rgba(44,94,26,.35);">
+            <i class="fas fa-map-marked-alt"></i> Open SoilMap
+          </a>`;
+        document.getElementById('api-details-container').before(soilMapBanner);
+      } else {
+        soilMapBanner.style.display = 'block';
+        document.getElementById('soil-map-open-btn').href = `/soil-map-admin/${device.pk}/`;
+      }
+    } else if (soilMapBanner) {
+      soilMapBanner.style.display = 'none';
     }
 
     document.getElementById('api-details-container').style.display = 'block';
@@ -490,7 +515,9 @@
           }
           const eyeHref = selected_devise.devise_type === 'soilsaathi'
             ? `/crop-recommendation-dashboard/?api_id=${api.id}`
-            : `/${selected_devise.devise_type === 'atmo_sense' ? 'atmos-sense' : selected_devise.devise_type.replace('_','-')}-api-overview/${api.id}/`;
+            : selected_devise.devise_type === 'soil_map'
+              ? `/soil-map-admin/${selected_devise.pk}/`
+              : `/${selected_devise.devise_type === 'atmo_sense' ? 'atmos-sense' : selected_devise.devise_type.replace('_','-')}-api-overview/${api.id}/`;
           html += `<td class="no-redirect-cell" style="padding:8px 12px;white-space:nowrap;">
                      <a target="_blank" href="${eyeHref}" title="View" style="text-decoration:none;font-size:1.1rem;margin-right:8px;">👁️</a>
                      <span title="Delete" style="cursor:pointer;font-size:1.1rem;color:#dc3545;" onclick="deleteApiCall(${api.id}, '${selected_devise.devise_type}', this)">🗑️</span>
@@ -575,6 +602,10 @@
   }
 
   function redirectToEdit(id) {
+    if (selected_devise.devise_type === 'soil_map') {
+      window.open(`/soil-map-admin/${selected_devise.pk}/`, '_blank');
+      return;
+    }
     const endpoints = {
       soilsaathi: '/api-overview',
       atmo_sense: '/atmos-sense-api-overview',

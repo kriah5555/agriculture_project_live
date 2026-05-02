@@ -353,6 +353,8 @@
               <span class="device-type-dot" style="background:#1565c0;"></span>
             {% elif device.devise_type == 'soil_life' %}
               <span class="device-type-dot" style="background:#6a1b9a;"></span>
+            {% elif device.devise_type == 'soil_map' %}
+              <span class="device-type-dot" style="background:#2c5e1a;"></span>
             {% else %}
               <span class="device-type-dot" style="background:#e65100;"></span>
             {% endif %}
@@ -561,6 +563,30 @@
         }).addTo(mapInstance).bindPopup(device.name);
       }
 
+      // Show/hide "Open SoilMap" banner for soil_map devices
+      let soilMapBanner = document.getElementById('soil-map-banner');
+      if (device.devise_type === 'soil_map') {
+        if (!soilMapBanner) {
+          soilMapBanner = document.createElement('div');
+          soilMapBanner.id = 'soil-map-banner';
+          soilMapBanner.style.cssText = 'margin-top:16px;';
+          soilMapBanner.innerHTML = `
+            <a id="soil-map-open-btn" href="/soil-map/${device.pk}/" target="_blank"
+               style="display:flex;align-items:center;justify-content:center;gap:10px;
+                      padding:16px 24px;border-radius:12px;text-decoration:none;color:#fff;
+                      background:linear-gradient(135deg,#2c5e1a,#4a7c36);
+                      font-weight:700;font-size:1rem;box-shadow:0 4px 14px rgba(44,94,26,.35);">
+              <i class="fas fa-map-marked-alt"></i> Open SoilMap
+            </a>`;
+          document.getElementById('api-details-container').before(soilMapBanner);
+        } else {
+          soilMapBanner.style.display = 'block';
+          document.getElementById('soil-map-open-btn').href = `/soil-map/${device.pk}/`;
+        }
+      } else if (soilMapBanner) {
+        soilMapBanner.style.display = 'none';
+      }
+
       // Display the API details container
       const apiDetailsContainer         = document.getElementById('api-details-container');
       apiDetailsContainer.style.display = 'block';
@@ -666,20 +692,18 @@
 
   function redirectToEdit(id)
   {
-    let endpoint = '';
-
-    if (selected_devise.devise_type === 'soilsaathi') {
-      endpoint = '/api-overview';
-    } else if (selected_devise.devise_type === 'atmo_sense') {
-      endpoint = '/atmos-sense-api-overview';
-    } else if (selected_devise.devise_type === 'soil_life') {
-      endpoint = '/soil-life-api-overview';
+    if (selected_devise.devise_type === 'soil_map') {
+      window.open(`/soil-map/${selected_devise.pk}/`, '_blank');
+      return;
     }
-
+    const endpoints = {
+      soilsaathi: '/api-overview',
+      atmo_sense: '/atmos-sense-api-overview',
+      soil_life : '/soil-life-api-overview',
+    };
+    const endpoint = endpoints[selected_devise.devise_type];
     if (endpoint) {
       window.location.href = `${endpoint}/${id}/`;
-    } else {
-      console.error('Unknown device type for redirection');
     }
   }
 

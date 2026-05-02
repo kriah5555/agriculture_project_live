@@ -5,7 +5,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .forms import ContactForm, DeviseForm
-from .models import ContactDetails, UserRequest, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES, PH_BOTTLE_FIELDS
+from .models import ContactDetails, UserRequest, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES, PH_BOTTLE_FIELDS, SOIL_MAP_FIELDS
 
 from . import UserFunctions
 from django.views.generic import UpdateView, TemplateView, CreateView, View
@@ -253,7 +253,7 @@ def delete_devise(request, pk):
 @admin_required
 def add_devise(request, uid=None):
         
-    context = {'message': ''}
+    context = {'message': '', 'device_names': DEVICE_NAMES}
     user    = UserFunctions.get_user_by_username(uid)
 
     if request.method == 'GET':
@@ -261,19 +261,14 @@ def add_devise(request, uid=None):
     elif request.method == 'POST':
         form = DeviseForm(request.POST)
         if form.is_valid():
-            # Save the devise with the user
-            devise      = form.save(commit=False)  # Don't commit yet to set the user
-            devise.user = user  # Assign the logged-in user
+            devise      = form.save(commit=False)
+            devise.user = user
             devise.save()
             messages.success(request, "Device added successfully")
-            return redirect(f"/user-details/{uid}")  # Redirect to device list page after saving
+            return redirect(f"/user-details/{uid}")
         else:
             errors = form.errors
-            field_errors = dict()
-            for error in errors:
-                field_errors[error] = errors[error]
-
-            # Keep the form values and field errors if the form is invalid
+            field_errors = {error: errors[error] for error in errors}
             default_values = {
                 'name'          : request.POST['name'],
                 'devise_id'     : request.POST['devise_id'],
@@ -294,6 +289,7 @@ def add_devise(request, uid=None):
             return render(request, 'agriapp/add_devise.html', {
                 'devise'       : default_values,
                 'field_errors' : field_errors,
+                'device_names' : DEVICE_NAMES,
                 'purchase_date': request.POST.get('purchase_date', ''),
                 'time_of_sale' : request.POST.get('time_of_sale', ''),
                 'warrenty'     : request.POST.get('warrenty', ''),
@@ -314,7 +310,8 @@ def edit_devise(request, **kwargs):
             'warrenty'      : str(devise.warrenty.date()),
             'purchase_date' : str(devise.purchase_date.date()),
             'time_of_sale'  : str(devise.time_of_sale),
-            'disabled'      : 'readonly'
+            'disabled'      : 'readonly',
+            'device_names'  : DEVICE_NAMES,
         }
     elif request.method == 'POST':
         form = DeviseForm(request.POST or None, instance=devise)
@@ -350,6 +347,7 @@ def edit_devise(request, **kwargs):
                 'field_errors' : field_errors,
                 'devise'       : default_values,
                 'disabled'     : 'readonly',
+                'device_names' : DEVICE_NAMES,
                 'warrenty'     : request.POST['warrenty'],
                 'purchase_date': request.POST['purchase_date'],
                 'time_of_sale' : request.POST['time_of_sale'],
