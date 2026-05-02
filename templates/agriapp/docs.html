@@ -46,6 +46,7 @@
   .doc-card.red    { border-left-color: #dc3545; }
   .doc-card.indigo { border-left-color: #6610f2; }
   .doc-card.cyan   { border-left-color: #0dcaf0; }
+  .doc-card.pink   { border-left-color: #e91e63; }
 
   .doc-card-icon {
     width: 52px; height: 52px;
@@ -62,6 +63,7 @@
   .icon-indigo { background: linear-gradient(135deg,#520dc2,#6610f2); }
   .icon-cyan   { background: linear-gradient(135deg,#0aa2c0,#0dcaf0); }
   .icon-dark   { background: linear-gradient(135deg,#343a40,#6c757d); }
+  .icon-pink   { background: linear-gradient(135deg,#ad1457,#e91e63); }
 
   .doc-card h5 { font-weight: 700; margin-bottom: 6px; font-size: 1.1rem; }
   .doc-card .sub { color: #6c757d; font-size: 13px; margin-bottom: 14px; }
@@ -97,8 +99,9 @@
     border-radius: 6px; padding: 3px 10px; font-size: 12px; font-weight: 600;
     margin: 3px 2px;
   }
-  .chip-get  { background: #d1e7dd; color: #0a3622; }
-  .chip-post { background: #cfe2ff; color: #084298; }
+  .chip-get    { background: #d1e7dd; color: #0a3622; }
+  .chip-post   { background: #cfe2ff; color: #084298; }
+  .chip-patch  { background: #fff3cd; color: #664d03; }
 
   kbd { background: #343a40; color: #fff; border-radius: 4px; padding: 2px 7px; font-size: 12px; }
 
@@ -134,7 +137,7 @@
     background: linear-gradient(135deg, #0f2460 0%, #1a3a9f 50%, #0d7cf5 100%);
     border-radius: 14px; color: #fff; padding: 30px 32px;
     display: flex; align-items: center; gap: 24px;
-    margin-bottom: 24px; text-decoration: none;
+    margin-bottom: 16px; text-decoration: none;
     transition: opacity .2s;
   }
   .api-link-card:hover { opacity: .92; color: #fff; }
@@ -144,11 +147,19 @@
     justify-content: center; font-size: 28px; flex-shrink: 0;
   }
 
+  /* ── Mobile endpoint table ── */
+  .endpoint-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .endpoint-table th { background: #f1f3f5; padding: 8px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #dee2e6; }
+  .endpoint-table td { padding: 7px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+  .endpoint-table tr:last-child td { border-bottom: none; }
+  .endpoint-table code { background: #f1f3f5; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+
   @media(max-width:768px) {
     .docs-hero { padding: 28px 18px; }
     .docs-hero h1 { font-size: 1.4rem; }
     .doc-card { padding: 18px; }
     .api-link-card { flex-direction: column; gap: 14px; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr !important; }
   }
 </style>
 
@@ -170,6 +181,7 @@
       <span class="badge-chip"><i class="fas fa-microchip"></i> IoT Device Management</span>
       <span class="badge-chip"><i class="fas fa-chart-bar"></i> Real-time Analytics</span>
       <span class="badge-chip"><i class="fas fa-code-branch"></i> Firmware OTA Updates</span>
+      <span class="badge-chip"><i class="fas fa-mobile-alt"></i> Mobile App API</span>
       <span class="badge-chip"><i class="fas fa-users"></i> Multi-user</span>
     </div>
   </div>
@@ -181,8 +193,10 @@
     <a href="#soilenz"><i class="fas fa-temperature-low me-1"></i>SoiLENZ</a>
     <a href="#soilsparsh"><i class="fas fa-wind me-1"></i>SoilSparsh</a>
     <a href="#soillife"><i class="fas fa-leaf me-1"></i>SoilLIFE</a>
+    <a href="#phbottle"><i class="fas fa-flask me-1"></i>PHBottle</a>
     <a href="#devices"><i class="fas fa-satellite-dish me-1"></i>Devices</a>
     <a href="#users"><i class="fas fa-users me-1"></i>Users</a>
+    <a href="#mobile"><i class="fas fa-mobile-alt me-1"></i>Mobile API</a>
     <a href="#versions"><i class="fas fa-code-branch me-1"></i>Versions</a>
     <a href="#exports"><i class="fas fa-file-export me-1"></i>Exports</a>
     <a href="#notifications"><i class="fas fa-bell me-1"></i>Notifications</a>
@@ -219,6 +233,10 @@
         <div><strong>SoilLIFE</strong> — Soil Life devices: soil health and bio-activity monitoring</div>
       </div>
       <div class="device-badge">
+        <div class="device-badge-icon" style="background:linear-gradient(135deg,#ad1457,#e91e63);"><i class="fas fa-flask"></i></div>
+        <div><strong>PHBottle</strong> — pH and EC sensor readings</div>
+      </div>
+      <div class="device-badge">
         <div class="device-badge-icon" style="background:linear-gradient(135deg,#5a32a3,#6f42c1);"><i class="fas fa-users"></i></div>
         <div><strong>Users</strong> — Manage platform users and their linked devices</div>
       </div>
@@ -245,7 +263,7 @@
       </div>
     </div>
     <ul class="feature-list">
-      <li><div class="fi" style="background:#2046ad;"><i class="fas fa-chart-pie"></i></div><div><strong>Device Summary Cards</strong> — total devices per type (SoiLENZ, SoilSparsh, SoilLIFE) with live counts.</div></li>
+      <li><div class="fi" style="background:#2046ad;"><i class="fas fa-chart-pie"></i></div><div><strong>Device Summary Cards</strong> — total devices per type (SoiLENZ, SoilSparsh, SoilLIFE, PHBottle) with live counts.</div></li>
       <li><div class="fi" style="background:#28a745;"><i class="fas fa-map-marker-alt"></i></div><div><strong>NPK Map</strong> — live Leaflet map showing every device location. Marker colour reflects soil fertility level.</div></li>
       <li><div class="fi" style="background:#17a2b8;"><i class="fas fa-bell"></i></div><div><strong>Notification Banner</strong> — alerts for devices that have crossed API call thresholds.</div></li>
       <li><div class="fi" style="background:#6f42c1;"><i class="fas fa-user"></i></div><div><strong>Logged-in User</strong> — your name appears at the top of the sidebar.</div></li>
@@ -253,9 +271,9 @@
   </div>
 
   <!-- ══════════════════════════════════════════════
-       DEVICE DASHBOARDS ROW
+       DEVICE DASHBOARDS — 2×2 grid
   ═══════════════════════════════════════════════ -->
-  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:24px;">
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;" class="grid-2">
 
     <!-- SoiLENZ -->
     <div id="soilenz" class="doc-card green" style="margin-bottom:0;">
@@ -266,9 +284,9 @@
         <li><div class="fi" style="background:#28a745;"><i class="fas fa-check"></i></div><span>Device list with API call counts</span></li>
         <li><div class="fi" style="background:#28a745;"><i class="fas fa-check"></i></div><span>Click a device → paginated data table</span></li>
         <li><div class="fi" style="background:#28a745;"><i class="fas fa-check"></i></div><span>50 records per page, Prev / Next</span></li>
-        <li><div class="fi" style="background:#28a745;"><i class="fas fa-check"></i></div><span>Selected device highlighted in blue</span></li>
-        <li><div class="fi" style="background:#28a745;"><i class="fas fa-check"></i></div><span>Fields: N, P, K, pH, Moisture, Temp</span></li>
-        <li><div class="fi" style="background:#28a745;"><i class="fas fa-check"></i></div><span>Click row → full API details page</span></li>
+        <li><div class="fi" style="background:#28a745;"><i class="fas fa-check"></i></div><span>Fields: N, P, K, Ca, Mg, S, Zn, Mn, Fe, Cu, B, pH, EC, OC</span></li>
+        <li><div class="fi" style="background:#28a745;"><i class="fas fa-check"></i></div><span>Click row → full API details + crop recommendation</span></li>
+        <li><div class="fi" style="background:#28a745;"><i class="fas fa-check"></i></div><span>AI crop recommendation via ML model</span></li>
       </ul>
     </div>
 
@@ -279,9 +297,8 @@
       <div class="sub">AtmoSense atmospheric dashboard</div>
       <ul class="feature-list">
         <li><div class="fi" style="background:#17a2b8;"><i class="fas fa-check"></i></div><span>Same layout as SoiLENZ</span></li>
-        <li><div class="fi" style="background:#17a2b8;"><i class="fas fa-check"></i></div><span>Fields: Temp, Humidity, Pressure</span></li>
-        <li><div class="fi" style="background:#17a2b8;"><i class="fas fa-check"></i></div><span>Wind speed &amp; Rainfall readings</span></li>
-        <li><div class="fi" style="background:#17a2b8;"><i class="fas fa-check"></i></div><span>Paginated with cancellation token</span></li>
+        <li><div class="fi" style="background:#17a2b8;"><i class="fas fa-check"></i></div><span>Fields: Soil Temp, Soil Moisture, Atmos Temp, Atmos Humidity, Light Intensity</span></li>
+        <li><div class="fi" style="background:#17a2b8;"><i class="fas fa-check"></i></div><span>Paginated with device selector</span></li>
         <li><div class="fi" style="background:#17a2b8;"><i class="fas fa-check"></i></div><span>Row click → API overview page</span></li>
       </ul>
     </div>
@@ -293,11 +310,25 @@
       <div class="sub">Soil Life bio-activity dashboard</div>
       <ul class="feature-list">
         <li><div class="fi" style="background:#1abc9c;"><i class="fas fa-check"></i></div><span>Same layout as SoiLENZ</span></li>
-        <li><div class="fi" style="background:#1abc9c;"><i class="fas fa-check"></i></div><span>Soil-life specific sensor fields</span></li>
+        <li><div class="fi" style="background:#1abc9c;"><i class="fas fa-check"></i></div><span>Fields: CO₂, Methane, Ammonia, H₂S, Soil Moisture, Soil Temp, pH, EC</span></li>
         <li><div class="fi" style="background:#1abc9c;"><i class="fas fa-check"></i></div><span>Paginated data with device selector</span></li>
         <li><div class="fi" style="background:#1abc9c;"><i class="fas fa-check"></i></div><span>Row click → soil-life API overview</span></li>
       </ul>
     </div>
+
+    <!-- PHBottle -->
+    <div id="phbottle" class="doc-card pink" style="margin-bottom:0;">
+      <div class="doc-card-icon icon-pink"><i class="fas fa-flask"></i></div>
+      <h5>PHBottle</h5>
+      <div class="sub">pH and EC sensor dashboard</div>
+      <ul class="feature-list">
+        <li><div class="fi" style="background:#e91e63;"><i class="fas fa-check"></i></div><span>Same layout as SoiLENZ</span></li>
+        <li><div class="fi" style="background:#e91e63;"><i class="fas fa-check"></i></div><span>Fields: pH Value, pH Voltage (mV), EC Value (mS/cm), EC Voltage (mV)</span></li>
+        <li><div class="fi" style="background:#e91e63;"><i class="fas fa-check"></i></div><span>Paginated data with device selector</span></li>
+        <li><div class="fi" style="background:#e91e63;"><i class="fas fa-check"></i></div><span>Row click → ph-bottle API overview</span></li>
+      </ul>
+    </div>
+
   </div>
 
   <!-- ══════════════════════════════════════════════
@@ -311,7 +342,7 @@
         <div class="sub">Add, configure, and manage IoT devices</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="grid-2">
       <div>
         <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Adding a Device</p>
         <ol class="step-list">
@@ -325,9 +356,10 @@
       <div>
         <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Device Types</p>
         <ul class="feature-list">
-          <li><div class="fi" style="background:#28a745;"><i class="fas fa-seedling"></i></div><strong>Soil Saathi</strong> — NPK / pH sensors</li>
-          <li><div class="fi" style="background:#17a2b8;"><i class="fas fa-cloud"></i></div><strong>AtmoSense</strong> — weather sensors</li>
-          <li><div class="fi" style="background:#1abc9c;"><i class="fas fa-leaf"></i></div><strong>Soil Life</strong> — bio-activity sensors</li>
+          <li><div class="fi" style="background:#28a745;"><i class="fas fa-seedling"></i></div><strong>SoiLENZ (Soil Saathi)</strong> — NPK / pH sensors</li>
+          <li><div class="fi" style="background:#17a2b8;"><i class="fas fa-cloud"></i></div><strong>SoilSparsh (AtmoSense)</strong> — atmospheric sensors</li>
+          <li><div class="fi" style="background:#1abc9c;"><i class="fas fa-leaf"></i></div><strong>SoilLIFE</strong> — bio-activity sensors</li>
+          <li><div class="fi" style="background:#e91e63;"><i class="fas fa-flask"></i></div><strong>PHBottle</strong> — pH &amp; EC sensors</li>
         </ul>
         <div class="info-box warn mt-2">
           <i class="fas fa-exclamation-triangle mt-1"></i>
@@ -339,9 +371,10 @@
     <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">API Data (Readings)</p>
     <ul class="feature-list">
       <li><div class="fi" style="background:#fd7e14;"><i class="fas fa-table"></i></div><span>Each device stores a list of <strong>API records</strong> — each record is one sensor reading with all its fields.</span></li>
-      <li><div class="fi" style="background:#fd7e14;"><i class="fas fa-edit"></i></div><span>Records can be edited from the API overview page → <strong>Edit</strong> button per row.</span></li>
-      <li><div class="fi" style="background:#fd7e14;"><i class="fas fa-sliders-h"></i></div><span>Set <strong>alert thresholds</strong> per API — if readings exceed the threshold, a notification is triggered.</span></li>
+      <li><div class="fi" style="background:#fd7e14;"><i class="fas fa-trash"></i></div><span>Admin can <strong>delete individual API call records</strong> from the User Details page (trash icon next to each row).</span></li>
+      <li><div class="fi" style="background:#fd7e14;"><i class="fas fa-sliders-h"></i></div><span>Set <strong>alert thresholds</strong> per device — if API call count exceeds the limit, a notification is triggered and mobile app blocks new submissions.</span></li>
       <li><div class="fi" style="background:#fd7e14;"><i class="fas fa-chart-line"></i></div><span>View <strong>chart</strong> of readings over time from the API overview page.</span></li>
+      <li><div class="fi" style="background:#fd7e14;"><i class="fas fa-trash-alt"></i></div><span>Admin can <strong>delete a device</strong> only if it has zero API records. All linked data (location, threshold) is removed automatically.</span></li>
     </ul>
   </div>
 
@@ -356,13 +389,14 @@
         <div class="sub">Create users, assign devices, manage accounts</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="grid-2">
       <div>
         <ul class="feature-list">
           <li><div class="fi" style="background:#6f42c1;"><i class="fas fa-user-plus"></i></div><span>Create new users with <strong>Create User</strong></span></li>
           <li><div class="fi" style="background:#6f42c1;"><i class="fas fa-id-card"></i></div><span>View full user profile, linked devices, and API history</span></li>
           <li><div class="fi" style="background:#6f42c1;"><i class="fas fa-link"></i></div><span>Link / unlink devices to users from User Details</span></li>
           <li><div class="fi" style="background:#6f42c1;"><i class="fas fa-key"></i></div><span>Change a user's password from their profile</span></li>
+          <li><div class="fi" style="background:#6f42c1;"><i class="fas fa-trash"></i></div><span>Delete user — device links are cleared, user record is removed</span></li>
           <li><div class="fi" style="background:#6f42c1;"><i class="fas fa-table"></i></div><span>Paginated device list with search inside User Details</span></li>
         </ul>
       </div>
@@ -379,6 +413,121 @@
   </div>
 
   <!-- ══════════════════════════════════════════════
+       MOBILE APP API
+  ═══════════════════════════════════════════════ -->
+  <div id="mobile" class="doc-card" style="border-left-color:#0d7cf5;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+      <div class="doc-card-icon icon-blue"><i class="fas fa-mobile-alt"></i></div>
+      <div>
+        <h5 class="mb-0">Mobile App API</h5>
+        <div class="sub">JWT-authenticated REST API for the ArkaShine mobile application — all endpoints under <code>/api/mobile/</code></div>
+      </div>
+    </div>
+
+    <!-- Auth -->
+    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Authentication</p>
+    <p style="font-size:13px;color:#444;margin-bottom:10px;">All mobile endpoints except registration and forgot-password require a <strong>JWT Bearer token</strong> in the <code>Authorization</code> header. Obtain tokens via login, refresh with the refresh endpoint.</p>
+    <table class="endpoint-table mb-3">
+      <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="api-chip chip-post">POST</span></td><td><code>/api/mobile/auth/register/</code></td><td>Create new user account → returns access + refresh tokens</td></tr>
+        <tr><td><span class="api-chip chip-post">POST</span></td><td><code>/api/mobile/auth/login/</code></td><td>Login → access + refresh tokens + user info</td></tr>
+        <tr><td><span class="api-chip chip-post">POST</span></td><td><code>/api/mobile/auth/refresh/</code></td><td>Get new access token using refresh token</td></tr>
+        <tr><td><span class="api-chip chip-post">POST</span></td><td><code>/api/mobile/auth/logout/</code></td><td>Blacklist refresh token</td></tr>
+        <tr><td><span class="api-chip chip-post">POST</span></td><td><code>/api/mobile/auth/forgot-password/</code></td><td>Notify admin of forgotten password (no auth required)</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Device types -->
+    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Device Types</p>
+    <table class="endpoint-table mb-3">
+      <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="api-chip chip-get">GET</span></td><td><code>/api/mobile/device-types/</code></td><td>All device types with locked status, device count, and total API call count for the logged-in user</td></tr>
+        <tr><td><span class="api-chip chip-get">GET</span></td><td><code>/api/mobile/device-types/&lt;type_key&gt;/field-schema/</code></td><td>Field label map for a device type (e.g. what field1–field8 mean)</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Devices -->
+    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Devices</p>
+    <table class="endpoint-table mb-3">
+      <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="api-chip chip-get">GET</span></td><td><code>/api/mobile/devices/</code></td><td>List user's devices (filter with <code>?type=soilsaathi|atmo_sense|soil_life|ph_bottle</code>). Returns <code>api_used</code> and <code>api_limit</code> per device.</td></tr>
+        <tr><td><span class="api-chip chip-get">GET</span></td><td><code>/api/mobile/devices/&lt;id&gt;/</code></td><td>Full device details including location, api_used, api_limit</td></tr>
+        <tr><td><span class="api-chip chip-get">GET</span></td><td><code>/api/mobile/devices/&lt;id&gt;/location/</code></td><td>GPS coordinates for the device</td></tr>
+      </tbody>
+    </table>
+
+    <!-- API Calls (generic) -->
+    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Generic API Calls <span style="font-weight:400;color:#888;">(routes internally by device type)</span></p>
+    <table class="endpoint-table mb-3">
+      <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="api-chip chip-get">GET</span></td><td><code>/api/mobile/devices/&lt;id&gt;/api-calls/</code></td><td>Paginated readings list (any device type)</td></tr>
+        <tr><td><span class="api-chip chip-post">POST</span></td><td><code>/api/mobile/devices/&lt;id&gt;/api-calls/create/</code></td><td>Submit a new reading (threshold enforced)</td></tr>
+        <tr><td><span class="api-chip chip-get">GET</span></td><td><code>/api/mobile/devices/&lt;id&gt;/api-calls/&lt;cid&gt;/</code></td><td>Single reading detail</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Device-specific endpoints -->
+    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Device-specific Endpoints</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;" class="grid-2">
+      <div style="background:#e8f5e9;border-radius:8px;padding:12px;border-left:3px solid #28a745;">
+        <strong style="font-size:13px;"><i class="fas fa-temperature-low me-1" style="color:#28a745;"></i> SoiLENZ</strong>
+        <div style="font-size:12px;color:#444;margin-top:6px;line-height:1.6;">
+          <code>/soilsaathi/</code> — list<br>
+          <code>/soilsaathi/create/</code> — create<br>
+          <code>/soilsaathi/&lt;cid&gt;/</code> — detail<br>
+          <code>/soilsaathi/recommendations/</code> — fertilizer recommendations<br>
+          <code>/soilsaathi/ai-recommendation/</code> — ML crop recommendation
+        </div>
+      </div>
+      <div style="background:#e3f2fd;border-radius:8px;padding:12px;border-left:3px solid #17a2b8;">
+        <strong style="font-size:13px;"><i class="fas fa-wind me-1" style="color:#17a2b8;"></i> SoilSparsh</strong>
+        <div style="font-size:12px;color:#444;margin-top:6px;line-height:1.6;">
+          <code>/atmo-sense/</code> — list<br>
+          <code>/atmo-sense/create/</code> — create<br>
+          <code>/atmo-sense/&lt;cid&gt;/</code> — detail
+        </div>
+      </div>
+      <div style="background:#e8f5e9;border-radius:8px;padding:12px;border-left:3px solid #1abc9c;">
+        <strong style="font-size:13px;"><i class="fas fa-leaf me-1" style="color:#1abc9c;"></i> SoilLIFE</strong>
+        <div style="font-size:12px;color:#444;margin-top:6px;line-height:1.6;">
+          <code>/soil-life/</code> — list<br>
+          <code>/soil-life/create/</code> — create<br>
+          <code>/soil-life/&lt;cid&gt;/</code> — detail
+        </div>
+      </div>
+      <div style="background:#fce4ec;border-radius:8px;padding:12px;border-left:3px solid #e91e63;">
+        <strong style="font-size:13px;"><i class="fas fa-flask me-1" style="color:#e91e63;"></i> PHBottle</strong>
+        <div style="font-size:12px;color:#444;margin-top:6px;line-height:1.6;">
+          <code>/ph-bottle/</code> — list<br>
+          <code>/ph-bottle/create/</code> — create<br>
+          <code>/ph-bottle/&lt;cid&gt;/</code> — detail
+        </div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:#666;">All device-specific URLs are prefixed with <code>/api/mobile/devices/&lt;id&gt;</code>. <code>&lt;id&gt;</code> is the integer primary key of the device.</p>
+
+    <!-- Account -->
+    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Account</p>
+    <table class="endpoint-table mb-3">
+      <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="api-chip chip-get">GET</span></td><td><code>/api/mobile/account/profile/</code></td><td>Get logged-in user's profile</td></tr>
+        <tr><td><span class="api-chip chip-patch">PATCH</span></td><td><code>/api/mobile/account/profile/update/</code></td><td>Update name, email, phone</td></tr>
+        <tr><td><span class="api-chip chip-post">POST</span></td><td><code>/api/mobile/account/change-password-request/</code></td><td>Request a password change — notifies admin</td></tr>
+      </tbody>
+    </table>
+
+    <div class="info-box blue" style="margin-top:0;">
+      <i class="fas fa-book mt-1" style="flex-shrink:0;"></i>
+      <span>For interactive testing of all mobile endpoints, open the <a href="/api/swagger/" target="_blank" style="font-weight:600;">Swagger UI</a>. Paste your access token into the <strong>Authorize</strong> button (format: <code>Bearer &lt;token&gt;</code>).</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
        VERSIONS / FIRMWARE
   ═══════════════════════════════════════════════ -->
   <div id="versions" class="doc-card orange">
@@ -389,7 +538,7 @@
         <div class="sub">Manage app/firmware releases — staff &amp; superuser only</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="grid-2">
       <div>
         <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Managing Versions</p>
         <ol class="step-list">
@@ -433,7 +582,7 @@
         <div class="sub">Download data as PDF or CSV</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="grid-2">
       <div>
         <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">PDF Export</p>
         <ul class="feature-list">
@@ -465,10 +614,10 @@
       </div>
     </div>
     <ul class="feature-list">
-      <li><div class="fi" style="background:#dc3545;"><i class="fas fa-sliders-h"></i></div><span>Set a <strong>max API call threshold</strong> per device — e.g. alert when more than 500 readings in a day.</span></li>
+      <li><div class="fi" style="background:#dc3545;"><i class="fas fa-sliders-h"></i></div><span>Set a <strong>max API call threshold</strong> per device — when reached, new readings are blocked in the mobile app.</span></li>
       <li><div class="fi" style="background:#dc3545;"><i class="fas fa-bell"></i></div><span>When a device crosses the threshold, a notification is created and appears in the <strong>Notifications</strong> section.</span></li>
       <li><div class="fi" style="background:#dc3545;"><i class="fas fa-check-circle"></i></div><span>Mark notifications as read to dismiss them from the badge count.</span></li>
-      <li><div class="fi" style="background:#dc3545;"><i class="fas fa-cog"></i></div><span>Manage thresholds from the <strong>API Overview</strong> page → <strong>Set Threshold</strong>.</span></li>
+      <li><div class="fi" style="background:#dc3545;"><i class="fas fa-cog"></i></div><span>Manage thresholds from the <strong>User Details</strong> page → device row → <strong>Set Threshold</strong>.</span></li>
     </ul>
   </div>
 
@@ -482,11 +631,30 @@
     </div>
   </div>
 
+  <!-- Mobile / Swagger -->
+  <a href="/api/swagger/" class="api-link-card" target="_blank">
+    <div class="icon-wrap"><i class="fas fa-mobile-alt"></i></div>
+    <div>
+      <div style="font-size:1.2rem;font-weight:800;margin-bottom:4px;">Mobile API — Swagger UI</div>
+      <div style="opacity:.8;font-size:14px;margin-bottom:10px;">Interactive explorer for all <code>/api/mobile/</code> endpoints — auth, devices, readings, and account management.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="api-chip chip-post">POST /api/mobile/auth/login/</span>
+        <span class="api-chip chip-get">GET /api/mobile/devices/</span>
+        <span class="api-chip chip-post">POST /api/mobile/devices/&lt;id&gt;/api-calls/create/</span>
+        <span class="api-chip chip-get">GET /api/mobile/device-types/</span>
+      </div>
+    </div>
+    <div style="margin-left:auto;flex-shrink:0;font-size:22px;opacity:.7;">
+      <i class="fas fa-arrow-right"></i>
+    </div>
+  </a>
+
+  <!-- Device / Legacy -->
   <a href="{% url 'api_docs' %}" class="api-link-card" target="_blank">
     <div class="icon-wrap"><i class="fas fa-plug"></i></div>
     <div>
       <div style="font-size:1.2rem;font-weight:800;margin-bottom:4px;">Device &amp; Firmware API Reference</div>
-      <div style="opacity:.8;font-size:14px;margin-bottom:10px;">Complete endpoint documentation for device integrations — authentication, data submission, GPS, OTA firmware updates and more.</div>
+      <div style="opacity:.8;font-size:14px;margin-bottom:10px;">Endpoint documentation for device hardware integrations — authentication, data submission, GPS, and OTA firmware updates.</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <span class="api-chip chip-post">POST /api/authenticate/</span>
         <span class="api-chip chip-post">POST /api/add_soil_data/</span>
@@ -499,12 +667,12 @@
     </div>
   </a>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;" class="grid-2">
     <div class="info-box blue" style="border-radius:12px;">
       <i class="fas fa-shield-alt mt-1" style="font-size:18px;flex-shrink:0;"></i>
       <div>
-        <strong>Device Authentication</strong><br>
-        <span style="font-size:13px;">Devices authenticate using a hardware ID + secret key and receive a base64-encoded session token used in all subsequent calls.</span>
+        <strong>Mobile JWT Auth</strong><br>
+        <span style="font-size:13px;">Mobile app uses JWT Bearer tokens. Login to get an access token, attach it as <code>Authorization: Bearer &lt;token&gt;</code> on every request.</span>
       </div>
     </div>
     <div class="info-box green" style="border-radius:12px;">
@@ -545,7 +713,7 @@
         <div class="sub">Get the most out of ArkaShine</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">
       <div class="info-box blue" style="border-radius:10px; margin:0;">
         <i class="fas fa-sync-alt mt-1"></i>
         <div><strong>Keep only one active version</strong><br><span style="font-size:13px;">Always deactivate old firmware versions before marking a new one active, to avoid update confusion on the device side.</span></div>
@@ -566,7 +734,7 @@
   </div>
 
   <p class="text-center text-muted mt-4" style="font-size:12px;">
-    ArkaShine Platform Documentation &mdash; For technical API details see <a href="{% url 'api_docs' %}" target="_blank">API Reference</a>
+    ArkaShine Platform Documentation &mdash; For technical API details see <a href="/api/swagger/" target="_blank">Swagger UI</a> or <a href="{% url 'api_docs' %}" target="_blank">Device API Reference</a>
   </p>
 
 </div>
