@@ -141,6 +141,7 @@ class Devise(models.Model):
 
 class DeviseApis(models.Model):
     device                = models.ForeignKey(to='Devise', on_delete=models.CASCADE)
+    farmer                = models.ForeignKey('Farmer', on_delete=models.SET_NULL, null=True, blank=True, related_name='soilsaathi_readings')
     area_name             = models.CharField(max_length=255)
     devise_id             = models.CharField(max_length=255)
     serial_no             = models.CharField(max_length=255)
@@ -177,6 +178,7 @@ class DeviseApis(models.Model):
 
 class DeviseApisFields(models.Model):
     device     = models.ForeignKey(to='Devise', on_delete=models.CASCADE)
+    farmer     = models.ForeignKey('Farmer', on_delete=models.SET_NULL, null=True, blank=True, related_name='sensor_readings')
     tag        = models.CharField( max_length=255, null=True, blank=True, default=None)
     image_path = models.CharField(max_length=255, null=True, blank=True)
     field1     = models.FloatField(default=0.0)
@@ -279,3 +281,85 @@ class ColumnData(models.Model):
     field       = models.ForeignKey(to = 'ColumnName', on_delete = models.CASCADE)
     api         = models.ForeignKey(to = 'DeviseApis', on_delete = models.CASCADE, unique = True)
     field_value = models.FloatField(default = 0.0)
+
+
+USER_TYPE_CHOICES = [
+    ('current_user', 'Current User'),
+    ('soil_partner', 'Soil Partner'),
+]
+
+class UserProfile(models.Model):
+    user         = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    user_type    = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='current_user')
+    state        = models.CharField(max_length=100, blank=True, default='')
+    district     = models.CharField(max_length=100, blank=True, default='')
+    city_village = models.CharField(max_length=100, blank=True, default='')
+    amount_paid  = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    balance      = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    status       = models.BooleanField(default=True)
+    created_by   = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_profiles')
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.get_user_type_display()}"
+
+
+SEASON_CHOICES = [
+    ('kharif', 'Kharif'),
+    ('rabi',   'Rabi'),
+    ('zaid',   'Zaid'),
+]
+
+FARMER_STATUS_CHOICES = [
+    ('registered',       'Registered'),
+    ('sample_collected', 'Sample Collected'),
+    ('testing_done',     'Testing Done'),
+    ('report_delivered', 'Report Delivered'),
+]
+
+FARMER_STATUS_BADGE = {
+    'registered':       'secondary',
+    'sample_collected': 'primary',
+    'testing_done':     'warning',
+    'report_delivered': 'success',
+}
+
+class Farmer(models.Model):
+    soil_partner   = models.ForeignKey(User, on_delete=models.CASCADE, related_name='farmers')
+    farmer_name    = models.CharField(max_length=255)
+    phone          = models.CharField(max_length=15)
+    email          = models.EmailField(blank=True, default='')
+    aadhaar_number = models.CharField(max_length=12)
+    farmer_image   = models.ImageField(upload_to='farmers/', null=True, blank=True)
+    mobile         = models.CharField(max_length=15, blank=True, default='')
+    state          = models.CharField(max_length=100)
+    district       = models.CharField(max_length=100)
+    village        = models.CharField(max_length=100)
+    latitude       = models.FloatField(null=True, blank=True)
+    longitude      = models.FloatField(null=True, blank=True)
+    land_area      = models.FloatField(default=0.0)
+    crop           = models.CharField(max_length=255)
+    season         = models.CharField(max_length=10, choices=SEASON_CHOICES)
+    status         = models.CharField(max_length=20, choices=FARMER_STATUS_CHOICES, default='registered')
+    created_at     = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.farmer_name
+
+    def badge_class(self):
+        return FARMER_STATUS_BADGE.get(self.status, 'secondary')
+
+
+class FarmerStatusHistory(models.Model):
+    farmer    = models.ForeignKey(Farmer, on_delete=models.CASCADE, related_name='status_history')
+    status    = models.CharField(max_length=20, choices=FARMER_STATUS_CHOICES)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['timestamp']
+
+    def __str__(self):
+        return f"{self.farmer.farmer_name} - {self.get_status_display()} at {self.timestamp}"

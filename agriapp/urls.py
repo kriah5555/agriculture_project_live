@@ -77,4 +77,17 @@ urlpatterns = [
     path('users-devices/export/',                   ExportUsersAndDevicesView.as_view(),        name='export-users-devices'),
     path('user-devices/export/<str:username>/',     ExportUsersAndDevicesView.as_view(),        name='export-user-devices'),
     path('export/device-apis/<int:device_id>/',     ExportDeviceApisView.as_view(),             name='export-device-apis'),
+
+    # ── Farmer ───────────────────────────────────────────────────────────────────
+    path('farmers/',                                v.farmer_list,                              name='farmer-list'),
+    path('farmers/create/',                         v.create_farmer,                            name='create-farmer'),
+    path('farmer/<int:pk>/',                        v.farmer_detail,                            name='farmer-detail'),
+    path('farmer/<int:pk>/status/',                 v.update_farmer_status,                     name='update-farmer-status'),
+    path('farmer/<int:pk>/delete/',                 v.delete_farmer,                            name='delete-farmer'),
+    path('farmer/<int:pk>/image/update/',           v.farmer_update_image,                      name='farmer-image-update'),
+    path('farmer/<int:pk>/image/delete/',           v.farmer_delete_image,                      name='farmer-image-delete'),
+
+    # ── Location AJAX ────────────────────────────────────────────────────────────
+    path('location/states/',                        v.location_states,                          name='location-states'),
+    path('location/districts/',                     v.location_districts,                       name='location-districts'),
 ]

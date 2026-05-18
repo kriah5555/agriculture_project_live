@@ -68,6 +68,7 @@
               <th style="padding:12px 16px; font-weight:600; color:#444;">Name</th>
               <th style="padding:12px 16px; font-weight:600; color:#444;">Username</th>
               <th style="padding:12px 16px; font-weight:600; color:#444;">Email</th>
+              <th style="padding:12px 16px; font-weight:600; color:#444;">User Type</th>
               <th style="padding:12px 16px; font-weight:600; color:#444;">Devices</th>
               <th style="padding:12px 16px; font-weight:600; color:#444; text-align:center;">Action</th>
             </tr>
@@ -84,6 +85,20 @@
                 <span class="badge bg-secondary" style="font-size:12px; font-weight:500;">{{ user.username }}</span>
               </td>
               <td style="padding:12px 16px; color:#555;">{{ user.email }}</td>
+              <td style="padding:12px 16px;">
+                {% if user.user_type_display == 'Soil Partner' %}
+                  <span class="badge" style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;font-size:11px;">
+                    <i class="fas fa-handshake me-1"></i>Soil Partner
+                  </span>
+                {% else %}
+                  <span class="badge" style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;font-size:11px;">
+                    <i class="fas fa-user me-1"></i>{{ user.user_type_display }}
+                  </span>
+                {% endif %}
+                {% if not user.profile_status %}
+                  <span class="badge bg-danger ms-1" style="font-size:10px;">Inactive</span>
+                {% endif %}
+              </td>
               <td style="padding:10px 16px;">
                 {% if "soilsaathi" in user.device_types %}
                   <span class="device-badge db-soilsaathi"><i class="fas fa-leaf"></i> SoiLENZ</span>
@@ -149,6 +164,7 @@
                     cells[1].textContent.toLowerCase().includes(f2) &&
                     cells[2].textContent.toLowerCase().includes(f3) &&
                     cells[3].textContent.toLowerCase().includes(f4);
+
       row.style.display = match ? "" : "none";
     });
     updateCount();

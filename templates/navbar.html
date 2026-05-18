@@ -326,6 +326,12 @@
             <span class="nav-text">Users</span>
           </a>
         </li>
+        <li class="nav-item {% if active_page == 'farmers' %}active{% endif %}">
+          <a href="{% url 'farmer-list' %}" class="nav-link" title="Farmers">
+            <i class="fas fa-tractor"></i>
+            <span class="nav-text">Farmers</span>
+          </a>
+        </li>
         <li class="nav-item {% if active_page == 'versions' %}active{% endif %}">
           <a href="{% url 'version_list' %}" class="nav-link" title="App Versions" target="_blank">
             <i class="fas fa-code-branch"></i>

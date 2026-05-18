@@ -61,6 +61,7 @@ from .devices import soilsaathi as ss
 from .devices import atmo_sense as atmo
 from .devices import soil_life  as sl
 from .devices import ph_bottle  as pb
+from agriapp import farmer_api as fa
 
 urlpatterns = [
     # ── Auth ──────────────────────────────────────────────────────────────────
@@ -112,4 +113,15 @@ urlpatterns = [
     # ── Password requests (notify admin) ──────────────────────────────────────
     path('auth/forgot-password/',            a.forgot_password_request,  name='mobile_forgot_password'),
     path('account/change-password-request/', a.change_password_request,  name='mobile_change_password_request'),
+
+    # ── Farmers ───────────────────────────────────────────────────────────────
+    path('farmers/',                          fa.farmer_list,          name='mobile_farmer_list'),
+    path('farmers/create/',                   fa.farmer_create,        name='mobile_farmer_create'),
+    path('farmers/<int:pk>/',                 fa.farmer_detail,        name='mobile_farmer_detail'),
+    path('farmers/<int:pk>/update/',          fa.farmer_update,        name='mobile_farmer_update'),
+    path('farmers/<int:pk>/delete/',          fa.farmer_delete,        name='mobile_farmer_delete'),
+    path('farmers/<int:pk>/status/',          fa.farmer_update_status, name='mobile_farmer_status'),
+    path('farmers/<int:pk>/api-calls/',       fa.farmer_api_calls,     name='mobile_farmer_api_calls'),
+    path('farmers/<int:pk>/image/',           fa.farmer_update_image,  name='mobile_farmer_image'),
+    path('farmers/<int:pk>/image/delete/',    fa.farmer_delete_image,  name='mobile_farmer_image_delete'),
 ]

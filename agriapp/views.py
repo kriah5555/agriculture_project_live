@@ -5,7 +5,14 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .forms import ContactForm, DeviseForm
-from .models import ContactDetails, UserRequest, Devise, DeviseApis, APICountThreshold, ColumnName, DeviseLocation, DeviseApisFields, SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES, PH_BOTTLE_FIELDS
+from .models import (
+    ContactDetails, UserRequest, Devise, DeviseApis, APICountThreshold,
+    ColumnName, DeviseLocation, DeviseApisFields,
+    SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS,
+    SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES, PH_BOTTLE_FIELDS,
+    UserProfile, USER_TYPE_CHOICES,
+    Farmer, FarmerStatusHistory, FARMER_STATUS_CHOICES, SEASON_CHOICES,
+)
 
 from . import UserFunctions
 from django.views.generic import UpdateView, TemplateView, CreateView, View
@@ -98,14 +105,14 @@ def docs(request):
 
 @user_login_required
 def userPage(request):
-    linked_devices = Devise.objects.filter(user__username=request.user.username)  # Fetch all devices linked to the user
+    linked_devices = Devise.objects.filter(user__username=request.user.username)
     for devise in linked_devices:
         devise_location          = DeviseLocation.objects.filter(devise=devise).first()
         devise.latitude          = devise_location.latitude if devise_location else 0
         devise.longitude         = devise_location.longitude if devise_location else 0
         api_thresholds           = APICountThreshold.objects.filter(devise=devise).first()
         devise.api_limit         = api_thresholds.red if api_thresholds else None
-        devise.type_display_name = DEVICE_NAMES[devise.devise_type] 
+        devise.type_display_name = DEVICE_NAMES[devise.devise_type]
         match devise.devise_type:
             case "soilsaathi":
                 devise.api_used = DeviseApis.objects.filter(device=devise).count()
@@ -114,8 +121,16 @@ def userPage(request):
             case _:
                 devise.api_used = 0
 
+    profile    = getattr(request.user, 'profile', None)
+    is_partner = profile and profile.user_type == 'soil_partner'
+    farmers    = Farmer.objects.filter(soil_partner=request.user) if is_partner else []
+
     context = {
-        "linked_devices": linked_devices, # Add linked devices to the context"
+        "linked_devices" : linked_devices,
+        "is_soil_partner": is_partner,
+        "farmers"        : farmers,
+        "season_choices" : SEASON_CHOICES,
+        "status_choices" : FARMER_STATUS_CHOICES,
     }
     return render(request, 'agriapp/devise_user_details.html', context)
 
@@ -170,7 +185,7 @@ class Users(AdminRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context        = super().get_context_data(**kwargs)
         group          = Group.objects.get(name='deviseowner')
-        users_in_group = User.objects.filter(groups=group)
+        users_in_group = User.objects.filter(groups=group).select_related('profile')
 
         device_types_by_user = {}
         for devise in Devise.objects.filter(user__in=users_in_group).values('user_id', 'devise_type'):
@@ -179,17 +194,30 @@ class Users(AdminRequiredMixin, TemplateView):
         users_list = list(users_in_group)
         for u in users_list:
             u.device_types = device_types_by_user.get(u.id, set())
+            try:
+                u.user_type_display = u.profile.get_user_type_display()
+                u.profile_status    = u.profile.status
+            except UserProfile.DoesNotExist:
+                u.user_type_display = '—'
+                u.profile_status    = True
 
         context['active_page'] = "users"
         context['users']       = users_list
         return context
 
 class UserForm(forms.Form):
-    first_name = forms.CharField(max_length=30)
-    last_name = forms.CharField(max_length=30)
-    username = forms.CharField(max_length=150)
-    email = forms.EmailField()
-    password = forms.CharField(max_length=15)
+    first_name   = forms.CharField(max_length=30)
+    last_name    = forms.CharField(max_length=30)
+    username     = forms.CharField(max_length=150)
+    email        = forms.EmailField()
+    password     = forms.CharField(max_length=128)
+    user_type    = forms.ChoiceField(choices=USER_TYPE_CHOICES)
+    state        = forms.CharField(max_length=100, required=False)
+    district     = forms.CharField(max_length=100, required=False)
+    city_village = forms.CharField(max_length=100, required=False)
+    amount_paid  = forms.DecimalField(max_digits=12, decimal_places=2, required=False, initial=0)
+    balance      = forms.DecimalField(max_digits=12, decimal_places=2, required=False, initial=0)
+    status       = forms.BooleanField(required=False, initial=True)
 
 @admin_required
 def create_user(request):
@@ -197,32 +225,45 @@ def create_user(request):
         form = UserForm(request.POST)
 
         if form.is_valid():
-            # Extract cleaned data
-            first_name = form.cleaned_data['first_name']
-            last_name  = form.cleaned_data['last_name']
-            username   = form.cleaned_data['username']
-            email      = form.cleaned_data['email']
-            password   = form.cleaned_data['password']
+            first_name   = form.cleaned_data['first_name']
+            last_name    = form.cleaned_data['last_name']
+            username     = form.cleaned_data['username']
+            email        = form.cleaned_data['email']
+            password     = form.cleaned_data['password']
+            user_type    = form.cleaned_data['user_type']
+            state        = form.cleaned_data.get('state', '')
+            district     = form.cleaned_data.get('district', '')
+            city_village = form.cleaned_data.get('city_village', '')
+            amount_paid  = form.cleaned_data.get('amount_paid') or 0
+            balance      = form.cleaned_data.get('balance') or 0
+            status       = form.cleaned_data.get('status', True)
 
-            # Check if the username already exists
             if User.objects.filter(username=username).exists():
                 form.add_error('username', 'Username already exists')
                 return render(request, 'agriapp/create-user.html', {'form': form})
 
-            # Check if the email already exists
             if User.objects.filter(email=email).exists():
                 form.add_error('email', 'Email already exists')
                 return render(request, 'agriapp/create-user.html', {'form': form})
-            UserFunctions.create_user(username, email, first_name, last_name, password)
-            messages.success(request,"User created successfully")
 
-            # Redirect to the users list page (or success page)
+            user = UserFunctions.create_user(username, email, first_name, last_name, password)
+            UserProfile.objects.create(
+                user         = user,
+                user_type    = user_type,
+                state        = state        if user_type == 'soil_partner' else '',
+                district     = district     if user_type == 'soil_partner' else '',
+                city_village = city_village if user_type == 'soil_partner' else '',
+                amount_paid  = amount_paid  if user_type == 'soil_partner' else 0,
+                balance      = balance      if user_type == 'soil_partner' else 0,
+                status       = status if status is not None else True,
+                created_by   = request.user,
+            )
+            messages.success(request, "User created successfully")
             return redirect('/users/')
         else:
-            # If the form is invalid, render the form again with errors
             return render(request, 'agriapp/create-user.html', {'form': form})
     else:
-        form = UserForm()  # Empty form for GET request
+        form = UserForm()
         return render(request, 'agriapp/create-user.html', {'form': form})
 
 @admin_required
@@ -460,9 +501,14 @@ def user_details(request, **kwargs):
             case _:
                 devise.api_used = 0  
     
+    profile = getattr(user, 'profile', None)
+    farmers = Farmer.objects.filter(soil_partner=user) if profile and profile.user_type == 'soil_partner' else []
+
     context = {
         "user"          : user,
-        "linked_devices": linked_devices, # Add linked devices to the context
+        "linked_devices": linked_devices,
+        "profile"       : profile,
+        "farmers"       : farmers,
     }
 
     template_name = 'agriapp/user_details.html'
@@ -1378,4 +1424,176 @@ def delete_api_call(request, pk):
     else:
         obj = get_object_or_404(DeviseApisFields, pk=pk)
     obj.delete()
+    return JsonResponse({'success': True})
+
+
+# ─────────────────────────────────────────────────────────────
+#  Location autocomplete AJAX endpoints
+# ─────────────────────────────────────────────────────────────
+from .location_data import INDIA_STATES_DISTRICTS
+
+@login_required
+def location_states(request):
+    states = sorted(INDIA_STATES_DISTRICTS.keys())
+    return JsonResponse({'states': states})
+
+@login_required
+def location_districts(request):
+    state = request.GET.get('state', '')
+    districts = sorted(INDIA_STATES_DISTRICTS.get(state, []))
+    return JsonResponse({'districts': districts})
+
+
+# ─────────────────────────────────────────────────────────────
+#  Farmer views
+# ─────────────────────────────────────────────────────────────
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+def _is_soil_partner(user):
+    try:
+        return user.profile.user_type == 'soil_partner'
+    except UserProfile.DoesNotExist:
+        return False
+
+def soil_partner_required(function):
+    def check(user):
+        return user.is_superuser or _is_soil_partner(user)
+    return login_required(login_url='/user-login/')(
+        user_passes_test(check, login_url='/acess_denied/')(function)
+    )
+
+
+@login_required
+def farmer_list(request):
+    if request.user.is_superuser:
+        farmers = Farmer.objects.select_related('soil_partner').all()
+    elif _is_soil_partner(request.user):
+        farmers = Farmer.objects.filter(soil_partner=request.user)
+    else:
+        return redirect('/acess_denied/')
+    return render(request, 'agriapp/farmer_list.html', {
+        'farmers': farmers,
+        'active_page': 'farmers',
+        'farmer_status_choices': FARMER_STATUS_CHOICES,
+    })
+
+
+@soil_partner_required
+def create_farmer(request):
+    if request.method == 'POST':
+        data = request.POST
+        farmer = Farmer(
+            soil_partner   = request.user if not request.user.is_superuser else get_object_or_404(User, pk=data.get('soil_partner_id')),
+            farmer_name    = data.get('farmer_name', '').strip(),
+            phone          = data.get('phone', '').strip(),
+            email          = data.get('email', '').strip(),
+            aadhaar_number = data.get('aadhaar_number', '').strip(),
+            mobile         = data.get('mobile', '').strip(),
+            state          = data.get('state', '').strip(),
+            district       = data.get('district', '').strip(),
+            village        = data.get('village', '').strip(),
+            latitude       = data.get('latitude') or None,
+            longitude      = data.get('longitude') or None,
+            land_area      = data.get('land_area') or 0.0,
+            crop           = data.get('crop', '').strip(),
+            season         = data.get('season', ''),
+        )
+        if request.FILES.get('farmer_image'):
+            farmer.farmer_image = request.FILES['farmer_image']
+        farmer.save()
+        FarmerStatusHistory.objects.create(farmer=farmer, status='registered')
+        messages.success(request, 'Farmer registered successfully.')
+        return redirect(f'/farmer/{farmer.pk}/')
+    soil_partners = []
+    if request.user.is_superuser:
+        soil_partners = User.objects.filter(profile__user_type='soil_partner')
+    return render(request, 'agriapp/create_farmer.html', {
+        'season_choices': SEASON_CHOICES,
+        'soil_partners': soil_partners,
+        'active_page': 'farmers',
+    })
+
+
+@login_required
+def farmer_detail(request, pk):
+    farmer = get_object_or_404(Farmer, pk=pk)
+    if not request.user.is_superuser and farmer.soil_partner != request.user:
+        return redirect('/acess_denied/')
+    history = farmer.status_history.all()
+    return render(request, 'agriapp/farmer_detail.html', {
+        'farmer': farmer,
+        'history': history,
+        'status_choices': FARMER_STATUS_CHOICES,
+        'farmer_status_choices': FARMER_STATUS_CHOICES,
+        'active_page': 'farmers',
+    })
+
+
+@login_required
+def update_farmer_status(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    farmer = get_object_or_404(Farmer, pk=pk)
+    if not request.user.is_superuser and farmer.soil_partner != request.user:
+        return JsonResponse({'error': 'Permission denied.'}, status=403)
+    new_status = request.POST.get('status', '')
+    valid = [s[0] for s in FARMER_STATUS_CHOICES]
+    if new_status not in valid:
+        return JsonResponse({'error': 'Invalid status.'}, status=400)
+    farmer.status = new_status
+    farmer.save()
+    FarmerStatusHistory.objects.create(farmer=farmer, status=new_status)
+    return JsonResponse({'success': True, 'status': new_status, 'display': dict(FARMER_STATUS_CHOICES)[new_status]})
+
+
+@login_required
+def delete_farmer(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    farmer = get_object_or_404(Farmer, pk=pk)
+    if not request.user.is_superuser and farmer.soil_partner != request.user:
+        return JsonResponse({'error': 'Permission denied.'}, status=403)
+    farmer.delete()
+    return JsonResponse({'success': True})
+
+
+@login_required
+def farmer_update_image(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    farmer = get_object_or_404(Farmer, pk=pk)
+    if not request.user.is_superuser and farmer.soil_partner != request.user:
+        return JsonResponse({'error': 'Permission denied.'}, status=403)
+    image = request.FILES.get('farmer_image')
+    if not image:
+        return JsonResponse({'error': 'No image file provided.'}, status=400)
+    import os
+    if farmer.farmer_image:
+        try:
+            if os.path.isfile(farmer.farmer_image.path):
+                os.remove(farmer.farmer_image.path)
+        except Exception:
+            pass
+    farmer.farmer_image = image
+    farmer.save()
+    return JsonResponse({'success': True, 'url': farmer.farmer_image.url})
+
+
+@login_required
+def farmer_delete_image(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    farmer = get_object_or_404(Farmer, pk=pk)
+    if not request.user.is_superuser and farmer.soil_partner != request.user:
+        return JsonResponse({'error': 'Permission denied.'}, status=403)
+    if not farmer.farmer_image:
+        return JsonResponse({'error': 'No image to delete.'}, status=400)
+    import os
+    try:
+        if os.path.isfile(farmer.farmer_image.path):
+            os.remove(farmer.farmer_image.path)
+    except Exception:
+        pass
+    farmer.farmer_image = None
+    farmer.save()
     return JsonResponse({'success': True})

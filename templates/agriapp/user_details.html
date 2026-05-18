@@ -159,6 +159,73 @@
         </div>
       </div>
 
+      <!-- User Profile Extended -->
+      {% if profile %}
+      <div class="ud-card">
+        <div class="ud-card-header"><i class="fas fa-tag"></i><h6>Profile Details</h6></div>
+        <div class="info-row">
+          <span class="info-label">User Type</span>
+          <span class="info-value">
+            {% if profile.user_type == 'soil_partner' %}
+              <span class="badge" style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;">Soil Partner</span>
+            {% else %}
+              <span class="badge" style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;">Current User</span>
+            {% endif %}
+          </span>
+        </div>
+        {% if profile.user_type == 'soil_partner' %}
+        <div class="info-row"><span class="info-label">State</span>         <span class="info-value">{{ profile.state|default:"—" }}</span></div>
+        <div class="info-row"><span class="info-label">District</span>      <span class="info-value">{{ profile.district|default:"—" }}</span></div>
+        <div class="info-row"><span class="info-label">City / Village</span><span class="info-value">{{ profile.city_village|default:"—" }}</span></div>
+        {% endif %}
+        <div class="info-row"><span class="info-label">Amount Paid</span> <span class="info-value">₹ {{ profile.amount_paid }}</span></div>
+        <div class="info-row"><span class="info-label">Balance</span>     <span class="info-value">₹ {{ profile.balance }}</span></div>
+        <div class="info-row">
+          <span class="info-label">Status</span>
+          <span class="info-value">
+            {% if profile.status %}
+              <span class="badge bg-success">Active</span>
+            {% else %}
+              <span class="badge bg-danger">Inactive</span>
+            {% endif %}
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Created At</span>
+          <span class="info-value" style="font-family:monospace;font-size:12px;">
+            {{ profile.created_at|date:"Y-m-d H:i:s" }}
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Created By</span>
+          <span class="info-value">{{ profile.created_by.get_full_name|default:profile.created_by.username|default:"—" }}</span>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Farmers (Soil Partner only) -->
+      {% if farmers %}
+      <div class="ud-card">
+        <div class="ud-card-header" style="justify-content:space-between;">
+          <div class="d-flex align-items-center gap-2"><i class="fas fa-users"></i><h6>Farmers</h6></div>
+          <a href="{% url 'farmer-list' %}?partner={{ user.username }}" class="text-white" style="font-size:13px;" title="View All">
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+        <div style="max-height:220px;overflow-y:auto;">
+          {% for farmer in farmers %}
+          <div class="device-list-item" onclick="window.location.href='/farmer/{{ farmer.pk }}/'">
+            <div class="flex-fill" style="min-width:0;">
+              <div class="device-item-name text-truncate">{{ farmer.farmer_name }}</div>
+              <div class="device-item-type">{{ farmer.village }}, {{ farmer.district }}</div>
+            </div>
+            <span class="badge bg-{{ farmer.badge_class }}" style="font-size:10px;">{{ farmer.get_status_display }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
       <!-- Devices linked -->
       <div class="ud-card">
         <div class="ud-card-header" style="justify-content: space-between;">

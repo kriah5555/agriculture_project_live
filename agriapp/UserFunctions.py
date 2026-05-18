@@ -41,7 +41,9 @@ def create_user(username, email, first_name='', last_name='', password=None):
 
     # Save the user
     user.save()
-            
+
+    return user
+
 
 def send_message(to, body):
     # Find your Account SID and Auth Token at twilio.com/console
