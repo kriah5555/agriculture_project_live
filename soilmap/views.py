@@ -14,6 +14,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
+from drf_spectacular.openapi import OpenApiTypes
+
 from agriapp.models import Devise, DeviseApisFields
 
 # ── ML pipeline setup ─────────────────────────────────────────────────────────
@@ -96,12 +99,48 @@ def _avg(readings, attr):
 
 # ── predict_soil ──────────────────────────────────────────────────────────────
 
-@api_view(['GET', 'POST'])
+@extend_schema(
+    tags=['SoilMap'],
+    summary='AI soil prediction for a point or polygon',
+    description=(
+        'Run LightGBM inference for a lat/lon point or a drawn polygon (centroid is used). '
+        'Returns predicted soil chemistry (pH, EC, N, P, K, OC, S, Fe, Zn, Cu, B, Mn), '
+        'environmental factors (NDVI, temperature, rainfall, elevation), '
+        'and a fertility assessment (Low / Medium / High).\n\n'
+        'If no trained models are loaded, returns deterministic dummy values based on coordinates.'
+    ),
+    request={
+        'application/json': {
+            'type': 'object',
+            'properties': {
+                'lat':     {'type': 'number', 'example': 15.3173, 'description': 'Latitude (use with lon)'},
+                'lon':     {'type': 'number', 'example': 75.7139, 'description': 'Longitude (use with lat)'},
+                'polygon': {
+                    'type': 'array',
+                    'items': {'type': 'array', 'items': {'type': 'number'}},
+                    'example': [[15.31, 75.71], [15.32, 75.71], [15.32, 75.72], [15.31, 75.72]],
+                    'description': 'Array of [lat, lon] pairs (≥3 points). Centroid is used for prediction.',
+                },
+            },
+        }
+    },
+    responses={
+        200: OpenApiResponse(description='Predicted soil metrics', response={
+            'type': 'object',
+            'properties': {
+                'status':                   {'type': 'string', 'example': 'success'},
+                'prediction_type':          {'type': 'string', 'example': 'point'},
+                'fertility_assessment':     {'type': 'string', 'example': 'Medium'},
+                'environmental_factors':    {'type': 'object'},
+                'predicted_soil_chemistry': {'type': 'object'},
+            },
+        }),
+        400: OpenApiResponse(description='Bad request — missing or invalid coordinates'),
+    },
+)
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def predict_soil(request):
-    if request.method == 'GET':
-        return Response({'status': 'success', 'message': 'AI Inference API ready. POST with lat/lon or polygon.'})
-
     try:
         data    = request.data
         polygon = data.get('polygon')
@@ -180,6 +219,32 @@ _UPLOAD_ALIAS = {
 }
 
 
+@extend_schema(
+    tags=['SoilMap'],
+    summary='Upload soil data CSV/Excel for a SoilMap device',
+    description=(
+        'Upload a .csv, .xlsx, or .xls file. Each row is saved as a DeviseApisFields record '
+        'linked to the given device. Column names are matched by alias — accepted headers include: '
+        'ph, ec, nitrogen (n), phosphorus (p), potassium (k), organic_carbon (oc), sulfur (s), '
+        'iron (fe), zinc (zn), copper (cu), boron (b), manganese (mn), sand, clay, silt, ndvi, '
+        'temperature (temp), rainfall (rain), elevation (elev), latitude (lat), longitude (lon/lng), tag.'
+    ),
+    request={'multipart/form-data': {'type': 'object', 'properties': {
+        'file': {'type': 'string', 'format': 'binary', 'description': '.csv / .xlsx / .xls file'},
+    }}},
+    responses={
+        201: OpenApiResponse(description='Upload summary', response={'type': 'object', 'properties': {
+            'status':           {'type': 'string', 'example': 'success'},
+            'rows_received':    {'type': 'integer'},
+            'rows_ingested':    {'type': 'integer'},
+            'rows_rejected':    {'type': 'integer'},
+            'rejected_reasons': {'type': 'array', 'items': {'type': 'string'}},
+            'retrained':        {'type': 'boolean'},
+        }}),
+        400: OpenApiResponse(description='No file / unsupported format / parse error'),
+        403: OpenApiResponse(description='Not the device owner and not staff'),
+    },
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def upload_soil_data(request, device_id):
