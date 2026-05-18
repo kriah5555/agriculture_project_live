@@ -1,0 +1,167 @@
+{% extends "navbar.html" %}
+{% block content %}
+<style>
+  .field-group { margin-bottom: 1.1rem; }
+  .field-group label { font-weight: 600; font-size: 13px; color: #444; margin-bottom: 4px; display: block; }
+  .section-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .6px; color: #1a2f6b;
+    border-bottom: 2px solid #e3e8f7; padding-bottom: 6px; margin-bottom: 16px;
+  }
+</style>
+
+<div style="max-width:860px; margin:0 auto; padding:24px 16px;">
+
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div style="width:44px;height:44px;border-radius:10px;background:#1a2f6b;display:flex;align-items:center;justify-content:center;">
+      <i class="fas fa-user-plus text-white" style="font-size:18px;"></i>
+    </div>
+    <div>
+      <h4 class="mb-0 fw-bold">Register Farmer</h4>
+      <span class="text-muted" style="font-size:13px;">Create a new farmer record</span>
+    </div>
+    <a href="{% url 'farmer-list' %}" class="btn btn-sm btn-outline-secondary ms-auto">
+      <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+  </div>
+
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show">
+        {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="card shadow-sm" style="border-radius:12px; border:none;">
+    <div class="card-body p-4">
+      <form method="POST" action="{% url 'create-farmer' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if request.user.is_superuser %}
+        <!-- Soil Partner Selection (admin only) -->
+        <div class="section-title"><i class="fas fa-handshake me-2"></i>Soil Partner</div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6 field-group">
+            <label for="soil_partner_id">Assign to Soil Partner <span class="text-danger">*</span></label>
+            <select id="soil_partner_id" class="form-select" name="soil_partner_id" required>
+              <option value="">— Select Soil Partner —</option>
+              {% for sp in soil_partners %}
+                <option value="{{ sp.pk }}">{{ sp.get_full_name|default:sp.username }} (@{{ sp.username }})</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Basic Details -->
+        <div class="section-title"><i class="fas fa-id-card me-2"></i>Basic Details</div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6 field-group">
+            <label for="farmer_name">Farmer Name <span class="text-danger">*</span></label>
+            <input type="text" id="farmer_name" class="form-control" name="farmer_name" required />
+          </div>
+          <div class="col-md-3 field-group">
+            <label for="phone">Phone <span class="text-danger">*</span></label>
+            <input type="text" id="phone" class="form-control" name="phone" maxlength="15" required />
+          </div>
+          <div class="col-md-3 field-group">
+            <label for="mobile">Mobile</label>
+            <input type="text" id="mobile" class="form-control" name="mobile" maxlength="15" />
+          </div>
+          <div class="col-md-6 field-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" class="form-control" name="email" />
+          </div>
+          <div class="col-md-6 field-group">
+            <label for="aadhaar_number">Aadhaar Number <span class="text-danger">*</span></label>
+            <input type="text" id="aadhaar_number" class="form-control" name="aadhaar_number"
+                   maxlength="12" minlength="12" pattern="\d{12}" required
+                   placeholder="12-digit Aadhaar number" />
+          </div>
+          <div class="col-md-6 field-group">
+            <label for="farmer_image">Farmer Photo</label>
+            <input type="file" id="farmer_image" class="form-control" name="farmer_image"
+                   accept="image/*" />
+          </div>
+        </div>
+
+        <!-- Location -->
+        <div class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Location</div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-4 field-group">
+            <label for="state">State <span class="text-danger">*</span></label>
+            <input type="text" id="state" class="form-control" name="state" required />
+          </div>
+          <div class="col-md-4 field-group">
+            <label for="district">District <span class="text-danger">*</span></label>
+            <input type="text" id="district" class="form-control" name="district" required />
+          </div>
+          <div class="col-md-4 field-group">
+            <label for="village">Village <span class="text-danger">*</span></label>
+            <input type="text" id="village" class="form-control" name="village" required />
+          </div>
+          <div class="col-md-6 field-group">
+            <label for="latitude">Latitude</label>
+            <input type="number" step="any" id="latitude" class="form-control" name="latitude" placeholder="e.g. 18.5204" />
+          </div>
+          <div class="col-md-6 field-group">
+            <label for="longitude">Longitude</label>
+            <input type="number" step="any" id="longitude" class="form-control" name="longitude" placeholder="e.g. 73.8567" />
+          </div>
+          <div class="col-12">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="getLocation()">
+              <i class="fas fa-crosshairs me-1"></i> Use My Location
+            </button>
+          </div>
+        </div>
+
+        <!-- Agriculture Details -->
+        <div class="section-title"><i class="fas fa-seedling me-2"></i>Agriculture Details</div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4 field-group">
+            <label for="land_area">Land Area (acres) <span class="text-danger">*</span></label>
+            <input type="number" step="0.01" min="0" id="land_area" class="form-control" name="land_area" required />
+          </div>
+          <div class="col-md-4 field-group">
+            <label for="crop">Crop <span class="text-danger">*</span></label>
+            <input type="text" id="crop" class="form-control" name="crop" required placeholder="e.g. Wheat" />
+          </div>
+          <div class="col-md-4 field-group">
+            <label for="season">Season <span class="text-danger">*</span></label>
+            <select id="season" class="form-select" name="season" required>
+              <option value="">— Select Season —</option>
+              {% for val, label in season_choices %}
+                <option value="{{ val }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <a href="{% url 'farmer-list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back
+          </a>
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="fas fa-save me-1"></i> Register Farmer
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function getLocation() {
+    if (!navigator.geolocation) { alert('Geolocation not supported by your browser.'); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        document.getElementById('latitude').value  = pos.coords.latitude.toFixed(6);
+        document.getElementById('longitude').value = pos.coords.longitude.toFixed(6);
+      },
+      () => alert('Unable to get location. Please enter coordinates manually.')
+    );
+  }
+</script>
+{% endblock %}

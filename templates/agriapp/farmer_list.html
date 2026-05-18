@@ -1,0 +1,181 @@
+{% extends "navbar.html" %}
+{% block content %}
+{% load static %}
+
+<style>
+  .farmer-row:hover { background:#f0f4ff; cursor:pointer; }
+  .status-badge {
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:11px; font-weight:600; padding:3px 9px;
+    border-radius:20px; white-space:nowrap;
+  }
+  .st-registered       { background:#f1f3f4; color:#666; border:1px solid #ddd; }
+  .st-sample_collected { background:#e3f2fd; color:#1565c0; border:1px solid #90caf9; }
+  .st-testing_done     { background:#fff8e1; color:#e65100; border:1px solid #ffe082; }
+  .st-report_delivered { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
+</style>
+
+<div style="padding:0 0 16px 0;">
+
+  <!-- Header -->
+  <div class="bg-primary text-white d-flex align-items-center justify-content-between px-4 py-3 mb-3"
+       style="border-radius:0 0 8px 8px;">
+    <h4 class="mb-0"><i class="fas fa-users me-2"></i> Farmers
+      <span class="badge bg-light text-primary ms-2" style="font-size:14px;" id="farmerCount">{{ farmers|length }}</span>
+    </h4>
+    <div class="d-flex gap-2">
+      <a href="{% url 'create-farmer' %}" class="btn btn-sm btn-light">
+        <i class="fas fa-user-plus me-1"></i> Add Farmer
+      </a>
+    </div>
+  </div>
+
+  <div style="padding:0 16px;">
+    <div style="background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden;">
+
+      <!-- Filter bar -->
+      <div class="d-flex flex-wrap gap-2 p-3 border-bottom bg-light">
+        <input type="text" id="searchName"     class="form-control form-control-sm" placeholder="Farmer Name" style="max-width:160px;">
+        <input type="text" id="searchPhone"    class="form-control form-control-sm" placeholder="Phone"       style="max-width:140px;">
+        <input type="text" id="searchVillage"  class="form-control form-control-sm" placeholder="Village"     style="max-width:140px;">
+        <select id="filterStatus" class="form-select form-select-sm" style="max-width:180px;">
+          <option value="">All Statuses</option>
+          {% for val, label in farmer_status_choices %}
+            <option value="{{ val }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
+          <i class="fas fa-times me-1"></i> Clear
+        </button>
+        <span id="countLabel" class="ms-auto align-self-center text-muted" style="font-size:13px;"></span>
+      </div>
+
+      <!-- Table -->
+      <div style="overflow-x:auto;">
+        <table id="farmerTable" class="table table-hover mb-0" style="font-size:14px;">
+          <thead style="background:#f5f7fa; position:sticky; top:0; z-index:1;">
+            <tr>
+              <th style="padding:12px 16px; font-weight:600; color:#444;">#</th>
+              <th style="padding:12px 16px; font-weight:600; color:#444;">Farmer Name</th>
+              <th style="padding:12px 16px; font-weight:600; color:#444;">Phone</th>
+              <th style="padding:12px 16px; font-weight:600; color:#444;">Village / District</th>
+              <th style="padding:12px 16px; font-weight:600; color:#444;">Crop / Season</th>
+              {% if request.user.is_superuser %}
+              <th style="padding:12px 16px; font-weight:600; color:#444;">Soil Partner</th>
+              {% endif %}
+              <th style="padding:12px 16px; font-weight:600; color:#444;">Status</th>
+              <th style="padding:12px 16px; font-weight:600; color:#444; text-align:center;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for farmer in farmers %}
+            <tr class="farmer-row" data-status="{{ farmer.status }}"
+                onclick="window.location.href='/farmer/{{ farmer.pk }}/'">
+              <td style="padding:12px 16px; color:#888;">{{ forloop.counter }}</td>
+              <td style="padding:12px 16px; font-weight:600;">{{ farmer.farmer_name }}</td>
+              <td style="padding:12px 16px;">{{ farmer.phone }}</td>
+              <td style="padding:12px 16px;">
+                <div>{{ farmer.village }}</div>
+                <div class="text-muted" style="font-size:12px;">{{ farmer.district }}, {{ farmer.state }}</div>
+              </td>
+              <td style="padding:12px 16px;">
+                <div>{{ farmer.crop }}</div>
+                <div class="text-muted" style="font-size:12px;">{{ farmer.get_season_display }}</div>
+              </td>
+              {% if request.user.is_superuser %}
+              <td style="padding:12px 16px; color:#555;">
+                {{ farmer.soil_partner.get_full_name|default:farmer.soil_partner.username }}
+              </td>
+              {% endif %}
+              <td style="padding:12px 16px;">
+                <span class="status-badge st-{{ farmer.status }}">{{ farmer.get_status_display }}</span>
+              </td>
+              <td style="padding:12px 16px; text-align:center;">
+                <a href="/farmer/{{ farmer.pk }}/" class="btn btn-sm btn-outline-primary me-1"
+                   onclick="event.stopPropagation()" title="View">
+                  <i class="fas fa-eye"></i>
+                </a>
+                <button class="btn btn-sm btn-outline-danger"
+                        onclick="event.stopPropagation(); deleteFarmer({{ farmer.pk }}, '{{ farmer.farmer_name }}')"
+                        title="Delete">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center py-5 text-muted">
+                <i class="fas fa-users fa-2x mb-2 d-block"></i>
+                No farmers registered yet.
+                <a href="{% url 'create-farmer' %}" class="d-block mt-2 btn btn-sm btn-primary" style="width:fit-content;margin:8px auto 0;">
+                  Add First Farmer
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const totalRows = {{ farmers|length }};
+
+  function updateCount() {
+    const visible = document.querySelectorAll('#farmerTable tbody tr.farmer-row:not([style*="display: none"])').length;
+    document.getElementById('countLabel').textContent =
+      visible < totalRows ? `Showing ${visible} of ${totalRows}` : `${totalRows} farmer${totalRows !== 1 ? 's' : ''}`;
+    document.getElementById('farmerCount').textContent = visible;
+  }
+
+  function applyFilters() {
+    const name    = document.getElementById('searchName').value.toLowerCase();
+    const phone   = document.getElementById('searchPhone').value.toLowerCase();
+    const village = document.getElementById('searchVillage').value.toLowerCase();
+    const status  = document.getElementById('filterStatus').value;
+
+    document.querySelectorAll('#farmerTable tbody tr.farmer-row').forEach(row => {
+      const cells = row.getElementsByTagName('td');
+      const matchName    = cells[1].textContent.toLowerCase().includes(name);
+      const matchPhone   = cells[2].textContent.toLowerCase().includes(phone);
+      const matchVillage = cells[3].textContent.toLowerCase().includes(village);
+      const matchStatus  = !status || row.dataset.status === status;
+      row.style.display  = (matchName && matchPhone && matchVillage && matchStatus) ? '' : 'none';
+    });
+    updateCount();
+  }
+
+  function clearFilters() {
+    ['searchName','searchPhone','searchVillage'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('filterStatus').value = '';
+    document.querySelectorAll('#farmerTable tbody tr.farmer-row').forEach(r => r.style.display = '');
+    updateCount();
+  }
+
+  ['searchName','searchPhone','searchVillage'].forEach(id =>
+    document.getElementById(id).addEventListener('input', applyFilters)
+  );
+  document.getElementById('filterStatus').addEventListener('change', applyFilters);
+
+  updateCount();
+
+  function deleteFarmer(pk, name) {
+    if (!confirm(`Delete farmer "${name}"? This cannot be undone.`)) return;
+    fetch(`/farmer/${pk}/delete/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(d => { if (d.success) location.reload(); else alert(d.error || 'Could not delete.'); })
+    .catch(() => alert('Something went wrong.'));
+  }
+
+  function getCsrf() {
+    const v = document.cookie.match('(^|;) ?csrftoken=([^;]*)(;|$)');
+    return v ? decodeURIComponent(v[2]) : '';
+  }
+</script>
+{% endblock %}
