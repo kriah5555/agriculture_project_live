@@ -1602,56 +1602,6 @@ def farmer_list(request):
     crops   = sorted(set(base_qs.values_list('crop',   flat=True).exclude(crop='')))
     villages = sorted(set(base_qs.values_list('village', flat=True).exclude(village='')))
 
-    # ── Monthly activity chart: last 6 months ────────────────────────────────
-    from datetime import date
-    from dateutil.relativedelta import relativedelta
-
-    six_months_ago = today.replace(day=1) - relativedelta(months=5)
-
-    # Farmers registered per month
-    reg_monthly = (
-        base_qs.filter(created_at__date__gte=six_months_ago)
-        .annotate(m=TruncMonth('created_at'))
-        .values('m').annotate(c=Count('id')).order_by('m')
-    )
-    reg_map = {r['m'].strftime('%b %Y'): r['c'] for r in reg_monthly}
-
-    # Sample collected per month (status history)
-    sc_monthly = (
-        history_qs.filter(status='sample_collected', timestamp__date__gte=six_months_ago)
-        .annotate(m=TruncMonth('timestamp'))
-        .values('m').annotate(c=Count('id')).order_by('m')
-    )
-    sc_map = {r['m'].strftime('%b %Y'): r['c'] for r in sc_monthly}
-
-    # Payments per month (admin-wide for superuser, partner-specific otherwise)
-    pay_qs = PartnerPayment.objects.filter(created_at__date__gte=six_months_ago)
-    if not request.user.is_superuser:
-        pay_qs = pay_qs.filter(user=request.user)
-    pay_monthly = (
-        pay_qs
-        .annotate(m=TruncMonth('created_at'))
-        .values('m').annotate(amt=Sum('amount')).order_by('m')
-    )
-    pay_map = {r['m'].strftime('%b %Y'): float(r['amt'] or 0) for r in pay_monthly}
-
-    # Build ordered month labels
-    chart_labels, chart_reg, chart_sc, chart_pay = [], [], [], []
-    for i in range(6):
-        mo = (six_months_ago + relativedelta(months=i))
-        lbl = mo.strftime('%b %Y')
-        chart_labels.append(lbl)
-        chart_reg.append(reg_map.get(lbl, 0))
-        chart_sc.append(sc_map.get(lbl, 0))
-        chart_pay.append(pay_map.get(lbl, 0))
-
-    activity_chart = json.dumps({
-        'labels':      chart_labels,
-        'registered':  chart_reg,
-        'collected':   chart_sc,
-        'payments':    chart_pay,
-    })
-
     return render(request, 'agriapp/farmer_list.html', {
         'farmers'             : farmers,
         'kpi'                 : kpi,
@@ -1661,7 +1611,6 @@ def farmer_list(request):
         'farmer_status_choices': FARMER_STATUS_CHOICES,
         'season_choices'      : SEASON_CHOICES,
         'today'               : today,
-        'activity_chart'      : activity_chart,
     })
 
 
@@ -1941,8 +1890,14 @@ def payment_history(request):
 
     soil_partners = User.objects.filter(profile__user_type='soil_partner').order_by('username')
 
+    from django.core.paginator import Paginator
+    paginator   = Paginator(qs.order_by('-created_at'), 25)
+    page_number = request.GET.get('page', 1)
+    page_obj    = paginator.get_page(page_number)
+
     return render(request, 'agriapp/payment_history.html', {
-        'payments'      : qs,
+        'payments'      : page_obj,
+        'page_obj'      : page_obj,
         'soil_partners' : soil_partners,
         'totals'        : totals,
         'filters'       : {
@@ -2027,6 +1982,68 @@ def delete_payment(request, pk):
         except Exception:
             pass
     payment.delete()
+    return JsonResponse({'success': True})
+
+
+# ── Edit a payment record (admin) ────────────────────────────────────────────
+
+@admin_required
+def edit_payment(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    payment = get_object_or_404(PartnerPayment, pk=pk)
+
+    amount      = request.POST.get('amount', '').strip()
+    description = request.POST.get('description', '').strip()
+    status_val  = request.POST.get('status', '').strip()
+
+    if amount:
+        try:
+            payment.amount = float(amount)
+        except ValueError:
+            return JsonResponse({'error': 'Invalid amount.'}, status=400)
+    if description:
+        payment.description = description
+    if status_val in ('pending', 'paid'):
+        from django.utils import timezone as tz
+        if status_val == 'paid' and payment.status != 'paid':
+            payment.paid_at = tz.now()
+        elif status_val == 'pending':
+            payment.paid_at = None
+        payment.status = status_val
+    payment.save()
+
+    for f in request.FILES.getlist('attachments'):
+        PaymentAttachment.objects.create(payment=payment, file=f)
+
+    attachments = [
+        {'id': a.pk, 'url': a.file.url, 'name': a.file.name.split('/')[-1]}
+        for a in payment.attachments.all()
+    ]
+    return JsonResponse({
+        'success'    : True,
+        'amount'     : str(payment.amount),
+        'description': payment.description,
+        'status'     : payment.status,
+        'paid_at'    : payment.paid_at.strftime('%d %b %Y, %H:%M') if payment.paid_at else '',
+        'attachments': attachments,
+    })
+
+
+# ── Delete a single payment attachment (admin) ────────────────────────────────
+
+@admin_required
+def delete_payment_attachment(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    import os
+    att = get_object_or_404(PaymentAttachment, pk=pk)
+    try:
+        if os.path.isfile(att.file.path):
+            os.remove(att.file.path)
+    except Exception:
+        pass
+    att.delete()
     return JsonResponse({'success': True})
 
 

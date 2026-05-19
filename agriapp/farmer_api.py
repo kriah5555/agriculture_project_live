@@ -7,13 +7,11 @@ Endpoints
 GET    /api/mobile/farmers/                   List farmers for the logged-in soil partner
 POST   /api/mobile/farmers/create/            Register a new farmer (multipart for image)
 GET    /api/mobile/farmers/<pk>/              Farmer detail
-PATCH  /api/mobile/farmers/<pk>/update/       Update farmer fields
-PUT    /api/mobile/farmers/<pk>/update/       Update farmer fields (full)
+PATCH  /api/mobile/farmers/<pk>/update/       Update farmer fields (partial)
 DELETE /api/mobile/farmers/<pk>/delete/       Delete farmer
 POST   /api/mobile/farmers/<pk>/status/       Update farmer status
 GET    /api/mobile/farmers/<pk>/api-calls/    All API call readings linked to that farmer
 POST   /api/mobile/farmers/<pk>/image/        Upload / replace farmer image
-PUT    /api/mobile/farmers/<pk>/image/        Upload / replace farmer image
 DELETE /api/mobile/farmers/<pk>/image/delete/ Remove farmer image
 """
 import os
@@ -389,7 +387,7 @@ def farmer_detail(request, pk):
         404: OpenApiResponse(description='Farmer not found'),
     },
 )
-@api_view(['PATCH', 'PUT'])
+@api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def farmer_update(request, pk):
@@ -528,7 +526,7 @@ def farmer_api_calls(request, pk):
         404: OpenApiResponse(description='Farmer not found'),
     },
 )
-@api_view(['POST', 'PUT'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser])
 def farmer_update_image(request, pk):

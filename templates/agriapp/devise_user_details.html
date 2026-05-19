@@ -484,6 +484,7 @@
                 <th style="padding:10px 14px;">#</th>
                 <th style="padding:10px 14px;">Name</th>
                 <th style="padding:10px 14px;">Phone</th>
+                <th style="padding:10px 14px;">Aadhaar</th>
                 <th style="padding:10px 14px;">Village / District</th>
                 <th style="padding:10px 14px;">Crop / Season</th>
                 <th style="padding:10px 14px;">Status</th>
@@ -496,6 +497,7 @@
                 <td style="padding:10px 14px; color:#999;">{{ forloop.counter }}</td>
                 <td style="padding:10px 14px; font-weight:600;">{{ farmer.farmer_name }}</td>
                 <td style="padding:10px 14px;">{{ farmer.phone }}</td>
+                <td style="padding:10px 14px; font-family:monospace; font-size:12px;">****&nbsp;{{ farmer.aadhaar_number|slice:"-4:" }}</td>
                 <td style="padding:10px 14px;">
                   <div>{{ farmer.village }}</div>
                   <div class="text-muted" style="font-size:11px;">{{ farmer.district }}, {{ farmer.state }}</div>

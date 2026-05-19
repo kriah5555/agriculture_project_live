@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
+from soilmap import views as soilmap_views
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
@@ -13,6 +14,7 @@ from drf_spectacular.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/predict/', soilmap_views.predict_soil, name='soil-predict'),
     path('', include('agriapp.urls')),
     path('', include('map.urls')),
     path('api/', include('devise_apis.urls')),

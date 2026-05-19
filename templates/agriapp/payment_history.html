@@ -202,6 +202,11 @@
             <td style="font-size:11px;color:#6c757d;">{{ p.created_by.username|default:"—" }}</td>
             <td>
               <div class="d-flex gap-1">
+                <button class="btn btn-sm btn-outline-primary toggle-btn"
+                        onclick="openEditPayment({{ p.pk }}, '{{ p.amount }}', '{{ p.description|escapejs }}', '{{ p.status }}')"
+                        title="Edit Payment">
+                  <i class="fas fa-edit"></i>
+                </button>
                 <button class="btn btn-sm toggle-btn {% if p.status == 'paid' %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
                         onclick="toggleStatus({{ p.pk }}, this)"
                         title="{% if p.status == 'paid' %}Mark as Pending{% else %}Mark as Paid{% endif %}">
@@ -230,6 +235,73 @@
         {% endif %}
       </div>
       {% endif %}
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="d-flex justify-content-center align-items-center gap-2 mt-4 flex-wrap">
+    <span class="text-muted" style="font-size:12px;">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      &nbsp;·&nbsp; {{ page_obj.paginator.count }} records
+    </span>
+    {% if page_obj.has_previous %}
+      <a href="?{% for k,v in filters.items %}{% if v %}{{ k }}={{ v }}&{% endif %}{% endfor %}page=1" class="btn btn-sm btn-outline-secondary">«</a>
+      <a href="?{% for k,v in filters.items %}{% if v %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-outline-secondary">‹</a>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+      {% if num >= page_obj.number|add:"-3" and num <= page_obj.number|add:"3" %}
+        <a href="?{% for k,v in filters.items %}{% if v %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ num }}"
+           class="btn btn-sm {% if num == page_obj.number %}btn-primary{% else %}btn-outline-secondary{% endif %}">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+      <a href="?{% for k,v in filters.items %}{% if v %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}" class="btn btn-sm btn-outline-secondary">›</a>
+      <a href="?{% for k,v in filters.items %}{% if v %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}" class="btn btn-sm btn-outline-secondary">»</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Edit Payment Modal -->
+<div id="editPayOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:3000;align-items:center;justify-content:center;"
+     onclick="if(event.target===this)closeEditPayment()">
+  <div style="background:#fff;border-radius:16px;width:min(500px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.25);"
+       onclick="event.stopPropagation()">
+    <div style="padding:18px 24px;border-bottom:1px solid #f0f2f5;display:flex;align-items:center;justify-content:space-between;">
+      <h5 class="mb-0 fw-bold">Edit Payment</h5>
+      <button class="btn-close" onclick="closeEditPayment()"></button>
+    </div>
+    <div style="padding:20px 24px;">
+      <form id="editPayForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:12px;">Amount (₹)</label>
+          <input id="ep_amount" type="number" step="0.01" name="amount" class="form-control form-control-sm" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:12px;">Description</label>
+          <textarea id="ep_desc" name="description" class="form-control form-control-sm" rows="2"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:12px;">Status</label>
+          <select id="ep_status" name="status" class="form-select form-select-sm">
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold" style="font-size:12px;">Add Attachments</label>
+          <input type="file" name="attachments" multiple class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+        </div>
+        <div id="ep_att_list" class="mb-2"></div>
+        <div id="ep_msg" style="font-size:13px;min-height:18px;"></div>
+      </form>
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <button class="btn btn-secondary btn-sm" onclick="closeEditPayment()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="submitEditPayment()"><i class="fas fa-save me-1"></i>Save</button>
+      </div>
     </div>
   </div>
 </div>
@@ -273,6 +345,43 @@ function deletePayment(pk) {
       document.getElementById(`pay-row-${pk}`).remove();
     } else { alert(d.error || 'Could not delete payment.'); }
   });
+}
+
+let _editPk = null;
+
+function openEditPayment(pk, amount, desc, status) {
+  _editPk = pk;
+  document.getElementById('ep_amount').value  = amount;
+  document.getElementById('ep_desc').value    = desc;
+  document.getElementById('ep_status').value  = status;
+  document.getElementById('ep_msg').textContent = '';
+  document.getElementById('ep_att_list').innerHTML = '';
+  const overlay = document.getElementById('editPayOverlay');
+  overlay.style.display = 'flex';
+}
+
+function closeEditPayment() {
+  document.getElementById('editPayOverlay').style.display = 'none';
+  _editPk = null;
+}
+
+function submitEditPayment() {
+  if (!_editPk) return;
+  const form = document.getElementById('editPayForm');
+  const msg  = document.getElementById('ep_msg');
+  msg.textContent = 'Saving…'; msg.style.color = '#888';
+  fetch(`/edit-payment/${_editPk}/`, {
+    method: 'POST',
+    headers: {'X-CSRFToken': CSRF},
+    body: new FormData(form),
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (!d.success) { msg.textContent = d.error || 'Failed.'; msg.style.color = '#dc3545'; return; }
+    msg.textContent = 'Saved!'; msg.style.color = '#2e7d32';
+    setTimeout(() => { closeEditPayment(); location.reload(); }, 900);
+  })
+  .catch(() => { msg.textContent = 'Error saving.'; msg.style.color = '#dc3545'; });
 }
 </script>
 {% endblock %}

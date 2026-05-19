@@ -93,6 +93,8 @@ urlpatterns = [
     path('payment-history/',                        v.payment_history,                          name='payment-history'),
     path('add-payment/<str:uid>/',                  v.add_payment,                              name='add-payment'),
     path('delete-payment/<int:pk>/',                v.delete_payment,                           name='delete-payment'),
+    path('edit-payment/<int:pk>/',                  v.edit_payment,                             name='edit-payment'),
+    path('delete-payment-attachment/<int:pk>/',     v.delete_payment_attachment,                name='delete-payment-attachment'),
     path('toggle-payment-status/<int:pk>/',         v.toggle_payment_status,                    name='toggle-payment-status'),
     path('my-payment-history/',                     v.my_payment_history,                       name='my-payment-history'),
 

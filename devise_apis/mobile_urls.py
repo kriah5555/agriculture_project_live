@@ -50,19 +50,12 @@ PHBottle readings (ph_bottle)                      (devices/ph_bottle.py)
   POST  /api/mobile/devices/<id>/ph-bottle/create/        Create reading
   GET   /api/mobile/devices/<id>/ph-bottle/<cid>/         Single reading
 
-SoilMap readings (soil_map)                        (devices/soil_map.py)
-  GET   /api/mobile/devices/<id>/soil-map/                List readings
-  POST  /api/mobile/devices/<id>/soil-map/create/         Create reading
-  GET   /api/mobile/devices/<id>/soil-map/<cid>/          Single reading
-
 Account       (requires auth)                      (mobile_api.py / auth_api.py)
   GET   /api/mobile/account/profile/               Get profile
   PATCH /api/mobile/account/profile/update/        Update profile
   POST  /api/mobile/account/change-password-request/  Notify admin of password change
   GET   /api/mobile/account/payment-history/       My payment records (soil partner only)
 
-SoiLENZ Report
-  POST  /api/mobile/soil-report-pdf/               Generate & download 6-page SoiLENZ PDF report
 """
 from django.urls import path
 from . import mobile_api as m
@@ -72,8 +65,6 @@ from .devices import atmo_sense as atmo
 from .devices import soil_life  as sl
 from .devices import ph_bottle  as pb
 from agriapp import farmer_api as fa
-from .devices import soil_map   as sm
-from soilmap import views as soilmap_v
 
 urlpatterns = [
     # ── Auth ──────────────────────────────────────────────────────────────────
@@ -118,11 +109,6 @@ urlpatterns = [
     path('devices/<int:device_id>/ph-bottle/create/',                pb.ph_bottle_create, name='mobile_pb_create'),
     path('devices/<int:device_id>/ph-bottle/<int:call_id>/',         pb.ph_bottle_detail, name='mobile_pb_detail'),
 
-    # ── SoilMap (soil_map) device-specific routes ─────────────────────────────
-    path('devices/<int:device_id>/soil-map/',                       sm.soil_map_list,   name='mobile_sm_list'),
-    path('devices/<int:device_id>/soil-map/create/',                sm.soil_map_create, name='mobile_sm_create'),
-    path('devices/<int:device_id>/soil-map/<int:call_id>/',         sm.soil_map_detail, name='mobile_sm_detail'),
-
     # ── Account ───────────────────────────────────────────────────────────────
     path('account/profile/',           m.account_profile,        name='mobile_profile'),
     path('account/profile/update/',    m.account_profile_update, name='mobile_profile_update'),
@@ -132,9 +118,6 @@ urlpatterns = [
     path('auth/forgot-password/',            a.forgot_password_request,  name='mobile_forgot_password'),
     path('account/change-password-request/', a.change_password_request,  name='mobile_change_password_request'),
     path('auth/soil-partner-enquiry/',       a.soil_partner_enquiry,     name='mobile_soil_partner_enquiry'),
-
-    # ── SoiLENZ PDF report ────────────────────────────────────────────────────
-    path('soil-report-pdf/',                soilmap_v.generate_soil_report_pdf, name='mobile_soil_report_pdf'),
 
     # ── Farmers ───────────────────────────────────────────────────────────────
     path('farmers/',                          fa.farmer_list,          name='mobile_farmer_list'),
