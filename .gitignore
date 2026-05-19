@@ -9,9 +9,10 @@ db.sqlite3
 env
 /media
 
-# SoilMap ML — large model binaries (distribute via models.zip)
+# SoilMap ML — large model binaries (keep local, do not commit)
 soilmap/models/*.pkl
 soilmap/models/*.png
+soilmap/models/*.zip
 
 # SoilMap ML pipeline cache
 soilmap/ml_pipeline/__pycache__/
