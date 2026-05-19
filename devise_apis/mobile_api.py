@@ -28,6 +28,7 @@ from agriapp.models import (
     APICountThreshold, DEVICE_NAMES,
     SOIL_SAATHI_FIELDS, ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS,
 )
+from .devices._common import resolve_farmer
 from .mobile_serializers import (
     DeviceTypeSerializer,
     DeviceListSerializer,
@@ -36,6 +37,7 @@ from .mobile_serializers import (
     SoilSaathiReadingCreateSerializer,
     FieldsReadingSerializer,
     FieldsReadingCreateSerializer,
+    _build_user_dict,
 )
 
 
@@ -52,14 +54,23 @@ _location_response = inline_serializer(
 _profile_response = inline_serializer(
     name='UserProfileResponse',
     fields={
-        'id'         : drf_serializers.IntegerField(),
-        'username'   : drf_serializers.CharField(),
-        'email'      : drf_serializers.EmailField(),
-        'first_name' : drf_serializers.CharField(),
-        'last_name'  : drf_serializers.CharField(),
-        'full_name'  : drf_serializers.CharField(),
-        'date_joined': drf_serializers.DateTimeField(),
-        'last_login' : drf_serializers.DateTimeField(),
+        'id'                : drf_serializers.IntegerField(),
+        'username'          : drf_serializers.CharField(),
+        'email'             : drf_serializers.EmailField(),
+        'first_name'        : drf_serializers.CharField(),
+        'last_name'         : drf_serializers.CharField(),
+        'full_name'         : drf_serializers.CharField(),
+        'is_superuser'      : drf_serializers.BooleanField(),
+        'is_staff'          : drf_serializers.BooleanField(),
+        'is_active'         : drf_serializers.BooleanField(),
+        'date_joined'       : drf_serializers.DateTimeField(),
+        'last_login'        : drf_serializers.DateTimeField(allow_null=True),
+        'user_type'         : drf_serializers.CharField(allow_null=True,
+                                help_text='soil_partner | current_user | null for admin/staff'),
+        'state'             : drf_serializers.CharField(allow_null=True),
+        'district'          : drf_serializers.CharField(allow_null=True),
+        'city_village'      : drf_serializers.CharField(allow_null=True),
+        'is_profile_active' : drf_serializers.BooleanField(allow_null=True),
     },
 )
 
@@ -327,6 +338,11 @@ def api_call_create(request, device_id):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+    # ── Resolve optional farmer link ─────────────────────────────────────────
+    farmer = resolve_farmer(request, request.data.get('farmer_id'))
+    if isinstance(farmer, Response):
+        return farmer
+
     # ── Save reading ─────────────────────────────────────────────────────────
     if device.devise_type == 'soilsaathi':
         serializer = SoilSaathiReadingCreateSerializer(data=request.data)
@@ -335,12 +351,13 @@ def api_call_create(request, device_id):
                 device    = device,
                 devise_id = device.devise_id,
                 serial_no = device.serial_no,
+                farmer    = farmer,
             )
             return Response(SoilSaathiReadingSerializer(reading).data, status=status.HTTP_201_CREATED)
     else:
         serializer = FieldsReadingCreateSerializer(data=request.data)
         if serializer.is_valid():
-            reading = serializer.save(device=device)
+            reading = serializer.save(device=device, farmer=farmer)
             return Response(FieldsReadingSerializer(reading).data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -381,18 +398,8 @@ def api_call_detail(request, device_id, call_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def account_profile(request):
-    """Return the authenticated user's profile details."""
-    user = request.user
-    return Response({
-        'id'         : user.id,
-        'username'   : user.username,
-        'email'      : user.email,
-        'first_name' : user.first_name,
-        'last_name'  : user.last_name,
-        'full_name'  : user.get_full_name(),
-        'date_joined': user.date_joined,
-        'last_login' : user.last_login,
-    })
+    """Return the authenticated user's full profile including user_type and profile fields."""
+    return Response(_build_user_dict(request.user))
 
 
 @extend_schema(

@@ -21,9 +21,10 @@
     display:inline-block;font-size:10px;font-weight:700;
     padding:2px 8px;border-radius:10px;letter-spacing:.4px;
   }
-  .badge-forgot  { background:#fff3cd;color:#664d03; }
-  .badge-change  { background:#cfe2ff;color:#084298; }
-  .badge-contact { background:#e2e3e5;color:#383d41; }
+  .badge-forgot   { background:#fff3cd;color:#664d03; }
+  .badge-change   { background:#cfe2ff;color:#084298; }
+  .badge-contact  { background:#e2e3e5;color:#383d41; }
+  .badge-interest { background:#d1f7df;color:#145a32; }
   .detail-panel { background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.07);padding:28px; }
   .detail-label { font-size:12px;color:#6c757d;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px; }
   .detail-value { font-size:15px;color:#111;margin-bottom:16px; }
@@ -94,6 +95,8 @@
                         <strong style="font-size:14px;">{{ req.username }}</strong>
                         {% if req.request_type == 'forgot_password' %}
                           <span class="badge-type badge-forgot">Forgot PW</span>
+                        {% elif req.request_type == 'soil_partner_interest' %}
+                          <span class="badge-type badge-interest"><i class="fas fa-leaf me-1"></i>Soil Partner</span>
                         {% else %}
                           <span class="badge-type badge-change">Change PW</span>
                         {% endif %}
@@ -120,6 +123,8 @@
                         <strong style="font-size:14px;color:#6c757d;">{{ req.username }}</strong>
                         {% if req.request_type == 'forgot_password' %}
                           <span class="badge-type badge-forgot">Forgot PW</span>
+                        {% elif req.request_type == 'soil_partner_interest' %}
+                          <span class="badge-type badge-interest"><i class="fas fa-leaf me-1"></i>Soil Partner</span>
                         {% else %}
                           <span class="badge-type badge-change">Change PW</span>
                         {% endif %}

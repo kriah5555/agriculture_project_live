@@ -1,15 +1,17 @@
 {% extends "navbar.html" %}
 {% block content %}
 <style>
-  .fd-card {
-    background:#fff; border-radius:12px;
-    box-shadow:0 2px 10px rgba(0,0,0,0.07);
-    overflow:hidden; margin-bottom:16px;
+  :root {
+    --reg : #6b7280; --reg-bg : #f3f4f6;
+    --samp: #1565c0; --samp-bg: #e3f2fd;
+    --test: #e65100; --test-bg: #fff3e0;
+    --rep : #2e7d32; --rep-bg : #e8f5e9;
   }
+
+  .fd-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.07); overflow:hidden; margin-bottom:16px; }
   .fd-card-header {
     background:linear-gradient(135deg,#1a2f6b,#1a73e8);
-    color:#fff; padding:13px 18px;
-    display:flex; align-items:center; gap:8px;
+    color:#fff; padding:13px 18px; display:flex; align-items:center; gap:8px;
   }
   .fd-card-header h6 { margin:0; font-size:13px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; opacity:.9; }
   .info-row { display:flex; padding:9px 18px; border-bottom:1px solid #f0f2f5; font-size:13px; }
@@ -22,52 +24,138 @@
   .tl-item { display:flex; gap:16px; padding-bottom:20px; position:relative; }
   .tl-item:not(:last-child)::before {
     content:''; position:absolute; left:11px; top:24px;
-    width:2px; height:calc(100% - 4px);
-    background:#e0e0e0;
+    width:2px; height:calc(100% - 4px); background:#e0e0e0;
   }
-  .tl-dot {
-    width:24px; height:24px; border-radius:50%; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
-    font-size:10px; font-weight:700; color:#fff;
-  }
+  .tl-dot { width:24px; height:24px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff; }
   .tl-dot.registered       { background:#9e9e9e; }
-  .tl-dot.sample_collected  { background:#1565c0; }
-  .tl-dot.testing_done      { background:#e65100; }
-  .tl-dot.report_delivered  { background:#2e7d32; }
+  .tl-dot.re_registered    { background:#0277bd; }
+  .tl-dot.sample_collected  { background:var(--samp); }
+  .tl-dot.testing_done      { background:var(--test); }
+  .tl-dot.report_delivered  { background:var(--rep); }
 
-  .st-registered       { background:#f1f3f4; color:#666;     border:1px solid #ddd; }
-  .st-sample_collected { background:#e3f2fd; color:#1565c0;  border:1px solid #90caf9; }
-  .st-testing_done     { background:#fff8e1; color:#e65100;  border:1px solid #ffe082; }
-  .st-report_delivered { background:#e8f5e9; color:#2e7d32;  border:1px solid #a5d6a7; }
+  .st-registered       { background:var(--reg-bg);  color:var(--reg);  border:1px solid #d1d5db; }
+  .st-re_registered    { background:#e1f5fe;        color:#0277bd;     border:1px solid #81d4fa; }
+  .st-sample_collected { background:var(--samp-bg); color:var(--samp); border:1px solid #90caf9; }
+  .st-testing_done     { background:var(--test-bg); color:var(--test); border:1px solid #ffcc80; }
+  .st-report_delivered { background:var(--rep-bg);  color:var(--rep);  border:1px solid #a5d6a7; }
+
+  /* ── API calls section ────────────────────────────── */
+  .api-tabs { display:flex; gap:6px; flex-wrap:wrap; padding:14px 16px 0; border-bottom:1px solid #f0f2f5; }
+  .api-tab {
+    padding:7px 14px; border-radius:8px 8px 0 0; font-size:13px; font-weight:600;
+    cursor:pointer; border:1px solid transparent; border-bottom:none;
+    color:#777; background:#f8f9fa; transition:all .15s;
+  }
+  .api-tab.active { background:#fff; color:#1a2f6b; border-color:#e5e7eb; border-bottom:1px solid #fff; margin-bottom:-1px; }
+  .api-tab-badge {
+    display:inline-block; padding:1px 7px; border-radius:10px;
+    font-size:10px; font-weight:700; margin-left:4px;
+    background:#e5e7eb; color:#555;
+  }
+  .api-tab.active .api-tab-badge { background:#1a2f6b; color:#fff; }
+
+  .api-pane { display:none; padding:16px; }
+  .api-pane.active { display:block; }
+
+  /* Date group */
+  .date-group { margin-bottom:8px; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }
+  .date-group-header {
+    padding:9px 14px; background:#f8f9fa; cursor:pointer;
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:13px; font-weight:600; color:#444; user-select:none;
+  }
+  .date-group-header:hover { background:#f0f2f5; }
+  .date-group-body { display:none; }
+  .date-group-body.open { display:block; }
+
+  /* Reading row */
+  .reading-row {
+    display:flex; align-items:center; gap:10px;
+    padding:8px 14px; border-top:1px solid #f0f2f5; font-size:12px;
+    transition:background .1s;
+  }
+  .reading-row:hover { background:#f8f9fa; }
+  .reading-time { font-family:monospace; color:#888; flex-shrink:0; min-width:55px; }
+  .reading-vals { flex:1; color:#444; display:flex; flex-wrap:wrap; gap:6px; }
+  .rv-chip { padding:2px 8px; border-radius:6px; background:#f0f4ff; color:#1a2f6b; font-weight:500; }
+  .reading-link {
+    flex-shrink:0; padding:3px 10px; border-radius:6px;
+    background:#1a2f6b; color:#fff; font-size:11px; font-weight:600;
+    text-decoration:none; transition:background .15s; white-space:nowrap;
+  }
+  .reading-link:hover { background:#1a73e8; color:#fff; }
+
+  .no-readings { padding:28px; text-align:center; color:#aaa; font-size:13px; }
+
+  /* ── Edit modal ───────────────────────────────────── */
+  .edit-modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:2000;
+    align-items:center; justify-content:center;
+  }
+  .edit-modal-overlay.open { display:flex; }
+  .edit-modal {
+    background:#fff; border-radius:16px; width:min(680px, 95vw);
+    max-height:90vh; overflow-y:auto;
+    box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  }
+  .edit-modal-header {
+    padding:18px 24px; border-bottom:1px solid #f0f2f5;
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; background:#fff; z-index:1;
+  }
+  .edit-modal-body { padding:20px 24px; }
+  .edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .edit-full { grid-column:1/-1; }
+  .edit-label { font-size:12px; font-weight:600; color:#666; margin-bottom:4px; display:block; }
+  .edit-input {
+    width:100%; border:1px solid #e5e7eb; border-radius:8px;
+    padding:9px 12px; font-size:13px; outline:none; transition:border-color .15s;
+  }
+  .edit-input:focus { border-color:#1a2f6b; }
+  .edit-modal-footer {
+    padding:16px 24px; border-top:1px solid #f0f2f5;
+    display:flex; justify-content:flex-end; gap:10px;
+    position:sticky; bottom:0; background:#fff;
+  }
+  .edit-msg { font-size:13px; padding:8px 0; min-height:24px; }
 </style>
 
-<div style="padding:8px 4px 24px;">
+<div style="padding:8px 4px 32px;">
 
-  <!-- Page header -->
+  <!-- ── Page header ────────────────────────────────── -->
   <div class="d-flex align-items-center gap-3 mb-4 px-2">
-    <div style="width:44px;height:44px;border-radius:10px;background:#1a2f6b;display:flex;align-items:center;justify-content:center;">
+    <div style="width:44px;height:44px;border-radius:10px;background:#1a2f6b;
+                display:flex;align-items:center;justify-content:center;">
       <i class="fas fa-user text-white" style="font-size:18px;"></i>
     </div>
     <div>
       <h4 class="mb-0 fw-bold">{{ farmer.farmer_name }}</h4>
-      <span class="text-muted" style="font-size:13px;">{{ farmer.village }}, {{ farmer.district }}, {{ farmer.state }}</span>
+      <span class="text-muted" style="font-size:13px;">
+        {{ farmer.village }}, {{ farmer.district }}, {{ farmer.state }}
+      </span>
     </div>
-    <a href="{% url 'farmer-list' %}" class="btn btn-sm btn-outline-secondary ms-auto">
-      <i class="fas fa-arrow-left me-1"></i> Back
-    </a>
+    <div class="ms-auto d-flex gap-2">
+      <button class="btn btn-sm btn-outline-primary" onclick="openEdit()">
+        <i class="fas fa-edit me-1"></i> Edit
+      </button>
+      <button class="btn btn-sm btn-outline-secondary" onclick="history.back()">
+        <i class="fas fa-arrow-left me-1"></i> Back
+      </button>
+    </div>
   </div>
 
   <div class="row g-3">
 
-    <!-- Left column -->
+    <!-- ── Left column ────────────────────────────── -->
     <div class="col-lg-4">
 
       <!-- Photo management -->
       <div class="fd-card text-center p-3">
-        <div id="imgWrap" style="position:relative; display:inline-block; margin-bottom:12px;">
+        <div id="imgWrap" style="position:relative;display:inline-block;margin-bottom:12px;">
           {% if farmer.farmer_image %}
           <img id="farmerPhoto" src="{{ farmer.farmer_image.url }}" alt="{{ farmer.farmer_name }}"
-               style="width:120px;height:120px;object-fit:cover;border-radius:50%;border:3px solid #e3e8f7;" />
+               style="width:120px;height:120px;object-fit:cover;border-radius:50%;border:3px solid #e3e8f7;">
           {% else %}
           <div id="farmerPhoto" style="width:120px;height:120px;border-radius:50%;border:3px dashed #ccc;
                background:#f5f7fa;display:flex;align-items:center;justify-content:center;margin:0 auto;">
@@ -75,32 +163,28 @@
           </div>
           {% endif %}
         </div>
-
-        <!-- Upload form -->
         <form id="imgUploadForm" method="POST" action="{% url 'farmer-image-update' farmer.pk %}"
               enctype="multipart/form-data" onsubmit="uploadImage(event)">
           {% csrf_token %}
           <div class="d-flex justify-content-center gap-2 flex-wrap mt-1">
-            <label class="btn btn-sm btn-outline-primary" style="cursor:pointer; margin:0;">
+            <label class="btn btn-sm btn-outline-primary" style="cursor:pointer;margin:0;">
               <i class="fas fa-camera me-1"></i>
-              {% if farmer.farmer_image %}Change Photo{% else %}Upload Photo{% endif %}
+              {% if farmer.farmer_image %}Change{% else %}Upload{% endif %} Photo
               <input type="file" name="farmer_image" accept="image/*" style="display:none;"
-                     onchange="this.form.dispatchEvent(new Event('submit', {bubbles:true}));" />
+                     onchange="this.form.dispatchEvent(new Event('submit',{bubbles:true}));">
             </label>
             {% if farmer.farmer_image %}
-            <button type="button" class="btn btn-sm btn-outline-danger"
-                    onclick="deleteImage()" title="Remove photo">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteImage()">
               <i class="fas fa-trash me-1"></i> Remove
             </button>
             {% else %}
-            <button type="button" id="removeBtn" class="btn btn-sm btn-outline-danger" style="display:none;"
-                    onclick="deleteImage()">
+            <button type="button" id="removeBtn" class="btn btn-sm btn-outline-danger" style="display:none;" onclick="deleteImage()">
               <i class="fas fa-trash me-1"></i> Remove
             </button>
             {% endif %}
           </div>
         </form>
-        <div id="imgMsg" class="mt-2" style="font-size:12px; min-height:16px;"></div>
+        <div id="imgMsg" class="mt-2" style="font-size:12px;min-height:16px;"></div>
       </div>
 
       <!-- Basic Info -->
@@ -110,7 +194,7 @@
         <div class="info-row"><span class="info-label">Mobile</span>       <span class="info-value">{{ farmer.mobile|default:"—" }}</span></div>
         <div class="info-row"><span class="info-label">Email</span>        <span class="info-value">{{ farmer.email|default:"—" }}</span></div>
         <div class="info-row"><span class="info-label">Aadhaar</span>      <span class="info-value" style="font-family:monospace;">{{ farmer.aadhaar_number }}</span></div>
-        <div class="info-row"><span class="info-label">Registered</span>   <span class="info-value" style="font-size:12px;font-family:monospace;">{{ farmer.created_at|date:"Y-m-d H:i:s" }}</span></div>
+        <div class="info-row"><span class="info-label">Registered</span>   <span class="info-value" style="font-size:12px;font-family:monospace;">{{ farmer.created_at|date:"Y-m-d H:i" }}</span></div>
         <div class="info-row"><span class="info-label">Soil Partner</span> <span class="info-value">{{ farmer.soil_partner.get_full_name|default:farmer.soil_partner.username }}</span></div>
       </div>
 
@@ -121,10 +205,9 @@
         <div class="info-row"><span class="info-label">District</span> <span class="info-value">{{ farmer.district }}</span></div>
         <div class="info-row"><span class="info-label">Village</span>  <span class="info-value">{{ farmer.village }}</span></div>
         {% if farmer.latitude and farmer.longitude %}
-        <div class="info-row"><span class="info-label">Lat / Lng</span>
-          <span class="info-value" style="font-family:monospace;font-size:12px;">
-            {{ farmer.latitude }}, {{ farmer.longitude }}
-          </span>
+        <div class="info-row">
+          <span class="info-label">Lat / Lng</span>
+          <span class="info-value" style="font-family:monospace;font-size:12px;">{{ farmer.latitude }}, {{ farmer.longitude }}</span>
         </div>
         {% endif %}
       </div>
@@ -139,31 +222,25 @@
 
     </div>
 
-    <!-- Right column -->
+    <!-- ── Right column ───────────────────────────── -->
     <div class="col-lg-8">
 
       <!-- Current Status + Update -->
       <div class="fd-card">
         <div class="fd-card-header" style="justify-content:space-between;">
-          <div class="d-flex align-items:center gap-2">
-            <i class="fas fa-tasks"></i><h6 style="margin-left:8px;">Current Status</h6>
-          </div>
-          <span id="currentStatusBadge"
-                class="badge st-{{ farmer.status }}"
+          <div class="d-flex align-items:center gap-2"><i class="fas fa-tasks"></i><h6 style="margin-left:8px;">Status</h6></div>
+          <span id="currentStatusBadge" class="badge st-{{ farmer.status }}"
                 style="font-size:12px;padding:5px 12px;border-radius:20px;">
             {{ farmer.get_status_display }}
           </span>
         </div>
         <div class="p-3">
-          <p class="text-muted mb-3" style="font-size:13px;">Update farmer status to the next stage:</p>
+          <p class="text-muted mb-3" style="font-size:13px;">Update farmer status:</p>
           <div class="d-flex flex-wrap gap-2">
             {% for val, label in status_choices %}
             <button class="btn btn-sm {% if farmer.status == val %}btn-primary{% else %}btn-outline-secondary{% endif %}"
-                    id="btn-{{ val }}"
-                    onclick="updateStatus('{{ val }}', '{{ label }}')"
-                    {% if farmer.status == val %}disabled{% endif %}>
-              {{ label }}
-            </button>
+                    id="btn-{{ val }}" onclick="updateStatus('{{ val }}','{{ label }}')"
+                    {% if farmer.status == val %}disabled{% endif %}>{{ label }}</button>
             {% endfor %}
           </div>
         </div>
@@ -179,8 +256,7 @@
               {% if h.status == 'registered' %}<i class="fas fa-check" style="font-size:9px;"></i>
               {% elif h.status == 'sample_collected' %}<i class="fas fa-vial" style="font-size:9px;"></i>
               {% elif h.status == 'testing_done' %}<i class="fas fa-flask" style="font-size:9px;"></i>
-              {% else %}<i class="fas fa-file-alt" style="font-size:9px;"></i>
-              {% endif %}
+              {% else %}<i class="fas fa-file-alt" style="font-size:9px;"></i>{% endif %}
             </div>
             <div>
               <div style="font-weight:600;font-size:13px;">{{ h.get_status_display }}</div>
@@ -188,12 +264,89 @@
             </div>
           </div>
           {% empty %}
-          <p class="text-muted" style="font-size:13px;">No status history yet.</p>
+          <p class="text-muted" style="font-size:13px;">No history yet.</p>
           {% endfor %}
         </div>
       </div>
 
-      <!-- Map (if coordinates available) -->
+      <!-- ── API Readings ─────────────────────────── -->
+      <div class="fd-card">
+        <div class="fd-card-header" style="justify-content:space-between;">
+          <div class="d-flex align-items:center gap-2"><i class="fas fa-database"></i><h6 style="margin-left:8px;">API Readings</h6></div>
+          <span style="font-size:12px;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:12px;">
+            {{ total_api_calls }} total
+          </span>
+        </div>
+
+        <!-- Device type tabs -->
+        <div class="api-tabs">
+          {% for dtype, info in api_readings.items %}
+          <div class="api-tab {% if forloop.first %}active{% endif %}"
+               data-pane="pane-{{ dtype }}"
+               onclick="switchTab(this,'pane-{{ dtype }}')">
+            <i class="fas {{ info.icon }}" style="color:{{ info.color }};font-size:12px;"></i>
+            {{ info.label }}
+            <span class="api-tab-badge">{{ info.count }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Tab panes -->
+        {% for dtype, info in api_readings.items %}
+        <div class="api-pane {% if forloop.first %}active{% endif %}" id="pane-{{ dtype }}">
+          {% if info.groups %}
+            {% for date_str, readings in info.groups %}
+            <div class="date-group">
+              <div class="date-group-header" onclick="toggleGroup(this)">
+                <span><i class="fas fa-calendar-day" style="color:#aaa;margin-right:6px;"></i>{{ date_str }}</span>
+                <span style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:11px;font-weight:500;color:#aaa;">{{ readings|length }} reading{{ readings|length|pluralize }}</span>
+                  <i class="fas fa-chevron-down" style="font-size:11px;color:#aaa;transition:transform .2s;"></i>
+                </span>
+              </div>
+              <div class="date-group-body {% if forloop.first %}open{% endif %}">
+                {% for r in readings %}
+                <div class="reading-row">
+                  <span class="reading-time">{{ r.created_at|date:"H:i" }}</span>
+                  <div class="reading-vals">
+                    {% if dtype == 'soilsaathi' %}
+                      {% if r.nitrogen   %}<span class="rv-chip">N: {{ r.nitrogen }}</span>{% endif %}
+                      {% if r.phosphorous%}<span class="rv-chip">P: {{ r.phosphorous }}</span>{% endif %}
+                      {% if r.potassium  %}<span class="rv-chip">K: {{ r.potassium }}</span>{% endif %}
+                      {% if r.ph        %}<span class="rv-chip">pH: {{ r.ph }}</span>{% endif %}
+                      {% if r.area_name  %}<span class="rv-chip">{{ r.area_name }}</span>{% endif %}
+                    {% else %}
+                      {% if r.field1 %}<span class="rv-chip">F1: {{ r.field1 }}</span>{% endif %}
+                      {% if r.field2 %}<span class="rv-chip">F2: {{ r.field2 }}</span>{% endif %}
+                      {% if r.field3 %}<span class="rv-chip">F3: {{ r.field3 }}</span>{% endif %}
+                      {% if r.tag %}<span class="rv-chip">{{ r.tag }}</span>{% endif %}
+                    {% endif %}
+                    <span class="rv-chip" style="background:#f0f9f0;color:#2e7d32;">
+                      <i class="fas fa-microchip" style="font-size:9px;"></i> {{ r.device.name|default:r.device.devise_id }}
+                    </span>
+                  </div>
+                  {% if info.url_prefix %}
+                  <a href="{{ info.url_prefix }}{{ r.pk }}/" class="reading-link" onclick="event.stopPropagation();">
+                    View <i class="fas fa-arrow-right" style="font-size:9px;"></i>
+                  </a>
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="no-readings">
+            <i class="fas {{ info.icon }}" style="font-size:28px;margin-bottom:8px;display:block;color:#ddd;"></i>
+            No {{ info.label }} readings linked to this farmer yet.
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+      </div><!-- /api readings card -->
+
+      <!-- Map -->
       {% if farmer.latitude and farmer.longitude %}
       <div class="fd-card">
         <div class="fd-card-header"><i class="fas fa-map"></i><h6>Location Map</h6></div>
@@ -205,8 +358,94 @@
   </div>
 </div>
 
+<!-- ── Edit Modal ──────────────────────────────────────────────── -->
+<div class="edit-modal-overlay" id="editOverlay" onclick="if(event.target===this)closeEdit()">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <div>
+        <h5 class="mb-0 fw-bold">Edit Farmer</h5>
+        <p class="text-muted mb-0" style="font-size:12px;">{{ farmer.farmer_name }}</p>
+      </div>
+      <button type="button" class="btn-close" onclick="closeEdit()"></button>
+    </div>
+    <div class="edit-modal-body">
+      <form id="editForm">
+        {% csrf_token %}
+        <div class="edit-grid">
+          <div>
+            <label class="edit-label">Full Name *</label>
+            <input class="edit-input" name="farmer_name" value="{{ farmer.farmer_name }}" required>
+          </div>
+          <div>
+            <label class="edit-label">Aadhaar Number</label>
+            <input class="edit-input" name="aadhaar_number" value="{{ farmer.aadhaar_number }}" maxlength="12">
+          </div>
+          <div>
+            <label class="edit-label">Phone</label>
+            <input class="edit-input" name="phone" value="{{ farmer.phone }}">
+          </div>
+          <div>
+            <label class="edit-label">Mobile</label>
+            <input class="edit-input" name="mobile" value="{{ farmer.mobile }}">
+          </div>
+          <div class="edit-full">
+            <label class="edit-label">Email</label>
+            <input class="edit-input" type="email" name="email" value="{{ farmer.email }}">
+          </div>
+          <div>
+            <label class="edit-label">State</label>
+            <input class="edit-input" name="state" value="{{ farmer.state }}">
+          </div>
+          <div>
+            <label class="edit-label">District</label>
+            <input class="edit-input" name="district" value="{{ farmer.district }}">
+          </div>
+          <div>
+            <label class="edit-label">Village</label>
+            <input class="edit-input" name="village" value="{{ farmer.village }}">
+          </div>
+          <div>
+            <label class="edit-label">Latitude</label>
+            <input class="edit-input" type="number" step="any" name="latitude" value="{{ farmer.latitude|default:'' }}">
+          </div>
+          <div>
+            <label class="edit-label">Longitude</label>
+            <input class="edit-input" type="number" step="any" name="longitude" value="{{ farmer.longitude|default:'' }}">
+          </div>
+          <div>
+            <label class="edit-label">Land Area (acres)</label>
+            <input class="edit-input" type="number" step="0.01" name="land_area" value="{{ farmer.land_area }}">
+          </div>
+          <div>
+            <label class="edit-label">Crop</label>
+            <input class="edit-input" name="crop" value="{{ farmer.crop }}">
+          </div>
+          <div>
+            <label class="edit-label">Season</label>
+            <select class="edit-input" name="season">
+              {% for val, label in season_choices %}
+              <option value="{{ val }}" {% if farmer.season == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="edit-label">Replace Photo</label>
+            <input class="edit-input" type="file" name="farmer_image" accept="image/*" style="padding:6px;">
+          </div>
+        </div>
+        <div class="edit-msg" id="editMsg"></div>
+      </form>
+    </div>
+    <div class="edit-modal-footer">
+      <button class="btn btn-outline-secondary btn-sm" onclick="closeEdit()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="submitEdit()">
+        <i class="fas fa-save me-1"></i> Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+
 {% if farmer.latitude and farmer.longitude %}
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const lat = {{ farmer.latitude }}, lng = {{ farmer.longitude }};
@@ -220,121 +459,125 @@
 {% endif %}
 
 <script>
-  const STATUS_BADGE_CLASS = {
-    'registered':       'st-registered',
-    'sample_collected': 'st-sample_collected',
-    'testing_done':     'st-testing_done',
-    'report_delivered': 'st-report_delivered',
+  const STATUS_CLASS = {
+    registered:'st-registered', re_registered:'st-re_registered',
+    sample_collected:'st-sample_collected',
+    testing_done:'st-testing_done', report_delivered:'st-report_delivered',
   };
-
   function getCsrf() {
     const v = document.cookie.match('(^|;) ?csrftoken=([^;]*)(;|$)');
     return v ? decodeURIComponent(v[2]) : '';
   }
 
-  // ── Image management ──────────────────────────────────────────
+  /* ── Image ────────────────────────── */
   function uploadImage(e) {
     e.preventDefault();
-    const form    = document.getElementById('imgUploadForm');
-    const formData = new FormData(form);
-    const msg     = document.getElementById('imgMsg');
-    msg.textContent = 'Uploading…';
-    msg.style.color = '#888';
-
-    fetch(form.action, { method: 'POST', body: formData })
-      .then(r => r.json())
-      .then(d => {
+    const form = document.getElementById('imgUploadForm');
+    const msg  = document.getElementById('imgMsg');
+    msg.textContent = 'Uploading…'; msg.style.color = '#888';
+    fetch(form.action, { method:'POST', body: new FormData(form) })
+      .then(r => r.json()).then(d => {
         if (d.success) {
-          const wrap = document.getElementById('imgWrap');
-          wrap.innerHTML = `<img id="farmerPhoto" src="${d.url}?t=${Date.now()}"
-            style="width:120px;height:120px;object-fit:cover;border-radius:50%;border:3px solid #e3e8f7;" />`;
-          msg.textContent = 'Photo updated.';
-          msg.style.color = '#2e7d32';
-          const removeBtn = document.getElementById('removeBtn');
-          if (removeBtn) removeBtn.style.display = '';
+          document.getElementById('imgWrap').innerHTML =
+            `<img src="${d.url}?t=${Date.now()}" style="width:120px;height:120px;object-fit:cover;border-radius:50%;border:3px solid #e3e8f7;">`;
+          msg.textContent = 'Photo updated.'; msg.style.color = '#2e7d32';
+          const rb = document.getElementById('removeBtn');
+          if (rb) rb.style.display = '';
           setTimeout(() => msg.textContent = '', 3000);
-        } else {
-          msg.textContent = d.error || 'Upload failed.';
-          msg.style.color = '#dc3545';
-        }
-      })
-      .catch(() => { msg.textContent = 'Upload failed.'; msg.style.color = '#dc3545'; });
+        } else { msg.textContent = d.error || 'Upload failed.'; msg.style.color = '#dc3545'; }
+      }).catch(() => { msg.textContent = 'Upload failed.'; msg.style.color = '#dc3545'; });
   }
 
   function deleteImage() {
     if (!confirm('Remove this farmer photo?')) return;
     const msg = document.getElementById('imgMsg');
-    msg.textContent = 'Removing…';
-    msg.style.color = '#888';
-
+    msg.textContent = 'Removing…'; msg.style.color = '#888';
     fetch('/farmer/{{ farmer.pk }}/image/delete/', {
-      method: 'POST',
-      headers: { 'X-CSRFToken': getCsrf() }
-    })
-    .then(r => r.json())
-    .then(d => {
+      method:'POST', headers:{'X-CSRFToken': getCsrf()}
+    }).then(r => r.json()).then(d => {
       if (d.success) {
-        const wrap = document.getElementById('imgWrap');
-        wrap.innerHTML = `<div style="width:120px;height:120px;border-radius:50%;border:3px dashed #ccc;
-          background:#f5f7fa;display:flex;align-items:center;justify-content:center;margin:0 auto;">
-          <i class="fas fa-user" style="font-size:40px;color:#ccc;"></i></div>`;
-        msg.textContent = 'Photo removed.';
-        msg.style.color = '#dc3545';
+        document.getElementById('imgWrap').innerHTML =
+          `<div style="width:120px;height:120px;border-radius:50%;border:3px dashed #ccc;
+           background:#f5f7fa;display:flex;align-items:center;justify-content:center;margin:0 auto;">
+           <i class="fas fa-user" style="font-size:40px;color:#ccc;"></i></div>`;
+        msg.textContent = 'Photo removed.'; msg.style.color = '#dc3545';
         setTimeout(() => msg.textContent = '', 3000);
-      } else {
-        msg.textContent = d.error || 'Could not remove photo.';
-        msg.style.color = '#dc3545';
       }
-    })
-    .catch(() => { msg.textContent = 'Something went wrong.'; msg.style.color = '#dc3545'; });
+    });
   }
 
+  /* ── Status ───────────────────────── */
   function updateStatus(newStatus, label) {
     if (!confirm(`Change status to "${label}"?`)) return;
     fetch('/farmer/{{ farmer.pk }}/status/', {
-      method: 'POST',
-      headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `status=${encodeURIComponent(newStatus)}`
-    })
-    .then(r => r.json())
-    .then(d => {
+      method:'POST',
+      headers:{'X-CSRFToken': getCsrf(), 'Content-Type':'application/x-www-form-urlencoded'},
+      body:`status=${encodeURIComponent(newStatus)}`
+    }).then(r => r.json()).then(d => {
       if (d.success) {
-        // Update badge
         const badge = document.getElementById('currentStatusBadge');
-        badge.className = `badge ${STATUS_BADGE_CLASS[d.status]}`;
+        badge.className = `badge ${STATUS_CLASS[d.status]}`;
         badge.style.cssText = 'font-size:12px;padding:5px 12px;border-radius:20px;';
         badge.textContent = d.display;
-
-        // Update buttons
         document.querySelectorAll('[id^="btn-"]').forEach(btn => {
-          const s = btn.id.replace('btn-', '');
+          const s = btn.id.replace('btn-','');
           btn.className = s === d.status ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-secondary';
-          btn.disabled  = s === d.status;
+          btn.disabled = s === d.status;
         });
-
-        // Append to timeline
-        const now = new Date();
-        const pad = n => String(n).padStart(2, '0');
-        const ts  = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ` +
-                    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-        const iconMap = {
-          registered:'fa-check', sample_collected:'fa-vial',
-          testing_done:'fa-flask', report_delivered:'fa-file-alt'
-        };
-        const item = `
+        const now = new Date(), pad = n => String(n).padStart(2,'0');
+        const ts  = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        const iconMap = {registered:'fa-check',sample_collected:'fa-vial',testing_done:'fa-flask',report_delivered:'fa-file-alt'};
+        document.getElementById('statusTimeline').insertAdjacentHTML('beforeend',`
           <div class="tl-item">
             <div class="tl-dot ${d.status}"><i class="fas ${iconMap[d.status]||'fa-circle'}" style="font-size:9px;"></i></div>
-            <div>
-              <div style="font-weight:600;font-size:13px;">${d.display}</div>
-              <div style="font-size:12px;color:#888;font-family:monospace;">${ts}</div>
-            </div>
-          </div>`;
-        document.getElementById('statusTimeline').insertAdjacentHTML('beforeend', item);
-      } else {
-        alert(d.error || 'Could not update status.');
-      }
-    })
-    .catch(() => alert('Something went wrong.'));
+            <div><div style="font-weight:600;font-size:13px;">${d.display}</div>
+            <div style="font-size:12px;color:#888;font-family:monospace;">${ts}</div></div>
+          </div>`);
+      } else { alert(d.error || 'Could not update status.'); }
+    }).catch(() => alert('Something went wrong.'));
+  }
+
+  /* ── API Tabs ─────────────────────── */
+  function switchTab(el, paneId) {
+    document.querySelectorAll('.api-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.api-pane').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(paneId).classList.add('active');
+  }
+
+  function toggleGroup(header) {
+    const body  = header.nextElementSibling;
+    const icon  = header.querySelector('.fa-chevron-down');
+    const open  = body.classList.toggle('open');
+    if (icon) icon.style.transform = open ? 'rotate(180deg)' : '';
+  }
+
+  /* ── Edit Modal ───────────────────── */
+  function openEdit() {
+    document.getElementById('editOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeEdit() {
+    document.getElementById('editOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+    document.getElementById('editMsg').textContent = '';
+  }
+
+  function submitEdit() {
+    const form = document.getElementById('editForm');
+    const msg  = document.getElementById('editMsg');
+    const fd   = new FormData(form);
+    msg.textContent = 'Saving…'; msg.style.color = '#888';
+    fetch('/farmer/{{ farmer.pk }}/update/', {
+      method:'POST',
+      headers:{'X-CSRFToken': getCsrf()},
+      body: fd,
+    }).then(r => r.json()).then(d => {
+      if (d.success) {
+        msg.textContent = '✓ ' + d.message; msg.style.color = '#2e7d32';
+        setTimeout(() => { closeEdit(); location.reload(); }, 1200);
+      } else { msg.textContent = d.error || 'Save failed.'; msg.style.color = '#dc3545'; }
+    }).catch(() => { msg.textContent = 'Something went wrong.'; msg.style.color = '#dc3545'; });
   }
 </script>
 {% endblock %}

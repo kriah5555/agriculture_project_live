@@ -8,25 +8,46 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from agriapp.models import (
     Devise, DeviseApis, DeviseApisFields, DeviseLocation,
     APICountThreshold, DEVICE_NAMES,
-    ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, SOIL_SAATHI_FIELDS,
+    ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_MAP_FIELDS,
 )
 
 
 # ── Auth ─────────────────────────────────────────────────────────────────────
 
 class MobileTokenObtainSerializer(TokenObtainPairSerializer):
-    """JWT login serializer — adds user info to token response."""
+    """JWT login serializer — adds full user + profile info to token response."""
 
     def validate(self, attrs):
-        data = super().validate(attrs)
-        user = self.user
-        data['user'] = {
-            'id'        : user.id,
-            'username'  : user.username,
-            'email'     : user.email,
-            'full_name' : user.get_full_name(),
-        }
+        data    = super().validate(attrs)
+        user    = self.user
+        profile = getattr(user, 'profile', None)
+        data['user'] = _build_user_dict(user, profile)
         return data
+
+
+def _build_user_dict(user, profile=None):
+    """Build the full user info dict used in both login and profile responses."""
+    if profile is None:
+        profile = getattr(user, 'profile', None)
+    return {
+        'id'           : user.id,
+        'username'     : user.username,
+        'email'        : user.email,
+        'first_name'   : user.first_name,
+        'last_name'    : user.last_name,
+        'full_name'    : user.get_full_name(),
+        'is_superuser' : user.is_superuser,
+        'is_staff'     : user.is_staff,
+        'is_active'    : user.is_active,
+        'date_joined'  : user.date_joined.isoformat() if user.date_joined else None,
+        'last_login'   : user.last_login.isoformat()  if user.last_login  else None,
+        # from UserProfile
+        'user_type'    : profile.user_type    if profile else None,
+        'state'        : profile.state        if profile else None,
+        'district'     : profile.district     if profile else None,
+        'city_village' : profile.city_village if profile else None,
+        'is_profile_active': profile.status   if profile else None,
+    }
 
 
 # ── Device types ─────────────────────────────────────────────────────────────
@@ -101,14 +122,14 @@ class SoilSaathiReadingSerializer(serializers.ModelSerializer):
     class Meta:
         model  = DeviseApis
         fields = [
-            'id', 'area_name', 'tag',
+            'id', 'farmer_id', 'area_name', 'tag',
             'nitrogen', 'phosphorous', 'potassium',
             'calcium', 'magnesium', 'sulphur',
             'zinc', 'manganese', 'iron', 'copper', 'boron',
             'ph', 'ec', 'oc', 'electrical_conduction',
             'crop_type', 'latitude', 'longitude', 'created_at',
         ]
-        read_only_fields = ['id', 'created_at']
+        read_only_fields = ['id', 'farmer_id', 'created_at']
 
 
 class SoilSaathiReadingCreateSerializer(serializers.ModelSerializer):
@@ -135,6 +156,7 @@ FIELD_LABELS = {
     'atmo_sense': _sensor_fields(ATMO_SENSE_FIELDS),
     'soil_life' : _sensor_fields(SOIL_LIFE_FIELDS),
     'ph_bottle' : _sensor_fields(PH_BOTTLE_FIELDS),
+    'soil_map'  : _sensor_fields(SOIL_MAP_FIELDS),
 }
 
 
@@ -144,13 +166,13 @@ class FieldsReadingSerializer(serializers.ModelSerializer):
     class Meta:
         model  = DeviseApisFields
         fields = [
-            'id', 'tag', 'image_path', 'crop_type',
+            'id', 'farmer_id', 'tag', 'image_path', 'crop_type',
             'latitude', 'longitude',
             'field1', 'field2', 'field3', 'field4', 'field5',
             'field6', 'field7', 'field8',
             'labeled_fields', 'created_at',
         ]
-        read_only_fields = ['id', 'created_at', 'labeled_fields']
+        read_only_fields = ['id', 'farmer_id', 'created_at', 'labeled_fields']
 
     def get_labeled_fields(self, obj):
         labels = FIELD_LABELS.get(obj.device.devise_type, {})

@@ -9,9 +9,10 @@ from .models import (
     ContactDetails, UserRequest, Devise, DeviseApis, APICountThreshold,
     ColumnName, DeviseLocation, DeviseApisFields,
     SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS,
-    SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES, PH_BOTTLE_FIELDS,
+    SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES, PH_BOTTLE_FIELDS, SOIL_MAP_FIELDS,
     UserProfile, USER_TYPE_CHOICES,
     Farmer, FarmerStatusHistory, FARMER_STATUS_CHOICES, SEASON_CHOICES,
+    PartnerPayment, PaymentAttachment,
 )
 
 from . import UserFunctions
@@ -125,10 +126,25 @@ def userPage(request):
     is_partner = profile and profile.user_type == 'soil_partner'
     farmers    = Farmer.objects.filter(soil_partner=request.user) if is_partner else []
 
+    payments = PartnerPayment.objects.filter(user=request.user).select_related('farmer').prefetch_related('attachments') if is_partner else []
+
+    payment_totals = {}
+    if is_partner:
+        from django.db.models import Sum, Count, Q
+        payment_totals = PartnerPayment.objects.filter(user=request.user).aggregate(
+            paid_amount    = Sum('amount', filter=Q(status='paid')),
+            pending_amount = Sum('amount', filter=Q(status='pending')),
+            paid_count     = Count('id', filter=Q(status='paid')),
+            pending_count  = Count('id', filter=Q(status='pending')),
+        )
+
     context = {
         "linked_devices" : linked_devices,
         "is_soil_partner": is_partner,
+        "profile"        : profile,
         "farmers"        : farmers,
+        "payments"       : payments,
+        "payment_totals" : payment_totals,
         "season_choices" : SEASON_CHOICES,
         "status_choices" : FARMER_STATUS_CHOICES,
     }
@@ -294,7 +310,7 @@ def delete_devise(request, pk):
 @admin_required
 def add_devise(request, uid=None):
         
-    context = {'message': ''}
+    context = {'message': '', 'device_names': DEVICE_NAMES}
     user    = UserFunctions.get_user_by_username(uid)
 
     if request.method == 'GET':
@@ -302,19 +318,14 @@ def add_devise(request, uid=None):
     elif request.method == 'POST':
         form = DeviseForm(request.POST)
         if form.is_valid():
-            # Save the devise with the user
-            devise      = form.save(commit=False)  # Don't commit yet to set the user
-            devise.user = user  # Assign the logged-in user
+            devise      = form.save(commit=False)
+            devise.user = user
             devise.save()
             messages.success(request, "Device added successfully")
-            return redirect(f"/user-details/{uid}")  # Redirect to device list page after saving
+            return redirect(f"/user-details/{uid}")
         else:
             errors = form.errors
-            field_errors = dict()
-            for error in errors:
-                field_errors[error] = errors[error]
-
-            # Keep the form values and field errors if the form is invalid
+            field_errors = {error: errors[error] for error in errors}
             default_values = {
                 'name'          : request.POST['name'],
                 'devise_id'     : request.POST['devise_id'],
@@ -335,6 +346,7 @@ def add_devise(request, uid=None):
             return render(request, 'agriapp/add_devise.html', {
                 'devise'       : default_values,
                 'field_errors' : field_errors,
+                'device_names' : DEVICE_NAMES,
                 'purchase_date': request.POST.get('purchase_date', ''),
                 'time_of_sale' : request.POST.get('time_of_sale', ''),
                 'warrenty'     : request.POST.get('warrenty', ''),
@@ -355,7 +367,8 @@ def edit_devise(request, **kwargs):
             'warrenty'      : str(devise.warrenty.date()),
             'purchase_date' : str(devise.purchase_date.date()),
             'time_of_sale'  : str(devise.time_of_sale),
-            'disabled'      : 'readonly'
+            'disabled'      : 'readonly',
+            'device_names'  : DEVICE_NAMES,
         }
     elif request.method == 'POST':
         form = DeviseForm(request.POST or None, instance=devise)
@@ -391,6 +404,7 @@ def edit_devise(request, **kwargs):
                 'field_errors' : field_errors,
                 'devise'       : default_values,
                 'disabled'     : 'readonly',
+                'device_names' : DEVICE_NAMES,
                 'warrenty'     : request.POST['warrenty'],
                 'purchase_date': request.POST['purchase_date'],
                 'time_of_sale' : request.POST['time_of_sale'],
@@ -481,6 +495,38 @@ def devise_details(request, **kwargs):
     return render(request, template_name = template_name, context=context)
 
 @admin_required
+def update_user_profile(request, uid):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    target_user = get_object_or_404(User, username=uid)
+    data = request.POST
+
+    target_user.first_name = data.get('first_name', target_user.first_name).strip()
+    target_user.last_name  = data.get('last_name',  target_user.last_name).strip()
+    target_user.email      = data.get('email',       target_user.email).strip()
+    target_user.save()
+
+    profile, _ = UserProfile.objects.get_or_create(user=target_user)
+    if 'user_type' in data:
+        profile.user_type = data['user_type']
+    if 'profile_status' in data:
+        profile.status = data['profile_status'] == '1'
+    if 'state' in data:
+        profile.state = data['state'].strip()
+    if 'district' in data:
+        profile.district = data['district'].strip()
+    if 'city_village' in data:
+        profile.city_village = data['city_village'].strip()
+    if 'amount_paid' in data and data['amount_paid']:
+        profile.amount_paid = data['amount_paid']
+    if 'balance' in data and data['balance']:
+        profile.balance = data['balance']
+    profile.save()
+
+    return JsonResponse({'success': True, 'message': 'User profile updated successfully.'})
+
+
+@admin_required
 def user_details(request, **kwargs):
     username       = kwargs.get('uid')
     user           = get_object_or_404(User, username=username)
@@ -502,13 +548,27 @@ def user_details(request, **kwargs):
                 devise.api_used = 0  
     
     profile = getattr(user, 'profile', None)
-    farmers = Farmer.objects.filter(soil_partner=user) if profile and profile.user_type == 'soil_partner' else []
+    is_sp   = profile and profile.user_type == 'soil_partner'
+    farmers  = Farmer.objects.filter(soil_partner=user) if is_sp else []
+    payments = PartnerPayment.objects.filter(user=user).select_related('farmer').prefetch_related('attachments') if is_sp else []
+
+    payment_totals = {}
+    if is_sp:
+        from django.db.models import Sum, Count, Q
+        payment_totals = PartnerPayment.objects.filter(user=user).aggregate(
+            paid_amount    = Sum('amount', filter=Q(status='paid')),
+            pending_amount = Sum('amount', filter=Q(status='pending')),
+            paid_count     = Count('id', filter=Q(status='paid')),
+            pending_count  = Count('id', filter=Q(status='pending')),
+        )
 
     context = {
-        "user"          : user,
-        "linked_devices": linked_devices,
-        "profile"       : profile,
-        "farmers"       : farmers,
+        "user"           : user,
+        "linked_devices" : linked_devices,
+        "profile"        : profile,
+        "farmers"        : farmers,
+        "payments"       : payments,
+        "payment_totals" : payment_totals,
     }
 
     template_name = 'agriapp/user_details.html'
@@ -1413,6 +1473,41 @@ def resolve_user_request(request, pk):
     return redirect('notifications')
 
 
+# ── Soil Partner Interest / Enquiry (public) ──────────────────────────────────
+
+def soil_partner_enquiry(request):
+    """
+    Public view — no login required.
+    Any external user can express interest in becoming a soil partner.
+    Creates a UserRequest(type=soil_partner_interest) visible in admin Notifications.
+    """
+    if request.method == 'POST':
+        name    = request.POST.get('name',    '').strip()
+        email   = request.POST.get('email',   '').strip()
+        phone   = request.POST.get('phone',   '').strip()
+        message = request.POST.get('message', '').strip()
+        state   = request.POST.get('state',   '').strip()
+        city    = request.POST.get('city',    '').strip()
+
+        if not name or not email or not phone:
+            messages.error(request, "Name, email, and phone are required.")
+            return render(request, 'authapp/soil_partner_enquiry.html', {
+                'form_data': request.POST,
+            })
+
+        UserRequest.objects.create(
+            user         = None,
+            username     = name,
+            email        = email,
+            phone        = phone,
+            request_type = UserRequest.SOIL_PARTNER_INTEREST,
+            message      = message or f"{name} is interested in becoming a Soil Partner. State: {state}, City: {city}",
+        )
+        return render(request, 'authapp/soil_partner_enquiry.html', {'submitted': True})
+
+    return render(request, 'authapp/soil_partner_enquiry.html')
+
+
 @admin_required
 def delete_api_call(request, pk):
     """Delete a single API call record (DeviseApis or DeviseApisFields)."""
@@ -1463,31 +1558,144 @@ def soil_partner_required(function):
     )
 
 
-@login_required
+@admin_required
 def farmer_list(request):
+    import json
+    from django.db.models import Count, Q, Sum
+    from django.db.models.functions import TruncMonth
+    from django.utils import timezone as tz
     if request.user.is_superuser:
-        farmers = Farmer.objects.select_related('soil_partner').all()
+        base_qs = Farmer.objects.select_related('soil_partner').all()
     elif _is_soil_partner(request.user):
-        farmers = Farmer.objects.filter(soil_partner=request.user)
+        base_qs = Farmer.objects.filter(soil_partner=request.user)
     else:
         return redirect('/acess_denied/')
+
+    farmers = base_qs.annotate(
+        soilsaathi_count=Count('soilsaathi_readings', distinct=True),
+        atmo_count=Count('sensor_readings', filter=Q(sensor_readings__device__devise_type='atmo_sense'), distinct=True),
+        sl_count=Count('sensor_readings',   filter=Q(sensor_readings__device__devise_type='soil_life'),  distinct=True),
+        pb_count=Count('sensor_readings',   filter=Q(sensor_readings__device__devise_type='ph_bottle'),  distinct=True),
+        sm_count=Count('sensor_readings',   filter=Q(sensor_readings__device__devise_type='soil_map'),   distinct=True),
+    ).order_by('-created_at')
+
+    today      = tz.localdate()
+    month_start = today.replace(day=1)
+    history_qs  = FarmerStatusHistory.objects.filter(farmer__in=base_qs)
+
+    kpi = {
+        'total'           : base_qs.count(),
+        'registered'      : base_qs.filter(status='registered').count(),
+        'sample_collected': base_qs.filter(status='sample_collected').count(),
+        'testing_done'    : base_qs.filter(status='testing_done').count(),
+        'report_delivered': base_qs.filter(status='report_delivered').count(),
+        'today_collected' : history_qs.filter(status='sample_collected', timestamp__date=today).values('farmer').distinct().count(),
+        'today_tested'    : history_qs.filter(status='testing_done',     timestamp__date=today).values('farmer').distinct().count(),
+        'today_delivered' : history_qs.filter(status='report_delivered', timestamp__date=today).values('farmer').distinct().count(),
+        'month_collected' : history_qs.filter(status='sample_collected', timestamp__date__gte=month_start).values('farmer').distinct().count(),
+        'month_tested'    : history_qs.filter(status='testing_done',     timestamp__date__gte=month_start).values('farmer').distinct().count(),
+        'month_delivered' : history_qs.filter(status='report_delivered', timestamp__date__gte=month_start).values('farmer').distinct().count(),
+        'pending_test'    : base_qs.filter(status='sample_collected').count(),
+        'pending_report'  : base_qs.filter(status='testing_done').count(),
+    }
+
+    crops   = sorted(set(base_qs.values_list('crop',   flat=True).exclude(crop='')))
+    villages = sorted(set(base_qs.values_list('village', flat=True).exclude(village='')))
+
+    # ── Monthly activity chart: last 6 months ────────────────────────────────
+    from datetime import date
+    from dateutil.relativedelta import relativedelta
+
+    six_months_ago = today.replace(day=1) - relativedelta(months=5)
+
+    # Farmers registered per month
+    reg_monthly = (
+        base_qs.filter(created_at__date__gte=six_months_ago)
+        .annotate(m=TruncMonth('created_at'))
+        .values('m').annotate(c=Count('id')).order_by('m')
+    )
+    reg_map = {r['m'].strftime('%b %Y'): r['c'] for r in reg_monthly}
+
+    # Sample collected per month (status history)
+    sc_monthly = (
+        history_qs.filter(status='sample_collected', timestamp__date__gte=six_months_ago)
+        .annotate(m=TruncMonth('timestamp'))
+        .values('m').annotate(c=Count('id')).order_by('m')
+    )
+    sc_map = {r['m'].strftime('%b %Y'): r['c'] for r in sc_monthly}
+
+    # Payments per month (admin-wide for superuser, partner-specific otherwise)
+    pay_qs = PartnerPayment.objects.filter(created_at__date__gte=six_months_ago)
+    if not request.user.is_superuser:
+        pay_qs = pay_qs.filter(user=request.user)
+    pay_monthly = (
+        pay_qs
+        .annotate(m=TruncMonth('created_at'))
+        .values('m').annotate(amt=Sum('amount')).order_by('m')
+    )
+    pay_map = {r['m'].strftime('%b %Y'): float(r['amt'] or 0) for r in pay_monthly}
+
+    # Build ordered month labels
+    chart_labels, chart_reg, chart_sc, chart_pay = [], [], [], []
+    for i in range(6):
+        mo = (six_months_ago + relativedelta(months=i))
+        lbl = mo.strftime('%b %Y')
+        chart_labels.append(lbl)
+        chart_reg.append(reg_map.get(lbl, 0))
+        chart_sc.append(sc_map.get(lbl, 0))
+        chart_pay.append(pay_map.get(lbl, 0))
+
+    activity_chart = json.dumps({
+        'labels':      chart_labels,
+        'registered':  chart_reg,
+        'collected':   chart_sc,
+        'payments':    chart_pay,
+    })
+
     return render(request, 'agriapp/farmer_list.html', {
-        'farmers': farmers,
-        'active_page': 'farmers',
+        'farmers'             : farmers,
+        'kpi'                 : kpi,
+        'crops'               : crops,
+        'villages'            : villages,
+        'active_page'         : 'farmers',
         'farmer_status_choices': FARMER_STATUS_CHOICES,
+        'season_choices'      : SEASON_CHOICES,
+        'today'               : today,
+        'activity_chart'      : activity_chart,
     })
 
 
 @soil_partner_required
 def create_farmer(request):
+    soil_partners = User.objects.filter(profile__user_type='soil_partner') if request.user.is_superuser else []
     if request.method == 'POST':
-        data = request.POST
+        data         = request.POST
+        sp           = request.user if not request.user.is_superuser else get_object_or_404(User, pk=data.get('soil_partner_id'))
+        aadhaar      = data.get('aadhaar_number', '').strip()
+        existing     = Farmer.objects.filter(soil_partner=sp, aadhaar_number=aadhaar).first() if aadhaar else None
+
+        if existing and not data.get('reset_confirm'):
+            return render(request, 'agriapp/create_farmer.html', {
+                'duplicate_farmer' : existing,
+                'season_choices'   : SEASON_CHOICES,
+                'soil_partners'    : soil_partners,
+                'active_page'      : 'farmers',
+                'prefill'          : data,
+            })
+
+        if existing and data.get('reset_confirm') == '1':
+            existing.status = 're_registered'
+            existing.save()
+            FarmerStatusHistory.objects.create(farmer=existing, status='re_registered')
+            messages.success(request, f'Farmer "{existing.farmer_name}" status reset to Re-Registered.')
+            return redirect(f'/farmer/{existing.pk}/')
+
         farmer = Farmer(
-            soil_partner   = request.user if not request.user.is_superuser else get_object_or_404(User, pk=data.get('soil_partner_id')),
+            soil_partner   = sp,
             farmer_name    = data.get('farmer_name', '').strip(),
             phone          = data.get('phone', '').strip(),
             email          = data.get('email', '').strip(),
-            aadhaar_number = data.get('aadhaar_number', '').strip(),
+            aadhaar_number = aadhaar,
             mobile         = data.get('mobile', '').strip(),
             state          = data.get('state', '').strip(),
             district       = data.get('district', '').strip(),
@@ -1504,29 +1712,111 @@ def create_farmer(request):
         FarmerStatusHistory.objects.create(farmer=farmer, status='registered')
         messages.success(request, 'Farmer registered successfully.')
         return redirect(f'/farmer/{farmer.pk}/')
-    soil_partners = []
-    if request.user.is_superuser:
-        soil_partners = User.objects.filter(profile__user_type='soil_partner')
+
+    preselected_sp = request.GET.get('sp')
     return render(request, 'agriapp/create_farmer.html', {
-        'season_choices': SEASON_CHOICES,
-        'soil_partners': soil_partners,
-        'active_page': 'farmers',
+        'season_choices'  : SEASON_CHOICES,
+        'soil_partners'   : soil_partners,
+        'preselected_sp'  : preselected_sp,
+        'active_page'     : 'farmers',
     })
 
 
 @login_required
 def farmer_detail(request, pk):
+    from collections import defaultdict
     farmer = get_object_or_404(Farmer, pk=pk)
     if not request.user.is_superuser and farmer.soil_partner != request.user:
         return redirect('/acess_denied/')
-    history = farmer.status_history.all()
+
+    history = farmer.status_history.order_by('timestamp')
+
+    ss_qs     = DeviseApis.objects.filter(farmer=farmer).select_related('device').order_by('-created_at')
+    sensor_qs = DeviseApisFields.objects.filter(farmer=farmer).select_related('device').order_by('-created_at')
+
+    def _group_by_date(qs):
+        groups = defaultdict(list)
+        for r in qs:
+            groups[r.created_at.strftime('%d %b %Y')].append(r)
+        return list(groups.items())
+
+    api_readings = {
+        'soilsaathi': {'label': 'SoiLENZ',    'icon': 'fa-temperature-low', 'color': '#1a73e8', 'url_prefix': '/api-overview/',                'count': ss_qs.count(),                                           'groups': _group_by_date(ss_qs)},
+        'atmo_sense': {'label': 'SoilSparsh',  'icon': 'fa-wind',            'color': '#0097a7', 'url_prefix': '/atmos-sense-api-overview/',    'count': sensor_qs.filter(device__devise_type='atmo_sense').count(),'groups': _group_by_date(sensor_qs.filter(device__devise_type='atmo_sense'))},
+        'soil_life':  {'label': 'SoilLIFE',    'icon': 'fa-leaf',            'color': '#2e7d32', 'url_prefix': '/soil-life-api-overview/',      'count': sensor_qs.filter(device__devise_type='soil_life').count(), 'groups': _group_by_date(sensor_qs.filter(device__devise_type='soil_life'))},
+        'ph_bottle':  {'label': 'PHBottle',     'icon': 'fa-vial',            'color': '#7b1fa2', 'url_prefix': '/ph-bottle-api-overview/',      'count': sensor_qs.filter(device__devise_type='ph_bottle').count(), 'groups': _group_by_date(sensor_qs.filter(device__devise_type='ph_bottle'))},
+        'soil_map':   {'label': 'SoilMap',      'icon': 'fa-map-marked-alt',  'color': '#e65100', 'url_prefix': None,                            'count': sensor_qs.filter(device__devise_type='soil_map').count(),  'groups': _group_by_date(sensor_qs.filter(device__devise_type='soil_map'))},
+    }
+    total_api_calls = sum(v['count'] for v in api_readings.values())
+
     return render(request, 'agriapp/farmer_detail.html', {
-        'farmer': farmer,
-        'history': history,
-        'status_choices': FARMER_STATUS_CHOICES,
+        'farmer'          : farmer,
+        'history'         : history,
+        'status_choices'  : FARMER_STATUS_CHOICES,
         'farmer_status_choices': FARMER_STATUS_CHOICES,
-        'active_page': 'farmers',
+        'season_choices'  : SEASON_CHOICES,
+        'api_readings'    : api_readings,
+        'total_api_calls' : total_api_calls,
+        'active_page'     : 'farmers',
     })
+
+
+@login_required
+def update_farmer(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    farmer = get_object_or_404(Farmer, pk=pk)
+    if not request.user.is_superuser and farmer.soil_partner != request.user:
+        return JsonResponse({'error': 'Permission denied.'}, status=403)
+    data   = request.POST
+    fields = ['farmer_name', 'phone', 'mobile', 'email', 'aadhaar_number',
+              'state', 'district', 'village', 'land_area', 'crop', 'season']
+    for f in fields:
+        if f in data:
+            setattr(farmer, f, data[f])
+    for f in ('latitude', 'longitude'):
+        if data.get(f):
+            setattr(farmer, f, data[f])
+        else:
+            setattr(farmer, f, None)
+    if request.FILES.get('farmer_image'):
+        if farmer.farmer_image:
+            try:
+                import os as _os
+                if _os.path.isfile(farmer.farmer_image.path):
+                    _os.remove(farmer.farmer_image.path)
+            except Exception:
+                pass
+        farmer.farmer_image = request.FILES['farmer_image']
+    farmer.save()
+    return JsonResponse({'success': True, 'message': 'Farmer updated successfully.'})
+
+
+@login_required
+def check_aadhaar(request):
+    aadhaar = request.GET.get('aadhaar', '').strip()
+    sp_id   = request.GET.get('sp_id')
+    if not aadhaar:
+        return JsonResponse({'exists': False})
+    if request.user.is_superuser and sp_id:
+        qs = Farmer.objects.filter(aadhaar_number=aadhaar, soil_partner_id=sp_id)
+    elif not request.user.is_superuser:
+        qs = Farmer.objects.filter(aadhaar_number=aadhaar, soil_partner=request.user)
+    else:
+        qs = Farmer.objects.filter(aadhaar_number=aadhaar)
+    f = qs.first()
+    if f:
+        return JsonResponse({
+            'exists'        : True,
+            'id'            : f.pk,
+            'name'          : f.farmer_name,
+            'phone'         : f.phone,
+            'village'       : f.village,
+            'status'        : f.status,
+            'status_display': dict(FARMER_STATUS_CHOICES)[f.status],
+            'detail_url'    : f'/farmer/{f.pk}/',
+        })
+    return JsonResponse({'exists': False})
 
 
 @login_required
@@ -1597,3 +1887,217 @@ def farmer_delete_image(request, pk):
     farmer.farmer_image = None
     farmer.save()
     return JsonResponse({'success': True})
+
+
+# ── Payment history (admin list) ──────────────────────────────────────────────
+
+@admin_required
+def payment_history(request):
+    from django.db.models import Sum, Count, Q
+    qs = PartnerPayment.objects.select_related('user', 'farmer', 'created_by').prefetch_related('attachments')
+
+    # Filters
+    user_id        = request.GET.get('user_id', '').strip()
+    status_filter  = request.GET.get('status', '').strip()
+    date_from      = request.GET.get('date_from', '').strip()
+    date_to        = request.GET.get('date_to', '').strip()
+    paid_from      = request.GET.get('paid_from', '').strip()
+    paid_to        = request.GET.get('paid_to', '').strip()
+    min_amount     = request.GET.get('min_amount', '').strip()
+    max_amount     = request.GET.get('max_amount', '').strip()
+
+    if user_id:
+        qs = qs.filter(user_id=user_id)
+    if status_filter in ('pending', 'paid'):
+        qs = qs.filter(status=status_filter)
+    if date_from:
+        qs = qs.filter(created_at__date__gte=date_from)
+    if date_to:
+        qs = qs.filter(created_at__date__lte=date_to)
+    if paid_from:
+        qs = qs.filter(paid_at__date__gte=paid_from)
+    if paid_to:
+        qs = qs.filter(paid_at__date__lte=paid_to)
+    if min_amount:
+        try:
+            qs = qs.filter(amount__gte=float(min_amount))
+        except ValueError:
+            pass
+    if max_amount:
+        try:
+            qs = qs.filter(amount__lte=float(max_amount))
+        except ValueError:
+            pass
+
+    totals = qs.aggregate(
+        total_amount   = Sum('amount'),
+        total_count    = Count('id'),
+        distinct_users = Count('user', distinct=True),
+        paid_amount    = Sum('amount', filter=Q(status='paid')),
+        pending_amount = Sum('amount', filter=Q(status='pending')),
+        paid_count     = Count('id', filter=Q(status='paid')),
+        pending_count  = Count('id', filter=Q(status='pending')),
+    )
+
+    soil_partners = User.objects.filter(profile__user_type='soil_partner').order_by('username')
+
+    return render(request, 'agriapp/payment_history.html', {
+        'payments'      : qs,
+        'soil_partners' : soil_partners,
+        'totals'        : totals,
+        'filters'       : {
+            'user_id': user_id, 'status': status_filter,
+            'date_from': date_from, 'date_to': date_to,
+            'paid_from': paid_from, 'paid_to': paid_to,
+            'min_amount': min_amount, 'max_amount': max_amount,
+        },
+        'active_page'   : 'payment_history',
+    })
+
+
+# ── Add a payment record (admin, AJAX from user_details) ─────────────────────
+
+@admin_required
+def add_payment(request, uid):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    target_user = get_object_or_404(User, username=uid)
+
+    amount      = request.POST.get('amount', '').strip()
+    description = request.POST.get('description', '').strip()
+    farmer_id   = request.POST.get('farmer_id', '').strip()
+    status_val  = request.POST.get('status', 'pending').strip()
+    if status_val not in ('pending', 'paid'):
+        status_val = 'pending'
+
+    if not amount:
+        return JsonResponse({'error': 'Amount is required.'}, status=400)
+    try:
+        amount = float(amount)
+        if amount <= 0:
+            raise ValueError
+    except ValueError:
+        return JsonResponse({'error': 'Amount must be a positive number.'}, status=400)
+
+    farmer = None
+    if farmer_id:
+        try:
+            farmer = Farmer.objects.get(pk=farmer_id, soil_partner=target_user)
+        except Farmer.DoesNotExist:
+            return JsonResponse({'error': 'Farmer not found or does not belong to this user.'}, status=400)
+
+    from django.utils import timezone as tz
+    paid_at = tz.now() if status_val == 'paid' else None
+    payment = PartnerPayment.objects.create(
+        user        = target_user,
+        farmer      = farmer,
+        amount      = amount,
+        description = description,
+        status      = status_val,
+        paid_at     = paid_at,
+        created_by  = request.user,
+    )
+    for f in request.FILES.getlist('attachments'):
+        PaymentAttachment.objects.create(payment=payment, file=f)
+
+    return JsonResponse({
+        'success'    : True,
+        'payment_id' : payment.pk,
+        'amount'     : str(payment.amount),
+        'description': payment.description,
+        'status'     : payment.status,
+        'paid_at'    : payment.paid_at.strftime('%d %b %Y') if payment.paid_at else '',
+        'created_at' : payment.created_at.strftime('%d %b %Y, %H:%M'),
+        'farmer_name': farmer.farmer_name if farmer else '',
+    })
+
+
+# ── Delete a payment record ───────────────────────────────────────────────────
+
+@admin_required
+def delete_payment(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    payment = get_object_or_404(PartnerPayment, pk=pk)
+    import os
+    for att in payment.attachments.all():
+        try:
+            if os.path.isfile(att.file.path):
+                os.remove(att.file.path)
+        except Exception:
+            pass
+    payment.delete()
+    return JsonResponse({'success': True})
+
+
+# ── Toggle payment status (admin: pending ↔ paid) ─────────────────────────────
+
+@admin_required
+def toggle_payment_status(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    payment = get_object_or_404(PartnerPayment, pk=pk)
+    from django.utils import timezone
+    if payment.status == PartnerPayment.STATUS_PENDING:
+        payment.status  = PartnerPayment.STATUS_PAID
+        payment.paid_at = timezone.now()
+    else:
+        payment.status  = PartnerPayment.STATUS_PENDING
+        payment.paid_at = None
+    payment.save()
+    return JsonResponse({
+        'success': True,
+        'status' : payment.status,
+        'paid_at': payment.paid_at.strftime('%d %b %Y, %H:%M') if payment.paid_at else '',
+    })
+
+
+# ── My Payment History (soil partner's own view) ──────────────────────────────
+
+@login_required
+def my_payment_history(request):
+    from django.db.models import Sum, Count
+    profile = getattr(request.user, 'profile', None)
+    if not profile or profile.user_type != 'soil_partner':
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied
+
+    from django.db.models import Q
+    qs = PartnerPayment.objects.filter(user=request.user).select_related('farmer').prefetch_related('attachments')
+
+    date_from     = request.GET.get('date_from', '').strip()
+    date_to       = request.GET.get('date_to', '').strip()
+    paid_from     = request.GET.get('paid_from', '').strip()
+    paid_to       = request.GET.get('paid_to', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+
+    if date_from:
+        qs = qs.filter(created_at__date__gte=date_from)
+    if date_to:
+        qs = qs.filter(created_at__date__lte=date_to)
+    if paid_from:
+        qs = qs.filter(paid_at__date__gte=paid_from)
+    if paid_to:
+        qs = qs.filter(paid_at__date__lte=paid_to)
+    if status_filter in ('pending', 'paid'):
+        qs = qs.filter(status=status_filter)
+
+    totals = qs.aggregate(
+        total_amount   = Sum('amount'),
+        total_count    = Count('id'),
+        paid_amount    = Sum('amount', filter=Q(status='paid')),
+        pending_amount = Sum('amount', filter=Q(status='pending')),
+        paid_count     = Count('id', filter=Q(status='paid')),
+        pending_count  = Count('id', filter=Q(status='pending')),
+    )
+
+    return render(request, 'agriapp/my_payment_history.html', {
+        'payments'   : qs,
+        'totals'     : totals,
+        'filters'    : {
+            'date_from': date_from, 'date_to': date_to,
+            'paid_from': paid_from, 'paid_to': paid_to,
+            'status': status_filter,
+        },
+        'active_page': 'my_payments',
+    })

@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from agriapp.models import (
-    DeviseApis, DeviseApisFields, APICountThreshold,
+    DeviseApis, DeviseApisFields, APICountThreshold, Farmer,
 )
 from devise_apis.mobile_serializers import (
     FieldsReadingSerializer,
@@ -75,6 +75,34 @@ class DevicePagination(PageNumberPagination):
 
 # ── Auth helper ───────────────────────────────────────────────────────────────
 
+def resolve_farmer(request, farmer_id):
+    """
+    Returns a Farmer instance if farmer_id is provided and belongs to the user,
+    None if farmer_id is absent, or a 400/403 Response on error.
+    Only soil partners and superusers may link readings to a farmer.
+    """
+    if not farmer_id:
+        return None
+    user = request.user
+    if not user.is_superuser:
+        try:
+            is_partner = user.profile.user_type == 'soil_partner'
+        except Exception:
+            is_partner = False
+        if not is_partner:
+            return Response(
+                {'detail': 'Only soil partners can link readings to a farmer.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+    try:
+        farmer = Farmer.objects.get(pk=farmer_id)
+    except Farmer.DoesNotExist:
+        return Response({'detail': 'Farmer not found.'}, status=status.HTTP_400_BAD_REQUEST)
+    if farmer.soil_partner_id != user.id and not user.is_superuser:
+        return Response({'detail': 'You do not have access to this farmer.'}, status=status.HTTP_403_FORBIDDEN)
+    return farmer
+
+
 def get_user_device(request, device_id):
     """Returns the Devise for request.user, raises Http404 otherwise."""
     from agriapp.models import Devise
@@ -98,10 +126,15 @@ def fields_create_view(request, device_id):
     blocked = check_threshold(device)
     if blocked:
         return blocked
+
+    farmer = resolve_farmer(request, request.data.get('farmer_id'))
+    if isinstance(farmer, Response):
+        return farmer
+
     serializer = FieldsReadingCreateSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    reading = serializer.save(device=device)
+    reading = serializer.save(device=device, farmer=farmer)
     return Response(FieldsReadingSerializer(reading).data, status=status.HTTP_201_CREATED)
 
 

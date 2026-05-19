@@ -40,10 +40,9 @@
                             <div class="col-6 mb-3">
                                 <label class="form-label">Device type <b>*</b></label>
                                 <select class="form-control" name="devise_type" required {{disabled}}>
-                                    <option value="soilsaathi" {% if devise.devise_type == "soilsaathi" %}selected{% endif %}>SoiLENZ</option>
-                                    <option value="atmo_sense" {% if devise.devise_type == "atmo_sense" %}selected{% endif %}>SoilSparsh</option>
-                                    <option value="soil_life" {% if devise.devise_type == "soil_life" %}selected{% endif %}>SoilLIFE</option>
-                                    <option value="ph_bottle" {% if devise.devise_type == "ph_bottle" %}selected{% endif %}>PHBottle</option>
+                                    {% for type_key, type_name in device_names.items %}
+                                    <option value="{{ type_key }}" {% if devise.devise_type == type_key %}selected{% endif %}>{{ type_name }}</option>
+                                    {% endfor %}
                                 </select>
                                 {% if field_errors.devise_type %}
                                     <span style="color: red;">{{ field_errors.devise_type }}</span>

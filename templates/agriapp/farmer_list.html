@@ -3,179 +3,513 @@
 {% load static %}
 
 <style>
-  .farmer-row:hover { background:#f0f4ff; cursor:pointer; }
+  :root {
+    --reg    : #6b7280; --reg-bg    : #f3f4f6;
+    --rereg  : #0277bd; --rereg-bg  : #e1f5fe;
+    --samp   : #1565c0; --samp-bg   : #e3f2fd;
+    --test   : #e65100; --test-bg   : #fff3e0;
+    --rep    : #2e7d32; --rep-bg    : #e8f5e9;
+    --accent: #1a2f6b;
+  }
+
+  /* ── KPI cards ───────────────────────────────────────────────── */
+  .kpi-strip { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
+  .kpi-card {
+    flex:1; min-width:140px;
+    background:#fff; border-radius:12px;
+    padding:14px 18px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.07);
+    border-left:4px solid var(--accent);
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .kpi-card.registered    { border-color: var(--reg); }
+  .kpi-card.sample        { border-color: var(--samp); }
+  .kpi-card.testing       { border-color: var(--test); }
+  .kpi-card.delivered     { border-color: var(--rep); }
+  .kpi-num  { font-size:28px; font-weight:800; line-height:1; }
+  .kpi-label{ font-size:12px; font-weight:500; color:#777; }
+  .kpi-sub  { font-size:11px; color:#aaa; margin-top:2px; }
+
+  /* ── Activity strip ──────────────────────────────────────────── */
+  .activity-strip {
+    background:#fff; border-radius:12px;
+    padding:14px 20px; margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.07);
+    display:flex; flex-wrap:wrap; align-items:center; gap:20px;
+  }
+  .act-title { font-size:13px; font-weight:700; color:#444; flex-shrink:0; }
+  .act-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600;
+  }
+  .act-today   { background:#e8f5e9; color:#2e7d32; }
+  .act-month   { background:#e3f2fd; color:#1565c0; }
+  .act-pending { background:#fff3e0; color:#e65100; }
+  .act-divider { width:1px; height:24px; background:#e5e7eb; flex-shrink:0; }
+  .act-tab {
+    padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600;
+    cursor:pointer; border:1px solid #e5e7eb; color:#666; transition:all .15s;
+  }
+  .act-tab.active, .act-tab:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  /* ── Filter bar ──────────────────────────────────────────────── */
+  .filter-bar {
+    background:#fff; border-radius:12px;
+    padding:12px 16px; margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.07);
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  }
+  .filter-bar input, .filter-bar select {
+    border:1px solid #e5e7eb; border-radius:8px;
+    padding:7px 12px; font-size:13px; outline:none;
+    transition:border-color .15s;
+  }
+  .filter-bar input:focus, .filter-bar select:focus { border-color:var(--accent); }
+  .filter-bar input { min-width:180px; }
+
+  .status-chip {
+    padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600;
+    cursor:pointer; border:2px solid transparent; transition:all .15s;
+    white-space:nowrap;
+  }
+  .status-chip.all      { background:#f3f4f6; color:#555; border-color:#d1d5db; }
+  .status-chip.reg-chip { background:var(--reg-bg); color:var(--reg); }
+  .status-chip.samp-chip{ background:var(--samp-bg); color:var(--samp); }
+  .status-chip.test-chip{ background:var(--test-bg); color:var(--test); }
+  .status-chip.rep-chip { background:var(--rep-bg); color:var(--rep); }
+  .status-chip.active   { border-color:currentColor !important; }
+
+  .result-count { margin-left:auto; font-size:12px; color:#888; font-weight:500; }
+
+  /* ── Farmer grid ─────────────────────────────────────────────── */
+  .farmer-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap:16px;
+  }
+
+  .farmer-card {
+    background:#fff; border-radius:14px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.07);
+    overflow:hidden; cursor:pointer;
+    transition:transform .15s, box-shadow .15s;
+    display:flex; flex-direction:column;
+  }
+  .farmer-card:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,0,0,0.12); }
+
+  .fc-top { height:5px; }
+  .fc-top.registered        { background: var(--reg); }
+  .fc-top.re_registered     { background: var(--rereg); }
+  .fc-top.sample_collected  { background: var(--samp); }
+  .fc-top.testing_done      { background: var(--test); }
+  .fc-top.report_delivered  { background: var(--rep); }
+
+  .fc-body { padding:16px; flex:1; display:flex; flex-direction:column; gap:10px; }
+
+  .fc-header { display:flex; gap:12px; align-items:center; }
+  .fc-avatar {
+    width:46px; height:46px; border-radius:50%; flex-shrink:0;
+    object-fit:cover;
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px; font-weight:700; color:#fff;
+  }
+  .fc-avatar-placeholder {
+    width:46px; height:46px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px; font-weight:700; color:#fff; flex-shrink:0;
+  }
+  .fc-name { font-size:15px; font-weight:700; color:#1a1a2e; line-height:1.2; }
+  .fc-loc  { font-size:12px; color:#888; margin-top:2px; }
+
+  .fc-tags { display:flex; flex-wrap:wrap; gap:5px; }
+  .fc-tag  {
+    font-size:11px; font-weight:600; padding:3px 9px; border-radius:12px;
+    background:#f0f4ff; color:#1a2f6b;
+  }
+  .fc-tag.season { background:#fff0f5; color:#c2185b; }
+
+  /* Device mini-stats */
+  .device-stats { display:flex; gap:6px; flex-wrap:wrap; }
+  .ds-pill {
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:11px; font-weight:600; padding:3px 8px; border-radius:10px;
+  }
+  .ds-ss   { background:#e3f0ff; color:#1a73e8; }
+  .ds-atmo { background:#e0f7fa; color:#00838f; }
+  .ds-sl   { background:#e8f5e9; color:#2e7d32; }
+  .ds-pb   { background:#f3e5f5; color:#7b1fa2; }
+  .ds-sm   { background:#fff3e0; color:#e65100; }
+  .ds-pill.zero { opacity:.35; }
+
+  .fc-footer {
+    padding:10px 16px; border-top:1px solid #f0f2f5;
+    display:flex; align-items:center; justify-content:space-between;
+    background:#fafbfd;
+  }
   .status-badge {
     display:inline-flex; align-items:center; gap:4px;
-    font-size:11px; font-weight:600; padding:3px 9px;
+    font-size:11px; font-weight:600; padding:3px 10px;
     border-radius:20px; white-space:nowrap;
   }
-  .st-registered       { background:#f1f3f4; color:#666; border:1px solid #ddd; }
-  .st-sample_collected { background:#e3f2fd; color:#1565c0; border:1px solid #90caf9; }
-  .st-testing_done     { background:#fff8e1; color:#e65100; border:1px solid #ffe082; }
-  .st-report_delivered { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
+  .st-registered       { background:var(--reg-bg);   color:var(--reg); }
+  .st-re_registered    { background:var(--rereg-bg); color:var(--rereg); }
+  .st-sample_collected { background:var(--samp-bg);  color:var(--samp); }
+  .st-testing_done     { background:var(--test-bg);  color:var(--test); }
+  .st-report_delivered { background:var(--rep-bg);   color:var(--rep); }
+  .fc-date { font-size:11px; color:#aaa; font-family:monospace; }
+
+  /* ── Empty state ─────────────────────────────────────────────── */
+  .empty-state {
+    text-align:center; padding:60px 20px; color:#aaa;
+    grid-column:1/-1;
+  }
+  .empty-state i { font-size:48px; margin-bottom:12px; display:block; }
+
+  /* ── No-results row (hidden by default) ─────────────────────── */
+  #noResults { display:none; }
 </style>
 
-<div style="padding:0 0 16px 0;">
+<div style="padding:0 0 32px 0;">
 
-  <!-- Header -->
-  <div class="bg-primary text-white d-flex align-items-center justify-content-between px-4 py-3 mb-3"
-       style="border-radius:0 0 8px 8px;">
-    <h4 class="mb-0"><i class="fas fa-users me-2"></i> Farmers
-      <span class="badge bg-light text-primary ms-2" style="font-size:14px;" id="farmerCount">{{ farmers|length }}</span>
-    </h4>
-    <div class="d-flex gap-2">
-      <a href="{% url 'create-farmer' %}" class="btn btn-sm btn-light">
-        <i class="fas fa-user-plus me-1"></i> Add Farmer
-      </a>
+  <!-- ── Page header ─────────────────────────────────────────── -->
+  <div class="d-flex align-items-center justify-content-between mb-4 px-1">
+    <div>
+      <h4 class="mb-0 fw-bold" style="color:var(--accent);">
+        <i class="fas fa-tractor me-2"></i>Farmer Management
+      </h4>
+      <p class="text-muted mb-0" style="font-size:13px;">
+        Manage soil testing farmers and track progress
+      </p>
+    </div>
+    <a href="{% url 'create-farmer' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-2">
+      <i class="fas fa-user-plus"></i> Add Farmer
+    </a>
+  </div>
+
+  <!-- ── KPI Strip ────────────────────────────────────────────── -->
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <span class="kpi-num" style="color:var(--accent);">{{ kpi.total }}</span>
+      <span class="kpi-label">Total Farmers</span>
+      <span class="kpi-sub">All registered</span>
+    </div>
+    <div class="kpi-card registered">
+      <span class="kpi-num" style="color:var(--reg);">{{ kpi.registered }}</span>
+      <span class="kpi-label">Pending Collection</span>
+      <span class="kpi-sub">Awaiting sample</span>
+    </div>
+    <div class="kpi-card sample">
+      <span class="kpi-num" style="color:var(--samp);">{{ kpi.sample_collected }}</span>
+      <span class="kpi-label">Sample Collected</span>
+      <span class="kpi-sub">{{ kpi.pending_test }} pending test</span>
+    </div>
+    <div class="kpi-card testing">
+      <span class="kpi-num" style="color:var(--test);">{{ kpi.testing_done }}</span>
+      <span class="kpi-label">Testing Done</span>
+      <span class="kpi-sub">{{ kpi.pending_report }} pending report</span>
+    </div>
+    <div class="kpi-card delivered">
+      <span class="kpi-num" style="color:var(--rep);">{{ kpi.report_delivered }}</span>
+      <span class="kpi-label">Report Delivered</span>
+      <span class="kpi-sub">Completed</span>
     </div>
   </div>
 
-  <div style="padding:0 16px;">
-    <div style="background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden;">
+  <!-- ── Activity Strip ──────────────────────────────────────── -->
+  <div class="activity-strip">
+    <span class="act-title"><i class="fas fa-chart-line me-1"></i> Activity</span>
+    <div style="display:flex; gap:6px;">
+      <button class="act-tab active" onclick="setActivityPeriod('today',this)">Today</button>
+      <button class="act-tab" onclick="setActivityPeriod('month',this)">This Month</button>
+    </div>
+    <div class="act-divider"></div>
 
-      <!-- Filter bar -->
-      <div class="d-flex flex-wrap gap-2 p-3 border-bottom bg-light">
-        <input type="text" id="searchName"     class="form-control form-control-sm" placeholder="Farmer Name" style="max-width:160px;">
-        <input type="text" id="searchPhone"    class="form-control form-control-sm" placeholder="Phone"       style="max-width:140px;">
-        <input type="text" id="searchVillage"  class="form-control form-control-sm" placeholder="Village"     style="max-width:140px;">
-        <select id="filterStatus" class="form-select form-select-sm" style="max-width:180px;">
-          <option value="">All Statuses</option>
-          {% for val, label in farmer_status_choices %}
-            <option value="{{ val }}">{{ label }}</option>
-          {% endfor %}
-        </select>
-        <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
-          <i class="fas fa-times me-1"></i> Clear
-        </button>
-        <span id="countLabel" class="ms-auto align-self-center text-muted" style="font-size:13px;"></span>
+    <span class="act-badge act-today" id="act-collected">
+      <i class="fas fa-vial"></i>
+      <span id="act-collected-num">{{ kpi.today_collected }}</span> Collected
+    </span>
+    <span class="act-badge act-month" id="act-tested">
+      <i class="fas fa-flask"></i>
+      <span id="act-tested-num">{{ kpi.today_tested }}</span> Tested
+    </span>
+    <span class="act-badge act-pending" id="act-delivered">
+      <i class="fas fa-file-alt"></i>
+      <span id="act-delivered-num">{{ kpi.today_delivered }}</span> Delivered
+    </span>
+
+    <span class="ms-auto" style="font-size:12px; color:#aaa;">
+      <i class="fas fa-calendar-day me-1"></i>{{ today|date:"d M Y" }}
+    </span>
+  </div>
+
+  <!-- ── Monthly Activity Chart ──────────────────────────────── -->
+  <div style="background:#fff;border-radius:12px;border:1px solid #e8ecf0;padding:20px 24px;margin-bottom:18px;">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div>
+        <h6 class="mb-0 fw-bold" style="font-size:14px;color:#1a2f6b;">
+          <i class="fas fa-chart-bar me-2"></i>Monthly Activity (Last 6 Months)
+        </h6>
+        <span class="text-muted" style="font-size:12px;">Farmers registered · Samples collected · Payments added</span>
+      </div>
+    </div>
+    <canvas id="activityChart" height="90"></canvas>
+  </div>
+
+  <!-- ── Filter Bar ───────────────────────────────────────────── -->
+  <div class="filter-bar">
+    <input type="text"   id="searchName"  placeholder="🔍  Name or Phone…" oninput="applyFilters()">
+    <select id="filterCrop"   onchange="applyFilters()">
+      <option value="">All Crops</option>
+      {% for c in crops %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+    </select>
+    <select id="filterSeason" onchange="applyFilters()">
+      <option value="">All Seasons</option>
+      {% for val, label in season_choices %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+    </select>
+
+    <!-- Status chips -->
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <span class="status-chip all active" data-status="" onclick="setStatus('',this)">All</span>
+      <span class="status-chip reg-chip"   data-status="registered"       onclick="setStatus('registered',this)">Registered</span>
+      <span class="status-chip samp-chip"  data-status="sample_collected" onclick="setStatus('sample_collected',this)">Sample Collected</span>
+      <span class="status-chip test-chip"  data-status="testing_done"     onclick="setStatus('testing_done',this)">Testing Done</span>
+      <span class="status-chip rep-chip"   data-status="report_delivered" onclick="setStatus('report_delivered',this)">Report Delivered</span>
+    </div>
+
+    <span class="result-count" id="resultCount"></span>
+  </div>
+
+  <!-- ── Farmer Grid ──────────────────────────────────────────── -->
+  <div class="farmer-grid" id="farmerGrid">
+
+    {% for f in farmers %}
+    {% with total=f.soilsaathi_count|add:f.atmo_count|add:f.sl_count|add:f.pb_count|add:f.sm_count %}
+    <div class="farmer-card"
+         data-name="{{ f.farmer_name|lower }}"
+         data-phone="{{ f.phone }}"
+         data-status="{{ f.status }}"
+         data-crop="{{ f.crop|lower }}"
+         data-season="{{ f.season }}"
+         onclick="window.location='/farmer/{{ f.pk }}/'">
+
+      <div class="fc-top {{ f.status }}"></div>
+
+      <div class="fc-body">
+
+        <!-- Header: avatar + name -->
+        <div class="fc-header">
+          {% if f.farmer_image %}
+          <img src="{{ f.farmer_image.url }}" class="fc-avatar" alt="{{ f.farmer_name }}">
+          {% else %}
+          <div class="fc-avatar-placeholder"
+               style="background:hsl({{ f.pk|add:40 }}deg 55% 45%);">
+            {{ f.farmer_name|first|upper }}
+          </div>
+          {% endif %}
+          <div>
+            <div class="fc-name">{{ f.farmer_name }}</div>
+            <div class="fc-loc"><i class="fas fa-map-marker-alt" style="font-size:10px; color:#bbb;"></i>
+              {{ f.village }}, {{ f.district }}</div>
+          </div>
+        </div>
+
+        <!-- Crop + season tags -->
+        <div class="fc-tags">
+          <span class="fc-tag"><i class="fas fa-seedling" style="font-size:10px;"></i> {{ f.crop }}</span>
+          <span class="fc-tag season">{{ f.get_season_display }}</span>
+          <span class="fc-tag" style="background:#f0fdf4;color:#166534;">{{ f.land_area }} ac</span>
+          {% if request.user.is_superuser %}
+          <span class="fc-tag" style="background:#fff7ed;color:#c2410c;" title="Soil Partner">
+            <i class="fas fa-user-tie" style="font-size:10px;"></i>
+            {{ f.soil_partner.get_full_name|default:f.soil_partner.username }}
+          </span>
+          {% endif %}
+        </div>
+
+        <!-- Device mini-stats -->
+        <div class="device-stats">
+          <span class="ds-pill ds-ss {% if not f.soilsaathi_count %}zero{% endif %}">
+            <i class="fas fa-temperature-low"></i> {{ f.soilsaathi_count }}
+          </span>
+          <span class="ds-pill ds-atmo {% if not f.atmo_count %}zero{% endif %}">
+            <i class="fas fa-wind"></i> {{ f.atmo_count }}
+          </span>
+          <span class="ds-pill ds-sl {% if not f.sl_count %}zero{% endif %}">
+            <i class="fas fa-leaf"></i> {{ f.sl_count }}
+          </span>
+          <span class="ds-pill ds-pb {% if not f.pb_count %}zero{% endif %}">
+            <i class="fas fa-vial"></i> {{ f.pb_count }}
+          </span>
+          <span class="ds-pill ds-sm {% if not f.sm_count %}zero{% endif %}">
+            <i class="fas fa-map-marked-alt"></i> {{ f.sm_count }}
+          </span>
+          {% if total %}
+          <span class="ds-pill" style="background:#1a2f6b;color:#fff;margin-left:auto;">
+            {{ total }} total
+          </span>
+          {% endif %}
+        </div>
+
       </div>
 
-      <!-- Table -->
-      <div style="overflow-x:auto;">
-        <table id="farmerTable" class="table table-hover mb-0" style="font-size:14px;">
-          <thead style="background:#f5f7fa; position:sticky; top:0; z-index:1;">
-            <tr>
-              <th style="padding:12px 16px; font-weight:600; color:#444;">#</th>
-              <th style="padding:12px 16px; font-weight:600; color:#444;">Farmer Name</th>
-              <th style="padding:12px 16px; font-weight:600; color:#444;">Phone</th>
-              <th style="padding:12px 16px; font-weight:600; color:#444;">Village / District</th>
-              <th style="padding:12px 16px; font-weight:600; color:#444;">Crop / Season</th>
-              {% if request.user.is_superuser %}
-              <th style="padding:12px 16px; font-weight:600; color:#444;">Soil Partner</th>
-              {% endif %}
-              <th style="padding:12px 16px; font-weight:600; color:#444;">Status</th>
-              <th style="padding:12px 16px; font-weight:600; color:#444; text-align:center;">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for farmer in farmers %}
-            <tr class="farmer-row" data-status="{{ farmer.status }}"
-                onclick="window.location.href='/farmer/{{ farmer.pk }}/'">
-              <td style="padding:12px 16px; color:#888;">{{ forloop.counter }}</td>
-              <td style="padding:12px 16px; font-weight:600;">{{ farmer.farmer_name }}</td>
-              <td style="padding:12px 16px;">{{ farmer.phone }}</td>
-              <td style="padding:12px 16px;">
-                <div>{{ farmer.village }}</div>
-                <div class="text-muted" style="font-size:12px;">{{ farmer.district }}, {{ farmer.state }}</div>
-              </td>
-              <td style="padding:12px 16px;">
-                <div>{{ farmer.crop }}</div>
-                <div class="text-muted" style="font-size:12px;">{{ farmer.get_season_display }}</div>
-              </td>
-              {% if request.user.is_superuser %}
-              <td style="padding:12px 16px; color:#555;">
-                {{ farmer.soil_partner.get_full_name|default:farmer.soil_partner.username }}
-              </td>
-              {% endif %}
-              <td style="padding:12px 16px;">
-                <span class="status-badge st-{{ farmer.status }}">{{ farmer.get_status_display }}</span>
-              </td>
-              <td style="padding:12px 16px; text-align:center;">
-                <a href="/farmer/{{ farmer.pk }}/" class="btn btn-sm btn-outline-primary me-1"
-                   onclick="event.stopPropagation()" title="View">
-                  <i class="fas fa-eye"></i>
-                </a>
-                <button class="btn btn-sm btn-outline-danger"
-                        onclick="event.stopPropagation(); deleteFarmer({{ farmer.pk }}, '{{ farmer.farmer_name }}')"
-                        title="Delete">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="8" class="text-center py-5 text-muted">
-                <i class="fas fa-users fa-2x mb-2 d-block"></i>
-                No farmers registered yet.
-                <a href="{% url 'create-farmer' %}" class="d-block mt-2 btn btn-sm btn-primary" style="width:fit-content;margin:8px auto 0;">
-                  Add First Farmer
-                </a>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <div class="fc-footer">
+        <span class="status-badge st-{{ f.status }}">
+          {% if f.status == 'registered' %}<i class="fas fa-circle" style="font-size:8px;"></i>
+          {% elif f.status == 'sample_collected' %}<i class="fas fa-vial" style="font-size:8px;"></i>
+          {% elif f.status == 'testing_done' %}<i class="fas fa-flask" style="font-size:8px;"></i>
+          {% else %}<i class="fas fa-check" style="font-size:8px;"></i>{% endif %}
+          {{ f.get_status_display }}
+        </span>
+        <span class="fc-date">{{ f.created_at|date:"d M Y" }}</span>
       </div>
 
     </div>
-  </div>
+    {% endwith %}
+    {% empty %}
+    <div class="empty-state">
+      <i class="fas fa-users"></i>
+      No farmers registered yet.
+      <br><a href="{% url 'create-farmer' %}" class="btn btn-primary btn-sm mt-3">Add First Farmer</a>
+    </div>
+    {% endfor %}
+
+    <div id="noResults" class="empty-state" style="grid-column:1/-1;">
+      <i class="fas fa-search" style="font-size:40px;"></i>
+      No farmers match your filters.
+    </div>
+
+  </div><!-- /farmer-grid -->
+
 </div>
 
 <script>
-  const totalRows = {{ farmers|length }};
+  const TODAY_DATA = {
+    collected: {{ kpi.today_collected }},
+    tested   : {{ kpi.today_tested }},
+    delivered: {{ kpi.today_delivered }},
+  };
+  const MONTH_DATA = {
+    collected: {{ kpi.month_collected }},
+    tested   : {{ kpi.month_tested }},
+    delivered: {{ kpi.month_delivered }},
+  };
 
-  function updateCount() {
-    const visible = document.querySelectorAll('#farmerTable tbody tr.farmer-row:not([style*="display: none"])').length;
-    document.getElementById('countLabel').textContent =
-      visible < totalRows ? `Showing ${visible} of ${totalRows}` : `${totalRows} farmer${totalRows !== 1 ? 's' : ''}`;
-    document.getElementById('farmerCount').textContent = visible;
+  let activeStatus = '';
+
+  function setStatus(val, el) {
+    activeStatus = val;
+    document.querySelectorAll('.status-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    applyFilters();
+  }
+
+  function setActivityPeriod(period, el) {
+    document.querySelectorAll('.act-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    const d = period === 'today' ? TODAY_DATA : MONTH_DATA;
+    document.getElementById('act-collected-num').textContent = d.collected;
+    document.getElementById('act-tested-num').textContent    = d.tested;
+    document.getElementById('act-delivered-num').textContent = d.delivered;
   }
 
   function applyFilters() {
-    const name    = document.getElementById('searchName').value.toLowerCase();
-    const phone   = document.getElementById('searchPhone').value.toLowerCase();
-    const village = document.getElementById('searchVillage').value.toLowerCase();
-    const status  = document.getElementById('filterStatus').value;
+    const name   = document.getElementById('searchName').value.toLowerCase().trim();
+    const crop   = document.getElementById('filterCrop').value.toLowerCase();
+    const season = document.getElementById('filterSeason').value;
 
-    document.querySelectorAll('#farmerTable tbody tr.farmer-row').forEach(row => {
-      const cells = row.getElementsByTagName('td');
-      const matchName    = cells[1].textContent.toLowerCase().includes(name);
-      const matchPhone   = cells[2].textContent.toLowerCase().includes(phone);
-      const matchVillage = cells[3].textContent.toLowerCase().includes(village);
-      const matchStatus  = !status || row.dataset.status === status;
-      row.style.display  = (matchName && matchPhone && matchVillage && matchStatus) ? '' : 'none';
+    let visible = 0;
+    document.querySelectorAll('.farmer-card').forEach(card => {
+      const matchName   = !name   || card.dataset.name.includes(name) || card.dataset.phone.includes(name);
+      const matchStatus = !activeStatus || card.dataset.status === activeStatus;
+      const matchCrop   = !crop   || card.dataset.crop === crop;
+      const matchSeason = !season || card.dataset.season === season;
+      const show = matchName && matchStatus && matchCrop && matchSeason;
+      card.style.display = show ? '' : 'none';
+      if (show) visible++;
     });
-    updateCount();
+
+    document.getElementById('resultCount').textContent = `${visible} farmer${visible !== 1 ? 's' : ''}`;
+    document.getElementById('noResults').style.display =
+      visible === 0 && document.querySelectorAll('.farmer-card').length > 0 ? 'block' : 'none';
   }
 
-  function clearFilters() {
-    ['searchName','searchPhone','searchVillage'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('filterStatus').value = '';
-    document.querySelectorAll('#farmerTable tbody tr.farmer-row').forEach(r => r.style.display = '');
-    updateCount();
-  }
+  // Initial count
+  applyFilters();
 
-  ['searchName','searchPhone','searchVillage'].forEach(id =>
-    document.getElementById(id).addEventListener('input', applyFilters)
-  );
-  document.getElementById('filterStatus').addEventListener('change', applyFilters);
-
-  updateCount();
-
-  function deleteFarmer(pk, name) {
-    if (!confirm(`Delete farmer "${name}"? This cannot be undone.`)) return;
-    fetch(`/farmer/${pk}/delete/`, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' }
-    })
-    .then(r => r.json())
-    .then(d => { if (d.success) location.reload(); else alert(d.error || 'Could not delete.'); })
-    .catch(() => alert('Something went wrong.'));
-  }
-
-  function getCsrf() {
-    const v = document.cookie.match('(^|;) ?csrftoken=([^;]*)(;|$)');
-    return v ? decodeURIComponent(v[2]) : '';
-  }
+  // ── Monthly Activity Chart ─────────────────────────────────────────────────
+  (function() {
+    const data = {{ activity_chart|safe }};
+    const ctx  = document.getElementById('activityChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'Farmers Registered',
+            data: data.registered,
+            backgroundColor: 'rgba(26,47,107,0.75)',
+            borderRadius: 4,
+            yAxisID: 'y',
+          },
+          {
+            label: 'Samples Collected',
+            data: data.collected,
+            backgroundColor: 'rgba(67,160,71,0.75)',
+            borderRadius: 4,
+            yAxisID: 'y',
+          },
+          {
+            label: 'Payments (₹)',
+            data: data.payments,
+            type: 'line',
+            borderColor: '#e65100',
+            backgroundColor: 'rgba(230,81,0,0.10)',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#e65100',
+            fill: true,
+            tension: 0.35,
+            yAxisID: 'y2',
+          },
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const val = ctx.parsed.y;
+                return ctx.dataset.yAxisID === 'y2'
+                  ? `${ctx.dataset.label}: ₹${val.toLocaleString('en-IN', {maximumFractionDigits:0})}`
+                  : `${ctx.dataset.label}: ${val}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            type: 'linear', position: 'left',
+            title: { display: true, text: 'Count', font: { size: 10 } },
+            ticks: { font: { size: 10 }, precision: 0 },
+            grid: { color: 'rgba(0,0,0,0.05)' },
+          },
+          y2: {
+            type: 'linear', position: 'right',
+            title: { display: true, text: 'Payment Amount (₹)', font: { size: 10 } },
+            ticks: {
+              font: { size: 10 },
+              callback: v => '₹' + v.toLocaleString('en-IN', {maximumFractionDigits:0}),
+            },
+            grid: { drawOnChartArea: false },
+          },
+          x: { ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+  })();
 </script>
 {% endblock %}

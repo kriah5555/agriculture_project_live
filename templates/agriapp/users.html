@@ -49,10 +49,15 @@
 
       <!-- Search bar -->
       <div class="d-flex flex-wrap gap-2 p-3 border-bottom bg-light">
-        <input type="text" id="searchFirstName"  class="form-control form-control-sm" placeholder="First Name"  style="max-width:160px;">
-        <input type="text" id="searchLastName"   class="form-control form-control-sm" placeholder="Last Name"   style="max-width:160px;">
-        <input type="text" id="searchUsername"   class="form-control form-control-sm" placeholder="Username"    style="max-width:160px;">
-        <input type="text" id="searchEmail"      class="form-control form-control-sm" placeholder="Email"       style="max-width:200px;">
+        <input type="text" id="searchFirstName"  class="form-control form-control-sm" placeholder="First Name"  style="max-width:140px;">
+        <input type="text" id="searchLastName"   class="form-control form-control-sm" placeholder="Last Name"   style="max-width:140px;">
+        <input type="text" id="searchUsername"   class="form-control form-control-sm" placeholder="Username"    style="max-width:140px;">
+        <input type="text" id="searchEmail"      class="form-control form-control-sm" placeholder="Email"       style="max-width:180px;">
+        <select id="filterUserType" class="form-select form-select-sm" style="max-width:170px;" onchange="searchTable()">
+          <option value="">All User Types</option>
+          <option value="soil partner">Soil Partner</option>
+          <option value="current user">Current User</option>
+        </select>
         <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
           <i class="fas fa-times me-1"></i> Clear
         </button>
@@ -75,7 +80,7 @@
           </thead>
           <tbody>
             {% for user in users %}
-            <tr class="user-row" onclick="window.location.href='/user-details/{{ user.username }}/'">
+            <tr class="user-row" data-usertype="{{ user.user_type_display|lower }}" onclick="window.location.href='/user-details/{{ user.username }}/'">
               <td style="padding:12px 16px; color:#888;">{{ forloop.counter }}</td>
               <td style="padding:12px 16px;">
                 <span class="user-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
@@ -153,18 +158,20 @@
   }
 
   function searchTable() {
-    const f1 = document.getElementById("searchFirstName").value.toLowerCase();
-    const f2 = document.getElementById("searchLastName").value.toLowerCase();
-    const f3 = document.getElementById("searchUsername").value.toLowerCase();
-    const f4 = document.getElementById("searchEmail").value.toLowerCase();
+    const f1   = document.getElementById("searchFirstName").value.toLowerCase();
+    const f2   = document.getElementById("searchLastName").value.toLowerCase();
+    const f3   = document.getElementById("searchUsername").value.toLowerCase();
+    const f4   = document.getElementById("searchEmail").value.toLowerCase();
+    const fType = document.getElementById("filterUserType").value.toLowerCase();
 
     document.querySelectorAll('#userTable tbody tr.user-row').forEach(row => {
-      const cells = row.getElementsByTagName("td");
+      const cells    = row.getElementsByTagName("td");
+      const userType = (row.dataset.usertype || '').toLowerCase();
       const match = cells[1].textContent.toLowerCase().includes(f1) &&
                     cells[1].textContent.toLowerCase().includes(f2) &&
                     cells[2].textContent.toLowerCase().includes(f3) &&
-                    cells[3].textContent.toLowerCase().includes(f4);
-
+                    cells[3].textContent.toLowerCase().includes(f4) &&
+                    (!fType || userType.includes(fType));
       row.style.display = match ? "" : "none";
     });
     updateCount();
@@ -174,6 +181,7 @@
     ["searchFirstName","searchLastName","searchUsername","searchEmail"].forEach(id => {
       document.getElementById(id).value = '';
     });
+    document.getElementById("filterUserType").value = '';
     document.querySelectorAll('#userTable tbody tr.user-row').forEach(r => r.style.display = "");
     updateCount();
   }

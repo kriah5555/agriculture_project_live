@@ -12,6 +12,7 @@ DEVICE_NAMES = {
     'atmo_sense': 'SoilSparsh',
     'soil_life' : 'SoilLIFE',
     'ph_bottle' : 'PHBottle',
+    'soil_map'  : 'SoilMap',
 }
 
 DEVICE_CHOICES = list(DEVICE_NAMES.items())
@@ -104,6 +105,33 @@ PH_BOTTLE_FIELDS = {
     'latitude'  : 'Latitude',
     'longitude' : 'Longitude',
     'created_at': 'Requested At',
+}
+
+SOIL_MAP_FIELDS = {
+    'id'        : 'ID',
+    'tag'       : 'Tag',
+    'field1'    : 'pH',
+    'field2'    : 'EC (dS/m)',
+    'field3'    : 'Nitrogen (kg/ha)',
+    'field4'    : 'Phosphorus (kg/ha)',
+    'field5'    : 'Potassium (kg/ha)',
+    'field6'    : 'Organic Carbon (%)',
+    'field7'    : 'Sulfur (ppm)',
+    'field8'    : 'Iron/Fe (ppm)',
+    'field9'    : 'Zinc/Zn (ppm)',
+    'field10'   : 'Copper/Cu (ppm)',
+    'field11'   : 'Boron/B (ppm)',
+    'field12'   : 'Manganese/Mn (ppm)',
+    'field13'   : 'Sand (%)',
+    'field14'   : 'Clay (%)',
+    'field15'   : 'Silt (%)',
+    'field16'   : 'NDVI',
+    'field17'   : 'Temperature (°C)',
+    'field18'   : 'Rainfall (mm)',
+    'field19'   : 'Elevation (m)',
+    'latitude'  : 'Latitude',
+    'longitude' : 'Longitude',
+    'created_at': 'Uploaded At',
 }
 
 class ContactDetails(models.Model):
@@ -238,11 +266,13 @@ class UserRequest(models.Model):
     Each entry appears in the admin Notifications page as an unread item
     until an admin marks it resolved.
     """
-    FORGOT_PASSWORD  = 'forgot_password'
-    CHANGE_PASSWORD  = 'change_password'
+    FORGOT_PASSWORD       = 'forgot_password'
+    CHANGE_PASSWORD       = 'change_password'
+    SOIL_PARTNER_INTEREST = 'soil_partner_interest'
     REQUEST_TYPES = [
-        (FORGOT_PASSWORD, 'Forgot Password'),
-        (CHANGE_PASSWORD, 'Change Password Request'),
+        (FORGOT_PASSWORD,       'Forgot Password'),
+        (CHANGE_PASSWORD,       'Change Password Request'),
+        (SOIL_PARTNER_INTEREST, 'Soil Partner Interest'),
     ]
     STATUS_PENDING  = 'pending'
     STATUS_RESOLVED = 'resolved'
@@ -312,6 +342,7 @@ SEASON_CHOICES = [
 
 FARMER_STATUS_CHOICES = [
     ('registered',       'Registered'),
+    ('re_registered',    'Re-Registered'),
     ('sample_collected', 'Sample Collected'),
     ('testing_done',     'Testing Done'),
     ('report_delivered', 'Report Delivered'),
@@ -319,6 +350,7 @@ FARMER_STATUS_CHOICES = [
 
 FARMER_STATUS_BADGE = {
     'registered':       'secondary',
+    're_registered':    'info',
     'sample_collected': 'primary',
     'testing_done':     'warning',
     'report_delivered': 'success',
@@ -363,3 +395,44 @@ class FarmerStatusHistory(models.Model):
 
     def __str__(self):
         return f"{self.farmer.farmer_name} - {self.get_status_display()} at {self.timestamp}"
+
+
+class PartnerPayment(models.Model):
+    """
+    A payment record for a soil partner.
+    Admin adds these to track how much a partner has paid.
+    status: pending → admin created the record; paid → payment confirmed received.
+    """
+    STATUS_PENDING = 'pending'
+    STATUS_PAID    = 'paid'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_PAID,    'Paid'),
+    ]
+
+    user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
+    farmer      = models.ForeignKey('Farmer', on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')
+    amount      = models.DecimalField(max_digits=12, decimal_places=2)
+    description = models.CharField(max_length=500, blank=True, default='')
+    status      = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    created_at  = models.DateTimeField(auto_now_add=True)
+    paid_at     = models.DateTimeField(null=True, blank=True)
+    created_by  = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='added_payments')
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} — ₹{self.amount} [{self.status}] on {self.created_at:%d %b %Y}"
+
+    @property
+    def is_paid(self):
+        return self.status == self.STATUS_PAID
+
+
+class PaymentAttachment(models.Model):
+    payment = models.ForeignKey(PartnerPayment, on_delete=models.CASCADE, related_name='attachments')
+    file    = models.FileField(upload_to='payment_attachments/')
+
+    def __str__(self):
+        return f"Attachment for payment {self.payment_id}"

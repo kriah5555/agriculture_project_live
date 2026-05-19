@@ -35,17 +35,32 @@ _login_request = inline_serializer(
     },
 )
 
+_user_info_fields = {
+    'id'                : drf_serializers.IntegerField(),
+    'username'          : drf_serializers.CharField(),
+    'email'             : drf_serializers.EmailField(),
+    'first_name'        : drf_serializers.CharField(),
+    'last_name'         : drf_serializers.CharField(),
+    'full_name'         : drf_serializers.CharField(),
+    'is_superuser'      : drf_serializers.BooleanField(),
+    'is_staff'          : drf_serializers.BooleanField(),
+    'is_active'         : drf_serializers.BooleanField(),
+    'date_joined'       : drf_serializers.CharField(),
+    'last_login'        : drf_serializers.CharField(allow_null=True),
+    'user_type'         : drf_serializers.CharField(allow_null=True,
+                            help_text='soil_partner | current_user | null (for superuser/staff)'),
+    'state'             : drf_serializers.CharField(allow_null=True),
+    'district'          : drf_serializers.CharField(allow_null=True),
+    'city_village'      : drf_serializers.CharField(allow_null=True),
+    'is_profile_active' : drf_serializers.BooleanField(allow_null=True),
+}
+
 _login_response = inline_serializer(
     name='LoginResponse',
     fields={
         'access' : drf_serializers.CharField(help_text='JWT access token (valid 2 days)'),
         'refresh': drf_serializers.CharField(help_text='JWT refresh token (valid 15 days)'),
-        'user'   : inline_serializer(name='LoginUserInfo', fields={
-            'id'       : drf_serializers.IntegerField(),
-            'username' : drf_serializers.CharField(),
-            'email'    : drf_serializers.EmailField(),
-            'full_name': drf_serializers.CharField(),
-        }),
+        'user'   : inline_serializer(name='LoginUserInfo', fields=_user_info_fields),
     },
 )
 
@@ -275,6 +290,81 @@ def change_password_request(request):
     )
 
 
+# ── Soil Partner Interest / Enquiry (public) ──────────────────────────────────
+
+_soil_partner_enquiry_request = inline_serializer(
+    name='SoilPartnerEnquiryRequest',
+    fields={
+        'name'   : drf_serializers.CharField(help_text='Full name of the enquirer'),
+        'email'  : drf_serializers.EmailField(help_text='Contact email'),
+        'phone'  : drf_serializers.CharField(help_text='Contact phone number'),
+        'state'  : drf_serializers.CharField(required=False, allow_blank=True, help_text='State'),
+        'city'   : drf_serializers.CharField(required=False, allow_blank=True, help_text='City or district'),
+        'message': drf_serializers.CharField(required=False, allow_blank=True, help_text='Optional message'),
+    },
+)
+
+@extend_schema(
+    tags=['Auth'],
+    summary='Express interest in becoming a Soil Partner',
+    description=(
+        'Public endpoint (no auth required). '
+        'Any external user can submit their contact details and express interest '
+        'in joining as a Soil Partner. A UserRequest record is created and appears '
+        'in the admin Notifications panel as a pending item. '
+        'Duplicate submissions (same email + pending status) return HTTP 409.'
+    ),
+    request=_soil_partner_enquiry_request,
+    responses={
+        201: _message_response,
+        400: _message_response,
+        409: _message_response,
+    },
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def soil_partner_enquiry(request):
+    """Create a Soil Partner Interest request visible to admin in Notifications."""
+    from agriapp.models import UserRequest
+
+    name    = (request.data.get('name')    or '').strip()
+    email   = (request.data.get('email')   or '').strip()
+    phone   = (request.data.get('phone')   or '').strip()
+    state   = (request.data.get('state')   or '').strip()
+    city    = (request.data.get('city')    or '').strip()
+    message = (request.data.get('message') or '').strip()
+
+    if not name or not email or not phone:
+        return Response(
+            {'detail': 'name, email, and phone are required.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if UserRequest.objects.filter(
+        email=email,
+        request_type=UserRequest.SOIL_PARTNER_INTEREST,
+        status=UserRequest.STATUS_PENDING,
+    ).exists():
+        return Response(
+            {'detail': 'An enquiry from this email is already pending. Our team will contact you shortly.'},
+            status=status.HTTP_409_CONFLICT,
+        )
+
+    UserRequest.objects.create(
+        user         = None,
+        username     = name,
+        email        = email,
+        phone        = phone,
+        request_type = UserRequest.SOIL_PARTNER_INTEREST,
+        message      = message or f"{name} is interested in becoming a Soil Partner. State: {state}, City: {city}",
+    )
+
+    return Response(
+        {'detail': 'Thank you for your interest! Our team will review your enquiry and contact you shortly.'},
+        status=status.HTTP_201_CREATED,
+    )
+
+
 # ── User registration ─────────────────────────────────────────────────────────
 
 _register_request = inline_serializer(
@@ -380,3 +470,119 @@ def mobile_register(request):
         },
         status=status.HTTP_201_CREATED,
     )
+
+
+# ── My Payment History (authenticated soil partner) ───────────────────────────
+
+_payment_list_response = inline_serializer(
+    name='PaymentListResponse',
+    fields={
+        'count'          : drf_serializers.IntegerField(),
+        'total_amount'   : drf_serializers.DecimalField(max_digits=12, decimal_places=2),
+        'paid_amount'    : drf_serializers.DecimalField(max_digits=12, decimal_places=2),
+        'pending_amount' : drf_serializers.DecimalField(max_digits=12, decimal_places=2),
+        'paid_count'     : drf_serializers.IntegerField(),
+        'pending_count'  : drf_serializers.IntegerField(),
+        'payments'       : drf_serializers.ListField(child=drf_serializers.DictField()),
+    },
+)
+
+@extend_schema(
+    tags=['Account'],
+    summary='My payment history',
+    description=(
+        'Returns all payment records for the authenticated soil partner with paid/pending split totals.\n\n'
+        'Optional filters (query params):\n'
+        '- `status`: `pending` or `paid`\n'
+        '- `date_from` / `date_to`: filter by created date (YYYY-MM-DD)\n'
+        '- `paid_from` / `paid_to`: filter by paid date (YYYY-MM-DD)\n\n'
+        'Non-soil-partner accounts receive HTTP 403.'
+    ),
+    responses={
+        200: _payment_list_response,
+        403: _message_response,
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_payment_history(request):
+    """
+    List payment records for the authenticated soil partner.
+
+    Optional query params:
+      status      pending | paid
+      date_from   YYYY-MM-DD  (created_at >=)
+      date_to     YYYY-MM-DD  (created_at <=)
+      paid_from   YYYY-MM-DD  (paid_at >=)
+      paid_to     YYYY-MM-DD  (paid_at <=)
+    """
+    from agriapp.models import PartnerPayment
+    from django.db.models import Sum, Q
+
+    profile = getattr(request.user, 'profile', None)
+    if not profile or profile.user_type != 'soil_partner':
+        return Response({'detail': 'Only soil partners have payment records.'}, status=status.HTTP_403_FORBIDDEN)
+
+    qs = (
+        PartnerPayment.objects
+        .filter(user=request.user)
+        .select_related('farmer')
+        .prefetch_related('attachments')
+        .order_by('-created_at')
+    )
+
+    # ── filters ──────────────────────────────────────────────────────────────
+    status_filter = request.GET.get('status', '').strip()
+    date_from     = request.GET.get('date_from', '').strip()
+    date_to       = request.GET.get('date_to', '').strip()
+    paid_from     = request.GET.get('paid_from', '').strip()
+    paid_to       = request.GET.get('paid_to', '').strip()
+
+    if status_filter in ('pending', 'paid'):
+        qs = qs.filter(status=status_filter)
+    if date_from:
+        qs = qs.filter(created_at__date__gte=date_from)
+    if date_to:
+        qs = qs.filter(created_at__date__lte=date_to)
+    if paid_from:
+        qs = qs.filter(paid_at__date__gte=paid_from)
+    if paid_to:
+        qs = qs.filter(paid_at__date__lte=paid_to)
+
+    # ── totals (on filtered queryset) ────────────────────────────────────────
+    totals = qs.aggregate(
+        total_amount   = Sum('amount'),
+        paid_amount    = Sum('amount', filter=Q(status='paid')),
+        pending_amount = Sum('amount', filter=Q(status='pending')),
+    )
+    total_amount   = totals['total_amount']   or 0
+    paid_amount    = totals['paid_amount']    or 0
+    pending_amount = totals['pending_amount'] or 0
+
+    paid_count    = qs.filter(status='paid').count()
+    pending_count = qs.filter(status='pending').count()
+
+    # ── serialise payments ───────────────────────────────────────────────────
+    payments = []
+    for p in qs:
+        payments.append({
+            'id'          : p.pk,
+            'amount'      : str(p.amount),
+            'status'      : p.status,
+            'description' : p.description,
+            'farmer_id'   : p.farmer_id,
+            'farmer_name' : p.farmer.farmer_name if p.farmer else None,
+            'attachments' : [request.build_absolute_uri(att.file.url) for att in p.attachments.all()],
+            'created_at'  : p.created_at.isoformat(),
+            'paid_at'     : p.paid_at.isoformat() if p.paid_at else None,
+        })
+
+    return Response({
+        'count'         : len(payments),
+        'total_amount'  : str(total_amount),
+        'paid_amount'   : str(paid_amount),
+        'pending_amount': str(pending_amount),
+        'paid_count'    : paid_count,
+        'pending_count' : pending_count,
+        'payments'      : payments,
+    })

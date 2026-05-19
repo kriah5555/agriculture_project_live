@@ -284,6 +284,8 @@
       <!-- Nav items -->
       <ul class="sidebar-nav">
 
+        {% if request.user.is_superuser %}
+        <!-- ── Admin-only nav ── -->
         <li class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
           <a href="{% url 'welcome' %}" class="nav-link" title="Dashboard">
             <i class="fa-solid fa-house"></i>
@@ -317,6 +319,12 @@
             <span class="nav-text">PHBottle</span>
           </a>
         </li>
+        <li class="nav-item {% if active_page == 'soil-map' %}active{% endif %}">
+          <a href="{% url 'soil-map-dashboard' %}" class="nav-link" title="SoilMap">
+            <i class="fas fa-map-marked-alt"></i>
+            <span class="nav-text">SoilMap</span>
+          </a>
+        </li>
 
         <div class="sidebar-divider"></div>
 
@@ -332,6 +340,12 @@
             <span class="nav-text">Farmers</span>
           </a>
         </li>
+        <li class="nav-item {% if active_page == 'payment_history' %}active{% endif %}">
+          <a href="{% url 'payment-history' %}" class="nav-link" title="Payment History">
+            <i class="fas fa-receipt"></i>
+            <span class="nav-text">Payments</span>
+          </a>
+        </li>
         <li class="nav-item {% if active_page == 'versions' %}active{% endif %}">
           <a href="{% url 'version_list' %}" class="nav-link" title="App Versions" target="_blank">
             <i class="fas fa-code-branch"></i>
@@ -341,7 +355,7 @@
         <li class="nav-item">
           <a href="/pay/payments/" class="nav-link" title="Payments" target="_blank">
             <i class="fas fa-money-bill-wave"></i>
-            <span class="nav-text">Payments</span>
+            <span class="nav-text">Old Payments</span>
           </a>
         </li>
         <li class="nav-item {% if active_page == 'docs' %}active{% endif %}">
@@ -350,6 +364,25 @@
             <span class="nav-text">Documentation</span>
           </a>
         </li>
+
+        {% else %}
+        <!-- ── Soil Partner / regular user nav ── -->
+        <li class="nav-item">
+          <a href="{% url 'user-page' %}" class="nav-link" title="My Dashboard">
+            <i class="fa-solid fa-house"></i>
+            <span class="nav-text">My Dashboard</span>
+          </a>
+        </li>
+
+        <div class="sidebar-divider"></div>
+
+        <li class="nav-item {% if active_page == 'my_payments' %}active{% endif %}">
+          <a href="{% url 'my-payment-history' %}" class="nav-link" title="My Payments">
+            <i class="fas fa-receipt"></i>
+            <span class="nav-text">My Payments</span>
+          </a>
+        </li>
+        {% endif %}
 
       </ul>
 

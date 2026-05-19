@@ -1,0 +1,278 @@
+{% extends "navbar.html" %}
+{% block content %}
+<style>
+  .kpi-card { background:#fff; border-radius:12px; padding:16px 20px; box-shadow:0 2px 10px rgba(0,0,0,.06); }
+  .kpi-val  { font-size:24px; font-weight:800; line-height:1.1; }
+  .kpi-lbl  { font-size:11px; color:#6c757d; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
+  .filter-bar { background:#fff; border-radius:12px; padding:16px 20px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:20px; }
+  .pay-table th { font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:#6c757d; font-weight:700; background:#f8f9fb; white-space:nowrap; }
+  .pay-table td { font-size:13px; vertical-align:middle; }
+  .pay-table tr:hover { background:#f8f9ff; }
+  .att-chip { display:inline-flex; align-items:center; gap:4px; background:#e8f5e9; color:#2e7d32;
+              border-radius:20px; padding:2px 9px; font-size:11px; font-weight:600; text-decoration:none; margin:2px; }
+  .att-chip:hover { background:#c8e6c9; color:#1b5e20; }
+  .badge-amount { background:#e8f5e9; color:#2e7d32; font-size:13px; font-weight:700; padding:4px 10px; border-radius:8px; display:inline-block; }
+  .st-paid    { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
+  .st-pending { background:#fff8e1; color:#e65100; border:1px solid #ffe082; }
+  .pay-badge  { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; white-space:nowrap; }
+  .toggle-btn { font-size:11px; padding:2px 8px; border-radius:6px; cursor:pointer; }
+</style>
+
+<div style="max-width:1200px; margin:0 auto; padding:20px 16px;">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div style="width:44px;height:44px;border-radius:10px;background:#1a2f6b;display:flex;align-items:center;justify-content:center;">
+      <i class="fas fa-receipt text-white" style="font-size:18px;"></i>
+    </div>
+    <div>
+      <h4 class="mb-0 fw-bold">Payment History</h4>
+      <span class="text-muted" style="font-size:13px;">All payment records for soil partners</span>
+    </div>
+    <button class="btn btn-sm btn-outline-secondary ms-auto" onclick="history.back()">
+      <i class="fas fa-arrow-left me-1"></i> Back
+    </button>
+  </div>
+
+  <!-- KPI strip -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-4 col-md-2">
+      <div class="kpi-card">
+        <div class="kpi-val text-success">₹{{ totals.total_amount|default:"0"|floatformat:0 }}</div>
+        <div class="kpi-lbl">Total</div>
+      </div>
+    </div>
+    <div class="col-sm-4 col-md-2">
+      <div class="kpi-card">
+        <div class="kpi-val" style="color:#2e7d32;">₹{{ totals.paid_amount|default:"0"|floatformat:0 }}</div>
+        <div class="kpi-lbl">Paid</div>
+      </div>
+    </div>
+    <div class="col-sm-4 col-md-2">
+      <div class="kpi-card">
+        <div class="kpi-val" style="color:#e65100;">₹{{ totals.pending_amount|default:"0"|floatformat:0 }}</div>
+        <div class="kpi-lbl">Pending</div>
+      </div>
+    </div>
+    <div class="col-sm-4 col-md-2">
+      <div class="kpi-card">
+        <div class="kpi-val text-primary">{{ totals.total_count|default:0 }}</div>
+        <div class="kpi-lbl">Records</div>
+      </div>
+    </div>
+    <div class="col-sm-4 col-md-2">
+      <div class="kpi-card">
+        <div class="kpi-val" style="color:#2e7d32;">{{ totals.paid_count|default:0 }}</div>
+        <div class="kpi-lbl">Paid Entries</div>
+      </div>
+    </div>
+    <div class="col-sm-4 col-md-2">
+      <div class="kpi-card">
+        <div class="kpi-val" style="color:#e65100;">{{ totals.pending_count|default:0 }}</div>
+        <div class="kpi-lbl">Pending Entries</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar mb-4">
+    <form method="GET" id="filterForm">
+      <div class="row g-2 align-items-end">
+        <!-- Row 1 -->
+        <div class="col-md-3">
+          <label class="form-label mb-1" style="font-size:11px;font-weight:700;color:#555;">SOIL PARTNER</label>
+          <select name="user_id" class="form-select form-select-sm">
+            <option value="">— All Partners —</option>
+            {% for sp in soil_partners %}
+              <option value="{{ sp.pk }}" {% if filters.user_id == sp.pk|stringformat:"s" %}selected{% endif %}>
+                {{ sp.get_full_name|default:sp.username }} (@{{ sp.username }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label mb-1" style="font-size:11px;font-weight:700;color:#555;">STATUS</label>
+          <select name="status" class="form-select form-select-sm">
+            <option value="">— All —</option>
+            <option value="pending" {% if filters.status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="paid"    {% if filters.status == 'paid' %}selected{% endif %}>Paid</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label mb-1" style="font-size:11px;font-weight:700;color:#555;">AMOUNT MIN</label>
+          <input type="number" name="min_amount" class="form-control form-control-sm" placeholder="₹ 0" value="{{ filters.min_amount }}" min="0" step="0.01">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label mb-1" style="font-size:11px;font-weight:700;color:#555;">AMOUNT MAX</label>
+          <input type="number" name="max_amount" class="form-control form-control-sm" placeholder="Any" value="{{ filters.max_amount }}" min="0" step="0.01">
+        </div>
+        <!-- Row 2 -->
+        <div class="col-md-3">
+          <label class="form-label mb-1" style="font-size:11px;font-weight:700;color:#555;">CREATED DATE FROM–TO</label>
+          <div class="input-group input-group-sm">
+            <input type="date" name="date_from" class="form-control" value="{{ filters.date_from }}">
+            <span class="input-group-text">→</span>
+            <input type="date" name="date_to" class="form-control" value="{{ filters.date_to }}">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label mb-1" style="font-size:11px;font-weight:700;color:#555;">PAID DATE FROM–TO</label>
+          <div class="input-group input-group-sm">
+            <input type="date" name="paid_from" class="form-control" value="{{ filters.paid_from }}">
+            <span class="input-group-text">→</span>
+            <input type="date" name="paid_to" class="form-control" value="{{ filters.paid_to }}">
+          </div>
+        </div>
+        <div class="col-md-2 d-flex gap-1 align-items-end">
+          <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+            <i class="fas fa-filter me-1"></i>Filter
+          </button>
+          <a href="{% url 'payment-history' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-times"></i>
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Table -->
+  <div class="card shadow-sm" style="border-radius:12px;border:none;">
+    <div class="card-body p-0">
+      {% if payments %}
+      <div style="overflow-x:auto;">
+      <table class="table pay-table mb-0">
+        <thead>
+          <tr>
+            <th class="ps-3">#</th>
+            <th>Partner</th>
+            <th>Farmer</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Description</th>
+            <th>Attachments</th>
+            <th>Created</th>
+            <th>Paid On</th>
+            <th>Added By</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in payments %}
+          <tr id="pay-row-{{ p.pk }}">
+            <td class="ps-3 text-muted" style="font-size:12px;">{{ forloop.counter }}</td>
+            <td>
+              <a href="{% url 'user-details' p.user.username %}" class="fw-semibold text-decoration-none" style="font-size:13px;">
+                {{ p.user.get_full_name|default:p.user.username }}
+              </a>
+              <div style="font-size:11px;color:#6c757d;">@{{ p.user.username }}</div>
+            </td>
+            <td>
+              {% if p.farmer %}
+                <a href="{% url 'farmer-detail' p.farmer.pk %}" class="text-decoration-none" style="font-size:12px;">
+                  {{ p.farmer.farmer_name }}
+                </a>
+              {% else %}<span class="text-muted" style="font-size:12px;">—</span>{% endif %}
+            </td>
+            <td><span class="badge-amount">₹{{ p.amount|floatformat:2 }}</span></td>
+            <td id="pay-status-{{ p.pk }}">
+              {% if p.status == 'paid' %}
+                <span class="pay-badge st-paid"><i class="fas fa-check-circle"></i> Paid</span>
+              {% else %}
+                <span class="pay-badge st-pending"><i class="fas fa-clock"></i> Pending</span>
+              {% endif %}
+            </td>
+            <td style="max-width:180px;font-size:12px;color:#444;">{{ p.description|default:"—" }}</td>
+            <td>
+              {% for att in p.attachments.all %}
+                <a href="{{ att.file.url }}" target="_blank" class="att-chip">
+                  <i class="fas fa-paperclip"></i> {{ forloop.counter }}
+                </a>
+              {% empty %}<span class="text-muted" style="font-size:12px;">—</span>{% endfor %}
+            </td>
+            <td style="font-size:11px;white-space:nowrap;">
+              {{ p.created_at|date:"d M Y" }}<br>
+              <span class="text-muted">{{ p.created_at|date:"H:i" }}</span>
+            </td>
+            <td id="pay-paidat-{{ p.pk }}" style="font-size:11px;white-space:nowrap;">
+              {% if p.paid_at %}
+                {{ p.paid_at|date:"d M Y" }}<br>
+                <span class="text-muted">{{ p.paid_at|date:"H:i" }}</span>
+              {% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td style="font-size:11px;color:#6c757d;">{{ p.created_by.username|default:"—" }}</td>
+            <td>
+              <div class="d-flex gap-1">
+                <button class="btn btn-sm toggle-btn {% if p.status == 'paid' %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
+                        onclick="toggleStatus({{ p.pk }}, this)"
+                        title="{% if p.status == 'paid' %}Mark as Pending{% else %}Mark as Paid{% endif %}">
+                  {% if p.status == 'paid' %}
+                    <i class="fas fa-undo"></i>
+                  {% else %}
+                    <i class="fas fa-check"></i>
+                  {% endif %}
+                </button>
+                <button class="btn btn-sm btn-outline-danger toggle-btn" onclick="deletePayment({{ p.pk }})">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5 text-muted">
+        <i class="fas fa-receipt" style="font-size:36px;opacity:.3;"></i>
+        <p class="mt-3 mb-0">No payment records found.</p>
+        {% if filters.user_id or filters.date_from or filters.date_to or filters.status %}
+          <a href="{% url 'payment-history' %}" class="btn btn-sm btn-outline-secondary mt-2">Clear Filters</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+
+function toggleStatus(pk, btn) {
+  fetch(`/toggle-payment-status/${pk}/`, {
+    method: 'POST',
+    headers: {'X-CSRFToken': CSRF},
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (!d.success) { alert(d.error || 'Error'); return; }
+    const isPaid = d.status === 'paid';
+    // status cell
+    document.getElementById(`pay-status-${pk}`).innerHTML = isPaid
+      ? `<span class="pay-badge st-paid"><i class="fas fa-check-circle"></i> Paid</span>`
+      : `<span class="pay-badge st-pending"><i class="fas fa-clock"></i> Pending</span>`;
+    // paid_at cell
+    document.getElementById(`pay-paidat-${pk}`).innerHTML = d.paid_at
+      ? `${d.paid_at.split(',')[0]}<br><span class="text-muted">${d.paid_at.split(',')[1]||''}</span>`
+      : `<span class="text-muted">—</span>`;
+    // toggle button
+    btn.className = `btn btn-sm toggle-btn ${isPaid ? 'btn-outline-warning' : 'btn-outline-success'}`;
+    btn.innerHTML = isPaid ? `<i class="fas fa-undo"></i>` : `<i class="fas fa-check"></i>`;
+    btn.title     = isPaid ? 'Mark as Pending' : 'Mark as Paid';
+  });
+}
+
+function deletePayment(pk) {
+  if (!confirm('Delete this payment record? This cannot be undone.')) return;
+  fetch(`/delete-payment/${pk}/`, {
+    method: 'POST',
+    headers: {'X-CSRFToken': CSRF},
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.success) {
+      document.getElementById(`pay-row-${pk}`).remove();
+    } else { alert(d.error || 'Could not delete payment.'); }
+  });
+}
+</script>
+{% endblock %}

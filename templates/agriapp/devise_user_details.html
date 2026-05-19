@@ -248,6 +248,7 @@
 
   /* ── Farmer status badges ── */
   .st-registered       { background:#f1f3f4; color:#666;     border:1px solid #ddd; }
+  .st-re_registered    { background:#e1f5fe; color:#0277bd;  border:1px solid #81d4fa; }
   .st-sample_collected { background:#e3f2fd; color:#1565c0;  border:1px solid #90caf9; }
   .st-testing_done     { background:#fff8e1; color:#e65100;  border:1px solid #ffe082; }
   .st-report_delivered { background:#e8f5e9; color:#2e7d32;  border:1px solid #a5d6a7; }
@@ -308,7 +309,39 @@
           </div>
           <h5 class="mb-0 fw-bold">{{ request.user.get_full_name|default:request.user.username }}</h5>
           <p class="text-muted mb-1" style="font-size:13px;">@{{ request.user.username }}</p>
-          <p class="text-muted mb-3" style="font-size:13px;">{{ request.user.email }}</p>
+          <p class="text-muted mb-2" style="font-size:13px;">{{ request.user.email }}</p>
+
+          <!-- Account status + user type -->
+          <div class="d-flex justify-content-center gap-2 mb-3 flex-wrap">
+            {% if is_soil_partner %}
+            <span style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600;">
+              <i class="fas fa-handshake me-1"></i>Soil Partner
+            </span>
+            {% else %}
+            <span style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600;">
+              <i class="fas fa-user me-1"></i>Current User
+            </span>
+            {% endif %}
+            {% if profile %}
+              {% if profile.status %}
+              <span style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600;">
+                <i class="fas fa-circle" style="font-size:8px;"></i> Active
+              </span>
+              {% else %}
+              <span style="background:#fce4ec;color:#c62828;border:1px solid #ef9a9a;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600;">
+                <i class="fas fa-ban" style="font-size:10px;"></i> Inactive
+              </span>
+              {% endif %}
+            {% endif %}
+          </div>
+
+          {% if profile and not profile.status %}
+          <div class="alert alert-warning py-2 px-3 mb-3" style="font-size:12px;border-radius:8px;">
+            <i class="fas fa-exclamation-triangle me-1"></i>
+            Your account is currently <strong>inactive</strong>. You cannot create farmers or API calls until an administrator reactivates your account.
+          </div>
+          {% endif %}
+
           <div class="d-flex justify-content-center gap-2 flex-wrap">
             <a href="{% url 'change-password-request' %}"
                class="user-action"
@@ -359,6 +392,8 @@
               <span class="device-type-dot" style="background:#1565c0;"></span>
             {% elif device.devise_type == 'soil_life' %}
               <span class="device-type-dot" style="background:#6a1b9a;"></span>
+            {% elif device.devise_type == 'soil_map' %}
+              <span class="device-type-dot" style="background:#2c5e1a;"></span>
             {% else %}
               <span class="device-type-dot" style="background:#e65100;"></span>
             {% endif %}
@@ -415,7 +450,10 @@
             <div class="row g-2">
               <div class="col-md-3"><input type="text" class="form-control form-control-sm" name="farmer_name" placeholder="Farmer Name *" required /></div>
               <div class="col-md-2"><input type="text" class="form-control form-control-sm" name="phone" placeholder="Phone *" maxlength="15" required /></div>
-              <div class="col-md-2"><input type="text" class="form-control form-control-sm" name="aadhaar_number" placeholder="Aadhaar (12 digits) *" maxlength="12" minlength="12" pattern="\d{12}" required /></div>
+              <div class="col-md-2">
+                <input type="text" id="up_aadhaar" class="form-control form-control-sm" name="aadhaar_number" placeholder="Aadhaar (12 digits) *" maxlength="12" minlength="12" pattern="\d{12}" required autocomplete="off" />
+                <div id="up_aadhaar_hint" style="font-size:11px;margin-top:4px;display:none;"></div>
+              </div>
               <div class="col-md-2"><input type="text" class="form-control form-control-sm" name="state" placeholder="State *" required /></div>
               <div class="col-md-2"><input type="text" class="form-control form-control-sm" name="district" placeholder="District *" required /></div>
               <div class="col-md-3"><input type="text" class="form-control form-control-sm" name="village" placeholder="Village *" required /></div>
@@ -490,6 +528,81 @@
               {% endfor %}
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ── My Payments (soil partner) ───────────────────────── -->
+    {% if is_soil_partner %}
+    <div class="col-12 mt-3">
+      <div class="ud-card">
+        <div class="ud-card-header">
+          <i class="fas fa-receipt me-2"></i>
+          <h6 class="mb-0">My Payments
+            <span class="badge bg-light text-primary ms-2" style="font-size:12px;">{{ payments|length }}</span>
+          </h6>
+          <a href="{% url 'my-payment-history' %}" class="btn btn-sm btn-light ms-auto py-0 px-2" style="font-size:12px;">
+            <i class="fas fa-external-link-alt me-1"></i>Full History
+          </a>
+        </div>
+        <!-- KPI strip -->
+        {% if payments %}
+        <div class="d-flex gap-4 px-3 py-2 flex-wrap" style="border-bottom:1px solid #f0f2f5;background:#fafbfd;">
+          <span style="font-size:12px;color:#2e7d32;font-weight:600;">
+            <i class="fas fa-check-circle me-1"></i>Paid: ₹{{ payment_totals.paid_amount|default:"0"|floatformat:0 }}
+            <span style="font-weight:400;color:#999;">({{ payment_totals.paid_count|default:0 }})</span>
+          </span>
+          <span style="font-size:12px;color:#e65100;font-weight:600;">
+            <i class="fas fa-clock me-1"></i>Pending: ₹{{ payment_totals.pending_amount|default:"0"|floatformat:0 }}
+            <span style="font-weight:400;color:#999;">({{ payment_totals.pending_count|default:0 }})</span>
+          </span>
+        </div>
+        {% endif %}
+        <div style="padding:12px 16px;">
+          {% if payments %}
+          <table class="table table-sm mb-0" style="font-size:12px;">
+            <thead><tr>
+              <th style="font-size:11px;color:#6c757d;">Date</th>
+              <th style="font-size:11px;color:#6c757d;">Amount</th>
+              <th style="font-size:11px;color:#6c757d;">Status</th>
+              <th style="font-size:11px;color:#6c757d;">Paid On</th>
+              <th style="font-size:11px;color:#6c757d;">Farmer</th>
+              <th style="font-size:11px;color:#6c757d;">Note</th>
+              <th style="font-size:11px;color:#6c757d;">Files</th>
+            </tr></thead>
+            <tbody>
+            {% for p in payments|slice:":5" %}
+            <tr>
+              <td style="white-space:nowrap;">{{ p.created_at|date:"d M Y" }}</td>
+              <td><strong style="color:#2e7d32;">₹{{ p.amount|floatformat:2 }}</strong></td>
+              <td>
+                {% if p.status == 'paid' %}
+                  <span style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap;"><i class="fas fa-check-circle me-1"></i>Paid</span>
+                {% else %}
+                  <span style="background:#fff8e1;color:#e65100;border:1px solid #ffe082;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap;"><i class="fas fa-clock me-1"></i>Pending</span>
+                {% endif %}
+              </td>
+              <td style="white-space:nowrap;font-size:11px;">{% if p.paid_at %}{{ p.paid_at|date:"d M Y" }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+              <td>{{ p.farmer.farmer_name|default:"—" }}</td>
+              <td style="color:#555;max-width:140px;">{{ p.description|default:"—" }}</td>
+              <td>
+                {% for att in p.attachments.all %}
+                  <a href="{{ att.file.url }}" target="_blank" style="font-size:11px;color:#1a73e8;margin-right:4px;"><i class="fas fa-paperclip"></i>{{ forloop.counter }}</a>
+                {% endfor %}
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+          {% if payments|length > 5 %}
+          <div class="text-center mt-2">
+            <a href="{% url 'my-payment-history' %}" style="font-size:12px;color:#1a73e8;">View all {{ payments|length }} payments →</a>
+          </div>
+          {% endif %}
+          {% else %}
+          <p class="text-muted mb-0" style="font-size:13px;">No payment records yet.</p>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -668,6 +781,30 @@
         }).addTo(mapInstance).bindPopup(device.name);
       }
 
+      // Show/hide "Open SoilMap" banner for soil_map devices
+      let soilMapBanner = document.getElementById('soil-map-banner');
+      if (device.devise_type === 'soil_map') {
+        if (!soilMapBanner) {
+          soilMapBanner = document.createElement('div');
+          soilMapBanner.id = 'soil-map-banner';
+          soilMapBanner.style.cssText = 'margin-top:16px;';
+          soilMapBanner.innerHTML = `
+            <a id="soil-map-open-btn" href="/soil-map/${device.pk}/" target="_blank"
+               style="display:flex;align-items:center;justify-content:center;gap:10px;
+                      padding:16px 24px;border-radius:12px;text-decoration:none;color:#fff;
+                      background:linear-gradient(135deg,#2c5e1a,#4a7c36);
+                      font-weight:700;font-size:1rem;box-shadow:0 4px 14px rgba(44,94,26,.35);">
+              <i class="fas fa-map-marked-alt"></i> Open SoilMap
+            </a>`;
+          document.getElementById('api-details-container').before(soilMapBanner);
+        } else {
+          soilMapBanner.style.display = 'block';
+          document.getElementById('soil-map-open-btn').href = `/soil-map/${device.pk}/`;
+        }
+      } else if (soilMapBanner) {
+        soilMapBanner.style.display = 'none';
+      }
+
       // Display the API details container
       const apiDetailsContainer         = document.getElementById('api-details-container');
       apiDetailsContainer.style.display = 'block';
@@ -773,20 +910,18 @@
 
   function redirectToEdit(id)
   {
-    let endpoint = '';
-
-    if (selected_devise.devise_type === 'soilsaathi') {
-      endpoint = '/api-overview';
-    } else if (selected_devise.devise_type === 'atmo_sense') {
-      endpoint = '/atmos-sense-api-overview';
-    } else if (selected_devise.devise_type === 'soil_life') {
-      endpoint = '/soil-life-api-overview';
+    if (selected_devise.devise_type === 'soil_map') {
+      window.open(`/soil-map/${selected_devise.pk}/`, '_blank');
+      return;
     }
-
+    const endpoints = {
+      soilsaathi: '/api-overview',
+      atmo_sense: '/atmos-sense-api-overview',
+      soil_life : '/soil-life-api-overview',
+    };
+    const endpoint = endpoints[selected_devise.devise_type];
     if (endpoint) {
       window.location.href = `${endpoint}/${id}/`;
-    } else {
-      console.error('Unknown device type for redirection');
     }
   }
 
@@ -998,7 +1133,8 @@
     testing_done: 'Testing Done', report_delivered: 'Report Delivered'
   };
   const STATUS_CLASS = {
-    registered: 'st-registered', sample_collected: 'st-sample_collected',
+    registered: 'st-registered', re_registered: 'st-re_registered',
+    sample_collected: 'st-sample_collected',
     testing_done: 'st-testing_done', report_delivered: 'st-report_delivered'
   };
 
@@ -1029,6 +1165,34 @@
     const v = document.cookie.match('(^|;) ?csrftoken=([^;]*)(;|$)');
     return v ? decodeURIComponent(v[2]) : '';
   }
+
+  // ── Aadhaar live check on user-page register form ──
+  (function() {
+    const inp  = document.getElementById('up_aadhaar');
+    const hint = document.getElementById('up_aadhaar_hint');
+    if (!inp || !hint) return;
+    let t = null;
+    inp.addEventListener('input', function() {
+      clearTimeout(t);
+      hint.style.display = 'none'; hint.innerHTML = '';
+      const val = this.value.replace(/\D/g,'');
+      if (val.length !== 12) return;
+      t = setTimeout(() => {
+        fetch(`/farmer/check-aadhaar/?aadhaar=${val}`)
+          .then(r => r.json()).then(d => {
+            hint.style.display = 'block';
+            if (d.exists) {
+              hint.innerHTML = `<span style="color:#e65100;"><i class="fas fa-exclamation-triangle"></i>
+                Already registered: <strong>${d.name}</strong> (${d.village}, ${d.status_display}).
+                <a href="${d.detail_url}" target="_blank" style="color:#1a73e8;">View →</a>
+                Submitting will reset to <em>Re-Registered</em>.</span>`;
+            } else {
+              hint.innerHTML = `<span style="color:#2e7d32;"><i class="fas fa-check-circle"></i> New farmer — Aadhaar not registered.</span>`;
+            }
+          }).catch(()=>{});
+      }, 500);
+    });
+  })();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -70,6 +70,7 @@ urlpatterns = [
 
     # ── Public / shared ──────────────────────────────────────────────────────────
     path('forgot_password/',                        v.forgot_password_request,                  name='forgot_password'),
+    path('soil-partner-enquiry/',                   v.soil_partner_enquiry,                     name='soil-partner-enquiry'),
     path('devise_user_details/',                    login_required(TemplateView.as_view(template_name="agriapp/devise_user_details.html")), name="devise_user_details"),
 
     # ── Exports ──────────────────────────────────────────────────────────────────
@@ -82,10 +83,18 @@ urlpatterns = [
     path('farmers/',                                v.farmer_list,                              name='farmer-list'),
     path('farmers/create/',                         v.create_farmer,                            name='create-farmer'),
     path('farmer/<int:pk>/',                        v.farmer_detail,                            name='farmer-detail'),
+    path('farmer/<int:pk>/update/',                 v.update_farmer,                            name='farmer-update'),
     path('farmer/<int:pk>/status/',                 v.update_farmer_status,                     name='update-farmer-status'),
     path('farmer/<int:pk>/delete/',                 v.delete_farmer,                            name='delete-farmer'),
     path('farmer/<int:pk>/image/update/',           v.farmer_update_image,                      name='farmer-image-update'),
     path('farmer/<int:pk>/image/delete/',           v.farmer_delete_image,                      name='farmer-image-delete'),
+    path('farmer/check-aadhaar/',                   v.check_aadhaar,                            name='check-aadhaar'),
+    path('update-user-profile/<str:uid>/',          v.update_user_profile,                      name='update-user-profile'),
+    path('payment-history/',                        v.payment_history,                          name='payment-history'),
+    path('add-payment/<str:uid>/',                  v.add_payment,                              name='add-payment'),
+    path('delete-payment/<int:pk>/',                v.delete_payment,                           name='delete-payment'),
+    path('toggle-payment-status/<int:pk>/',         v.toggle_payment_status,                    name='toggle-payment-status'),
+    path('my-payment-history/',                     v.my_payment_history,                       name='my-payment-history'),
 
     # ── Location AJAX ────────────────────────────────────────────────────────────
     path('location/states/',                        v.location_states,                          name='location-states'),

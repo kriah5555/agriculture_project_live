@@ -27,7 +27,7 @@ from devise_apis.mobile_serializers import (
     SoilSaathiReadingSerializer,
     SoilSaathiReadingCreateSerializer,
 )
-from ._common import check_threshold, DevicePagination, get_user_device
+from ._common import check_threshold, DevicePagination, get_user_device, resolve_farmer
 
 
 # ── List readings ─────────────────────────────────────────────────────────────
@@ -83,6 +83,10 @@ def soilsaathi_create(request, device_id):
     if blocked:
         return blocked
 
+    farmer = resolve_farmer(request, request.data.get('farmer_id'))
+    if isinstance(farmer, Response):
+        return farmer
+
     serializer = SoilSaathiReadingCreateSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -91,6 +95,7 @@ def soilsaathi_create(request, device_id):
         device    = device,
         devise_id = device.devise_id,
         serial_no = device.serial_no,
+        farmer    = farmer,
     )
     return Response(SoilSaathiReadingSerializer(reading).data, status=status.HTTP_201_CREATED)
 
