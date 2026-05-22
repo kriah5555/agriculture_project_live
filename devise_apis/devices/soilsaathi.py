@@ -7,11 +7,14 @@ Routes (mounted under /api/mobile/devices/<id>/soilsaathi/):
   GET  /<cid>/                Reading detail
   GET  /recommendations/      Fertilizer recommendations (FertilizerCalculation engine)
   GET  /ai-recommendation/    ML crop recommendation (?call_id=<id>)
+  GET  /<cid>/pdf/            Download soil parameters PDF (from api-overview)
+  GET  /<cid>/recommendation-pdf/  Download full 6-page SoiLENZ PDF report
 
 All routes are mounted under /api/mobile/devices/<id>/  via mobile_urls.py.
 Every write operation checks APICountThreshold before saving.
 """
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -229,3 +232,41 @@ def soilsaathi_ai_recommendation(request, device_id):
             'ph'         : reading.ph,
         },
     })
+
+
+# ── Soil parameters PDF (mirrors /download_api_response_pdf/<pk>/) ────────────
+
+@extend_schema(
+    tags=['SoiLENZ'],
+    summary='Download soil parameters PDF for a reading',
+    description='Returns a PDF of the soil test parameters for the given reading. Same report shown on the api-overview page.',
+    responses={200: OpenApiResponse(description='PDF file download')},
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def soilsaathi_pdf(request, device_id, call_id):
+    device  = get_user_device(request, device_id)
+    get_object_or_404(DeviseApis, pk=call_id, device=device)
+
+    from agriapp.views import _build_api_response_pdf
+    return _build_api_response_pdf(call_id)
+
+
+# ── Full 6-page SoiLENZ PDF report (mirrors /crop-recommendation-pdf/) ────────
+
+@extend_schema(
+    tags=['SoiLENZ'],
+    summary='Download full SoiLENZ 6-page PDF report for a reading',
+    description='Generates the complete SoiLENZ PDF report (soil chemistry, fertility assessment, recommendations). Same report available on the crop-recommendation-dashboard page.',
+    responses={200: OpenApiResponse(description='PDF file download')},
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def soilsaathi_recommendation_pdf(request, device_id, call_id):
+    device  = get_user_device(request, device_id)
+    reading = get_object_or_404(DeviseApis, pk=call_id, device=device)
+
+    from predicter.views import download_recommendation_pdf
+    request.GET = request.GET.copy()
+    request.GET['api_id'] = str(call_id)
+    return download_recommendation_pdf(request)

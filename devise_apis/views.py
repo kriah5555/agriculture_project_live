@@ -258,6 +258,7 @@ def get_crops(request):
         return Response({'message': error_message}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def add_soil_data_open(request):
     try:
         device_id = request.GET.get('devise_id', '')

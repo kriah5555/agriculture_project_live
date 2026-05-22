@@ -17,7 +17,7 @@ Device types  (requires auth)                      (mobile_api.py)
   GET   /api/mobile/device-types/<type_key>/field-schema/ Field label map for a device type
 
 Devices       (requires auth)                      (mobile_api.py)
-  GET   /api/mobile/devices/              List user devices (?type=soilsaathi|atmo_sense|soil_life|ph_bottle|soil_map)
+  GET   /api/mobile/devices/              List user devices (?type=soilsaathi|atmo_sense|soil_life|ph_bottle)
   GET   /api/mobile/devices/<id>/         Device details
   GET   /api/mobile/devices/<id>/location/ Device GPS location
 
@@ -34,6 +34,8 @@ SoiLENZ readings (soilsaathi)                      (devices/soilsaathi.py)
   GET   /api/mobile/devices/<id>/soilsaathi/<cid>/            Single reading
   GET   /api/mobile/devices/<id>/soilsaathi/recommendations/  Fertilizer recommendations
   GET   /api/mobile/devices/<id>/soilsaathi/ai-recommendation/ AI crop recommendation (ML)
+  GET   /api/mobile/devices/<id>/soilsaathi/<cid>/pdf/             Soil parameters PDF (api-overview report)
+  GET   /api/mobile/devices/<id>/soilsaathi/<cid>/recommendation-pdf/  Full 6-page SoiLENZ PDF report
 
 SoilSparsh readings (atmo_sense)                   (devices/atmo_sense.py)
   GET   /api/mobile/devices/<id>/atmo-sense/              List readings
@@ -93,6 +95,8 @@ urlpatterns = [
     path('devices/<int:device_id>/soilsaathi/<int:call_id>/',        ss.soilsaathi_detail,          name='mobile_ss_detail'),
     path('devices/<int:device_id>/soilsaathi/recommendations/',        ss.soilsaathi_recommendations,    name='mobile_ss_recommendations'),
     path('devices/<int:device_id>/soilsaathi/ai-recommendation/',     ss.soilsaathi_ai_recommendation,  name='mobile_ss_ai_recommendation'),
+    path('devices/<int:device_id>/soilsaathi/<int:call_id>/pdf/',                ss.soilsaathi_pdf,               name='mobile_ss_pdf'),
+    path('devices/<int:device_id>/soilsaathi/<int:call_id>/recommendation-pdf/', ss.soilsaathi_recommendation_pdf, name='mobile_ss_recommendation_pdf'),
 
     # ── SoilSparsh (atmo_sense) device-specific routes ────────────────────────
     path('devices/<int:device_id>/atmo-sense/',                      atmo.atmo_sense_list,   name='mobile_atmo_list'),
@@ -120,6 +124,7 @@ urlpatterns = [
     path('auth/soil-partner-enquiry/',       a.soil_partner_enquiry,     name='mobile_soil_partner_enquiry'),
 
     # ── Farmers ───────────────────────────────────────────────────────────────
+    path('farmers/check-aadhaar/',            fa.farmer_check_aadhaar, name='mobile_farmer_check_aadhaar'),
     path('farmers/',                          fa.farmer_list,          name='mobile_farmer_list'),
     path('farmers/create/',                   fa.farmer_create,        name='mobile_farmer_create'),
     path('farmers/<int:pk>/',                 fa.farmer_detail,        name='mobile_farmer_detail'),

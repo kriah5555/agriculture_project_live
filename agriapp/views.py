@@ -45,6 +45,7 @@ import os
 from matplotlib.backends.backend_agg import FigureCanvas
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+from reportlab.lib.utils import ImageReader
 
 from .serializers import APICountThresholdSerializer 
 import pytz
@@ -989,53 +990,45 @@ def draw_gauge(value, label):
     buf.seek(0)
     return buf
 
-@admin_required
-def download_api_response_pdf(request, **kwargs):
+def _build_api_response_pdf(pk):
+    """Generate soil-parameters PDF for reading `pk`. Returns a FileResponse."""
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
 
-    # Logo
     logo_path = os.path.join(os.getcwd(), 'static/logo3.PNG')
     c.drawImage(logo_path, 450, 780, width=100, height=40)
 
-    # Header
     c.setFont("Helvetica-Bold", 14)
     c.drawString(50, 800, "ArkaShine Innovations Pvt Ltd")
 
-    # Address
     c.setFont("Helvetica", 9)
     c.drawString(50, 785, "Address : H. NO.9.1 2-226, 11th Cross, Bhawani Rice Mill Road")
     c.drawString(50, 772, "Vidyanagar colony, Bidar, Karnataka, India, 585403")
 
-    if 'pk' in kwargs:
-        api = get_object_or_404(DeviseApis, pk=kwargs['pk'])
+    if pk is not None:
+        api      = get_object_or_404(DeviseApis, pk=pk)
         location = DeviseLocation.objects.filter(devise=api.device).first()
 
-        # Left Column
         c.setFont("Helvetica-Bold", 10)
         c.drawString(50, 740, f"Area name : {api.area_name}")
         c.drawString(50, 725, f"API call time : {api.created_at}")
         c.drawString(50, 710, f"Crop : {api.crop_type}")
 
-        # Right Column
         c.drawString(320, 740, f"Latitude : {location.latitude if location else ''}")
         c.drawString(320, 725, f"Longitude : {location.longitude if location else ''}")
         c.drawString(320, 710, f"Phone : +91 9611297893")
 
-        # Gauges
-        ph_gauge = draw_gauge(api.ph, "pH")
-        ec_gauge = draw_gauge(api.ec, "EC")
+        ph_gauge = ImageReader(draw_gauge(api.ph, "pH"))
+        ec_gauge = ImageReader(draw_gauge(api.ec, "EC"))
         c.drawImage(ph_gauge, 100, 600, width=150, height=100)
         c.drawImage(ec_gauge, 300, 600, width=150, height=100)
 
-        # Table Headers
         c.setFont("Helvetica-Bold", 10)
         y = 550
         c.drawString(50, y, "Parameters")
         c.drawString(250, y, "Unit")
         c.drawString(350, y, "Value")
 
-        # Table Data (Example only, replace with actual data source)
         table_data = [
             ("(0.51–0.75)", "%", "0.29"),
             ("Available Phosphorus (11–25)", "Kg/acre", "108.00"),
@@ -1063,7 +1056,12 @@ def download_api_response_pdf(request, **kwargs):
     c.showPage()
     c.save()
     buffer.seek(0)
-    return FileResponse(buffer, as_attachment=True, filename="recommended.pdf")
+    return FileResponse(buffer, as_attachment=True, filename="soil_parameters.pdf")
+
+
+@admin_required
+def download_api_response_pdf(request, **kwargs):
+    return _build_api_response_pdf(kwargs.get('pk'))
 
     
 @admin_required
@@ -1680,21 +1678,31 @@ def farmer_detail(request, pk):
 
     history = farmer.status_history.order_by('timestamp')
 
-    ss_qs     = DeviseApis.objects.filter(farmer=farmer).select_related('device').order_by('-created_at')
-    sensor_qs = DeviseApisFields.objects.filter(farmer=farmer).select_related('device').order_by('-created_at')
+    from django.db.models import Count as _Count
 
-    def _group_by_date(qs):
-        groups = defaultdict(list)
-        for r in qs:
-            groups[r.created_at.strftime('%d %b %Y')].append(r)
-        return list(groups.items())
+    # Per-device-type summary: count + distinct devices used
+    ss_devices = (
+        DeviseApis.objects.filter(farmer=farmer)
+        .values('device__id', 'device__name', 'device__devise_id')
+        .annotate(count=_Count('id')).order_by('device__id')
+    )
+    sensor_devices = (
+        DeviseApisFields.objects.filter(farmer=farmer)
+        .values('device__id', 'device__name', 'device__devise_id', 'device__devise_type')
+        .annotate(count=_Count('id')).order_by('device__id')
+    )
+
+    def _sensor_summary(dtype):
+        rows = [r for r in sensor_devices if r['device__devise_type'] == dtype]
+        return {'count': sum(r['count'] for r in rows), 'devices': rows}
 
     api_readings = {
-        'soilsaathi': {'label': 'SoiLENZ',    'icon': 'fa-temperature-low', 'color': '#1a73e8', 'url_prefix': '/api-overview/',                'count': ss_qs.count(),                                           'groups': _group_by_date(ss_qs)},
-        'atmo_sense': {'label': 'SoilSparsh',  'icon': 'fa-wind',            'color': '#0097a7', 'url_prefix': '/atmos-sense-api-overview/',    'count': sensor_qs.filter(device__devise_type='atmo_sense').count(),'groups': _group_by_date(sensor_qs.filter(device__devise_type='atmo_sense'))},
-        'soil_life':  {'label': 'SoilLIFE',    'icon': 'fa-leaf',            'color': '#2e7d32', 'url_prefix': '/soil-life-api-overview/',      'count': sensor_qs.filter(device__devise_type='soil_life').count(), 'groups': _group_by_date(sensor_qs.filter(device__devise_type='soil_life'))},
-        'ph_bottle':  {'label': 'PHBottle',     'icon': 'fa-vial',            'color': '#7b1fa2', 'url_prefix': '/ph-bottle-api-overview/',      'count': sensor_qs.filter(device__devise_type='ph_bottle').count(), 'groups': _group_by_date(sensor_qs.filter(device__devise_type='ph_bottle'))},
-        'soil_map':   {'label': 'SoilMap',      'icon': 'fa-map-marked-alt',  'color': '#e65100', 'url_prefix': None,                            'count': sensor_qs.filter(device__devise_type='soil_map').count(),  'groups': _group_by_date(sensor_qs.filter(device__devise_type='soil_map'))},
+        'soilsaathi': {'label': 'SoiLENZ',   'icon': 'fa-temperature-low', 'color': '#1a73e8',
+                       'count': sum(r['count'] for r in ss_devices), 'devices': list(ss_devices)},
+        'atmo_sense': {'label': 'SoilSparsh', 'icon': 'fa-wind',            'color': '#0097a7', **_sensor_summary('atmo_sense')},
+        'soil_life':  {'label': 'SoilLIFE',   'icon': 'fa-leaf',            'color': '#2e7d32', **_sensor_summary('soil_life')},
+        'ph_bottle':  {'label': 'PHBottle',    'icon': 'fa-vial',            'color': '#7b1fa2', **_sensor_summary('ph_bottle')},
+        'soil_map':   {'label': 'SoilMap',     'icon': 'fa-map-marked-alt',  'color': '#e65100', **_sensor_summary('soil_map')},
     }
     total_api_calls = sum(v['count'] for v in api_readings.values())
 

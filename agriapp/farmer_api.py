@@ -6,6 +6,7 @@ Endpoints
 ─────────
 GET    /api/mobile/farmers/                   List farmers for the logged-in soil partner
 POST   /api/mobile/farmers/create/            Register a new farmer (multipart for image)
+GET    /api/mobile/farmers/check-aadhaar/     Check if Aadhaar is already registered (?aadhaar=)
 GET    /api/mobile/farmers/<pk>/              Farmer detail
 PATCH  /api/mobile/farmers/<pk>/update/       Update farmer fields (partial)
 DELETE /api/mobile/farmers/<pk>/delete/       Delete farmer
@@ -476,10 +477,10 @@ def farmer_update_status(request, pk):
 
 @extend_schema(
     tags=['Farmers'],
-    summary='Get farmer API call readings',
-    description='Returns all SoiLENZ (soilsaathi) and sensor readings linked to this farmer.',
+    summary='Get farmer API call summary',
+    description='Returns a per-device summary (device name + API call count) for all readings linked to this farmer.',
     responses={
-        200: _api_calls_response,
+        200: OpenApiResponse(description='API call summary per device'),
         403: OpenApiResponse(description='Permission denied'),
         404: OpenApiResponse(description='Farmer not found'),
     },
@@ -491,26 +492,44 @@ def farmer_api_calls(request, pk):
         return Response({'detail': 'Permission denied.'}, status=403)
     farmer = get_object_or_404(_farmer_qs(request.user), pk=pk)
 
-    soilsaathi = list(
-        DeviseApis.objects.filter(farmer=farmer).values(
-            'id', 'device_id', 'area_name', 'nitrogen', 'phosphorous', 'potassium',
-            'ph', 'ec', 'oc', 'crop_type', 'latitude', 'longitude', 'created_at'
-        )
+    from django.db.models import Count as _Count
+
+    ss_summary = list(
+        DeviseApis.objects.filter(farmer=farmer)
+        .values('device__id', 'device__name', 'device__devise_id')
+        .annotate(count=_Count('id'))
+        .order_by('device__id')
     )
-    sensor = list(
-        DeviseApisFields.objects.filter(farmer=farmer).values(
-            'id', 'device_id', 'tag', 'field1', 'field2', 'field3', 'field4',
-            'field5', 'field6', 'field7', 'field8', 'latitude', 'longitude', 'created_at'
-        )
+    sensor_summary = list(
+        DeviseApisFields.objects.filter(farmer=farmer)
+        .values('device__id', 'device__name', 'device__devise_id', 'device__devise_type')
+        .annotate(count=_Count('id'))
+        .order_by('device__id')
     )
 
+    device_summary = []
+    for r in ss_summary:
+        device_summary.append({
+            'device_id'  : r['device__id'],
+            'device_name': r['device__name'] or r['device__devise_id'],
+            'device_type': 'soilsaathi',
+            'api_count'  : r['count'],
+        })
+    for r in sensor_summary:
+        device_summary.append({
+            'device_id'  : r['device__id'],
+            'device_name': r['device__name'] or r['device__devise_id'],
+            'device_type': r['device__devise_type'],
+            'api_count'  : r['count'],
+        })
+
+    total = sum(d['api_count'] for d in device_summary)
+
     return Response({
-        'farmer_id'       : farmer.pk,
-        'farmer_name'     : farmer.farmer_name,
-        'soilsaathi_count': len(soilsaathi),
-        'sensor_count'    : len(sensor),
-        'soilsaathi'      : soilsaathi,
-        'sensor_readings' : sensor,
+        'farmer_id'      : farmer.pk,
+        'farmer_name'    : farmer.farmer_name,
+        'total_api_calls': total,
+        'devices'        : device_summary,
     })
 
 
@@ -578,3 +597,76 @@ def farmer_delete_image(request, pk):
     farmer.save()
 
     return Response({'id': farmer.pk, 'farmer_image': None, 'message': 'Image deleted successfully.'})
+
+
+# ── Aadhaar check ─────────────────────────────────────────────────────────────
+
+_aadhaar_check_response = inline_serializer(
+    name='AadhaarCheckResponse',
+    fields={
+        'exists'        : serializers.BooleanField(),
+        'id'            : serializers.IntegerField(required=False),
+        'name'          : serializers.CharField(required=False),
+        'phone'         : serializers.CharField(required=False),
+        'village'       : serializers.CharField(required=False),
+        'status'        : serializers.CharField(required=False),
+        'status_display': serializers.CharField(required=False),
+        'reset_hint'    : serializers.CharField(required=False),
+    },
+)
+
+
+@extend_schema(
+    tags=['Farmers'],
+    summary='Check if an Aadhaar number is already registered',
+    description=(
+        'Returns `exists: false` if no farmer with this Aadhaar exists for the '
+        'current soil partner. Returns `exists: true` with farmer details and a '
+        '`reset_hint` message when a duplicate is found — mirrors the live-check '
+        'shown on the web Create Farmer form. '
+        'Superusers may pass `?sp_id=<id>` to scope the check to a specific soil partner.'
+    ),
+    parameters=[
+        OpenApiParameter('aadhaar', OpenApiTypes.STR, required=True, description='12-digit Aadhaar number'),
+        OpenApiParameter('sp_id',   OpenApiTypes.INT, required=False, description='Superuser only: scope to a specific soil partner'),
+    ],
+    responses={
+        200: _aadhaar_check_response,
+        400: OpenApiResponse(description='Aadhaar number not provided'),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def farmer_check_aadhaar(request):
+    """Check whether an Aadhaar number is already registered for this soil partner."""
+    aadhaar = request.query_params.get('aadhaar', '').strip()
+    if not aadhaar:
+        return Response({'detail': 'aadhaar query parameter is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    sp_id = request.query_params.get('sp_id')
+    user  = request.user
+
+    if user.is_superuser and sp_id:
+        qs = Farmer.objects.filter(aadhaar_number=aadhaar, soil_partner_id=sp_id)
+    elif user.is_superuser:
+        qs = Farmer.objects.filter(aadhaar_number=aadhaar)
+    else:
+        qs = Farmer.objects.filter(aadhaar_number=aadhaar, soil_partner=user)
+
+    farmer = qs.first()
+    if farmer:
+        return Response({
+            'exists'        : True,
+            'id'            : farmer.pk,
+            'name'          : farmer.farmer_name,
+            'phone'         : farmer.phone,
+            'village'       : farmer.village,
+            'status'        : farmer.status,
+            'status_display': dict(FARMER_STATUS_CHOICES)[farmer.status],
+            'reset_hint'    : (
+                f'Already registered: {farmer.farmer_name} ({farmer.village}) — '
+                f'{dict(FARMER_STATUS_CHOICES)[farmer.status]}. '
+                'Submitting will reset their status to Re-Registered.'
+            ),
+        })
+    return Response({'exists': False})
