@@ -309,9 +309,44 @@ def delete_devise(request, pk):
 
 
 @admin_required
+def auto_link_devise(request, uid):
+    """Auto-create and link a non-standard device type to a user (no form required)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+    _STANDARD = {'soilsaathi', 'atmo_sense', 'soil_life', 'ph_bottle'}
+    devise_type = request.POST.get('devise_type', '').strip()
+
+    if not devise_type:
+        return JsonResponse({'error': 'devise_type is required.'}, status=400)
+    if devise_type in _STANDARD:
+        return JsonResponse({'error': 'Standard device types must be added via the form.'}, status=400)
+    if devise_type not in DEVICE_NAMES:
+        return JsonResponse({'error': f'Unknown device type: {devise_type}'}, status=400)
+
+    user = get_object_or_404(User, username=uid)
+
+    if Devise.objects.filter(user=user, devise_type=devise_type).exists():
+        return JsonResponse({'error': f'User already has a {DEVICE_NAMES[devise_type]} device linked.'}, status=400)
+
+    from datetime import date
+    next_year = date.today().replace(year=date.today().year + 1)
+    devise = Devise.objects.create(
+        name           = DEVICE_NAMES[devise_type],
+        devise_type    = devise_type,
+        user           = user,
+        amount_paid    = 0,
+        balance_amount = 0,
+        land           = 0,
+        warrenty       = next_year,
+    )
+    return JsonResponse({'success': True, 'pk': devise.pk, 'name': devise.name})
+
+
+@admin_required
 def add_devise(request, uid=None):
         
-    context = {'message': '', 'device_names': DEVICE_NAMES}
+    context = {'message': '', 'device_names': DEVICE_NAMES, 'default_type': request.GET.get('type', ''), 'devise': {}}
     user    = UserFunctions.get_user_by_username(uid)
 
     if request.method == 'GET':
@@ -359,22 +394,24 @@ def add_devise(request, uid=None):
 def edit_devise(request, **kwargs):
     context              = {'message' : ''}
     devise               = get_object_or_404(Devise, pk=kwargs['pk'])
-    devise.purchase_date = datetime.strptime(str(devise.purchase_date), '%Y-%m-%d')
-    devise.warrenty      = datetime.strptime(str(devise.warrenty), '%Y-%m-%d')
+    devise.purchase_date = datetime.strptime(str(devise.purchase_date), '%Y-%m-%d') if devise.purchase_date else None
+    devise.warrenty      = datetime.strptime(str(devise.warrenty),      '%Y-%m-%d') if devise.warrenty      else None
     if request.method == 'GET':
         template_name = 'agriapp/add_devise.html'
         context       = {
             'devise'        : devise,
             'warrenty'      : str(devise.warrenty.date()),
-            'purchase_date' : str(devise.purchase_date.date()),
-            'time_of_sale'  : str(devise.time_of_sale),
-            'disabled'      : 'readonly',
+            'purchase_date' : str(devise.purchase_date.date()) if devise.purchase_date else '',
+            'time_of_sale'  : str(devise.time_of_sale) if devise.time_of_sale else '',
+            'is_edit'       : True,
             'device_names'  : DEVICE_NAMES,
         }
     elif request.method == 'POST':
         form = DeviseForm(request.POST or None, instance=devise)
         if form.is_valid():
-            form.save()
+            updated = form.save(commit=False)
+            updated.devise_type = devise.devise_type  # device type is locked on edit
+            updated.save()
             messages.success(request,"Device updated successfully")
             return redirect(f"/user-details/{devise.user.username}")
         else:
@@ -404,7 +441,7 @@ def edit_devise(request, **kwargs):
             context1 = {
                 'field_errors' : field_errors,
                 'devise'       : default_values,
-                'disabled'     : 'readonly',
+                'is_edit'      : True,
                 'device_names' : DEVICE_NAMES,
                 'warrenty'     : request.POST['warrenty'],
                 'purchase_date': request.POST['purchase_date'],
@@ -548,8 +585,9 @@ def user_details(request, **kwargs):
             case _:
                 devise.api_used = 0  
     
-    profile = getattr(user, 'profile', None)
-    is_sp   = profile and profile.user_type == 'soil_partner'
+    # Always ensure a profile exists so the Edit button is available for all user types
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    is_sp   = profile.user_type == 'soil_partner'
     farmers  = Farmer.objects.filter(soil_partner=user) if is_sp else []
     payments = PartnerPayment.objects.filter(user=user).select_related('farmer').prefetch_related('attachments') if is_sp else []
 
@@ -563,9 +601,15 @@ def user_details(request, **kwargs):
             pending_count  = Count('id', filter=Q(status='pending')),
         )
 
+    linked_types   = {d.devise_type for d in linked_devices}
+    standard_types = {'soilsaathi', 'atmo_sense', 'soil_life', 'ph_bottle'}
+
     context = {
         "user"           : user,
         "linked_devices" : linked_devices,
+        "linked_types"   : linked_types,
+        "standard_types" : standard_types,
+        "device_names"   : DEVICE_NAMES,
         "profile"        : profile,
         "farmers"        : farmers,
         "payments"       : payments,
@@ -588,6 +632,7 @@ def api_overview(request, **kwargs):
         fields.pop('created_at', None)
         context         = {
             'device'          : devise_data.device,
+            'api_pk'          : devise_data.pk,
             'fields_api_data' : fields,
             'fields_data_json': json.dumps(fields),
             'fields'          : json.dumps(SOIL_LIFE_FIELDS),
@@ -604,6 +649,7 @@ def api_overview(request, **kwargs):
         fields.pop('created_at', None)
         context         = {
             'device'          : devise_data.device,
+            'api_pk'          : devise_data.pk,
             'fields_api_data' : fields,
             'fields_data_json': json.dumps(fields),
             'fields'          : json.dumps(ATMO_SENSE_FIELDS),
@@ -620,6 +666,7 @@ def api_overview(request, **kwargs):
         fields.pop('created_at', None)
         context         = {
             'device'          : devise_data.device,
+            'api_pk'          : devise_data.pk,
             'fields_api_data' : fields,
             'fields_data_json': json.dumps(fields),
             'fields'          : json.dumps(PH_BOTTLE_FIELDS),
@@ -1141,6 +1188,18 @@ class AddDeviceLocation(AdminRequiredMixin, CreateView):
         'devise':self.kwargs['pk'],
     }
 
+# Columns shown by default in the table for each device type.
+# Everything else gets hidden and revealed via the "All Cols" toggle.
+# Kept server-side so the frontend never needs to know field names.
+_SUMMARY_KEYS = {
+    'soilsaathi': ['id', 'tag', 'ph', 'ec', 'oc', 'crop_type', 'farmer_name', 'created_at'],
+    'atmo_sense': ['id', 'tag', 'image_path', 'field1', 'field2', 'field3', 'field4', 'field5', 'farmer_name', 'created_at'],
+    'soil_life' : ['id', 'tag', 'image_path', 'field1', 'field2', 'field3', 'field4', 'field5', 'field6', 'field7', 'field8', 'farmer_name', 'created_at'],
+    'ph_bottle' : ['id', 'tag', 'field1', 'field2', 'field3', 'field4', 'farmer_name', 'created_at'],
+    'soil_map'  : ['id', 'tag', 'field1', 'field2', 'field3', 'field4', 'field5', 'field6', 'created_at'],
+}
+
+
 class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
     login_url           = '/user-login/'
     redirect_field_name = 'next'
@@ -1155,7 +1214,8 @@ class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
         field_thresholds = {}
 
         try:
-            devise           = Devise.objects.get(pk=id)  # Use 'id' to fetch the Devise object
+            devise    = Devise.objects.get(pk=id)
+            farmer_id = request.GET.get('farmer_id')
             match devise.devise_type:
                 case "soilsaathi":
                     headers          = SOIL_SAATHI_FIELDS
@@ -1172,6 +1232,8 @@ class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
                     queryset = DeviseApisFields.objects.filter(device=devise).order_by('-created_at')
                 case _:
                     return JsonResponse({'error': 'Invalid device type'}, status=400)
+            if farmer_id:
+                queryset = queryset.filter(farmer_id=farmer_id)
 
             # ✅ Pagination
             paginator      = Paginator(queryset, per_page)
@@ -1184,25 +1246,38 @@ class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
                 if item.get('created_at'):
                     utc_dt = item['created_at']
                     if timezone.is_naive(utc_dt):
-                        utc_dt = timezone.make_aware(utc_dt, tz=pytz.UTC)  # <-- use tz=, not timezone=
+                        utc_dt = timezone.make_aware(utc_dt, tz=pytz.UTC)
                     local_dt = utc_dt.astimezone(bangalore_tz)
                     item['created_at'] = local_dt.strftime('%Y-%m-%d %H:%M:%S')
+
+            # ✅ Attach farmer names
+            farmer_ids = {item.get('farmer_id') for item in api_calls_data if item.get('farmer_id')}
+            farmer_map = {}
+            if farmer_ids:
+                farmer_map = {f.pk: f.farmer_name
+                              for f in Farmer.objects.filter(pk__in=farmer_ids).only('id', 'farmer_name')}
+            for item in api_calls_data:
+                item['farmer_name'] = farmer_map.get(item.get('farmer_id')) or '—'
 
         except Devise.DoesNotExist:
             return JsonResponse({'error': 'Devise not found'}, status=404)
 
+        headers_with_farmer = dict(headers)
+        headers_with_farmer['farmer_name'] = 'Farmer'
+
         # ✅ Final response
         return JsonResponse({
-            'headers': headers,
-            'data': api_calls_data,
-            'devise_type': devise.devise_type,
+            'headers'         : headers_with_farmer,
+            'summary_keys'    : _SUMMARY_KEYS.get(devise.devise_type, []),
+            'data'            : api_calls_data,
+            'devise_type'     : devise.devise_type,
             'field_thresholds': field_thresholds,
-            'pagination': {
-                'current_page': page,
-                'per_page': per_page,
-                'total_pages': paginator.num_pages,
-                'total_records': paginator.count
-            }
+            'pagination'      : {
+                'current_page' : page,
+                'per_page'     : per_page,
+                'total_pages'  : paginator.num_pages,
+                'total_records': paginator.count,
+            },
         })
 
 class GetDeviseApiCallsJsonDataForChart(LoginRequiredMixin, View):
@@ -1750,6 +1825,59 @@ def update_farmer(request, pk):
 
 
 @login_required
+def farmer_device_readings(request, pk, device_id):
+    """Paginated readings for a single farmer + device combo (JSON). Used by farmer detail expand."""
+    farmer = get_object_or_404(Farmer, pk=pk)
+    if not request.user.is_superuser and farmer.soil_partner != request.user:
+        return JsonResponse({'error': 'Permission denied.'}, status=403)
+
+    device   = get_object_or_404(Devise, pk=device_id)
+    page     = int(request.GET.get('page', 1))
+    per_page = min(int(request.GET.get('per_page', 50)), 200)
+
+    bangalore_tz = pytz.timezone('Asia/Kolkata')
+
+    match device.devise_type:
+        case 'soilsaathi':
+            headers  = SOIL_SAATHI_FIELDS
+            qs       = DeviseApis.objects.filter(device=device, farmer=farmer).order_by('-created_at')
+        case 'atmo_sense':
+            headers  = ATMO_SENSE_FIELDS
+            qs       = DeviseApisFields.objects.filter(device=device, farmer=farmer).order_by('-created_at')
+        case 'soil_life':
+            headers  = SOIL_LIFE_FIELDS
+            qs       = DeviseApisFields.objects.filter(device=device, farmer=farmer).order_by('-created_at')
+        case 'ph_bottle':
+            headers  = PH_BOTTLE_FIELDS
+            qs       = DeviseApisFields.objects.filter(device=device, farmer=farmer).order_by('-created_at')
+        case _:
+            return JsonResponse({'error': 'Unsupported device type.'}, status=400)
+
+    paginator = Paginator(qs, per_page)
+    page_obj  = paginator.get_page(page)
+    data      = list(page_obj.object_list.values())
+
+    for item in data:
+        if item.get('created_at'):
+            utc_dt = item['created_at']
+            if timezone.is_naive(utc_dt):
+                utc_dt = timezone.make_aware(utc_dt, tz=pytz.UTC)
+            item['created_at'] = utc_dt.astimezone(bangalore_tz).strftime('%Y-%m-%d %H:%M:%S')
+
+    return JsonResponse({
+        'headers'    : headers,
+        'data'       : data,
+        'devise_type': device.devise_type,
+        'pagination' : {
+            'current_page' : page,
+            'per_page'     : per_page,
+            'total_pages'  : paginator.num_pages,
+            'total_records': paginator.count,
+        },
+    })
+
+
+@login_required
 def check_aadhaar(request):
     aadhaar = request.GET.get('aadhaar', '').strip()
     sp_id   = request.GET.get('sp_id')
@@ -1843,6 +1971,36 @@ def farmer_delete_image(request, pk):
         pass
     farmer.farmer_image = None
     farmer.save()
+    return JsonResponse({'success': True})
+
+
+# ── API reading image upload / delete (admin) ─────────────────────────────────
+
+@admin_required
+def api_reading_upload_image(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    record = get_object_or_404(DeviseApisFields, pk=pk)
+    file = request.FILES.get('image')
+    if not file:
+        return JsonResponse({'error': 'No image file provided.'}, status=400)
+    from django.core.files.storage import FileSystemStorage
+    fs        = FileSystemStorage()
+    file_name = fs.save(file.name, file)
+    record.image_path = fs.url(file_name)
+    record.save()
+    return JsonResponse({'success': True, 'image_url': record.image_path})
+
+
+@admin_required
+def api_reading_delete_image(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    record = get_object_or_404(DeviseApisFields, pk=pk)
+    if not record.image_path:
+        return JsonResponse({'error': 'No image to delete.'}, status=400)
+    record.image_path = None
+    record.save()
     return JsonResponse({'success': True})
 
 

@@ -31,7 +31,7 @@
                         <div class="row">
                             <div class="col-6 mb-3">
                                 <label class="form-label">Name of individual or organization <b>*</b></label>
-                                <input type="text" class="form-control" name="name" required value="{{ devise.name }}" {{disabled}}>
+                                <input type="text" class="form-control" name="name" required value="{{ devise.name }}">
                                 {% if field_errors.name %}
                                     <span style="color: red;">{{ field_errors.name }}</span>
                                 {% endif %}
@@ -39,47 +39,60 @@
 
                             <div class="col-6 mb-3">
                                 <label class="form-label">Device type <b>*</b></label>
-                                <select class="form-control" name="devise_type" required {{disabled}}>
+                                {% if is_edit %}
+                                <!-- Locked in edit mode: show as disabled select + hidden input -->
+                                <select class="form-control" disabled>
                                     {% for type_key, type_name in device_names.items %}
                                     <option value="{{ type_key }}" {% if devise.devise_type == type_key %}selected{% endif %}>{{ type_name }}</option>
                                     {% endfor %}
                                 </select>
+                                <input type="hidden" name="devise_type" value="{{ devise.devise_type }}">
+                                {% else %}
+                                <select class="form-control" name="devise_type" id="deviseTypeSelect" required onchange="updateRequiredFields(this.value)">
+                                    {% for type_key, type_name in device_names.items %}
+                                    <option value="{{ type_key }}"
+                                      {% if devise.devise_type == type_key or default_type == type_key %}selected{% endif %}>
+                                      {{ type_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% endif %}
                                 {% if field_errors.devise_type %}
                                     <span style="color: red;">{{ field_errors.devise_type }}</span>
                                 {% endif %}
-                            </div>                           
+                            </div>
 
                             <div class="col-lg-6 mb-3">
-                                <label class="form-label"> Device ID <b>*</b></label>
-                                <input type="text" class="form-control" name="devise_id" required value="{{ devise.devise_id }}" {{disabled}}>
+                                <label class="form-label">Device ID <b class="req-star">*</b></label>
+                                <input type="text" class="form-control" id="fieldDeviseId" name="devise_id" value="{{ devise.devise_id }}">
                                 {% if field_errors.devise_id %}
                                     <span style="color: red;">{{ field_errors.devise_id }}</span>
                                 {% endif %}
                             </div>
                             <div class="col-lg-6 mb-3">
-                                <label class="form-label">Serial ID <b>*</b></label>
-                                <input type="text" class="form-control" name="serial_no" required value="{{ devise.serial_no }}" {{disabled}}>
+                                <label class="form-label">Serial ID</label>
+                                <input type="text" class="form-control" name="serial_no" value="{{ devise.serial_no }}">
                                 {% if field_errors.serial_no %}
                                     <span style="color: red;">{{ field_errors.serial_no }}</span>
                                 {% endif %}
                             </div>
                             <div class="col-lg-6 mb-3">
-                                <label class="form-label">Chipset Number <b>*</b></label>
-                                <input type="text" class="form-control" name="chipset_no" required value="{{ devise.chipset_no }}" {{disabled}}>
+                                <label class="form-label">Chipset Number</label>
+                                <input type="text" class="form-control" name="chipset_no" value="{{ devise.chipset_no }}">
                                 {% if field_errors.chipset_no %}
                                     <span style="color: red;">{{ field_errors.chipset_no }}</span>
                                 {% endif %}
                             </div>
                             <div class="col-lg-6 mb-3">
-                                <label class="form-label">Email <b>*</b></label>
-                                <input type="email" class="form-control" name="email" required value="{{ devise.email }}">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" value="{{ devise.email }}">
                                 {% if field_errors.email %}
                                     <span style="color: red;">{{ field_errors.email }}</span>
                                 {% endif %}
                             </div>
                             <div class="col-lg-6 mb-3">
-                                <label class="form-label">Phone Number <b>*</b></label>
-                                <input type="phone" class="form-control" name="phone" required value="{{ devise.phone }}">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" name="phone" value="{{ devise.phone }}">
                                 {% if field_errors.phone %}
                                     <span style="color: red;">{{ field_errors.phone }}</span>
                                 {% endif %}
@@ -95,8 +108,8 @@
                     <div class="card-body">
                         <b>Address</b>
                         <div class="mb-3">
-                            <label class="form-label">Address Line 1 <b>*</b></label>
-                            <input type="text" class="form-control" name="address1" required value="{{ devise.address1 }}">
+                            <label class="form-label">Address Line 1</label>
+                            <input type="text" class="form-control" name="address1" value="{{ devise.address1 }}">
                             {% if field_errors.address1 %}
                                 <span style="color: red;">{{ field_errors.address1 }}</span>
                             {% endif %}
@@ -110,16 +123,15 @@
                         </div>
                         <div class="row">
                             <div class="col-lg-6 mb-3">
-                                <label class="form-label">Purchased Date <b>*</b></label>
-                                {{purchase_date}}
-                                <input type="date" class="form-control" name="purchase_date" required value="{{ purchase_date }}">
+                                <label class="form-label">Purchased Date</label>
+                                <input type="date" class="form-control" name="purchase_date" value="{{ purchase_date }}">
                                 {% if field_errors.purchase_date %}
                                     <span style="color: red;">{{ field_errors.purchase_date }}</span>
                                 {% endif %}
                             </div>
                             <div class="col-lg-6 mb-3">
-                                <label class="form-label">Time of Sale <b>*</b></label>
-                                <input type="time" class="form-control" name="time_of_sale" required value="{{ time_of_sale }}">
+                                <label class="form-label">Time of Sale</label>
+                                <input type="time" class="form-control" name="time_of_sale" value="{{ time_of_sale }}">
                                 {% if field_errors.time_of_sale %}
                                     <span style="color: red;">{{ field_errors.time_of_sale }}</span>
                                 {% endif %}
@@ -182,5 +194,37 @@
         </div>
     </form>
 </div>
+
+<script>
+  // Types that require the 5 conditional fields
+  const STANDARD_TYPES = new Set(['soilsaathi', 'atmo_sense', 'soil_life', 'ph_bottle']);
+  // Only Device ID is required for standard device types; all other fields are always optional
+  const COND_IDS       = ['fieldDeviseId'];
+
+  function updateRequiredFields(deviseType) {
+    const isStd = STANDARD_TYPES.has(deviseType);
+    COND_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.required = isStd;
+      // show/hide the * in the label
+      const star = el.closest('.mb-3, .col-lg-6').querySelector('.req-star');
+      if (star) star.style.display = isStd ? '' : 'none';
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const sel = document.getElementById('deviseTypeSelect');
+    if (sel) {
+      // create mode: set initial required state based on current selection
+      updateRequiredFields(sel.value);
+    } else {
+      // edit mode: device type is locked; apply required state for info (fields may still have values)
+      {% if is_edit %}
+      updateRequiredFields('{{ devise.devise_type }}');
+      {% endif %}
+    }
+  });
+</script>
 
 {% endblock %}

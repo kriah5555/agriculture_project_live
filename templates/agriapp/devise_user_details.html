@@ -159,8 +159,10 @@
 
   /* ── API table ── */
   @keyframes spin { to { transform: rotate(360deg); } }
-  .table-container { max-height: 520px; overflow-y: auto; }
+  .table-container { max-height: 520px; overflow-y: auto; overflow-x: auto; }
   .sticky-header { position: sticky; top: 0; background: #fff; z-index: 5; }
+  .col-secondary { display: none; }
+  .show-all-cols .col-secondary { display: table-cell; }
   .small-img {
     width: 48px; height: 48px;
     object-fit: cover; cursor: zoom-in;
@@ -429,19 +431,96 @@
     </div>
     <!-- /left column -->
 
-    <!-- ══ Farmers column (Soil Partners only) ══════════════ -->
-    {% if is_soil_partner %}
-    <div class="col-12">
-      <div class="ud-card">
-        <div class="ud-card-header" style="justify-content:space-between;">
-          <div class="d-flex align-items-center gap-2">
-            <i class="fas fa-users"></i>
-            <h6>My Farmers <span id="farmerBadge" class="badge bg-light text-primary ms-1" style="font-size:12px;">{{ farmers|length }}</span></h6>
-          </div>
-          <button class="btn btn-sm btn-light" onclick="toggleFarmerForm()" title="Register Farmer">
-            <i class="fas fa-user-plus me-1"></i> Register Farmer
-          </button>
+    <!-- ══ Right column ══════════════════════════════════════ -->
+    <div class="col-lg-8">
+
+      <!-- Placeholder when nothing is selected -->
+      <div id="right-placeholder" class="ud-card">
+        <div class="empty-state" style="padding: 80px 24px;">
+          <i class="fas fa-hand-pointer"></i>
+          <p>Select a device on the left to view its details.</p>
         </div>
+      </div>
+
+      <!-- Device details — hidden until a device is clicked -->
+      <div id="right-panel" style="display:none;">
+
+        <!-- Device header bar -->
+        <div class="ud-card">
+          <div class="ud-card-header" style="gap:14px;">
+            <div style="width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-microchip" style="font-size:16px;"></i>
+            </div>
+            <div>
+              <div id="device-name" style="font-size:15px; font-weight:700;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+
+          <!-- Device information card -->
+          <div class="col-md-6">
+            <div class="ud-card">
+              <div class="ud-card-header">
+                <i class="fas fa-info-circle"></i>
+                <h6>Device Information</h6>
+              </div>
+              <div class="info-row"><span class="info-label">Serial No</span>      <span class="info-value" id="serialNo"     style="font-family:monospace;"></span></div>
+              <div class="info-row"><span class="info-label">Chipset No</span>     <span class="info-value" id="chipsetNo"    style="font-family:monospace;"></span></div>
+              <div class="info-row"><span class="info-label">Device ID</span>      <span class="info-value" id="deviseId"     style="font-family:monospace;"></span></div>
+              <div class="info-row"><span class="info-label">Email</span>          <span class="info-value" id="email"></span></div>
+              <div class="info-row"><span class="info-label">Phone</span>          <span class="info-value" id="phone"></span></div>
+              <div class="info-row"><span class="info-label">Address Line 1</span> <span class="info-value" id="address1"></span></div>
+              <div class="info-row"><span class="info-label">Address Line 2</span> <span class="info-value" id="address2"></span></div>
+              <div class="info-row"><span class="info-label">Purchase Date</span>  <span class="info-value" id="purchaseDate"></span></div>
+              <div class="info-row"><span class="info-label">Warranty</span>       <span class="info-value" id="warranty"></span></div>
+              <div class="info-row"><span class="info-label">Land</span>           <span class="info-value" id="land"></span></div>
+            </div>
+          </div>
+
+          <!-- Financial details + map -->
+          <div class="col-md-6 d-flex flex-column gap-3">
+            <div class="ud-card">
+              <div class="ud-card-header">
+                <i class="fas fa-rupee-sign"></i>
+                <h6>Financial &amp; Usage</h6>
+              </div>
+              <div class="info-row"><span class="info-label">Amount Paid</span>    <span class="info-value" id="amountPaid"></span></div>
+              <div class="info-row"><span class="info-label">Balance Amount</span> <span class="info-value" id="balanceAmount"></span></div>
+              <div class="info-row"><span class="info-label">API Limit</span>      <span class="info-value" id="api_limit"></span></div>
+              <div class="info-row"><span class="info-label">API Used</span>       <span class="info-value" id="api_used"></span></div>
+            </div>
+            <!-- Map card -->
+            <div class="ud-card flex-fill" style="min-height:200px; overflow:visible;">
+              <div id="leaflet-map" style="height:200px; width:100%; border-radius:0 0 12px 12px;"></div>
+            </div>
+          </div>
+
+        </div>
+        <!-- /row -->
+
+      </div>
+      <!-- /right-panel -->
+
+    </div>
+    <!-- /right column -->
+
+  </div>
+  <!-- /row g-3 -->
+
+  <!-- ══ Farmers (Soil Partners only) ════════════════════════ -->
+  {% if is_soil_partner %}
+  <div class="ud-card mt-3">
+    <div class="ud-card-header" style="justify-content:space-between;">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-users"></i>
+        <h6>My Farmers <span id="farmerBadge" class="badge bg-light text-primary ms-1" style="font-size:12px;">{{ farmers|length }}</span></h6>
+      </div>
+      <button class="btn btn-sm btn-light" onclick="toggleFarmerForm()" title="Register Farmer">
+        <i class="fas fa-user-plus me-1"></i> Register Farmer
+      </button>
+    </div>
 
         <!-- Inline Register Farmer Form -->
         <div id="farmerFormWrap" style="display:none; padding:16px; border-bottom:1px solid #f0f2f5; background:#f8f9fa;">
@@ -531,14 +610,12 @@
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
-    {% endif %}
+  </div>
+  {% endif %}
 
-    <!-- ── My Payments (soil partner) ───────────────────────── -->
-    {% if is_soil_partner %}
-    <div class="col-12 mt-3">
-      <div class="ud-card">
+  <!-- ── My Payments (soil partner) ──────────────────────────── -->
+  {% if is_soil_partner %}
+  <div class="ud-card mt-3">
         <div class="ud-card-header">
           <i class="fas fa-receipt me-2"></i>
           <h6 class="mb-0">My Payments
@@ -607,86 +684,7 @@
           {% endif %}
         </div>
       </div>
-    </div>
-    {% endif %}
-
-    <!-- ══ Right column ══════════════════════════════════════ -->
-    <div class="col-lg-8">
-
-      <!-- Placeholder when nothing is selected -->
-      <div id="right-placeholder" class="ud-card">
-        <div class="empty-state" style="padding: 80px 24px;">
-          <i class="fas fa-hand-pointer"></i>
-          <p>Select a device on the left to view its details.</p>
-        </div>
-      </div>
-
-      <!-- Device details — hidden until a device is clicked -->
-      <div id="right-panel" style="display:none;">
-
-        <!-- Device header bar -->
-        <div class="ud-card">
-          <div class="ud-card-header" style="gap:14px;">
-            <div style="width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <i class="fas fa-microchip" style="font-size:16px;"></i>
-            </div>
-            <div>
-              <div id="device-name" style="font-size:15px; font-weight:700;"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="row g-3 mb-3">
-
-          <!-- Device information card -->
-          <div class="col-md-6">
-            <div class="ud-card">
-              <div class="ud-card-header">
-                <i class="fas fa-info-circle"></i>
-                <h6>Device Information</h6>
-              </div>
-              <div class="info-row"><span class="info-label">Serial No</span>      <span class="info-value" id="serialNo"     style="font-family:monospace;"></span></div>
-              <div class="info-row"><span class="info-label">Chipset No</span>     <span class="info-value" id="chipsetNo"    style="font-family:monospace;"></span></div>
-              <div class="info-row"><span class="info-label">Device ID</span>      <span class="info-value" id="deviseId"     style="font-family:monospace;"></span></div>
-              <div class="info-row"><span class="info-label">Email</span>          <span class="info-value" id="email"></span></div>
-              <div class="info-row"><span class="info-label">Phone</span>          <span class="info-value" id="phone"></span></div>
-              <div class="info-row"><span class="info-label">Address Line 1</span> <span class="info-value" id="address1"></span></div>
-              <div class="info-row"><span class="info-label">Address Line 2</span> <span class="info-value" id="address2"></span></div>
-              <div class="info-row"><span class="info-label">Purchase Date</span>  <span class="info-value" id="purchaseDate"></span></div>
-              <div class="info-row"><span class="info-label">Warranty</span>       <span class="info-value" id="warranty"></span></div>
-              <div class="info-row"><span class="info-label">Land</span>           <span class="info-value" id="land"></span></div>
-            </div>
-          </div>
-
-          <!-- Financial details + map -->
-          <div class="col-md-6 d-flex flex-column gap-3">
-            <div class="ud-card">
-              <div class="ud-card-header">
-                <i class="fas fa-rupee-sign"></i>
-                <h6>Financial &amp; Usage</h6>
-              </div>
-              <div class="info-row"><span class="info-label">Amount Paid</span>    <span class="info-value" id="amountPaid"></span></div>
-              <div class="info-row"><span class="info-label">Balance Amount</span> <span class="info-value" id="balanceAmount"></span></div>
-              <div class="info-row"><span class="info-label">API Limit</span>      <span class="info-value" id="api_limit"></span></div>
-              <div class="info-row"><span class="info-label">API Used</span>       <span class="info-value" id="api_used"></span></div>
-            </div>
-            <!-- Map card -->
-            <div class="ud-card flex-fill" style="min-height:200px; overflow:visible;">
-              <div id="leaflet-map" style="height:200px; width:100%; border-radius:0 0 12px 12px;"></div>
-            </div>
-          </div>
-
-        </div>
-        <!-- /row -->
-
-      </div>
-      <!-- /right-panel -->
-
-    </div>
-    <!-- /right column -->
-
-  </div>
-  <!-- /row g-3 -->
+  {% endif %}
 
   <!-- ══ Full-width API calls table ════════════════════════════ -->
   <div id="api-details-container" class="ud-card mt-3" style="display:none;">
@@ -698,10 +696,15 @@
           <span id="selectedDeviceName" style="font-weight:400; opacity:.8; font-size:12px; margin-left:6px;"></span>
         </h6>
       </div>
-      <input type="text" id="searchInput"
-             class="form-control form-control-sm"
-             style="width:200px; background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.3); color:#fff;"
-             placeholder="Search…" onkeyup="searchTable()">
+      <div class="d-flex align-items-center gap-2">
+        <input type="text" id="searchInput"
+               class="form-control form-control-sm"
+               style="width:180px; background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.3); color:#fff;"
+               placeholder="Search…" onkeyup="searchTable()">
+        <button id="toggleColsBtn" onclick="toggleAllCols()" class="btn btn-sm btn-light" title="Toggle detail columns" style="white-space:nowrap;font-size:12px;">
+          <i class="fas fa-columns"></i> All Cols
+        </button>
+      </div>
     </div>
     <div class="p-0">
       <div class="table-container">
@@ -725,6 +728,8 @@
   const url                     = `${base_url}/devise-api-calls`;
   let   selected_devise         = {};
   let   selected_devise_headers = {};
+  let   showAllCols             = false;
+  let   summarySet              = new Set();  // populated from API; empty = show all
 
   // Initialize a map variable to store the map instance
   let mapInstance = null;
@@ -817,6 +822,13 @@
       const apiDetailsTable       = document.getElementById('api-details-table');
       apiDetailsTable.innerHTML   = "";
 
+      // Reset column toggle on device switch
+      showAllCols = false;
+      summarySet  = new Set();
+      document.querySelector('#api-details-container table').classList.remove('show-all-cols');
+      const tcb = document.getElementById('toggleColsBtn');
+      if (tcb) tcb.innerHTML = '<i class="fas fa-columns"></i> All Cols';
+
       // Fetch the device API data
       fetchData(device.pk);
     } else {
@@ -845,12 +857,14 @@
       selected_devise_headers = deviseData.headers;
       devise_type             = deviseData.devise_type;
       field_thresholds        = deviseData.field_thresholds;
+      summarySet              = new Set(deviseData.summary_keys || []);
 
       // Build headers
       const headerKeys = Object.keys(deviseData.headers);
       headerKeys.forEach(key => {
         const th = document.createElement('th');
         th.textContent = deviseData.headers[key];
+        if (summarySet.size > 0 && !summarySet.has(key)) th.classList.add('col-secondary');
         apiDetailsHeaders.appendChild(th);
       });
 
@@ -865,6 +879,7 @@
 
         headerKeys.forEach(headerKey => {
           const cell = document.createElement('td');
+          if (summarySet.size > 0 && !summarySet.has(headerKey)) cell.classList.add('col-secondary');
           if (headerKey === 'image_path') {
             cell.innerHTML = api.image_path
               ? `<img src="${api.image_path}" class="small-img" onmouseover="this.classList.add('big-img')" onmouseout="this.classList.remove('big-img')" />`
@@ -944,6 +959,15 @@
     }
   `;
   document.head.appendChild(style);
+
+  function toggleAllCols() {
+    showAllCols = !showAllCols;
+    document.querySelector('#api-details-container table').classList.toggle('show-all-cols', showAllCols);
+    const btn = document.getElementById('toggleColsBtn');
+    if (btn) btn.innerHTML = showAllCols
+      ? '<i class="fas fa-compress-alt"></i> Summary'
+      : '<i class="fas fa-columns"></i> All Cols';
+  }
 </script>
 
 <!-- Popup script -->

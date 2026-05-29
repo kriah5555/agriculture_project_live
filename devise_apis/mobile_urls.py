@@ -2,6 +2,7 @@
 Mobile API URL configuration.
 All routes are prefixed with /api/mobile/ from the root urls.py.
 
+
 Endpoint summary
 ────────────────
 Auth                                               (auth_api.py)
@@ -131,7 +132,8 @@ urlpatterns = [
     path('farmers/<int:pk>/update/',          fa.farmer_update,        name='mobile_farmer_update'),
     path('farmers/<int:pk>/delete/',          fa.farmer_delete,        name='mobile_farmer_delete'),
     path('farmers/<int:pk>/status/',          fa.farmer_update_status, name='mobile_farmer_status'),
-    path('farmers/<int:pk>/api-calls/',       fa.farmer_api_calls,     name='mobile_farmer_api_calls'),
+    path('farmers/<int:pk>/api-calls/',       fa.farmer_api_calls,          name='mobile_farmer_api_calls'),
+    path('farmers/<int:pk>/device-readings/<int:device_id>/', fa.farmer_device_readings, name='mobile_farmer_device_readings'),
     path('farmers/<int:pk>/image/',           fa.farmer_update_image,  name='mobile_farmer_image'),
     path('farmers/<int:pk>/image/delete/',    fa.farmer_delete_image,  name='mobile_farmer_image_delete'),
 ]

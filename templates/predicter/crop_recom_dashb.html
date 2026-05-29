@@ -43,11 +43,16 @@
         <div style="color:#c8e6c9;font-size:12px;">6-page AI soil health PDF — crop suitability, amendment plan, carbon credit dashboard</div>
       </div>
     </div>
-    <a href="/crop-recommendation-pdf/?api_id={{ soil_nutrients.pk }}"
-       class="btn btn-light btn-sm fw-bold"
-       style="white-space:nowrap;color:#1e4d2b;">
-      <i class="fas fa-download me-1"></i> Download PDF Report
-    </a>
+    <div class="d-flex gap-2">
+      <a href="/soil-report/?api_id={{ soil_nutrients.pk }}" target="_blank"
+         class="btn btn-outline-light btn-sm fw-bold" style="white-space:nowrap;">
+        <i class="fas fa-eye me-1"></i> View HTML Report
+      </a>
+      <a href="/soil-report-pdf/?api_id={{ soil_nutrients.pk }}"
+         class="btn btn-light btn-sm fw-bold" style="white-space:nowrap;color:#1e4d2b;">
+        <i class="fas fa-download me-1"></i> Download PDF Report
+      </a>
+    </div>
   </div>
 
   <div class="row mb-4">

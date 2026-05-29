@@ -11,7 +11,8 @@ GET    /api/mobile/farmers/<pk>/              Farmer detail
 PATCH  /api/mobile/farmers/<pk>/update/       Update farmer fields (partial)
 DELETE /api/mobile/farmers/<pk>/delete/       Delete farmer
 POST   /api/mobile/farmers/<pk>/status/       Update farmer status
-GET    /api/mobile/farmers/<pk>/api-calls/    All API call readings linked to that farmer
+GET    /api/mobile/farmers/<pk>/api-calls/                      Summary of API calls per device
+GET    /api/mobile/farmers/<pk>/device-readings/<device_id>/   Paginated readings for one device
 POST   /api/mobile/farmers/<pk>/image/        Upload / replace farmer image
 DELETE /api/mobile/farmers/<pk>/image/delete/ Remove farmer image
 """
@@ -34,6 +35,8 @@ from .models import (
     Farmer, FarmerStatusHistory, UserProfile,
     FARMER_STATUS_CHOICES, SEASON_CHOICES,
     DeviseApis, DeviseApisFields,
+    Devise,
+    SOIL_SAATHI_FIELDS, ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS,
 )
 
 
@@ -530,6 +533,88 @@ def farmer_api_calls(request, pk):
         'farmer_name'    : farmer.farmer_name,
         'total_api_calls': total,
         'devices'        : device_summary,
+    })
+
+
+_DEVICE_FIELD_HEADERS = {
+    'soilsaathi': SOIL_SAATHI_FIELDS,
+    'atmo_sense' : ATMO_SENSE_FIELDS,
+    'soil_life'  : SOIL_LIFE_FIELDS,
+    'ph_bottle'  : PH_BOTTLE_FIELDS,
+}
+
+
+@extend_schema(
+    tags=['Farmers'],
+    summary='List readings for a farmer + device (paginated)',
+    description=(
+        'Returns paginated API-call readings for a specific farmer and device combination. '
+        'Use the `devices` list from `GET /api/mobile/farmers/<pk>/api-calls/` to find valid device IDs.'
+    ),
+    parameters=[
+        OpenApiParameter('page',     OpenApiTypes.INT, description='Page number (default 1)'),
+        OpenApiParameter('per_page', OpenApiTypes.INT, description='Records per page (max 100, default 50)'),
+    ],
+    responses={
+        200: OpenApiResponse(description='Paginated readings with field headers'),
+        400: OpenApiResponse(description='Unsupported device type'),
+        403: OpenApiResponse(description='Permission denied'),
+        404: OpenApiResponse(description='Farmer or device not found'),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def farmer_device_readings(request, pk, device_id):
+    """Paginated readings for one farmer + device — mirrors the web expand panel."""
+    if not _has_farmer_access(request.user):
+        return Response({'detail': 'Permission denied.'}, status=403)
+    farmer = get_object_or_404(_farmer_qs(request.user), pk=pk)
+    device = get_object_or_404(Devise, pk=device_id)
+
+    page     = max(1, int(request.query_params.get('page', 1)))
+    per_page = min(int(request.query_params.get('per_page', 50)), 100)
+
+    headers = _DEVICE_FIELD_HEADERS.get(device.devise_type)
+    if headers is None:
+        return Response({'detail': f'Unsupported device type: {device.devise_type}.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if device.devise_type == 'soilsaathi':
+        qs = DeviseApis.objects.filter(device=device, farmer=farmer).order_by('-created_at')
+    else:
+        qs = DeviseApisFields.objects.filter(device=device, farmer=farmer).order_by('-created_at')
+
+    from django.core.paginator import Paginator
+    import pytz
+    from django.utils import timezone as _tz
+
+    paginator = Paginator(qs, per_page)
+    page_obj  = paginator.get_page(page)
+    data      = list(page_obj.object_list.values())
+
+    btz = pytz.timezone('Asia/Kolkata')
+    for item in data:
+        if item.get('created_at'):
+            utc_dt = item['created_at']
+            if _tz.is_naive(utc_dt):
+                utc_dt = _tz.make_aware(utc_dt, timezone=pytz.UTC)
+            item['created_at'] = utc_dt.astimezone(btz).strftime('%Y-%m-%d %H:%M:%S')
+        item.pop('farmer_id', None)
+        item.pop('device_id', None)
+
+    return Response({
+        'farmer_id'  : farmer.pk,
+        'farmer_name': farmer.farmer_name,
+        'device_id'  : device.pk,
+        'device_name': device.name or device.devise_id,
+        'device_type': device.devise_type,
+        'headers'    : headers,
+        'pagination' : {
+            'current_page' : page_obj.number,
+            'per_page'     : per_page,
+            'total_pages'  : paginator.num_pages,
+            'total_records': paginator.count,
+        },
+        'data': data,
     })
 
 

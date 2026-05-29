@@ -93,8 +93,11 @@
   /* ── API table ── */
   @keyframes spin { to { transform: rotate(360deg); } }
   #api-btn-prev:disabled, #api-btn-next:disabled { opacity: .4; cursor: not-allowed; }
-  .table-container { max-height: 520px; overflow-y: auto; }
+  .table-container { max-height: 520px; overflow-y: auto; overflow-x: auto; }
   .sticky-header { position: sticky; top: 0; background: #fff; z-index: 5; }
+  /* Secondary (detail) columns hidden by default; revealed by toggle */
+  .col-secondary { display: none; }
+  .show-all-cols .col-secondary { display: table-cell; }
   .small-img { width: 48px; height: 48px; object-fit: cover; cursor: zoom-in; border-radius: 4px; transition: all .3s; }
   .small-img:hover { width: 120px; height: 120px; position: relative; z-index: 10; }
 
@@ -203,190 +206,8 @@
         </div>
         <div class="info-row">
           <span class="info-label">Created By</span>
-          <span class="info-value">{{ profile.created_by.get_full_name|default:profile.created_by.username|default:"—" }}</span>
+          <span class="info-value">{% if profile.created_by %}{{ profile.created_by.get_full_name|default:profile.created_by.username }}{% else %}—{% endif %}</span>
         </div>
-      </div>
-      {% endif %}
-
-      <!-- Payment Records (Soil Partner only — admin view) -->
-      {% if profile and profile.user_type == 'soil_partner' %}
-      <div class="ud-card">
-        <div class="ud-card-header" style="justify-content:space-between;">
-          <div class="d-flex align-items-center gap-2 flex-wrap">
-            <i class="fas fa-receipt"></i>
-            <h6 class="mb-0">Payment Records <span id="payCountBadge" style="background:rgba(255,255,255,.2);padding:1px 8px;border-radius:10px;font-size:11px;margin-left:6px;">{{ payments|length }}</span></h6>
-          </div>
-          <div class="d-flex gap-2 align-items-center">
-            <a href="{% url 'payment-history' %}?user_id={{ user.pk }}" class="btn btn-sm btn-light py-0 px-2" style="font-size:12px;">
-              <i class="fas fa-external-link-alt me-1"></i>Full History
-            </a>
-            <button class="btn btn-sm btn-light py-0 px-2" style="font-size:12px;" onclick="openAddPayment()">
-              <i class="fas fa-plus me-1"></i>Add
-            </button>
-          </div>
-        </div>
-        <!-- Pending/Paid summary strip -->
-        {% if payments %}
-        <div class="d-flex gap-4 px-3 py-2 flex-wrap" style="border-bottom:1px solid #f0f2f5;background:#fafbfd;">
-          <span style="font-size:12px;color:#2e7d32;font-weight:600;">
-            <i class="fas fa-check-circle me-1"></i>Paid: ₹{{ payment_totals.paid_amount|default:"0"|floatformat:0 }}
-            <span style="font-weight:400;color:#999;">({{ payment_totals.paid_count|default:0 }})</span>
-          </span>
-          <span style="font-size:12px;color:#e65100;font-weight:600;">
-            <i class="fas fa-clock me-1"></i>Pending: ₹{{ payment_totals.pending_amount|default:"0"|floatformat:0 }}
-            <span style="font-weight:400;color:#999;">({{ payment_totals.pending_count|default:0 }})</span>
-          </span>
-        </div>
-        {% endif %}
-        <div style="padding:12px 16px;">
-          {% if payments %}
-          <div style="overflow-x:auto;">
-          <table class="table table-sm mb-0" style="font-size:12px;">
-            <thead><tr>
-              <th style="font-size:11px;color:#6c757d;">Date</th>
-              <th style="font-size:11px;color:#6c757d;">Amount</th>
-              <th style="font-size:11px;color:#6c757d;">Status</th>
-              <th style="font-size:11px;color:#6c757d;">Paid On</th>
-              <th style="font-size:11px;color:#6c757d;">Farmer</th>
-              <th style="font-size:11px;color:#6c757d;">Note</th>
-              <th style="font-size:11px;color:#6c757d;">Files</th>
-              <th></th>
-            </tr></thead>
-            <tbody id="paymentTableBody">
-            {% for p in payments %}
-            <tr id="ud-pay-{{ p.pk }}">
-              <td style="white-space:nowrap;">{{ p.created_at|date:"d M Y" }}</td>
-              <td><strong style="color:#2e7d32;">₹{{ p.amount|floatformat:2 }}</strong></td>
-              <td id="ud-pstatus-{{ p.pk }}">
-                {% if p.status == 'paid' %}
-                  <span style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap;"><i class="fas fa-check-circle me-1"></i>Paid</span>
-                {% else %}
-                  <span style="background:#fff8e1;color:#e65100;border:1px solid #ffe082;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap;"><i class="fas fa-clock me-1"></i>Pending</span>
-                {% endif %}
-              </td>
-              <td id="ud-ppaidat-{{ p.pk }}" style="white-space:nowrap;font-size:11px;">
-                {% if p.paid_at %}{{ p.paid_at|date:"d M Y" }}{% else %}<span class="text-muted">—</span>{% endif %}
-              </td>
-              <td>{{ p.farmer.farmer_name|default:"—" }}</td>
-              <td style="color:#555;max-width:140px;">{{ p.description|default:"—" }}</td>
-              <td>
-                {% for att in p.attachments.all %}
-                  <a href="{{ att.file.url }}" target="_blank" style="font-size:11px;color:#1a73e8;margin-right:4px;"><i class="fas fa-paperclip"></i>{{ forloop.counter }}</a>
-                {% endfor %}
-              </td>
-              <td>
-                <div class="d-flex gap-1">
-                  <button class="btn btn-sm btn-outline-primary py-0 px-1" style="font-size:10px;"
-                          onclick="openUdEditPayment({{ p.pk }}, '{{ p.amount }}', '{{ p.description|escapejs }}', '{{ p.status }}')"
-                          title="Edit">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="btn btn-sm py-0 px-1 {% if p.status == 'paid' %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
-                          style="font-size:10px;" onclick="toggleUdStatus({{ p.pk }}, this)"
-                          title="{% if p.status == 'paid' %}Mark Pending{% else %}Mark Paid{% endif %}">
-                    {% if p.status == 'paid' %}<i class="fas fa-undo"></i>{% else %}<i class="fas fa-check"></i>{% endif %}
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger py-0 px-1" style="font-size:10px;" onclick="deleteUdPayment({{ p.pk }})"><i class="fas fa-trash"></i></button>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-            </tbody>
-          </table>
-          </div>
-          {% else %}
-          <p id="noPayMsg" class="text-muted mb-0" style="font-size:13px;">No payment records yet.</p>
-          {% endif %}
-        </div>
-      </div>
-      {% endif %}
-
-      <!-- Farmers (Soil Partner only) -->
-      {% if profile and profile.user_type == 'soil_partner' %}
-      <div class="ud-card">
-        <div class="ud-card-header" style="justify-content:space-between;">
-          <div class="d-flex align-items-center gap-2">
-            <i class="fas fa-tractor"></i>
-            <h6>Farmers
-              <span style="background:rgba(255,255,255,.2);padding:1px 8px;border-radius:10px;font-size:11px;margin-left:6px;">
-                {{ farmers|length }}
-              </span>
-            </h6>
-          </div>
-          <div class="d-flex gap-2 align-items-center">
-            <a href="{% url 'create-farmer' %}?sp={{ user.pk }}" class="btn btn-sm btn-light py-0 px-2" style="font-size:12px;" title="Add Farmer">
-              <i class="fas fa-user-plus me-1"></i> Add
-            </a>
-            <a href="{% url 'farmer-list' %}" class="text-white" style="font-size:13px;" title="View All Farmers">
-              <i class="fas fa-arrow-right"></i>
-            </a>
-          </div>
-        </div>
-
-        {% if farmers %}
-        <!-- Farmer status summary strip -->
-        <div style="display:flex;gap:0;border-bottom:1px solid #f0f2f5;">
-          {% with reg=0 samp=0 test=0 rep=0 %}
-          {% for f in farmers %}
-            {% if f.status == 'registered' %}{% with reg=reg|add:1 %}{% endwith %}
-            {% elif f.status == 'sample_collected' %}{% with samp=samp|add:1 %}{% endwith %}
-            {% elif f.status == 'testing_done' %}{% with test=test|add:1 %}{% endwith %}
-            {% elif f.status == 'report_delivered' %}{% with rep=rep|add:1 %}{% endwith %}
-            {% endif %}
-          {% endfor %}
-          {% endwith %}
-          {% regroup farmers by status as status_groups %}
-          {% for group in status_groups %}
-          <div style="flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:600;
-            {% if group.grouper == 'registered' %}color:#6b7280;border-bottom:2px solid #9ca3af;
-            {% elif group.grouper == 'sample_collected' %}color:#1565c0;border-bottom:2px solid #1565c0;
-            {% elif group.grouper == 'testing_done' %}color:#e65100;border-bottom:2px solid #e65100;
-            {% else %}color:#2e7d32;border-bottom:2px solid #2e7d32;{% endif %}">
-            {{ group.list|length }}
-            <div style="font-weight:400;font-size:10px;color:#aaa;margin-top:2px;">
-              {% if group.grouper == 'registered' %}Registered
-              {% elif group.grouper == 'sample_collected' %}Sampled
-              {% elif group.grouper == 'testing_done' %}Tested
-              {% else %}Delivered{% endif %}
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-
-        <div style="max-height:260px;overflow-y:auto;">
-          {% for farmer in farmers %}
-          <div class="device-list-item" onclick="window.location.href='/farmer/{{ farmer.pk }}/'">
-            <div style="width:32px;height:32px;border-radius:50%;flex-shrink:0;
-                        display:flex;align-items:center;justify-content:center;
-                        font-size:12px;font-weight:700;color:#fff;
-                        background:hsl({{ farmer.pk|add:40 }}deg 50% 45%);">
-              {{ farmer.farmer_name|first|upper }}
-            </div>
-            <div class="flex-fill" style="min-width:0;">
-              <div class="device-item-name text-truncate">{{ farmer.farmer_name }}</div>
-              <div class="device-item-type">{{ farmer.village }}, {{ farmer.district }}</div>
-            </div>
-            <span class="badge" style="font-size:10px;
-              {% if farmer.status == 'registered' %}background:#f3f4f6;color:#6b7280;
-              {% elif farmer.status == 'sample_collected' %}background:#e3f2fd;color:#1565c0;
-              {% elif farmer.status == 'testing_done' %}background:#fff3e0;color:#e65100;
-              {% else %}background:#e8f5e9;color:#2e7d32;{% endif %}">
-              {{ farmer.get_status_display }}
-            </span>
-          </div>
-          {% endfor %}
-        </div>
-
-        {% else %}
-        <div style="padding:32px;text-align:center;color:#bbb;">
-          <i class="fas fa-tractor" style="font-size:32px;display:block;margin-bottom:10px;"></i>
-          <div style="font-size:13px;margin-bottom:12px;">No farmers registered yet.</div>
-          <a href="{% url 'create-farmer' %}" class="btn btn-sm btn-primary">
-            <i class="fas fa-user-plus me-1"></i> Add First Farmer
-          </a>
-        </div>
-        {% endif %}
-
       </div>
       {% endif %}
 
@@ -466,6 +287,35 @@
           <a href="{% url 'add-devise' user.username %}" class="btn btn-sm btn-primary">Add Device</a>
         </div>
         {% endif %}
+
+        <!-- Device type coverage — linked=solid, unlinked=dashed "Add/Link" -->
+        <div style="padding:10px 14px; border-top:1px solid #f0f2f5;">
+          <div style="font-size:10px;color:#6c757d;font-weight:700;letter-spacing:.5px;margin-bottom:6px;">DEVICE TYPES</div>
+          <div class="d-flex flex-wrap gap-1">
+            {% for type_key, type_name in device_names.items %}
+              {% if type_key in linked_types %}
+                <span style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;">
+                  <i class="fas fa-check-circle me-1"></i>{{ type_name }}
+                </span>
+              {% elif type_key in standard_types %}
+                <!-- Standard types → go to full add-devise form -->
+                <a href="{% url 'add-devise' user.username %}?type={{ type_key }}"
+                   style="background:#fff;color:#1a73e8;border:1px dashed #90caf9;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;text-decoration:none;"
+                   title="Add {{ type_name }} device">
+                  <i class="fas fa-plus-circle me-1"></i>{{ type_name }}
+                </a>
+              {% else %}
+                <!-- Non-standard types → confirm popup → auto-link -->
+                <a href="#"
+                   onclick="confirmAutoLink('{{ type_key }}', '{{ type_name }}')"
+                   style="background:#fff;color:#e65100;border:1px dashed #ffccbc;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;text-decoration:none;"
+                   title="Auto-link {{ type_name }} device">
+                  <i class="fas fa-link me-1"></i>{{ type_name }}
+                </a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
       </div>
 
     </div>
@@ -533,6 +383,173 @@
       </div>
       <!-- /right-panel -->
 
+      {% if profile and profile.user_type == 'soil_partner' %}
+      <div class="row g-3 mt-0">
+
+        <!-- Payment Records -->
+        <div class="col-md-7">
+        <div class="ud-card">
+          <div class="ud-card-header" style="justify-content:space-between;">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <i class="fas fa-receipt"></i>
+              <h6 class="mb-0">Payment Records <span id="payCountBadge" style="background:rgba(255,255,255,.2);padding:1px 8px;border-radius:10px;font-size:11px;margin-left:6px;">{{ payments|length }}</span></h6>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              <a href="{% url 'payment-history' %}?user_id={{ user.pk }}" class="btn btn-sm btn-light py-0 px-2" style="font-size:12px;">
+                <i class="fas fa-external-link-alt me-1"></i>Full History
+              </a>
+              <button class="btn btn-sm btn-light py-0 px-2" style="font-size:12px;" onclick="openAddPayment()">
+                <i class="fas fa-plus me-1"></i>Add
+              </button>
+            </div>
+          </div>
+          {% if payments %}
+          <div class="d-flex gap-4 px-3 py-2 flex-wrap" style="border-bottom:1px solid #f0f2f5;background:#fafbfd;">
+            <span style="font-size:12px;color:#2e7d32;font-weight:600;">
+              <i class="fas fa-check-circle me-1"></i>Paid: ₹{{ payment_totals.paid_amount|default:"0"|floatformat:0 }}
+              <span style="font-weight:400;color:#999;">({{ payment_totals.paid_count|default:0 }})</span>
+            </span>
+            <span style="font-size:12px;color:#e65100;font-weight:600;">
+              <i class="fas fa-clock me-1"></i>Pending: ₹{{ payment_totals.pending_amount|default:"0"|floatformat:0 }}
+              <span style="font-weight:400;color:#999;">({{ payment_totals.pending_count|default:0 }})</span>
+            </span>
+          </div>
+          {% endif %}
+          <div style="padding:12px 16px;">
+            {% if payments %}
+            <div style="overflow-x:auto;">
+            <table class="table table-sm mb-0" style="font-size:12px;">
+              <thead><tr>
+                <th style="font-size:11px;color:#6c757d;">Date</th>
+                <th style="font-size:11px;color:#6c757d;">Amount</th>
+                <th style="font-size:11px;color:#6c757d;">Status</th>
+                <th style="font-size:11px;color:#6c757d;">Paid On</th>
+                <th style="font-size:11px;color:#6c757d;">Farmer</th>
+                <th style="font-size:11px;color:#6c757d;">Note</th>
+                <th style="font-size:11px;color:#6c757d;">Files</th>
+                <th></th>
+              </tr></thead>
+              <tbody id="paymentTableBody">
+              {% for p in payments %}
+              <tr id="ud-pay-{{ p.pk }}">
+                <td style="white-space:nowrap;">{{ p.created_at|date:"d M Y" }}</td>
+                <td><strong style="color:#2e7d32;">₹{{ p.amount|floatformat:2 }}</strong></td>
+                <td id="ud-pstatus-{{ p.pk }}">
+                  {% if p.status == 'paid' %}
+                    <span style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap;"><i class="fas fa-check-circle me-1"></i>Paid</span>
+                  {% else %}
+                    <span style="background:#fff8e1;color:#e65100;border:1px solid #ffe082;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap;"><i class="fas fa-clock me-1"></i>Pending</span>
+                  {% endif %}
+                </td>
+                <td id="ud-ppaidat-{{ p.pk }}" style="white-space:nowrap;font-size:11px;">
+                  {% if p.paid_at %}{{ p.paid_at|date:"d M Y" }}{% else %}<span class="text-muted">—</span>{% endif %}
+                </td>
+                <td>{{ p.farmer.farmer_name|default:"—" }}</td>
+                <td style="color:#555;max-width:120px;">{{ p.description|default:"—" }}</td>
+                <td>
+                  {% for att in p.attachments.all %}
+                    <a href="{{ att.file.url }}" target="_blank" style="font-size:11px;color:#1a73e8;margin-right:4px;"><i class="fas fa-paperclip"></i>{{ forloop.counter }}</a>
+                  {% endfor %}
+                </td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-primary py-0 px-1" style="font-size:10px;"
+                            onclick="openUdEditPayment({{ p.pk }}, '{{ p.amount }}', '{{ p.description|escapejs }}', '{{ p.status }}')" title="Edit">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm py-0 px-1 {% if p.status == 'paid' %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
+                            style="font-size:10px;" onclick="toggleUdStatus({{ p.pk }}, this)"
+                            title="{% if p.status == 'paid' %}Mark Pending{% else %}Mark Paid{% endif %}">
+                      {% if p.status == 'paid' %}<i class="fas fa-undo"></i>{% else %}<i class="fas fa-check"></i>{% endif %}
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-1" style="font-size:10px;" onclick="deleteUdPayment({{ p.pk }})"><i class="fas fa-trash"></i></button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+            </div>
+            {% else %}
+            <p id="noPayMsg" class="text-muted mb-0" style="font-size:13px;">No payment records yet.</p>
+            {% endif %}
+          </div>
+        </div>
+        </div>
+
+        <!-- Farmers -->
+        <div class="col-md-5">
+        <div class="ud-card h-100">
+          <div class="ud-card-header" style="justify-content:space-between;">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-tractor"></i>
+              <h6>Farmers
+                <span style="background:rgba(255,255,255,.2);padding:1px 8px;border-radius:10px;font-size:11px;margin-left:6px;">{{ farmers|length }}</span>
+              </h6>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              <a href="{% url 'create-farmer' %}?sp={{ user.pk }}" class="btn btn-sm btn-light py-0 px-2" style="font-size:12px;" title="Add Farmer">
+                <i class="fas fa-user-plus me-1"></i> Add
+              </a>
+              <a href="{% url 'farmer-list' %}" class="text-white" style="font-size:13px;" title="View All Farmers">
+                <i class="fas fa-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+          {% if farmers %}
+          <div style="display:flex;gap:0;border-bottom:1px solid #f0f2f5;">
+            {% regroup farmers by status as status_groups %}
+            {% for group in status_groups %}
+            <div style="flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:600;
+              {% if group.grouper == 'registered' %}color:#6b7280;border-bottom:2px solid #9ca3af;
+              {% elif group.grouper == 'sample_collected' %}color:#1565c0;border-bottom:2px solid #1565c0;
+              {% elif group.grouper == 'testing_done' %}color:#e65100;border-bottom:2px solid #e65100;
+              {% else %}color:#2e7d32;border-bottom:2px solid #2e7d32;{% endif %}">
+              {{ group.list|length }}
+              <div style="font-weight:400;font-size:10px;color:#aaa;margin-top:2px;">
+                {% if group.grouper == 'registered' %}Registered
+                {% elif group.grouper == 'sample_collected' %}Sampled
+                {% elif group.grouper == 'testing_done' %}Tested
+                {% else %}Delivered{% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <div style="max-height:320px;overflow-y:auto;">
+            {% for farmer in farmers %}
+            <div class="device-list-item" onclick="window.location.href='/farmer/{{ farmer.pk }}/'">
+              <div style="width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;background:hsl({{ farmer.pk|add:40 }}deg 50% 45%);">
+                {{ farmer.farmer_name|first|upper }}
+              </div>
+              <div class="flex-fill" style="min-width:0;">
+                <div class="device-item-name text-truncate">{{ farmer.farmer_name }}</div>
+                <div class="device-item-type">{{ farmer.village }}, {{ farmer.district }}</div>
+              </div>
+              <span class="badge" style="font-size:10px;
+                {% if farmer.status == 'registered' %}background:#f3f4f6;color:#6b7280;
+                {% elif farmer.status == 'sample_collected' %}background:#e3f2fd;color:#1565c0;
+                {% elif farmer.status == 'testing_done' %}background:#fff3e0;color:#e65100;
+                {% else %}background:#e8f5e9;color:#2e7d32;{% endif %}">
+                {{ farmer.get_status_display }}
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div style="padding:32px;text-align:center;color:#bbb;">
+            <i class="fas fa-tractor" style="font-size:32px;display:block;margin-bottom:10px;"></i>
+            <div style="font-size:13px;margin-bottom:12px;">No farmers registered yet.</div>
+            <a href="{% url 'create-farmer' %}" class="btn btn-sm btn-primary">
+              <i class="fas fa-user-plus me-1"></i> Add First Farmer
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        </div>
+
+      </div>
+      {% endif %}
+
     </div>
   </div>
 
@@ -547,13 +564,26 @@
         <input type="text" id="searchInput" class="form-control form-control-sm"
                style="width:200px; background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.3); color:#fff;"
                placeholder="Search…" onkeyup="searchTable()">
+        <button id="toggleColsBtn" onclick="toggleAllCols()" class="btn btn-sm btn-light" title="Toggle detail columns" style="white-space:nowrap;font-size:12px;">
+          <i class="fas fa-columns"></i> All Cols
+        </button>
         <button onclick="openFormPopup()" class="btn btn-sm btn-light" title="Add API Call">
           <i class="fas fa-plus"></i>
         </button>
       </div>
     </div>
-    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="background:#f8f9fa;">
-      <span id="api-total-records" style="color:#6c757d; font-size:13px;"></span>
+    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="background:#f8f9fa;flex-wrap:wrap;gap:8px;">
+      <div class="d-flex align-items-center gap-2">
+        <span id="api-total-records" style="color:#6c757d; font-size:13px;"></span>
+        {% if farmers %}
+        <select id="farmerFilter" class="form-select form-select-sm" style="width:auto;font-size:12px;" onchange="udFarmerFilterChanged()">
+          <option value="">All Farmers</option>
+          {% for f in farmers %}
+          <option value="{{ f.pk }}">{{ f.farmer_name }}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+      </div>
       <div class="d-flex align-items-center gap-2">
         <button id="api-btn-prev" class="btn btn-sm btn-outline-primary" disabled>&#8249; Prev</button>
         <span id="api-page-info" style="font-size:13px; white-space:nowrap;"></span>
@@ -589,6 +619,8 @@
   let   fetchToken      = 0;
   let   apiState        = { page: 1, totalPages: 1, totalRecords: 0 };
   const perPage         = 50;
+  let   showAllCols     = false;
+  let   summarySet      = new Set();   // populated from API response; empty = show all
 
   const TYPE_META = {
     soilsaathi: { color: '#2e7d32', label: 'SoiLENZ',    icon: 'fa-leaf'          },
@@ -680,6 +712,14 @@
     document.getElementById('api-details-container').style.display = 'block';
     document.getElementById('api-details-headers').innerHTML = '';
     apiState.headersSet = false;
+    const ff = document.getElementById('farmerFilter');
+    if (ff) ff.value = '';
+    // Reset column toggle on device switch
+    showAllCols = false;
+    summarySet  = new Set();
+    document.querySelector('#api-details-container table').classList.remove('show-all-cols');
+    const tcb = document.getElementById('toggleColsBtn');
+    if (tcb) { tcb.innerHTML = '<i class="fas fa-columns"></i> All Cols'; tcb.style.opacity = '1'; }
     fetchApiPage(device.pk, 1, ++fetchToken);
   }
 
@@ -699,7 +739,9 @@
     setApiPagination(page, 1, 0);
 
     try {
-      const res = await fetch(`${apiUrl}/${id}/?page=${page}&per_page=${perPage}`);
+      const ff       = document.getElementById('farmerFilter');
+      const fParam   = ff && ff.value ? `&farmer_id=${ff.value}` : '';
+      const res = await fetch(`${apiUrl}/${id}/?page=${page}&per_page=${perPage}${fParam}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       if (token !== fetchToken) return;
 
@@ -712,11 +754,13 @@
       };
 
       if (!document.getElementById('api-details-headers').children.length) {
+        summarySet = new Set(deviseData.summary_keys || []);
         const headerRow = document.getElementById('api-details-headers');
-        for (const [, label] of Object.entries(deviseData.headers || {})) {
+        for (const [key, label] of Object.entries(deviseData.headers || {})) {
           const th = document.createElement('th');
           th.textContent = label;
           th.style.cssText = 'padding:10px 12px;font-weight:600;color:#444;white-space:nowrap;';
+          if (summarySet.size > 0 && !summarySet.has(key)) th.classList.add('col-secondary');
           headerRow.appendChild(th);
         }
         if (selected_devise.devise_type === 'soilsaathi') {
@@ -737,11 +781,12 @@
           row.style.cursor = 'pointer';
           let html = '';
           for (const key of Object.keys(deviseData.headers || {})) {
+            const sec = summarySet.size > 0 && !summarySet.has(key) ? ' col-secondary' : '';
             const val = api[key];
             if (key === 'image_path') {
-              html += `<td style="padding:8px 12px;">${val ? `<img src="${val}" class="small-img" />` : '—'}</td>`;
+              html += `<td class="${sec}" style="padding:8px 12px;">${val ? `<img src="${val}" class="small-img" />` : '—'}</td>`;
             } else {
-              html += `<td style="padding:8px 12px;">${val !== null && val !== undefined ? val : '—'}</td>`;
+              html += `<td class="${sec}" style="padding:8px 12px;">${val !== null && val !== undefined ? val : '—'}</td>`;
             }
           }
           const eyeHref = selected_devise.devise_type === 'soilsaathi'
@@ -772,6 +817,22 @@
     }
   }
 
+  function toggleAllCols() {
+    showAllCols = !showAllCols;
+    document.querySelector('#api-details-container table').classList.toggle('show-all-cols', showAllCols);
+    const btn = document.getElementById('toggleColsBtn');
+    if (btn) btn.innerHTML = showAllCols
+      ? '<i class="fas fa-compress-alt"></i> Summary'
+      : '<i class="fas fa-columns"></i> All Cols';
+  }
+
+  function udFarmerFilterChanged() {
+    if (devise_id) {
+      document.getElementById('api-details-headers').innerHTML = '';
+      fetchApiPage(devise_id, 1, ++fetchToken);
+    }
+  }
+
   function setApiPagination(page, totalPages, totalRecords) {
     document.getElementById('api-page-info').textContent     = totalRecords > 0 ? `Page ${page} of ${totalPages}` : '';
     document.getElementById('api-total-records').textContent = totalRecords > 0 ? `${totalRecords} record${totalRecords !== 1 ? 's' : ''}` : '';
@@ -787,6 +848,25 @@
       if (apiState.page < apiState.totalPages && devise_id) fetchApiPage(devise_id, apiState.page + 1, ++fetchToken);
     });
   });
+
+  function confirmAutoLink(typeKey, typeName) {
+    if (!confirm(`Are you sure you want to link a ${typeName} device to this user?\n\nThis will automatically create a ${typeName} device linked to this account.`)) return;
+    const fd = new URLSearchParams({ devise_type: typeKey });
+    fetch('/auto-link-devise/{{ user.username }}/', {
+      method : 'POST',
+      headers: { 'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/x-www-form-urlencoded' },
+      body   : fd,
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert(data.error || 'Could not link device.');
+      }
+    })
+    .catch(() => alert('Something went wrong. Please try again.'));
+  }
 
   function deleteDevise(pk, el) {
     if (!confirm('Delete this device? This cannot be undone.\n\nNote: devices with API call records cannot be deleted.')) return;
@@ -929,7 +1009,7 @@
           </div>
           <div>
             <label class="ue-label">User Type</label>
-            <select class="ue-input" name="user_type">
+            <select class="ue-input" name="user_type" id="ueUserType" onchange="ueToggleSpFields(this.value)">
               <option value="current_user" {% if profile.user_type == 'current_user' %}selected{% endif %}>Current User</option>
               <option value="soil_partner" {% if profile.user_type == 'soil_partner' %}selected{% endif %}>Soil Partner</option>
             </select>
@@ -941,20 +1021,21 @@
               <option value="0" {% if not profile.status %}selected{% endif %}>Inactive</option>
             </select>
           </div>
-          {% if profile.user_type == 'soil_partner' %}
-          <div>
-            <label class="ue-label">State</label>
-            <input class="ue-input" name="state" value="{{ profile.state }}">
+          <!-- SP location fields — always in DOM; display:contents makes wrapper transparent to CSS grid -->
+          <div id="ueSpFields" style="display:{% if profile.user_type == 'soil_partner' %}contents{% else %}none{% endif %};">
+            <div>
+              <label class="ue-label">State</label>
+              <input class="ue-input" name="state" value="{{ profile.state }}">
+            </div>
+            <div>
+              <label class="ue-label">District</label>
+              <input class="ue-input" name="district" value="{{ profile.district }}">
+            </div>
+            <div class="ue-full">
+              <label class="ue-label">City / Village</label>
+              <input class="ue-input" name="city_village" value="{{ profile.city_village }}">
+            </div>
           </div>
-          <div>
-            <label class="ue-label">District</label>
-            <input class="ue-input" name="district" value="{{ profile.district }}">
-          </div>
-          <div class="ue-full">
-            <label class="ue-label">City / Village</label>
-            <input class="ue-input" name="city_village" value="{{ profile.city_village }}">
-          </div>
-          {% endif %}
           <div>
             <label class="ue-label">Amount Paid (₹)</label>
             <input class="ue-input" type="number" step="0.01" name="amount_paid" value="{{ profile.amount_paid }}">
@@ -979,6 +1060,9 @@
 <script>
   function openUserEdit()  { document.getElementById('userEditOverlay').classList.add('open'); document.body.style.overflow='hidden'; }
   function closeUserEdit() { document.getElementById('userEditOverlay').classList.remove('open'); document.body.style.overflow=''; }
+  function ueToggleSpFields(val) {
+    document.getElementById('ueSpFields').style.display = val === 'soil_partner' ? 'contents' : 'none';
+  }
 
   function openAddPayment()  { const o=document.getElementById('addPayOverlay'); o.style.display='flex'; document.body.style.overflow='hidden'; }
   function closeAddPayment() { const o=document.getElementById('addPayOverlay'); o.style.display='none'; document.body.style.overflow=''; }

@@ -280,24 +280,41 @@
         <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
           {% for dtype, info in api_readings.items %}
           {% if info.count %}
-          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:#f8f9fb;border:1px solid #eef0f4;">
-            <div style="width:38px;height:38px;border-radius:9px;background:{{ info.color }}18;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <i class="fas {{ info.icon }}" style="color:{{ info.color }};font-size:15px;"></i>
-            </div>
-            <div style="flex:1;">
-              <div style="font-weight:700;font-size:13px;color:#222;">{{ info.label }}</div>
-              <div style="font-size:11px;color:#888;margin-top:2px;">
-                {% for d in info.devices %}
-                  <span style="background:#e8ecf7;color:#1a2f6b;border-radius:6px;padding:1px 7px;margin-right:4px;font-size:11px;">
+          <div style="border-radius:10px;border:1px solid #eef0f4;overflow:hidden;">
+            {% for d in info.devices %}
+            <div class="fd-device-row"
+                 data-farmer="{{ farmer.pk }}"
+                 data-device="{{ d.device__id }}"
+                 data-label="{{ info.label }} — {{ d.device__name|default:d.device__devise_id }}"
+                 onclick="fdToggleDevice(this)"
+                 style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#f8f9fb;cursor:pointer;user-select:none;{% if not forloop.first %}border-top:1px solid #eef0f4;{% endif %}">
+              <div style="width:38px;height:38px;border-radius:9px;background:{{ info.color }}18;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas {{ info.icon }}" style="color:{{ info.color }};font-size:15px;"></i>
+              </div>
+              <div style="flex:1;">
+                <div style="font-weight:700;font-size:13px;color:#222;">{{ info.label }}</div>
+                <div style="font-size:11px;color:#888;margin-top:2px;">
+                  <span style="background:#e8ecf7;color:#1a2f6b;border-radius:6px;padding:1px 7px;font-size:11px;">
                     <i class="fas fa-microchip" style="font-size:9px;"></i> {{ d.device__name|default:d.device__devise_id }}
                   </span>
-                {% endfor %}
+                </div>
+              </div>
+              <div style="text-align:right;flex-shrink:0;margin-right:8px;">
+                <div style="font-size:22px;font-weight:800;color:{{ info.color }};line-height:1;">{{ d.count }}</div>
+                <div style="font-size:10px;color:#aaa;">API calls</div>
+              </div>
+              <i class="fas fa-chevron-down fd-chevron" style="color:#aaa;font-size:11px;transition:transform .2s;"></i>
+            </div>
+            <!-- Expandable readings panel for this device -->
+            <div class="fd-readings-panel" style="display:none;border-top:1px solid #eef0f4;background:#fff;">
+              <div class="fd-readings-body" style="padding:12px 14px;">
+                <div class="fd-readings-loading" style="text-align:center;padding:24px;color:#aaa;font-size:13px;">
+                  <div style="display:inline-block;width:16px;height:16px;border:3px solid #ddd;border-top-color:{{ info.color }};border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;"></div>
+                  <span style="margin-left:8px;">Loading…</span>
+                </div>
               </div>
             </div>
-            <div style="text-align:right;flex-shrink:0;">
-              <div style="font-size:22px;font-weight:800;color:{{ info.color }};line-height:1;">{{ info.count }}</div>
-              <div style="font-size:10px;color:#aaa;">API calls</div>
-            </div>
+            {% endfor %}
           </div>
           {% endif %}
           {% empty %}
@@ -547,6 +564,87 @@
         setTimeout(() => { closeEdit(); location.reload(); }, 1200);
       } else { msg.textContent = d.error || 'Save failed.'; msg.style.color = '#dc3545'; }
     }).catch(() => { msg.textContent = 'Something went wrong.'; msg.style.color = '#dc3545'; });
+  }
+
+  // ── Expandable device readings ──────────────────────────────────────────────
+  const _fdLoaded = new Set();
+
+  function fdToggleDevice(row) {
+    const panel   = row.nextElementSibling;
+    const chevron = row.querySelector('.fd-chevron');
+    const isOpen  = panel.style.display !== 'none';
+    if (isOpen) {
+      panel.style.display = 'none';
+      chevron.style.transform = '';
+      return;
+    }
+    panel.style.display = 'block';
+    chevron.style.transform = 'rotate(180deg)';
+
+    const key = row.dataset.farmer + '-' + row.dataset.device;
+    if (_fdLoaded.has(key)) return;
+    _fdLoaded.add(key);
+
+    const farmerId = row.dataset.farmer;
+    const deviceId = row.dataset.device;
+    const label    = row.dataset.label;
+    const body     = panel.querySelector('.fd-readings-body');
+
+    fdFetchPage(farmerId, deviceId, 1, body, label);
+  }
+
+  async function fdFetchPage(farmerId, deviceId, page, body, label) {
+    body.innerHTML = `<div style="text-align:center;padding:24px;color:#aaa;font-size:13px;">
+      <div style="display:inline-block;width:16px;height:16px;border:3px solid #ddd;border-top-color:#1a73e8;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;"></div>
+      <span style="margin-left:8px;">Loading…</span></div>`;
+
+    try {
+      const res  = await fetch(`/farmer/${farmerId}/device-readings/${deviceId}/?page=${page}&per_page=50`);
+      const data = await res.json();
+      if (!res.ok) { body.innerHTML = `<p style="color:#dc3545;padding:12px;">${data.error || 'Error loading data.'}</p>`; return; }
+
+      const headers = data.headers    || {};
+      const rows    = data.data       || [];
+      const pg      = data.pagination || {};
+
+      if (!rows.length) {
+        body.innerHTML = `<p style="color:#aaa;text-align:center;padding:16px;font-size:13px;">No readings found.</p>`;
+        return;
+      }
+
+      const keys = Object.keys(headers);
+      let html = `<div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead><tr style="background:#f3f4f6;">`;
+      keys.forEach(k => { html += `<th style="padding:7px 10px;text-align:left;font-weight:600;color:#555;white-space:nowrap;border-bottom:1px solid #e5e7eb;">${headers[k]}</th>`; });
+      html += `</tr></thead><tbody>`;
+
+      rows.forEach(r => {
+        html += `<tr style="border-bottom:1px solid #f3f4f6;">`;
+        keys.forEach(k => {
+          const v = r[k];
+          html += `<td style="padding:6px 10px;color:#333;">${v !== null && v !== undefined ? v : '—'}</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody></table></div>`;
+
+      if (pg.total_pages > 1) {
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:12px;color:#666;">
+          <span>${pg.total_records} records</span>
+          <div style="display:flex;gap:6px;">`;
+        if (pg.current_page > 1)
+          html += `<button onclick="fdFetchPage('${farmerId}','${deviceId}',${pg.current_page-1},this.closest('.fd-readings-body'),'${label}')" style="border:1px solid #ddd;background:#fff;border-radius:5px;padding:3px 10px;cursor:pointer;">‹ Prev</button>`;
+        html += `<span style="padding:3px 10px;border:1px solid #e5e7eb;border-radius:5px;background:#f8f9fb;">${pg.current_page} / ${pg.total_pages}</span>`;
+        if (pg.current_page < pg.total_pages)
+          html += `<button onclick="fdFetchPage('${farmerId}','${deviceId}',${pg.current_page+1},this.closest('.fd-readings-body'),'${label}')" style="border:1px solid #ddd;background:#fff;border-radius:5px;padding:3px 10px;cursor:pointer;">Next ›</button>`;
+        html += `</div></div>`;
+      }
+
+      body.innerHTML = html;
+    } catch(e) {
+      body.innerHTML = `<p style="color:#dc3545;padding:12px;">Failed to load readings.</p>`;
+    }
   }
 </script>
 {% endblock %}

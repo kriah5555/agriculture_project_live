@@ -143,19 +143,19 @@ class ContactDetails(models.Model):
     status     = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.name
+        return f"Contact: {self.name} | {self.mail or self.phone}"
 
 class Devise(models.Model):
     name           = models.CharField(max_length=255)
-    serial_no      = models.CharField(max_length=255, unique=True)
-    devise_id      = models.CharField(max_length=255, unique=True) #devise id or user name
-    chipset_no     = models.CharField(max_length=255, unique=True)
-    email          = models.EmailField()
-    phone          = models.CharField(max_length=255)
-    address1       = models.CharField(max_length=255)
-    address2       = models.CharField(max_length=255)
-    purchase_date  = models.DateField()
-    time_of_sale   = models.TimeField()
+    serial_no      = models.CharField(max_length=255, unique=True, blank=True, null=True, default=None)
+    devise_id      = models.CharField(max_length=255, unique=True, blank=True, null=True, default=None) #devise id or user name
+    chipset_no     = models.CharField(max_length=255, unique=True, blank=True, null=True, default=None)
+    email          = models.EmailField(blank=True, default='')
+    phone          = models.CharField(max_length=255, blank=True, default='')
+    address1       = models.CharField(max_length=255, blank=True, default='')
+    address2       = models.CharField(max_length=255, blank=True, default='')
+    purchase_date  = models.DateField(blank=True, null=True)
+    time_of_sale   = models.TimeField(blank=True, null=True)
     warrenty       = models.DateField()
     amount_paid    = models.FloatField()
     balance_amount = models.FloatField(default=0)
@@ -165,7 +165,10 @@ class Devise(models.Model):
     user           = models.ForeignKey(User, on_delete=models.CASCADE, related_name='devices', null=True, blank=True)
 
     def __str__(self):
-        return self.name + ' ' + self.devise_id
+        type_label  = DEVICE_NAMES.get(self.devise_type, self.devise_type)
+        owner       = self.user.username if self.user_id else 'no-user'
+        identifier  = self.devise_id or self.serial_no or f'pk:{self.pk}'
+        return f"[{type_label}] {self.name or 'Unnamed'} ({identifier}) — {owner}"
 
 class DeviseApis(models.Model):
     device                = models.ForeignKey(to='Devise', on_delete=models.CASCADE)
@@ -202,7 +205,15 @@ class DeviseApis(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.device.devise_type}-{self.device.user.username}-{self.device.name}"
+        if not self.device_id:
+            return f"SoiLENZ reading #{self.pk or 'new'}"
+        type_label  = DEVICE_NAMES.get(self.device.devise_type, self.device.devise_type)
+        owner       = self.device.user.username if self.device.user_id else 'no-user'
+        date_str    = self.created_at.strftime('%d %b %Y %H:%M') if self.created_at else 'new'
+        farmer_str  = f' | farmer:{self.farmer.farmer_name}' if self.farmer_id else ''
+        return (f"[{type_label}] {self.device.name} / {owner}"
+                f" — pH:{self.ph} EC:{self.ec} OC:{self.oc}"
+                f"{farmer_str} | #{self.pk} {date_str}")
 
 class DeviseApisFields(models.Model):
     device     = models.ForeignKey(to='Devise', on_delete=models.CASCADE)
@@ -237,7 +248,15 @@ class DeviseApisFields(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.device.devise_type}-{self.device.user.username}-{self.device.name}"
+        if not self.device_id:
+            return f"Sensor reading #{self.pk or 'new'}"
+        type_label = DEVICE_NAMES.get(self.device.devise_type, self.device.devise_type)
+        owner      = self.device.user.username if self.device.user_id else 'no-user'
+        date_str   = self.created_at.strftime('%d %b %Y %H:%M') if self.created_at else 'new'
+        tag_str    = f' [{self.tag}]' if self.tag else ''
+        farmer_str = f' | farmer:{self.farmer.farmer_name}' if self.farmer_id else ''
+        return (f"[{type_label}] {self.device.name} / {owner}"
+                f"{tag_str}{farmer_str} | #{self.pk} {date_str}")
 
 class DeviseLocation(models.Model):
     devise     = models.ForeignKey(to='Devise', on_delete=models.CASCADE, unique=True)
@@ -247,7 +266,8 @@ class DeviseLocation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.devise.name
+        device_str = str(self.devise) if self.devise_id else 'Unknown device'
+        return f"Location: {device_str} @ ({self.latitude:.4f}, {self.longitude:.4f})"
 
 class APICountThreshold(models.Model):
     devise = models.ForeignKey(to='Devise', on_delete=models.CASCADE, unique=True)
@@ -257,7 +277,8 @@ class APICountThreshold(models.Model):
     green  = models.IntegerField(default=20)
 
     def __str__(self):
-        return self.devise.name
+        device_str = str(self.devise) if self.devise_id else 'Unknown device'
+        return f"Threshold [{device_str}]: Red={self.red} Orange={self.orange} Blue={self.blue} Green={self.green}"
 
 
 class UserRequest(models.Model):
@@ -307,10 +328,17 @@ class UserRequest(models.Model):
 class ColumnName(models.Model):
     field_name = models.CharField(max_length = 255, unique=True)
 
+    def __str__(self):
+        return f"Column: {self.field_name}"
+
 class ColumnData(models.Model):
     field       = models.ForeignKey(to = 'ColumnName', on_delete = models.CASCADE)
     api         = models.ForeignKey(to = 'DeviseApis', on_delete = models.CASCADE, unique = True)
     field_value = models.FloatField(default = 0.0)
+
+    def __str__(self):
+        field_name = self.field.field_name if self.field_id else '?'
+        return f"ColumnData: {field_name} = {self.field_value} (reading #{self.api_id})"
 
 
 USER_TYPE_CHOICES = [
@@ -379,7 +407,8 @@ class Farmer(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return self.farmer_name
+        partner = self.soil_partner.username if self.soil_partner_id else 'no-partner'
+        return f"{self.farmer_name} ({self.village}, {self.district}) — SP: {partner} [{self.get_status_display()}]"
 
     def badge_class(self):
         return FARMER_STATUS_BADGE.get(self.status, 'secondary')
