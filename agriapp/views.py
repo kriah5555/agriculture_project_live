@@ -1262,6 +1262,9 @@ class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
                               for f in Farmer.objects.filter(pk__in=farmer_ids).only('id', 'farmer_name')}
             for item in api_calls_data:
                 item['farmer_name'] = farmer_map.get(item.get('farmer_id')) or '—'
+                # ✅ Build full URL for image_path
+                if item.get('image_path'):
+                    item['image_path'] = request.build_absolute_uri(item['image_path'])
 
         except Devise.DoesNotExist:
             return JsonResponse({'error': 'Devise not found'}, status=404)

@@ -162,6 +162,7 @@ FIELD_LABELS = {
 
 class FieldsReadingSerializer(serializers.ModelSerializer):
     labeled_fields = serializers.SerializerMethodField()
+    image_path     = serializers.SerializerMethodField()
 
     class Meta:
         model  = DeviseApisFields
@@ -172,7 +173,15 @@ class FieldsReadingSerializer(serializers.ModelSerializer):
             'field6', 'field7', 'field8',
             'labeled_fields', 'created_at',
         ]
-        read_only_fields = ['id', 'farmer_id', 'created_at', 'labeled_fields']
+        read_only_fields = ['id', 'farmer_id', 'created_at', 'labeled_fields', 'image_path']
+
+    def get_image_path(self, obj):
+        if not obj.image_path:
+            return None
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.image_path)
+        return obj.image_path
 
     def get_labeled_fields(self, obj):
         labels = FIELD_LABELS.get(obj.device.devise_type, {})

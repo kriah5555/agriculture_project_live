@@ -567,8 +567,9 @@ def farmer_api_calls(request, pk):
         offset = (pg - 1) * per_pg
         rows   = []
         for r in qs[offset:offset + per_pg]:
+            img = request.build_absolute_uri(r.image_path) if r.image_path else None
             row = {'id': r.pk, 'created_at': _fmt_dt(r.created_at),
-                   'tag': r.tag, 'crop_type': r.crop_type,
+                   'tag': r.tag, 'crop_type': r.crop_type, 'image_path': img,
                    'latitude': r.latitude, 'longitude': r.longitude}
             for fk in field_keys:
                 row[fk] = getattr(r, fk, None)
@@ -685,6 +686,9 @@ def farmer_device_readings(request, pk, device_id):
             item['created_at'] = utc_dt.astimezone(btz).strftime('%Y-%m-%d %H:%M:%S')
         item.pop('farmer_id', None)
         item.pop('device_id', None)
+        # Build full URL for image_path
+        if item.get('image_path'):
+            item['image_path'] = request.build_absolute_uri(item['image_path'])
 
     return Response({
         'farmer_id'  : farmer.pk,
