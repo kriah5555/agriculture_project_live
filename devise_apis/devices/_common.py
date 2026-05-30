@@ -117,7 +117,8 @@ def fields_list_view(request, device_id):
     qs        = DeviseApisFields.objects.filter(device=device).order_by('-created_at')
     paginator = DevicePagination()
     page      = paginator.paginate_queryset(qs, request)
-    return paginator.get_paginated_response(FieldsReadingSerializer(page, many=True).data)
+    ctx = {'request': request}
+    return paginator.get_paginated_response(FieldsReadingSerializer(page, many=True, context=ctx).data)
 
 
 def fields_create_view(request, device_id):
@@ -135,11 +136,11 @@ def fields_create_view(request, device_id):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     reading = serializer.save(device=device, farmer=farmer)
-    return Response(FieldsReadingSerializer(reading).data, status=status.HTTP_201_CREATED)
+    return Response(FieldsReadingSerializer(reading, context={'request': request}).data, status=status.HTTP_201_CREATED)
 
 
 def fields_detail_view(request, device_id, call_id):
     """Return one DeviseApisFields record."""
     device  = get_user_device(request, device_id)
     reading = get_object_or_404(DeviseApisFields, pk=call_id, device=device)
-    return Response(FieldsReadingSerializer(reading).data)
+    return Response(FieldsReadingSerializer(reading, context={'request': request}).data)
