@@ -155,6 +155,10 @@ from django.shortcuts import render, redirect
 from django.contrib import auth
 
 def login(request):
+    # Already logged in — skip the form and go straight to the right page
+    if request.user.is_authenticated:
+        return redirect('/dashboard/' if 'admin-login' in request.path else '/user-page/')
+
     template_mapping = {
         'user-login': 'authapp/login.html',
         'admin-login': 'authapp/login1.html'

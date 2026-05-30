@@ -480,10 +480,23 @@ def farmer_update_status(request, pk):
 
 @extend_schema(
     tags=['Farmers'],
-    summary='Get farmer API call summary',
-    description='Returns a per-device summary (device name + API call count) for all readings linked to this farmer.',
+    summary='Get farmer API call summary with readings list',
+    description=(
+        'Returns a per-device summary (count + list of readings) for all API calls linked to this farmer.\n\n'
+        '**Query params:**\n'
+        '- `per_device` — max readings to include per device (default 20, max 100). Pass `0` to get counts only (no readings list).\n'
+        '- `page` — page number for the readings within each device (default 1).\n\n'
+        'Each device entry includes:\n'
+        '- `api_count` — total readings for this farmer+device\n'
+        '- `readings` — array of the most recent readings (empty when `per_device=0`)\n'
+        '- `readings_page` / `readings_total_pages` — pagination info'
+    ),
+    parameters=[
+        OpenApiParameter('per_device', OpenApiTypes.INT, description='Readings per device (default 20, max 100; 0 = counts only)'),
+        OpenApiParameter('page',       OpenApiTypes.INT, description='Page number for readings (default 1)'),
+    ],
     responses={
-        200: OpenApiResponse(description='API call summary per device'),
+        200: OpenApiResponse(description='API call summary with readings per device'),
         403: OpenApiResponse(description='Permission denied'),
         404: OpenApiResponse(description='Farmer not found'),
     },
@@ -495,14 +508,31 @@ def farmer_api_calls(request, pk):
         return Response({'detail': 'Permission denied.'}, status=403)
     farmer = get_object_or_404(_farmer_qs(request.user), pk=pk)
 
-    from django.db.models import Count as _Count
+    per_device = min(int(request.query_params.get('per_device', 20)), 100)
+    page       = max(1, int(request.query_params.get('page', 1)))
 
+    from django.db.models import Count as _Count
+    import pytz
+    from django.utils import timezone as _tz
+
+    bangalore_tz = pytz.timezone('Asia/Kolkata')
+
+    def _fmt_dt(dt):
+        if not dt:
+            return None
+        if _tz.is_naive(dt):
+            dt = _tz.make_aware(dt, pytz.UTC)
+        return dt.astimezone(bangalore_tz).strftime('%Y-%m-%d %H:%M:%S')
+
+    # ── SoiLENZ (soilsaathi) ──────────────────────────────────────────────────
     ss_summary = list(
         DeviseApis.objects.filter(farmer=farmer)
         .values('device__id', 'device__name', 'device__devise_id')
         .annotate(count=_Count('id'))
         .order_by('device__id')
     )
+
+    # ── Sensor devices (atmo_sense, soil_life, ph_bottle) ─────────────────────
     sensor_summary = list(
         DeviseApisFields.objects.filter(farmer=farmer)
         .values('device__id', 'device__name', 'device__devise_id', 'device__devise_type')
@@ -510,28 +540,83 @@ def farmer_api_calls(request, pk):
         .order_by('device__id')
     )
 
+    def _ss_readings(device_id, per_pg, pg):
+        qs     = DeviseApis.objects.filter(farmer=farmer, device_id=device_id).order_by('-created_at')
+        total  = qs.count()
+        offset = (pg - 1) * per_pg
+        rows   = []
+        for r in qs[offset:offset + per_pg]:
+            rows.append({
+                'id': r.pk, 'created_at': _fmt_dt(r.created_at),
+                'area_name': r.area_name, 'tag': r.tag, 'crop_type': r.crop_type,
+                'ph': r.ph, 'ec': r.ec, 'oc': r.oc,
+                'nitrogen': r.nitrogen, 'phosphorous': r.phosphorous, 'potassium': r.potassium,
+                'calcium': r.calcium, 'magnesium': r.magnesium, 'sulphur': r.sulphur,
+                'zinc': r.zinc, 'manganese': r.manganese, 'iron': r.iron,
+                'copper': r.copper, 'boron': r.boron,
+                'latitude': r.latitude, 'longitude': r.longitude,
+            })
+        return rows, total
+
+    def _sensor_readings(device_id, device_type, per_pg, pg):
+        from agriapp.models import ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS
+        headers_map = {'atmo_sense': ATMO_SENSE_FIELDS, 'soil_life': SOIL_LIFE_FIELDS, 'ph_bottle': PH_BOTTLE_FIELDS}
+        field_keys  = [k for k in headers_map.get(device_type, {}) if k.startswith('field')]
+        qs     = DeviseApisFields.objects.filter(farmer=farmer, device_id=device_id).order_by('-created_at')
+        total  = qs.count()
+        offset = (pg - 1) * per_pg
+        rows   = []
+        for r in qs[offset:offset + per_pg]:
+            row = {'id': r.pk, 'created_at': _fmt_dt(r.created_at),
+                   'tag': r.tag, 'crop_type': r.crop_type,
+                   'latitude': r.latitude, 'longitude': r.longitude}
+            for fk in field_keys:
+                row[fk] = getattr(r, fk, None)
+            rows.append(row)
+        return rows, total
+
     device_summary = []
+
     for r in ss_summary:
-        device_summary.append({
+        entry = {
             'device_id'  : r['device__id'],
             'device_name': r['device__name'] or r['device__devise_id'],
             'device_type': 'soilsaathi',
             'api_count'  : r['count'],
-        })
+        }
+        if per_device > 0:
+            rows, total = _ss_readings(r['device__id'], per_device, page)
+            entry['readings']            = rows
+            entry['readings_page']       = page
+            entry['readings_total_pages'] = max(1, -(-total // per_device))
+        else:
+            entry['readings'] = []
+        device_summary.append(entry)
+
     for r in sensor_summary:
-        device_summary.append({
+        entry = {
             'device_id'  : r['device__id'],
             'device_name': r['device__name'] or r['device__devise_id'],
             'device_type': r['device__devise_type'],
             'api_count'  : r['count'],
-        })
+        }
+        if per_device > 0:
+            rows, total = _sensor_readings(r['device__id'], r['device__devise_type'], per_device, page)
+            entry['readings']            = rows
+            entry['readings_page']       = page
+            entry['readings_total_pages'] = max(1, -(-total // per_device))
+        else:
+            entry['readings'] = []
+        device_summary.append(entry)
 
-    total = sum(d['api_count'] for d in device_summary)
+    total_calls = sum(d['api_count'] for d in device_summary)
 
     return Response({
         'farmer_id'      : farmer.pk,
         'farmer_name'    : farmer.farmer_name,
-        'total_api_calls': total,
+        'total_api_calls': total_calls,
+        'per_device'     : per_device,
+        'page'           : page,
         'devices'        : device_summary,
     })
 

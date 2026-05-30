@@ -24,7 +24,27 @@ git clone <repository-url>
 cd agriculture_project_live
 ```
 
-### 2. Install Dependencies
+### 2. Install System-Level Packages (Ubuntu / Debian)
+
+Several Python packages in `requirements.txt` need OS-level libraries. Run this **before** `pip install`:
+
+```bash
+# PostgreSQL client (required by psycopg2)
+sudo apt-get install -y libpq-dev python3-dev
+
+# WeasyPrint — HTML-to-PDF renderer (required for SoiLENZ report PDF download)
+sudo apt-get install -y \
+    libpango-1.0-0 libpangoft2-1.0-0 libpangocairo-1.0-0 \
+    libcairo2 libgdk-pixbuf2.0-0 libharfbuzz-subset0 \
+    libffi-dev python3-cffi python3-brotli
+
+# On macOS (Homebrew):
+# brew install pango cairo gdk-pixbuf libffi
+```
+
+> **Note:** If WeasyPrint is installed but the above system libraries are missing, PDF downloads via `/soil-report-pdf/` will fail at request time with a shared-library error. The rest of the application is unaffected.
+
+### 3. Install Python Dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -212,6 +232,55 @@ Available at:
 | Group | Purpose |
 |-------|---------|
 | `deviseowner` | Regular users who own devices. Listed on the `/users/` admin page. Created automatically by migration `0011`. |
+
+> **Manual fallback:** If the `deviseowner` group is missing, create it via Django shell:
+> ```bash
+> python manage.py shell -c "from django.contrib.auth.models import Group; Group.objects.get_or_create(name='deviseowner')"
+> ```
+
+---
+
+## ML Models Setup (Required for AI/PDF Features)
+
+Several features depend on trained ML model files that are **not committed to the repository** (too large for git):
+
+- Crop recommendation (`/crop-recommendation-dashboard/`, mobile AI endpoint)
+- SoiLENZ 6-page PDF report (soil health score, fertility classification, heatmap values)
+
+**Steps to set up:**
+
+1. Obtain the trained models archive: **`models.zip`** (ask the team / download from shared storage)
+2. Unzip into the models folder:
+   ```bash
+   unzip models.zip -d soilmap/models/
+   ```
+   The folder should contain files like: `lgbm_ph.pkl`, `lgbm_n.pkl`, `rf_fertility.pkl`, `best_hyperparams.json`, etc.
+3. Also set up the AI crop predictor model inside `predicter/ai_model/`:
+   ```bash
+   # Place the trained model file at:
+   predicter/ai_model/<model_file>
+   # (check predicter/ai_model/model.py for the expected filename)
+   ```
+
+> **If models are missing:** The application still works — API readings, device management, farmer flows, and web dashboard all function normally. Only the AI crop prediction and the ML-enriched PDF report fall back to default values.
+
+---
+
+## Open (No-Auth) Legacy API Examples
+
+These endpoints do not require authentication:
+
+**Add soil reading:**
+```
+GET /api/add_data/?area_name=test&devise_id=007&serial_no=007
+    &nitrogen=21.0&phosphorous=50.0&potassium=27.9
+    &ph=6.5&ec=1.2&organic_carboa=0.8&crop_type=wheat&device=1
+```
+
+**Add device location:**
+```
+GET /api/add_location_data/?devise_id=007&latitude=19.912&longitude=79.740
+```
 
 ---
 
