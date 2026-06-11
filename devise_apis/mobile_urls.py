@@ -59,6 +59,21 @@ Account       (requires auth)                      (mobile_api.py / auth_api.py)
   POST  /api/mobile/account/change-password-request/  Notify admin of password change
   GET   /api/mobile/account/payment-history/       My payment records (soil partner only)
 
+Soil Map      (requires auth)                      (soilmap/views.py + services/views.py)
+  POST  /api/mobile/soil-map/predict/              AI soil prediction for a lat/lon point or drawn polygon
+                                                   Body: { lat, lon }  OR  { polygon: [[lat,lon], ...] }
+                                                   Returns: fertility, soil chemistry (pH EC N P K OC S Fe Zn Cu B Mn),
+                                                            env factors (NDVI temp rainfall elevation), coordinates
+  POST  /api/mobile/soil-map/climate-zone/         Agroclimatic zone for a location
+                                                   Body: { lat, lon }  OR  { temp, rainfall, elevation }
+                                                   Returns: zone name, zone id, color, description, soil_types,
+                                                            ndvi_range, growing_tips, location, climate inputs
+  GET   /api/mobile/soil-map/location-search/      Location autocomplete (Nominatim)
+                                                   Query: ?q=<search text>
+                                                   Returns: [{ name, lat, lon, type }]
+  GET   /api/mobile/soil-map/devices/<id>/readings/         All sensor readings for a soil-map device
+  GET   /api/mobile/soil-map/devices/<id>/readings/export/  Download readings as CSV
+
 """
 from django.urls import path
 from . import mobile_api as m
@@ -68,6 +83,8 @@ from .devices import atmo_sense as atmo
 from .devices import soil_life  as sl
 from .devices import ph_bottle  as pb
 from agriapp import farmer_api as fa
+from soilmap  import views     as sm
+from agriapp  import views     as svc
 
 urlpatterns = [
     # ── Auth ──────────────────────────────────────────────────────────────────
@@ -136,4 +153,11 @@ urlpatterns = [
     path('farmers/<int:pk>/device-readings/<int:device_id>/', fa.farmer_device_readings, name='mobile_farmer_device_readings'),
     path('farmers/<int:pk>/image/',           fa.farmer_update_image,  name='mobile_farmer_image'),
     path('farmers/<int:pk>/image/delete/',    fa.farmer_delete_image,  name='mobile_farmer_image_delete'),
+
+    # ── Soil Map ──────────────────────────────────────────────────────────────
+    path('soil-map/predict/',                                    sm.predict_soil,          name='mobile_sm_predict'),
+    path('soil-map/climate-zone/',                               sm.classify_climate_zone, name='mobile_sm_climate_zone'),
+    path('soil-map/location-search/',                            svc.location_search,      name='mobile_sm_location_search'),
+    path('soil-map/devices/<int:device_id>/readings/',           sm.list_soil_data,        name='mobile_sm_readings'),
+    path('soil-map/devices/<int:device_id>/readings/export/',    sm.export_soil_data_csv,  name='mobile_sm_readings_export'),
 ]

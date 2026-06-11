@@ -9,10 +9,8 @@ db.sqlite3
 env
 /media
 
-# SoilMap ML — large model binaries (keep local, do not commit)
-soilmap/models/*.pkl
-soilmap/models/*.png
-soilmap/models/*.zip
-
-# SoilMap ML pipeline cache
-soilmap/ml_pipeline/__pycache__/
+# agri_ai ML — large model binaries (keep local, do not commit)
+agri_ai/soil/models/*.pkl
+agri_ai/soil/models/*.png
+agri_ai/soil/*.zip
+# agri_ai/crop/models/*.pkl

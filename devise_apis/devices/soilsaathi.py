@@ -197,7 +197,7 @@ def soilsaathi_recommendations(request, device_id):
 @permission_classes([IsAuthenticated])
 def soilsaathi_ai_recommendation(request, device_id):
     """ML-based crop recommendation using N, P, K, pH values from a reading."""
-    from predicter.ai_model.model import run_model
+    from agri_ai.crop import run_model
 
     device  = get_user_device(request, device_id)
     call_id = request.query_params.get('call_id')
@@ -209,14 +209,27 @@ def soilsaathi_ai_recommendation(request, device_id):
         if not reading:
             return Response({'detail': 'No readings found for this device.'}, status=status.HTTP_404_NOT_FOUND)
 
+    # Fetch real climate for device location — required for the model
+    from reports.views import _fetch_climate_for_recommendation
+    from agriapp.models import DeviseLocation
+    loc = DeviseLocation.objects.filter(devise=device).first()
+    if not (loc and loc.latitude and loc.longitude):
+        return Response(
+            {'detail': 'Device has no GPS location set. Cannot run crop recommendation.'},
+            status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        )
+    temperature, humidity, rainfall = _fetch_climate_for_recommendation(
+        float(loc.latitude), float(loc.longitude)
+    )
+
     soil_nutrients = {
         'N'          : [reading.nitrogen],
         'P'          : [reading.phosphorous],
         'K'          : [reading.potassium],
-        'temperature': [10],
-        'humidity'   : [10],
+        'temperature': [temperature],
+        'humidity'   : [humidity],
         'ph'         : [reading.ph],
-        'rainfall'   : [10],
+        'rainfall'   : [rainfall],
     }
     result = run_model(soil_nutrients)
 
@@ -266,7 +279,7 @@ def soilsaathi_recommendation_pdf(request, device_id, call_id):
     device  = get_user_device(request, device_id)
     reading = get_object_or_404(DeviseApis, pk=call_id, device=device)
 
-    from predicter.views import download_recommendation_pdf
+    from reports.views import download_recommendation_pdf
     request.GET = request.GET.copy()
     request.GET['api_id'] = str(call_id)
     return download_recommendation_pdf(request)

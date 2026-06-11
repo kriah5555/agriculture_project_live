@@ -18,41 +18,17 @@ from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from drf_spectacular.openapi import OpenApiTypes
 
 from agriapp.models import Devise, DeviseApisFields
+from agri_ai.zone import classify_zone as _classify_zone, classify_global_climate_zone, CLIMATE_ZONE_METADATA
 
 # ── ML pipeline setup ─────────────────────────────────────────────────────────
-_ML_DIR    = os.path.join(os.path.dirname(__file__), 'ml_pipeline')
-_MODEL_DIR = os.path.join(os.path.dirname(__file__), 'models')
+from agri_ai.soil     import load_models, predict_for_point, classify_fertility
+from agri_ai.features import get_weather, get_ndvi, get_elevation, get_soil_texture
 
-if _ML_DIR not in sys.path:
-    sys.path.insert(0, _ML_DIR)
-
-import weather as weather_mod
-import ndvi as ndvi_mod
-import add_elevation_to_dataset as elev_mod
-import add_soilgrids_to_dataset as texture_mod
-from map_utils import predict_for_point, dummy_predictions, classify_fertility, dummy_fertility
-
-REGRESSION_TARGETS = ["ph", "ec", "n", "p", "k", "organic_carbon", "s", "fe", "zn", "cu", "b", "mn"]
-lgbm_models = {}
-rf_model    = None
-
+lgbm_models, rf_model = {}, None
 try:
-    for t in REGRESSION_TARGETS:
-        p = os.path.join(_MODEL_DIR, f"lgbm_{t}.pkl")
-        if os.path.exists(p):
-            with open(p, "rb") as f:
-                lgbm_models[t] = pickle.load(f)
-    rf_path = os.path.join(_MODEL_DIR, "rf_fertility.pkl")
-    if os.path.exists(rf_path):
-        with open(rf_path, "rb") as f:
-            rf_model = pickle.load(f)
+    lgbm_models, rf_model = load_models()
 except Exception as e:
     print(f"[soilmap] model load warning: {e}")
-
-try:
-    elev_mod.init_gee()
-except Exception:
-    pass
 
 
 class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -107,7 +83,7 @@ def _avg(readings, attr):
         'Returns predicted soil chemistry (pH, EC, N, P, K, OC, S, Fe, Zn, Cu, B, Mn), '
         'environmental factors (NDVI, temperature, rainfall, elevation), '
         'and a fertility assessment (Low / Medium / High).\n\n'
-        'If no trained models are loaded, returns deterministic dummy values based on coordinates.'
+        'Requires trained LightGBM models to be present in agri_ai/soil/models/. Returns 503 if models are not loaded.'
     ),
     request={
         'application/json': {
@@ -157,26 +133,25 @@ def predict_soil(request):
         if lat == 0 and lon == 0:
             return Response({'error': 'Provide valid lat/lon or a polygon.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if lgbm_models:
-            preds, env_features = predict_for_point(
-                lat, lon, lgbm_models,
-                weather_mod.get_weather,
-                ndvi_mod.get_ndvi,
-                elev_mod.get_elevation,
-                texture_mod.get_soil_texture,
-            )
-            fertility = classify_fertility(preds, env_features, rf_model)
-        else:
-            preds, env_features = dummy_predictions(lat, lon)
-            fertility = dummy_fertility(lat, lon)
+        if not lgbm_models:
+            return Response({'error': 'Prediction models are not loaded on this server.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        preds, env_features = predict_for_point(
+            lat, lon, lgbm_models,
+            get_weather,
+            get_ndvi,
+            get_elevation,
+            get_soil_texture,
+        )
+        fertility = classify_fertility(preds, env_features, rf_model)
 
         response_data = {
-            'status':                  'success',
-            'coordinates':             {'lat': lat, 'lon': lon},
-            'environmental_factors':   env_features,
+            'status':                   'success',
+            'coordinates':              {'lat': lat, 'lon': lon},
+            'environmental_factors':    env_features,
             'predicted_soil_chemistry': preds,
-            'fertility_assessment':    fertility,
-            'prediction_type':         'plot_centroid' if is_plot else 'point',
+            'fertility_assessment':     fertility,
+            'prediction_type':          'plot_centroid' if is_plot else 'point',
         }
         if is_plot:
             response_data['plot_polygon'] = polygon
@@ -358,18 +333,17 @@ def generate_soil_report_pdf(request):
             return Response({'error': 'Provide valid lat and lon.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Run prediction
-        if lgbm_models:
-            preds, env_features = predict_for_point(
-                lat, lon, lgbm_models,
-                weather_mod.get_weather,
-                ndvi_mod.get_ndvi,
-                elev_mod.get_elevation,
-                texture_mod.get_soil_texture,
-            )
-            fertility = classify_fertility(preds, env_features, rf_model)
-        else:
-            preds, env_features = dummy_predictions(lat, lon)
-            fertility = dummy_fertility(lat, lon)
+        if not lgbm_models:
+            return Response({'error': 'Prediction models are not loaded on this server.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        preds, env_features = predict_for_point(
+            lat, lon, lgbm_models,
+            get_weather,
+            get_ndvi,
+            get_elevation,
+            get_soil_texture,
+        )
+        fertility = classify_fertility(preds, env_features, rf_model)
 
         metadata = {
             'farmer_name':   data.get('farmer_name', ''),
@@ -391,3 +365,193 @@ def generate_soil_report_pdf(request):
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ── Soil data list ────────────────────────────────────────────────────────────
+
+_SOIL_FIELDS = [
+    ('field1',  'pH'),
+    ('field2',  'EC (dS/m)'),
+    ('field3',  'Nitrogen (kg/ha)'),
+    ('field4',  'Phosphorus (kg/ha)'),
+    ('field5',  'Potassium (kg/ha)'),
+    ('field6',  'Organic Carbon (%)'),
+    ('field7',  'Sulfur (ppm)'),
+    ('field8',  'Iron/Fe (ppm)'),
+    ('field9',  'Zinc/Zn (ppm)'),
+    ('field10', 'Copper/Cu (ppm)'),
+    ('field11', 'Boron/B (ppm)'),
+    ('field12', 'Manganese/Mn (ppm)'),
+    ('field13', 'Sand (%)'),
+    ('field14', 'Clay (%)'),
+    ('field15', 'Silt (%)'),
+    ('field16', 'NDVI'),
+    ('field17', 'Temperature (°C)'),
+    ('field18', 'Rainfall (mm)'),
+    ('field19', 'Elevation (m)'),
+]
+
+
+def _record_to_dict(r):
+    row = {'id': r.pk, 'tag': r.tag or '', 'lat': r.latitude, 'lon': r.longitude,
+           'created_at': r.created_at.strftime('%d %b %Y %H:%M') if r.created_at else ''}
+    for field_key, _ in _SOIL_FIELDS:
+        row[field_key] = getattr(r, field_key, 0.0)
+    return row
+
+
+@extend_schema(
+    tags=['SoilMap'],
+    summary='List all soil data records for a device',
+    description=(
+        'Returns every DeviseApisFields record linked to the given SoilMap device. '
+        'Staff/superuser can access any device; regular users can only access their own. '
+        'Results include all 19 soil/env fields, lat/lon, tag and timestamp.'
+    ),
+    responses={
+        200: OpenApiResponse(description='Paginated list of soil records', response={
+            'type': 'object',
+            'properties': {
+                'device_id':   {'type': 'integer'},
+                'device_name': {'type': 'string'},
+                'total':       {'type': 'integer'},
+                'records': {
+                    'type': 'array',
+                    'items': {'type': 'object'},
+                },
+            },
+        }),
+        403: OpenApiResponse(description='Forbidden'),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_soil_data(request, device_id):
+    device = get_object_or_404(Devise, pk=device_id)
+    if not (request.user.is_staff or request.user.is_superuser or device.user == request.user):
+        return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
+    records = DeviseApisFields.objects.filter(device=device).order_by('-created_at')
+    return Response({
+        'device_id':   device.pk,
+        'device_name': device.name,
+        'total':       records.count(),
+        'fields':      [{'key': k, 'label': l} for k, l in _SOIL_FIELDS],
+        'records':     [_record_to_dict(r) for r in records],
+    })
+
+
+@extend_schema(
+    tags=['SoilMap'],
+    summary='Export soil data records as CSV',
+    description='Downloads all DeviseApisFields records for the given device as a .csv file.',
+    responses={200: OpenApiResponse(description='CSV file download (text/csv)')},
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def export_soil_data_csv(request, device_id):
+    import csv
+    device = get_object_or_404(Devise, pk=device_id)
+    if not (request.user.is_staff or request.user.is_superuser or device.user == request.user):
+        return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
+    records = DeviseApisFields.objects.filter(device=device).order_by('-created_at')
+
+    resp = HttpResponse(content_type='text/csv')
+    resp['Content-Disposition'] = f'attachment; filename="SoilData_{device.name}_{device.pk}.csv"'
+
+    headers = ['#', 'Tag', 'Latitude', 'Longitude', 'Created At'] + [l for _, l in _SOIL_FIELDS]
+    writer = csv.writer(resp)
+    writer.writerow(headers)
+    for r in records:
+        row = [r.pk, r.tag or '', r.latitude, r.longitude,
+               r.created_at.strftime('%d %b %Y %H:%M') if r.created_at else '']
+        row += [getattr(r, k, 0.0) for k, _ in _SOIL_FIELDS]
+        writer.writerow(row)
+
+    return resp
+
+# ── Climate Zone endpoint ─────────────────────────────────────────────────────
+
+@extend_schema(
+    tags=['SoilMap'],
+    summary='Classify Köppen-Geiger agroclimatic zone for a point',
+    description=(
+        'Given a lat/lon, fetches temperature, rainfall and elevation from satellite/weather APIs '
+        'and returns the matching Köppen-Geiger climate zone with full metadata: '
+        'zone id, color, description, soil types, NDVI range, and growing tips.\n\n'
+        'You can also pass `temp`, `rainfall`, and `elevation` directly to skip the API fetch.'
+    ),
+    request={
+        'application/json': {
+            'type': 'object',
+            'properties': {
+                'lat':       {'type': 'number', 'example': 15.3173},
+                'lon':       {'type': 'number', 'example': 75.7139},
+                'temp':      {'type': 'number', 'example': 26.5,  'description': 'Override: annual mean temperature (°C)'},
+                'rainfall':  {'type': 'number', 'example': 850.0, 'description': 'Override: annual total rainfall (mm)'},
+                'elevation': {'type': 'number', 'example': 720.0, 'description': 'Override: elevation (m)'},
+            },
+        }
+    },
+    responses={
+        200: OpenApiResponse(description='Climate zone result', response={
+            'type': 'object',
+            'properties': {
+                'zone':         {'type': 'string', 'example': 'Tropical Savanna'},
+                'id':           {'type': 'string', 'example': 'Aw'},
+                'color':        {'type': 'string', 'example': '#9ACD32'},
+                'description':  {'type': 'string'},
+                'soil_types':   {'type': 'array', 'items': {'type': 'string'}},
+                'ndvi_range':   {'type': 'string', 'example': '0.40-0.65'},
+                'growing_tips': {'type': 'string'},
+                'inputs':       {'type': 'object'},
+            },
+        }),
+        400: OpenApiResponse(description='Missing or invalid coordinates'),
+    },
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def classify_climate_zone(request):
+    data = request.data
+    lat  = data.get('lat')
+    lon  = data.get('lon')
+
+    # If caller supplies raw climate inputs, use the old simple classifier
+    temp      = data.get('temp')
+    rainfall  = data.get('rainfall')
+    elevation = data.get('elevation', 0)
+
+    if temp is not None and rainfall is not None:
+        temp, rainfall, elevation = float(temp), float(rainfall), float(elevation)
+        zone = classify_global_climate_zone(temp, rainfall, elevation)
+        meta = CLIMATE_ZONE_METADATA.get(zone, {})
+        return Response({
+            'zone': zone, 'id': meta.get('id', ''), 'color': meta.get('color', ''),
+            'description': meta.get('description', ''), 'soil_types': meta.get('soil_types', []),
+            'ndvi_range': meta.get('ndvi_range', ''), 'growing_tips': meta.get('growing_tips', ''),
+            'inputs': {'temp_c': temp, 'rainfall_mm': rainfall, 'elevation_m': elevation},
+        })
+
+    # Otherwise derive from lat/lon using the India/Karnataka-aware classifier
+    if lat is None or lon is None:
+        return Response({'error': 'Provide lat/lon or temp/rainfall.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    zone_name, zone_meta, climate, location = _classify_zone(float(lat), float(lon))
+    return Response({
+        'zone':         zone_name,
+        'id':           zone_meta.get('id', ''),
+        'color':        zone_meta.get('color', ''),
+        'description':  zone_meta.get('description', ''),
+        'soil_types':   zone_meta.get('soil_types', []),
+        'ndvi_range':   zone_meta.get('ndvi_range', ''),
+        'growing_tips': zone_meta.get('growing_tips', ''),
+        'location':     location.get('display_name', ''),
+        'inputs': {
+            'temp_c':       round(climate.get('average_temp', 0), 1),
+            'rainfall_mm':  round(climate.get('annual_rainfall', 0), 1),
+            'elevation_m':  round(climate.get('elevation', 0), 1),
+            'data_source':  climate.get('data_source', ''),
+        },
+    })

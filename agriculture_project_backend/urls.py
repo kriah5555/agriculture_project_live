@@ -19,7 +19,7 @@ urlpatterns = [
     path('', include('map.urls')),
     path('api/', include('devise_apis.urls')),
     path('api/mobile/', include('devise_apis.mobile_urls')),
-    path('', include('predicter.urls')),
+    path('', include('reports.urls')),
     path('', include('versions.urls')),
     path('', include('soilmap.urls')),
     path('pay/', include('razorpay_app.urls')),

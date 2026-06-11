@@ -1702,7 +1702,7 @@ def generate_pdf(preds, env_features, fertility, metadata):
     """
     Build and return the 6-page SoiLENZ PDF as bytes.
 
-    preds        : dict from predict_for_point / dummy_predictions (14 params including ca, mg)
+    preds        : dict from predict_for_point (14 params including ca, mg)
     env_features : dict from same functions
     fertility    : str ('Low' / 'Medium' / 'High')
     metadata     : dict with keys:

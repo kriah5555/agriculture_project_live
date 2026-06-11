@@ -9,8 +9,44 @@
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <style>
+        /* ── Location search ── */
+        #location-search-wrap {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            z-index: 1001; width: calc(100% - 110px); max-width: 360px;
+        }
+        #location-search-input {
+            width: 100%; padding: 10px 14px; border: none; border-radius: 10px;
+            font-size: 0.88rem; color: #333; background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.18); outline: none; box-sizing: border-box;
+        }
+        #location-search-input::placeholder { color: #999; }
+        #location-suggestions {
+            display: none; background: #fff; border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+            margin-top: 4px; overflow: hidden; max-height: 240px; overflow-y: auto;
+        }
+        .loc-suggestion {
+            padding: 10px 14px; font-size: 0.82rem; color: #333; cursor: pointer;
+            border-bottom: 1px solid #f0f0f0; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; transition: background .15s;
+        }
+        .loc-suggestion:last-child { border-bottom: none; }
+        .loc-suggestion:hover, .loc-suggestion.active { background: #f0fbe7; color: var(--primary-dark); }
 
+        /* ── Soil overview grid ── */
+        #soil-overview {
+            display: none; grid-template-columns: repeat(3, 1fr);
+            gap: 4px; margin-bottom: 8px;
+        }
+        .ov-card {
+            background: #f8fafc; border-radius: 6px; padding: 5px 3px;
+            border-left: 3px solid #a3d977; text-align: center;
+        }
+        .ov-label { font-size: 0.56rem; color: #64748b; text-transform: uppercase; margin-bottom: 1px; letter-spacing: .03em; }
+        .ov-value { font-size: 0.8rem; font-weight: 800; color: var(--accent); }
+        .ov-unit  { font-size: 0.52rem; color: #94a3b8; }
+    </style>
     <style>
         :root {
             --base-light: #F6FFDC;
@@ -69,31 +105,47 @@
         .map-container { position: relative; height: calc(100% - 60px); width: 100%; }
         #map { height: 100%; width: 100%; z-index: 1; }
 
-        /* Bottom Sheet */
+        /* Right Sidebar Panel */
         #parameter-panel {
             display: none;
             position: absolute;
-            bottom: 0; left: 0; right: 0;
+            top: 0; right: 0; bottom: 0;
+            width: 400px;
             background: var(--panel-bg);
-            padding: 20px 20px 30px 20px;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
             z-index: 1000;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
             backdrop-filter: blur(10px);
-            border-top: 2px solid #a3d977;
-            transform: translateY(100%);
-            animation: slideUp 0.3s forwards ease-out;
+            border-left: 2px solid #a3d977;
+            flex-direction: column;
+            transition: transform .3s ease;
+        }
+        #parameter-panel.visible  { display: flex; transform: translateX(0); }
+        #parameter-panel.collapsed { transform: translateX(100%); }
+
+        #parameter-panel h3 { margin: 0 0 8px 0; color: var(--primary-dark); font-size: 0.85rem; font-weight: 700; }
+
+        /* Tab sticking out on left edge */
+        #panel-tab {
+            position: absolute; left: -28px; top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-dark); color: #fff;
+            border: none; border-radius: 8px 0 0 8px;
+            width: 28px; height: 64px;
+            cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 0.8rem; box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+            transition: background .2s;
+        }
+        #panel-tab:hover { background: var(--primary-light); }
+
+        #panel-body {
+            overflow-y: auto; overflow-x: visible; flex: 1;
+            padding: 12px 10px 16px 10px;
+            scrollbar-width: thin;
         }
 
-        @keyframes slideUp { to { transform: translateY(0); } }
-
-        #parameter-panel h3 { margin: 0 0 10px 0; color: var(--primary-dark); font-size: 1.1rem; text-align: center; }
-
-        .drag-handle {
-            width: 40px; height: 5px; background-color: #ccc;
-            border-radius: 5px; margin: 0 auto 15px auto;
-        }
+        /* Ensure native select dropdown renders above the map */
+        #param-toggle { position: relative; z-index: 1100; }
 
         select {
             width: 100%; padding: 12px; border-radius: 8px;
@@ -106,14 +158,14 @@
         }
 
         .value-display {
-            margin-top: 15px; text-align: center;
-            background: var(--base-light); padding: 15px; border-radius: 10px;
+            margin-top: 8px; text-align: center;
+            background: var(--base-light); padding: 8px 10px; border-radius: 8px;
             border: 1px solid #a3d977;
-            display: flex; align-items: baseline; justify-content: center; gap: 5px;
+            display: flex; align-items: baseline; justify-content: center; gap: 4px;
         }
 
-        #param-value { font-size: 2.2rem; font-weight: 800; color: var(--accent); }
-        #param-unit  { font-size: 1rem; color: var(--primary-dark); font-weight: 600; }
+        #param-value { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+        #param-unit  { font-size: 0.85rem; color: var(--primary-dark); font-weight: 600; }
 
         #loading-overlay {
             display: none;
@@ -150,21 +202,21 @@
         .info.legend h4 { margin: 0 0 10px 0; font-size: 14px; }
 
         .fertility-badge {
-            display: inline-block; padding: 6px 16px; border-radius: 20px;
-            font-weight: 800; text-transform: uppercase; font-size: 0.9rem;
-            margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-weight: 800; text-transform: uppercase; font-size: 0.78rem;
+            margin-bottom: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
         .fertility-low    { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
         .fertility-medium { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
         .fertility-high   { background: #dcfce7; color: #166534; border: 1px solid #4ade80; }
 
         .env-snapshot {
-            display: flex; gap: 10px; margin-top: 15px; padding-top: 15px;
-            border-top: 1px solid #eee; overflow-x: auto;
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 5px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;
         }
-        .env-card { background: #f8fafc; padding: 8px 12px; border-radius: 8px; min-width: 80px; text-align: center; }
-        .env-label { font-size: 0.65rem; color: #64748b; text-transform: uppercase; margin-bottom: 2px; }
-        .env-val   { font-size: 0.9rem; font-weight: bold; color: var(--primary-dark); }
+        .env-card { background: #f8fafc; padding: 5px 8px; border-radius: 7px; text-align: center; }
+        .env-label { font-size: 0.58rem; color: #64748b; text-transform: uppercase; margin-bottom: 1px; }
+        .env-val   { font-size: 0.82rem; font-weight: bold; color: var(--primary-dark); }
 
         #download-pdf-btn {
             display: flex; width: 100%; margin-top: 16px; padding: 14px;
@@ -267,6 +319,7 @@
         }
         #col-hint-box b { color: var(--primary-dark); }
         #col-hint-toggle { background: none; border: none; color: var(--primary-light); font-size: 0.78rem; cursor: pointer; padding: 0; margin-bottom: 6px; text-decoration: underline; }
+
     </style>
 </head>
 
@@ -276,7 +329,7 @@
         <a class="header-back" href="{% url 'user-page' %}">
             &#8592; Back
         </a>
-        <div class="header-title">
+        <div class="header-title" style="margin-top: 10px;">
             <h1>SoilMap</h1>
             <p>{{ device.name }} &mdash; Draw area for analysis</p>
         </div>
@@ -285,62 +338,92 @@
     <div class="map-container">
         <div id="map"></div>
 
+        <div id="location-search-wrap">
+            <input id="location-search-input" type="text" placeholder="Search village, town, district..." autocomplete="off" />
+            <div id="location-suggestions"></div>
+        </div>
+
         <div id="loading-overlay">
             <div class="spinner"></div>
             Analyzing Soil...
         </div>
 
         <div id="parameter-panel">
-            <div class="drag-handle"></div>
+            <button id="panel-tab" onclick="togglePanel()" title="Collapse / Expand">&#9664;</button>
 
-            <div id="fertility-container">
-                <span id="fertility-label" class="fertility-badge fertility-medium">Calculating...</span>
+            <div id="panel-body">
+                <div id="fertility-container" style="text-align:center; margin-bottom:6px;">
+                    <span id="fertility-label" class="fertility-badge fertility-medium">Calculating...</span>
+                </div>
+
+                <div id="climate-zone-card" style="display:none; margin-bottom:12px; padding:10px 14px; border-radius:10px; border-left:4px solid #ccc; background:#f8fafc;">
+                    <div style="font-size:0.7rem; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px;">Agroclimatic Zone</div>
+                    <div id="climate-zone-name" style="font-size:0.95rem; font-weight:700; color:#1e293b;"></div>
+                    <div id="climate-zone-desc" style="font-size:0.72rem; color:#475569; margin-top:4px; line-height:1.4;"></div>
+                    <div id="climate-zone-tips" style="font-size:0.7rem; color:#16a34a; margin-top:5px; font-style:italic;"></div>
+                </div>
+
+                <h3>Soil Chemistry &amp; Texture</h3>
+
+                <!-- Quick overview of all values -->
+                <div id="soil-overview">
+                    <div class="ov-card" id="ov-ph">   <div class="ov-label">pH</div>   <div class="ov-value">--</div><div class="ov-unit">pH</div></div>
+                    <div class="ov-card" id="ov-ec">   <div class="ov-label">EC</div>   <div class="ov-value">--</div><div class="ov-unit">dS/m</div></div>
+                    <div class="ov-card" id="ov-n">    <div class="ov-label">N</div>    <div class="ov-value">--</div><div class="ov-unit">kg/ha</div></div>
+                    <div class="ov-card" id="ov-p">    <div class="ov-label">P</div>    <div class="ov-value">--</div><div class="ov-unit">kg/ha</div></div>
+                    <div class="ov-card" id="ov-k">    <div class="ov-label">K</div>    <div class="ov-value">--</div><div class="ov-unit">kg/ha</div></div>
+                    <div class="ov-card" id="ov-oc">   <div class="ov-label">OC</div>   <div class="ov-value">--</div><div class="ov-unit">%</div></div>
+                    <div class="ov-card" id="ov-s">    <div class="ov-label">S</div>    <div class="ov-value">--</div><div class="ov-unit">ppm</div></div>
+                    <div class="ov-card" id="ov-fe">   <div class="ov-label">Fe</div>   <div class="ov-value">--</div><div class="ov-unit">ppm</div></div>
+                    <div class="ov-card" id="ov-zn">   <div class="ov-label">Zn</div>   <div class="ov-value">--</div><div class="ov-unit">ppm</div></div>
+                    <div class="ov-card" id="ov-cu">   <div class="ov-label">Cu</div>   <div class="ov-value">--</div><div class="ov-unit">ppm</div></div>
+                    <div class="ov-card" id="ov-b">    <div class="ov-label">B</div>    <div class="ov-value">--</div><div class="ov-unit">ppm</div></div>
+                    <div class="ov-card" id="ov-mn">   <div class="ov-label">Mn</div>   <div class="ov-value">--</div><div class="ov-unit">ppm</div></div>
+                </div>
+
+                <select id="param-toggle">
+                    <optgroup label="Soil Chemistry">
+                        <option value="ph"             data-unit="pH">pH Level</option>
+                        <option value="ec"             data-unit="dS/m">Electric Conductivity (EC)</option>
+                        <option value="n"              data-unit="kg/ha">Nitrogen (N)</option>
+                        <option value="p"              data-unit="kg/ha">Phosphorus (P)</option>
+                        <option value="k"              data-unit="kg/ha">Potassium (K)</option>
+                        <option value="organic_carbon" data-unit="%">Organic Carbon (OC)</option>
+                        <option value="s"              data-unit="ppm">Sulfur (S)</option>
+                        <option value="fe"             data-unit="ppm">Iron (Fe)</option>
+                        <option value="zn"             data-unit="ppm">Zinc (Zn)</option>
+                        <option value="cu"             data-unit="ppm">Copper (Cu)</option>
+                        <option value="b"              data-unit="ppm">Boron (B)</option>
+                        <option value="mn"             data-unit="ppm">Manganese (Mn)</option>
+                    </optgroup>
+                    <optgroup label="Soil Physical Properties">
+                        <option value="sand_pct" data-unit="%">Sand Content</option>
+                        <option value="clay_pct" data-unit="%">Clay Content</option>
+                        <option value="silt_pct" data-unit="%">Silt Content</option>
+                    </optgroup>
+                </select>
+
+                <div class="value-display">
+                    <div id="param-value">--</div>
+                    <div id="param-unit">Unit</div>
+                </div>
+
+                <div class="env-snapshot">
+                    <div class="env-card"><div class="env-label">NDVI</div><div id="env-ndvi" class="env-val">--</div></div>
+                    <div class="env-card"><div class="env-label">Temp</div><div id="env-temp" class="env-val">--</div></div>
+                    <div class="env-card"><div class="env-label">Rainfall</div><div id="env-rain" class="env-val">--</div></div>
+                    <div class="env-card"><div class="env-label">Elev</div><div id="env-elev" class="env-val">--</div></div>
+                </div>
+
+                <button id="download-pdf-btn" onclick="generatePDF()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download Soil Report (PDF)
+                </button>
             </div>
-
-            <h3>Soil Chemistry &amp; Texture</h3>
-
-            <select id="param-toggle">
-                <optgroup label="Soil Chemistry">
-                    <option value="ph"             data-unit="pH">pH Level</option>
-                    <option value="ec"             data-unit="dS/m">Electric Conductivity (EC)</option>
-                    <option value="n"              data-unit="kg/ha">Nitrogen (N)</option>
-                    <option value="p"              data-unit="kg/ha">Phosphorus (P)</option>
-                    <option value="k"              data-unit="kg/ha">Potassium (K)</option>
-                    <option value="organic_carbon" data-unit="%">Organic Carbon (OC)</option>
-                    <option value="s"              data-unit="ppm">Sulfur (S)</option>
-                    <option value="fe"             data-unit="ppm">Iron (Fe)</option>
-                    <option value="zn"             data-unit="ppm">Zinc (Zn)</option>
-                    <option value="cu"             data-unit="ppm">Copper (Cu)</option>
-                    <option value="b"              data-unit="ppm">Boron (B)</option>
-                    <option value="mn"             data-unit="ppm">Manganese (Mn)</option>
-                </optgroup>
-                <optgroup label="Soil Physical Properties">
-                    <option value="sand_pct" data-unit="%">Sand Content</option>
-                    <option value="clay_pct" data-unit="%">Clay Content</option>
-                    <option value="silt_pct" data-unit="%">Silt Content</option>
-                </optgroup>
-            </select>
-
-            <div class="value-display">
-                <div id="param-value">--</div>
-                <div id="param-unit">Unit</div>
-            </div>
-
-            <div class="env-snapshot">
-                <div class="env-card"><div class="env-label">NDVI</div><div id="env-ndvi" class="env-val">--</div></div>
-                <div class="env-card"><div class="env-label">Temp</div><div id="env-temp" class="env-val">--</div></div>
-                <div class="env-card"><div class="env-label">Rainfall</div><div id="env-rain" class="env-val">--</div></div>
-                <div class="env-card"><div class="env-label">Elev</div><div id="env-elev" class="env-val">--</div></div>
-            </div>
-
-            <button id="download-pdf-btn" onclick="generatePDF()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                Download Soil Report (PDF)
-            </button>
         </div>
     </div>
 
@@ -394,7 +477,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -425,25 +507,106 @@
             attribution: '', subdomains: 'abcd', maxZoom: 20
         }).addTo(map);
 
-        const geocoderProvider = L.Control.Geocoder.nominatim({
-            geocodingQueryParams: { countrycodes: 'in', viewbox: '68.1,6.5,97.4,35.5', bounded: 1, limit: 10 }
-        });
+        function togglePanel() {
+            const panel = document.getElementById('parameter-panel');
+            const tab   = document.getElementById('panel-tab');
+            panel.classList.toggle('collapsed');
+            tab.innerHTML = panel.classList.contains('collapsed') ? '&#9654;' : '&#9664;';
+        }
 
-        L.Control.geocoder({
-            geocoder: geocoderProvider, defaultMarkGeocode: false,
-            position: 'topright', placeholder: 'Search village, town, or district...'
-        }).on('markgeocode', function(e) {
-            const latlng = e.geocode.center;
-            if (typeof drawnItems !== 'undefined') drawnItems.clearLayers();
-            if (typeof rasterGridGroup !== 'undefined') rasterGridGroup.clearLayers();
-            if (legendControl) { map.removeControl(legendControl); legendControl = null; }
-            if (currentPopup) { map.closePopup(currentPopup); currentPopup = null; }
-            currentAnalysis = null; activePolygonLayer = null;
-            document.getElementById('parameter-panel').style.display = 'none';
-            map.flyTo(latlng, 17, { animate: true, duration: 1.5 });
-            const m = L.marker(latlng).addTo(map).bindPopup(e.geocode.name).openPopup();
-            setTimeout(() => map.removeLayer(m), 5000);
-        }).addTo(map);
+        // ── Climate zone (separate async call so it never slows soil data) ───
+        async function fetchClimateZone(lat, lon) {
+            const czCard = document.getElementById('climate-zone-card');
+            try {
+                const resp = await fetch(`${window.location.origin}/api/soil-map/climate-zone/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                    body: JSON.stringify({ lat, lon })
+                });
+                const zd = await resp.json();
+                if (zd.zone) {
+                    document.getElementById('climate-zone-name').textContent =
+                        zd.zone + (zd.id ? '  (' + zd.id + ')' : '');
+                    document.getElementById('climate-zone-desc').textContent = zd.description || '';
+                    document.getElementById('climate-zone-tips').textContent =
+                        zd.growing_tips ? '💡 ' + zd.growing_tips : '';
+                    czCard.style.borderLeftColor = zd.color || '#a3d977';
+                    // Show location label if available
+                    if (zd.location) {
+                        let locEl = document.getElementById('climate-zone-location');
+                        if (!locEl) {
+                            locEl = document.createElement('div');
+                            locEl.id = 'climate-zone-location';
+                            locEl.style.cssText = 'font-size:0.65rem;color:#64748b;margin-top:3px;';
+                            czCard.insertBefore(locEl, czCard.firstChild);
+                        }
+                        locEl.textContent = '📍 ' + zd.location;
+                    }
+                } else {
+                    document.getElementById('climate-zone-name').textContent = 'Zone unavailable';
+                }
+            } catch (e) {
+                document.getElementById('climate-zone-name').textContent = 'Zone unavailable';
+            }
+        }
+
+        // ── Location Search ───────────────────────────────────────────────────
+        (function () {
+            const input = document.getElementById('location-search-input');
+            const list  = document.getElementById('location-suggestions');
+            let debounce = null, activeIdx = -1, lastResults = [];
+
+            function clearSuggestions() { list.innerHTML = ''; list.style.display = 'none'; activeIdx = -1; }
+
+            function flyToResult(r) {
+                clearSuggestions(); input.value = '';
+                drawnItems.clearLayers(); rasterGridGroup.clearLayers();
+                if (legendControl) { map.removeControl(legendControl); legendControl = null; }
+                if (currentPopup) { map.closePopup(currentPopup); currentPopup = null; }
+                currentAnalysis = null; activePolygonLayer = null;
+                document.getElementById('parameter-panel').classList.remove('visible');
+                map.flyTo([r.lat, r.lon], 17, { animate: true, duration: 1.5 });
+                const m = L.marker([r.lat, r.lon]).addTo(map).bindPopup(r.name).openPopup();
+                setTimeout(() => map.removeLayer(m), 5000);
+            }
+
+            input.addEventListener('input', function () {
+                clearTimeout(debounce);
+                const q = this.value.trim();
+                if (q.length < 2) { clearSuggestions(); return; }
+                debounce = setTimeout(async () => {
+                    try {
+                        const resp = await fetch(`/api/services/location-search/?q=${encodeURIComponent(q)}`, {
+                            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                        });
+                        const data = await resp.json();
+                        lastResults = data.results || [];
+                        list.innerHTML = '';
+                        if (!lastResults.length) { list.style.display = 'none'; return; }
+                        lastResults.forEach((r, i) => {
+                            const div = document.createElement('div');
+                            div.className = 'loc-suggestion';
+                            div.textContent = r.name;
+                            div.addEventListener('mousedown', e => { e.preventDefault(); flyToResult(r); });
+                            list.appendChild(div);
+                        });
+                        list.style.display = 'block';
+                    } catch (_) { clearSuggestions(); }
+                }, 300);
+            });
+
+            input.addEventListener('keydown', function (e) {
+                const items = list.querySelectorAll('.loc-suggestion');
+                if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, items.length - 1); items.forEach((el, i) => el.classList.toggle('active', i === activeIdx)); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, -1); items.forEach((el, i) => el.classList.toggle('active', i === activeIdx)); }
+                else if (e.key === 'Enter' && activeIdx >= 0 && lastResults[activeIdx]) { e.preventDefault(); flyToResult(lastResults[activeIdx]); }
+                else if (e.key === 'Escape') clearSuggestions();
+            });
+
+            document.addEventListener('click', e => {
+                if (!document.getElementById('location-search-wrap').contains(e.target)) clearSuggestions();
+            });
+        })();
 
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(pos => {
@@ -547,7 +710,7 @@
             }
 
             document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('parameter-panel').style.display = 'none';
+            document.getElementById('parameter-panel').classList.remove('visible');
 
             try {
                 const response = await fetch(`${window.location.origin}/api/predict/`, {
@@ -569,8 +732,39 @@
                     document.getElementById('env-rain').innerText = (env.rainfall_mm    || '--') + 'mm';
                     document.getElementById('env-elev').innerText = (env.elevation_m    || '--') + 'm';
 
+                    // Climate zone — show a loading skeleton, fetch separately
+                    const czCard = document.getElementById('climate-zone-card');
+                    document.getElementById('climate-zone-name').textContent = 'Detecting zone…';
+                    document.getElementById('climate-zone-desc').textContent = '';
+                    document.getElementById('climate-zone-tips').textContent = '';
+                    czCard.style.borderLeftColor = '#94a3b8';
+                    czCard.style.display = 'block';
+                    // Compute centroid lat/lon for the zone call
+                    const _czLat = data.coordinates ? data.coordinates.lat : (requestBody.lat || 0);
+                    const _czLon = data.coordinates ? data.coordinates.lon : (requestBody.lon || 0);
+                    fetchClimateZone(_czLat, _czLon);
+
+                    // Populate overview grid
+                    const chem = data.predicted_soil_chemistry || {};
+                    const ovMap = { ph:'ov-ph', ec:'ov-ec', n:'ov-n', p:'ov-p', k:'ov-k',
+                                    organic_carbon:'ov-oc', s:'ov-s', fe:'ov-fe',
+                                    zn:'ov-zn', cu:'ov-cu', b:'ov-b', mn:'ov-mn' };
+                    Object.entries(ovMap).forEach(([key, id]) => {
+                        const card = document.getElementById(id);
+                        if (!card) return;
+                        let val = parseFloat(chem[key]);
+                        if (key === 'ph' && val > 14) while (val > 14) val /= 10;
+                        card.querySelector('.ov-value').textContent = isNaN(val) ? '--' : val.toFixed(2);
+                    });
+                    document.getElementById('soil-overview').style.display = 'grid';
+
+                    // Show and expand panel
+                    const panel = document.getElementById('parameter-panel');
+                    panel.classList.add('visible');
+                    panel.classList.remove('collapsed');
+                    document.getElementById('panel-tab').innerHTML = '&#9664;';
+
                     currentAnalysis = { ...data.predicted_soil_chemistry, ...data.environmental_factors };
-                    document.getElementById('parameter-panel').style.display = 'block';
                     updateMapOverlay();
                 }
             } finally {
@@ -641,10 +835,10 @@
             });
 
             if (legendControl) map.removeControl(legendControl);
-            legendControl = L.control({ position: 'bottomright' });
+            legendControl = L.control({ position: 'bottomleft' });
             legendControl.onAdd = () => {
                 const div = L.DomUtil.create('div', 'info legend');
-                div.style.cssText = 'margin-bottom:220px;padding:15px;background:#fff;';
+                div.style.cssText = 'padding:12px 14px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);';
                 div.innerHTML = `<h4 style="margin:0 0 10px 0;">${paramName} (${unit})</h4>${legendHTML}`;
                 return div;
             };
@@ -885,6 +1079,7 @@
                 btn.textContent = 'Upload & Ingest Data';
             }
         }
+
     </script>
 </body>
 </html>

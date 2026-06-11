@@ -1,18 +1,5 @@
 # ArkaShine Agriculture Platform
 
-A Django-based backend for the ArkaShine smart agriculture system. Supports multiple IoT soil and atmospheric sensor devices, a web admin dashboard, and a mobile REST API.
-
----
-
-## Supported Device Types
-
-| Key          | Display Name | Description                                      |
-|--------------|--------------|--------------------------------------------------|
-| `soilsaathi` | SoiLENZ      | Soil nutrient sensor (N, P, K, pH, EC, OC, etc.) |
-| `atmo_sense` | SoilSparsh   | Atmospheric + soil temp, moisture, light sensor  |
-| `soil_life`  | SoilLIFE     | Bio-gas sensor (CO₂, methane, ammonia, etc.)     |
-| `ph_bottle`  | PHBottle     | pH & EC probe (pH value/voltage, EC value/voltage)|
-
 ---
 
 ## Setup
@@ -26,41 +13,31 @@ cd agriculture_project_live
 
 ### 2. Install System-Level Packages (Ubuntu / Debian)
 
-Several Python packages in `requirements.txt` need OS-level libraries. Run this **before** `pip install`:
-
 ```bash
-# PostgreSQL client (required by psycopg2)
 sudo apt-get install -y libpq-dev python3-dev
 
-# WeasyPrint — HTML-to-PDF renderer (required for SoiLENZ report PDF download)
 sudo apt-get install -y \
     libpango-1.0-0 libpangoft2-1.0-0 libpangocairo-1.0-0 \
     libcairo2 libgdk-pixbuf2.0-0 libharfbuzz-subset0 \
     libffi-dev python3-cffi python3-brotli
-
-# On macOS (Homebrew):
-# brew install pango cairo gdk-pixbuf libffi
 ```
 
-> **Note:** If WeasyPrint is installed but the above system libraries are missing, PDF downloads via `/soil-report-pdf/` will fail at request time with a shared-library error. The rest of the application is unaffected.
+### 3. Create and Activate Virtual Environment
 
-### 3. Install Python Dependencies
+```bash
+python3 -m venv env
+source env/bin/activate
+```
+
+### 4. Install Python Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Or use the automated installer (checks system dependencies for psycopg2, etc.):
+### 5. Configure the Database
 
-```bash
-bash install_deps.sh
-```
-
-### 3. Configure the Database
-
-The project supports **PostgreSQL** (production) and **SQLite** (development).
-
-For PostgreSQL, set these environment variables before running:
+For PostgreSQL, set these environment variables:
 
 ```
 DB_NAME=<your_db_name>
@@ -70,24 +47,56 @@ DB_HOST=<host>
 DB_PORT=5432
 ```
 
-### 4. Run Migrations
+SQLite is used automatically if these are not set (development only).
+
+### 6. Run Migrations
 
 ```bash
 python manage.py makemigrations agriapp
 python manage.py migrate
 ```
 
-This also runs the data migration that creates the `deviseowner` group required by the Users page.
-
-### 5. Create a Superuser (Admin)
+### 7. Create a Superuser
 
 ```bash
 python manage.py createsuperuser
 ```
 
-Follow the prompts to set a username, email, and password.
+### 8. Place ML Model Files
 
-### 6. Start the Development Server
+All `.pkl` files are gitignored. Copy them manually after cloning.
+
+**Soil models — copy these 13 files to `agri_ai/soil/models/`:**
+
+```bash
+# From a models.zip archive:
+unzip models.zip -d agri_ai/soil/models/
+
+# Or copy individually:
+cp /path/to/models/lgbm_ph.pkl              agri_ai/soil/models/
+cp /path/to/models/lgbm_ec.pkl              agri_ai/soil/models/
+cp /path/to/models/lgbm_n.pkl               agri_ai/soil/models/
+cp /path/to/models/lgbm_p.pkl               agri_ai/soil/models/
+cp /path/to/models/lgbm_k.pkl               agri_ai/soil/models/
+cp /path/to/models/lgbm_organic_carbon.pkl  agri_ai/soil/models/
+cp /path/to/models/lgbm_s.pkl               agri_ai/soil/models/
+cp /path/to/models/lgbm_fe.pkl              agri_ai/soil/models/
+cp /path/to/models/lgbm_zn.pkl              agri_ai/soil/models/
+cp /path/to/models/lgbm_cu.pkl              agri_ai/soil/models/
+cp /path/to/models/lgbm_b.pkl               agri_ai/soil/models/
+cp /path/to/models/lgbm_mn.pkl              agri_ai/soil/models/
+cp /path/to/models/rf_fertility.pkl         agri_ai/soil/models/
+```
+
+**Crop classifier — copy 1 file to `agri_ai/crop/models/`:**
+
+```bash
+cp /path/to/models/classifier.pkl  agri_ai/crop/models/
+```
+
+> If models are missing the app still runs. Only AI crop prediction and ML-enriched PDF reports are affected.
+
+### 9. Start the Development Server
 
 ```bash
 python manage.py runserver
@@ -95,9 +104,7 @@ python manage.py runserver
 
 ---
 
-## Deployment (Production)
-
-After pulling updates or changing configuration:
+## Production Deployment
 
 ```bash
 sudo systemctl daemon-reload
@@ -107,200 +114,10 @@ sudo systemctl restart nginx
 
 ---
 
-## Web Admin Routes
+## Adding New ML Models
 
-| URL | Description |
-|-----|-------------|
-| `/welcome/` | Admin dashboard |
-| `/soil-saathi-dashboard/` | SoiLENZ device list & API calls |
-| `/atmos-sense-dashboard/` | SoilSparsh device list & API calls |
-| `/soil-life-dashboard/` | SoilLIFE device list & API calls |
-| `/ph-bottle-dashboard/` | PHBottle device list & API calls |
-| `/users/` | Users in the `deviseowner` group |
-| `/docs/` | API documentation (Swagger / ReDoc) |
+1. Create `agri_ai/<model_name>/` with `__init__.py`, `model.py`, and `models/` folder
+2. Place `.pkl` files in `models/` (they are gitignored)
+3. Import from any app: `from agri_ai.<model_name> import <function>`
 
----
-
-## Mobile REST API
-
-All endpoints are prefixed with `/api/mobile/` and require JWT Bearer authentication unless noted.
-
-### Authentication
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/mobile/auth/login/` | Obtain access + refresh tokens |
-| POST | `/api/mobile/auth/refresh/` | Get a new access token |
-| POST | `/api/mobile/auth/logout/` | Blacklist the refresh token |
-| POST | `/api/mobile/auth/forgot-password/` | Notify admin of forgotten password (no auth) |
-
-### Device Types & Field Schema
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mobile/device-types/` | List all device types with lock status |
-| GET | `/api/mobile/device-types/<type_key>/field-schema/` | Field label map for a device type (e.g. `field1` → `"pH Value"`) |
-
-### Devices
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mobile/devices/` | List user's devices |
-| GET | `/api/mobile/devices/<id>/` | Full device details |
-| GET | `/api/mobile/devices/<id>/location/` | Device GPS coordinates |
-
-> **Note on `<id>` vs `devise_id`:** The `<id>` in all API URLs above is the **integer primary key** of the device record (the `id` field). This is different from the string `devise_id` field shown on the device details page (which is a human-readable identifier like a username or device tag). Always use the integer `id` when calling mobile APIs.
-
-### API Calls (Sensor Readings)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mobile/devices/<id>/api-calls/` | Paginated reading list |
-| POST | `/api/mobile/devices/<id>/api-calls/create/` | Submit a new reading |
-| GET | `/api/mobile/devices/<id>/api-calls/<call_id>/` | Single reading detail |
-
-**SoiLENZ** readings use fields: `nitrogen`, `phosphorous`, `potassium`, `ph`, `ec`, `oc`, `calcium`, `magnesium`, `sulphur`, `zinc`, `manganese`, `iron`, `copper`, `boron`, `crop_type`, `latitude`, `longitude`.
-
-**SoilSparsh / SoilLIFE / PHBottle** readings use generic keys `field1`–`field8`. The response includes a `labeled_fields` map showing the human-readable name for each key (e.g. `"pH Value": 7.2`). Use the `/field-schema/` endpoint to get this map without needing a reading.
-
-### Thresholds
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mobile/devices/<id>/threshold/` | Get alert threshold levels |
-| POST/PUT | `/api/mobile/devices/<id>/threshold/set/` | Create or update threshold |
-
-### Recommendations (SoiLENZ only)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mobile/devices/<id>/recommendations/` | Fertilizer recommendations based on NPK data |
-
-### Account
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/mobile/account/profile/` | Get current user profile |
-| PATCH | `/api/mobile/account/profile/update/` | Update name/email |
-| POST | `/api/mobile/account/change-password-request/` | Notify admin of password change request |
-
----
-
-## Interactive API Docs (Swagger / ReDoc)
-
-Available at:
-- `/api/schema/swagger-ui/` — Swagger UI
-- `/api/schema/redoc/` — ReDoc
-
----
-
-## Field Mappings Reference
-
-### SoilSparsh (`atmo_sense`)
-| Key | Label |
-|-----|-------|
-| `field1` | Soil Temp (°C) |
-| `field2` | Soil Moisture (%) |
-| `field3` | Atmos Temp (°C) |
-| `field4` | Atmos Humidity (%) |
-| `field5` | Light Intensity (lux) |
-
-### SoilLIFE (`soil_life`)
-| Key | Label |
-|-----|-------|
-| `field1` | CO₂ (ppm) |
-| `field2` | Methane (ppm) |
-| `field3` | Ammonia (ppm) |
-| `field4` | Nitrous Oxide (ppm) |
-| `field5` | Temperature (°C) |
-| `field6` | Humidity (%) |
-| `field7` | Atmospheric Pressure (hPa) |
-| `field8` | Microbial Content (%) |
-
-### PHBottle (`ph_bottle`)
-| Key | Label |
-|-----|-------|
-| `field1` | pH Value |
-| `field2` | pH Voltage (mV) |
-| `field3` | EC Value (mS/cm) |
-| `field4` | EC Voltage (mV) |
-
----
-
-## User Groups
-
-| Group | Purpose |
-|-------|---------|
-| `deviseowner` | Regular users who own devices. Listed on the `/users/` admin page. Created automatically by migration `0011`. |
-
-> **Manual fallback:** If the `deviseowner` group is missing, create it via Django shell:
-> ```bash
-> python manage.py shell -c "from django.contrib.auth.models import Group; Group.objects.get_or_create(name='deviseowner')"
-> ```
-
----
-
-## ML Models Setup (Required for AI/PDF Features)
-
-Several features depend on trained ML model files that are **not committed to the repository** (too large for git):
-
-- Crop recommendation (`/crop-recommendation-dashboard/`, mobile AI endpoint)
-- SoiLENZ 6-page PDF report (soil health score, fertility classification, heatmap values)
-
-**Steps to set up:**
-
-1. Obtain the trained models archive: **`models.zip`** (ask the team / download from shared storage)
-2. Unzip into the models folder:
-   ```bash
-   unzip models.zip -d soilmap/models/
-   ```
-   The folder should contain files like: `lgbm_ph.pkl`, `lgbm_n.pkl`, `rf_fertility.pkl`, `best_hyperparams.json`, etc.
-3. Also set up the AI crop predictor model inside `predicter/ai_model/`:
-   ```bash
-   # Place the trained model file at:
-   predicter/ai_model/<model_file>
-   # (check predicter/ai_model/model.py for the expected filename)
-   ```
-
-> **If models are missing:** The application still works — API readings, device management, farmer flows, and web dashboard all function normally. Only the AI crop prediction and the ML-enriched PDF report fall back to default values.
-
----
-
-## Open (No-Auth) Legacy API Examples
-
-These endpoints do not require authentication:
-
-**Add soil reading:**
-```
-GET /api/add_data/?area_name=test&devise_id=007&serial_no=007
-    &nitrogen=21.0&phosphorous=50.0&potassium=27.9
-    &ph=6.5&ec=1.2&organic_carboa=0.8&crop_type=wheat&device=1
-```
-
-**Add device location:**
-```
-GET /api/add_location_data/?devise_id=007&latitude=19.912&longitude=79.740
-```
-
----
-
-## Project Structure
-
-```
-agriculture_project_live/
-├── agriapp/                  # Core app — models, web views, forms, migrations
-│   ├── models.py             # Device types, field mappings, all DB models
-│   ├── views.py              # Web dashboard views
-│   ├── urls.py               # Web URL routes
-│   └── migrations/           # Database migrations (0001 – 0011)
-├── devise_apis/              # Mobile REST API
-│   ├── mobile_api.py         # All mobile endpoints
-│   ├── mobile_serializers.py # DRF serializers
-│   └── mobile_urls.py        # Mobile URL routes
-├── authapp/                  # Auth helpers
-├── predicter/                # ML prediction engine
-├── templates/                # HTML templates
-├── static/                   # CSS, JS, images
-├── requirements.txt          # Python dependencies
-└── manage.py
-```
+See `agri_ai/crop/` as a reference implementation.

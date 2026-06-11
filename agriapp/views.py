@@ -2291,3 +2291,44 @@ def my_payment_history(request):
         },
         'active_page': 'my_payments',
     })
+
+
+# ── Location search (Nominatim) ───────────────────────────────────────────────
+
+import requests as _loc_requests
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status as drf_status
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.openapi import OpenApiTypes
+
+_NOMINATIM_URL     = "https://nominatim.openstreetmap.org/search"
+_NOMINATIM_HEADERS = {"User-Agent": "AgroClimatApp/1.0 (test@gmail.com)"}
+
+
+@extend_schema(tags=['Services'], summary='Location name search (Nominatim)')
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def location_search(request):
+    q = request.query_params.get('q', '').strip()
+    if not q:
+        return Response({'results': []})
+    try:
+        resp = _loc_requests.get(
+            _NOMINATIM_URL,
+            params={'q': q, 'format': 'json', 'limit': 6, 'accept-language': 'en'},
+            headers=_NOMINATIM_HEADERS,
+            timeout=5,
+        )
+        resp.raise_for_status()
+        results = [
+            {'name': item.get('display_name', ''), 'lat': float(item['lat']),
+             'lon': float(item['lon']), 'type': item.get('type', '')}
+            for item in resp.json()
+        ]
+        return Response({'results': results})
+    except _loc_requests.Timeout:
+        return Response({'error': 'Location service timed out'}, status=drf_status.HTTP_504_GATEWAY_TIMEOUT)
+    except Exception as e:
+        return Response({'error': str(e)}, status=drf_status.HTTP_502_BAD_GATEWAY)
