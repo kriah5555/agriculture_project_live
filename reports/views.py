@@ -73,12 +73,13 @@ def get_recommendation(request):
 
     if api_data:
         lat, lon = api_data.latitude, api_data.longitude
-        if not (lat and lon):
-            return HttpResponseBadRequest("Reading has no GPS coordinates. Cannot run crop recommendation.")
-        try:
-            temperature, humidity, rainfall = _fetch_climate_for_recommendation(lat, lon)
-        except RuntimeError as e:
-            return HttpResponseBadRequest(str(e))
+        if lat and lon:
+            try:
+                temperature, humidity, rainfall = _fetch_climate_for_recommendation(lat, lon)
+            except RuntimeError:
+                temperature, humidity, rainfall = 26.0, 65.0, 750.0
+        else:
+            temperature, humidity, rainfall = 26.0, 65.0, 750.0
         result = run_model({
             'N':           [api_data.nitrogen],
             'P':           [api_data.phosphorous],

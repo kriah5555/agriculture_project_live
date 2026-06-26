@@ -6,7 +6,7 @@ from django.views.generic import UpdateView, TemplateView, CreateView, View
 from django.urls import reverse
 from django.contrib import messages
 from datetime import datetime
-from map.views import get_marker_color
+from .views import get_marker_color
 from django.contrib.auth.models import User, Group
 from .devise_details import *
 from .import FertilizerCalculation

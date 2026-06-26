@@ -1,1085 +1,1814 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SoilMap — {{ device.name }}</title>
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* ── Location search ── */
-        #location-search-wrap {
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            z-index: 1001; width: calc(100% - 110px); max-width: 360px;
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{
+            --primary:#2c5e1a;--primary-light:#4a7c36;--accent:#d35400;
+            --base-light:#F6FFDC;--panel-bg:rgba(255,255,255,0.97);
         }
-        #location-search-input {
-            width: 100%; padding: 10px 14px; border: none; border-radius: 10px;
-            font-size: 0.88rem; color: #333; background: #fff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.18); outline: none; box-sizing: border-box;
-        }
-        #location-search-input::placeholder { color: #999; }
-        #location-suggestions {
-            display: none; background: #fff; border-radius: 10px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.14);
-            margin-top: 4px; overflow: hidden; max-height: 240px; overflow-y: auto;
-        }
-        .loc-suggestion {
-            padding: 10px 14px; font-size: 0.82rem; color: #333; cursor: pointer;
-            border-bottom: 1px solid #f0f0f0; white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis; transition: background .15s;
-        }
-        .loc-suggestion:last-child { border-bottom: none; }
-        .loc-suggestion:hover, .loc-suggestion.active { background: #f0fbe7; color: var(--primary-dark); }
+        html,body{height:100%;width:100%;font-family:'Inter',sans-serif;overflow:hidden;background:var(--base-light)}
 
-        /* ── Soil overview grid ── */
-        #soil-overview {
-            display: none; grid-template-columns: repeat(3, 1fr);
-            gap: 4px; margin-bottom: 8px;
+        /* ── HEADER ── */
+        .header{
+            background:var(--base-light);padding:0 10px;text-align:center;
+            box-shadow:0 2px 10px rgba(0,0,0,0.1);position:relative;z-index:1000;
+            display:flex;align-items:center;justify-content:center;height:54px;flex-shrink:0;
         }
-        .ov-card {
-            background: #f8fafc; border-radius: 6px; padding: 5px 3px;
-            border-left: 3px solid #a3d977; text-align: center;
+        .header-back{
+            position:absolute;left:14px;top:50%;transform:translateY(-50%);
+            background:none;border:none;cursor:pointer;color:var(--primary);
+            padding:6px;border-radius:8px;display:flex;align-items:center;gap:6px;
+            font-size:0.82rem;font-weight:600;text-decoration:none;font-family:'Inter',sans-serif;
         }
-        .ov-label { font-size: 0.56rem; color: #64748b; text-transform: uppercase; margin-bottom: 1px; letter-spacing: .03em; }
-        .ov-value { font-size: 0.8rem; font-weight: 800; color: var(--accent); }
-        .ov-unit  { font-size: 0.52rem; color: #94a3b8; }
-    </style>
-    <style>
-        :root {
-            --base-light: #F6FFDC;
-            --primary-dark: #2c5e1a;
-            --primary-light: #4a7c36;
-            --accent: #d35400;
-            --panel-bg: rgba(255, 255, 255, 0.95);
+        .header-back:hover{background:rgba(44,94,26,0.08)}
+        .header-title h1{color:var(--primary);font-size:1.15rem;font-weight:800}
+        .header-title p {color:var(--primary-light);font-size:0.72rem;margin-top:1px}
+
+        /* ── MAP ── */
+        .map-container{position:relative;height:calc(100% - 54px);width:100%}
+        #map{height:100%;width:100%;z-index:1}
+
+        /* ── LOCATION SEARCH ── */
+        #location-search-wrap{
+            position:absolute;top:10px;left:50%;transform:translateX(-50%);
+            z-index:1001;width:calc(100% - 120px);max-width:720px;
         }
-
-        body, html {
-            margin: 0; padding: 0; height: 100%; width: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--base-light);
-            overflow: hidden;
+        #location-search-inner{
+            display:flex;align-items:center;gap:0;
+            background:#fff;border-radius:10px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.18);overflow:hidden;
         }
-
-        .header {
-            background-color: var(--base-light);
-            padding: 15px 10px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: relative;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 60px;
+        #loc-search-icon{
+            padding:0 10px 0 13px;font-size:15px;color:#aaa;flex-shrink:0;line-height:1;
         }
-
-        .header-back {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--primary-dark);
-            font-size: 1.2rem;
-            padding: 6px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-decoration: none;
+        #loc-spin{
+            width:16px;height:16px;border:2.5px solid rgba(44,94,26,0.2);
+            border-top-color:var(--primary);border-radius:50%;
+            animation:spin 0.7s linear infinite;flex-shrink:0;margin:0 8px 0 13px;
         }
-
-        .header-back:hover { background: rgba(44,94,26,0.08); color: var(--primary-dark); }
-
-        .header-title { text-align: center; }
-        .header-title h1 { color: var(--primary-dark); margin: 0; font-size: 1.3rem; font-weight: 800; }
-        .header-title p  { color: var(--primary-light); margin: 2px 0 0 0; font-size: 0.78rem; }
-
-        .map-container { position: relative; height: calc(100% - 60px); width: 100%; }
-        #map { height: 100%; width: 100%; z-index: 1; }
-
-        /* Right Sidebar Panel */
-        #parameter-panel {
-            display: none;
-            position: absolute;
-            top: 0; right: 0; bottom: 0;
-            width: 400px;
-            background: var(--panel-bg);
-            z-index: 1000;
-            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
-            backdrop-filter: blur(10px);
-            border-left: 2px solid #a3d977;
-            flex-direction: column;
-            transition: transform .3s ease;
+        #location-search-input{
+            flex:1;padding:9px 14px 9px 2px;border:none;
+            font-size:0.85rem;color:#333;background:transparent;outline:none;
         }
-        #parameter-panel.visible  { display: flex; transform: translateX(0); }
-        #parameter-panel.collapsed { transform: translateX(100%); }
-
-        #parameter-panel h3 { margin: 0 0 8px 0; color: var(--primary-dark); font-size: 0.85rem; font-weight: 700; }
-
-        /* Tab sticking out on left edge */
-        #panel-tab {
-            position: absolute; left: -28px; top: 50%;
-            transform: translateY(-50%);
-            background: var(--primary-dark); color: #fff;
-            border: none; border-radius: 8px 0 0 8px;
-            width: 28px; height: 64px;
-            cursor: pointer; display: flex;
-            align-items: center; justify-content: center;
-            font-size: 0.8rem; box-shadow: -2px 0 8px rgba(0,0,0,0.2);
-            transition: background .2s;
+        #location-search-input::placeholder{color:#999}
+        #location-suggestions{
+            display:none;background:#fff;border-radius:10px;
+            box-shadow:0 4px 16px rgba(0,0,0,0.14);margin-top:4px;
+            overflow:hidden;max-height:220px;overflow-y:auto;
         }
-        #panel-tab:hover { background: var(--primary-light); }
+        .loc-suggestion{
+            padding:9px 14px;font-size:0.8rem;color:#333;cursor:pointer;
+            border-bottom:1px solid #f0f0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+        }
+        .loc-suggestion:hover,.loc-suggestion.active{background:#f0fbe7;color:var(--primary)}
 
-        #panel-body {
-            overflow-y: auto; overflow-x: visible; flex: 1;
-            padding: 12px 10px 16px 10px;
-            scrollbar-width: thin;
+        /* ── TOOLBOX — injected as Leaflet control on topleft, stacks below draw ── */
+        .tb-group{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+        .tb{
+            width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.97);
+            border:2px solid rgba(0,0,0,0.2);cursor:pointer;
+            display:flex;align-items:center;justify-content:center;
+            font-size:14px;color:var(--primary);transition:all 0.18s;
+        }
+        .tb:hover{background:#edf7ed;border-color:var(--primary)}
+        .tb.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+        /* ── RASTER MODE BOX — left side, below toolbox ── */
+        #rasterBox{
+            position:absolute;left:10px;z-index:1002;
+            background:rgba(255,255,255,0.97);border-radius:10px;padding:4px;
+            box-shadow:0 3px 12px rgba(0,0,0,0.14);display:none;flex-direction:column;gap:2px;
+        }
+        #rasterBox.show{display:flex}
+        .rm-btn{
+            padding:6px 12px;border:none;background:transparent;border-radius:7px;
+            font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;
+            color:var(--primary-light);cursor:pointer;text-align:left;white-space:nowrap;transition:all 0.15s;
+        }
+        .rm-btn.active{background:var(--primary);color:#fff}
+        .rm-btn:hover:not(.active){background:#edf7ed}
+
+        /* ── LOADING OVERLAY (soil chemistry) ── */
+        #loading-overlay{
+            display:none;position:absolute;inset:0;
+            background:rgba(246,255,220,0.85);z-index:2000;
+            align-items:center;justify-content:center;flex-direction:column;
+            color:var(--primary);font-size:1rem;font-weight:bold;
+        }
+        .spinner{
+            border:4px solid rgba(44,94,26,0.2);width:44px;height:44px;
+            border-radius:50%;border-left-color:var(--primary);
+            animation:spin 1s linear infinite;margin-bottom:14px;
         }
 
-        /* Ensure native select dropdown renders above the map */
-        #param-toggle { position: relative; z-index: 1100; }
+        /* ── LOAD PILL (zone/crop analysis) ── */
+        #loadPill{
+            position:absolute;bottom:90px;left:50%;transform:translateX(-50%);
+            z-index:1003;background:rgba(255,255,255,0.97);border-radius:50px;
+            padding:10px 20px;display:none;align-items:center;gap:10px;
+            box-shadow:0 6px 24px rgba(0,0,0,0.16);animation:fadeUp 0.3s ease;
+        }
+        .mini-spin{width:16px;height:16px;border:2.5px solid #c8e6c8;border-top-color:var(--primary);
+            border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0}
+        #lpMsg{font-size:11.5px;font-weight:600;color:#1a2a1a}
 
-        select {
-            width: 100%; padding: 12px; border-radius: 8px;
-            border: 1px solid #ccc; font-size: 1rem; background-color: #fff;
-            outline: none; -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%232c5e1a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px top 50%;
-            background-size: 12px auto;
+        /* ── RIGHT PANEL (soil chemistry) ── */
+        #parameter-panel{
+            display:none;position:absolute;top:0;right:0;bottom:0;width:380px;
+            background:var(--panel-bg);z-index:1000;
+            box-shadow:-4px 0 20px rgba(0,0,0,0.15);backdrop-filter:blur(10px);
+            border-left:2px solid #a3d977;flex-direction:column;transition:transform .3s ease;
+        }
+        #parameter-panel.visible {display:flex;transform:translateX(0)}
+        #parameter-panel.collapsed{transform:translateX(100%)}
+        #parameter-panel h3{margin:0 0 8px 0;color:var(--primary);font-size:0.83rem;font-weight:700}
+        #panel-tab{
+            position:absolute;left:-28px;top:50%;transform:translateY(-50%);
+            background:var(--primary);color:#fff;border:none;border-radius:8px 0 0 8px;
+            width:28px;height:60px;cursor:pointer;display:flex;align-items:center;
+            justify-content:center;font-size:0.78rem;box-shadow:-2px 0 8px rgba(0,0,0,0.2);
+        }
+        #panel-tab:hover{background:var(--primary-light)}
+        #panel-body{overflow-y:auto;flex:1;padding:10px 10px 14px;scrollbar-width:thin}
+
+        /* ── BOTTOM-LEFT ZONE/CROP PANEL ── */
+        #zone-panel{
+            position:absolute;bottom:14px;left:14px;z-index:1001;width:360px;
+            max-height:calc(100vh - 110px);background:var(--panel-bg);
+            border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,0.18);
+            display:none;flex-direction:column;overflow:hidden;
+            animation:slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        #zone-panel.show{display:flex}
+        .zp-accent{height:4px;border-radius:0;flex-shrink:0;transition:background 0.5s}
+        .zp-head{padding:12px 14px 8px;flex-shrink:0;position:relative}
+        .zp-close{
+            position:absolute;top:8px;right:10px;width:24px;height:24px;
+            border-radius:50%;border:none;background:rgba(0,0,0,0.07);
+            color:#4a6a4a;font-size:12px;cursor:pointer;display:flex;
+            align-items:center;justify-content:center;transition:background 0.18s;
+        }
+        .zp-close:hover{background:rgba(0,0,0,0.14)}
+        .zp-loc{font-size:12.5px;font-weight:700;color:#1a2a1a;padding-right:28px;line-height:1.3}
+        .zp-sub{font-size:9.5px;color:#6a8c6a;margin-top:2px}
+        .zp-zone-pill{
+            display:inline-flex;align-items:center;gap:6px;margin-top:7px;
+            padding:4px 10px;border-radius:50px;font-size:10.5px;font-weight:700;
+        }
+        .zpill-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+        /* TABS */
+        .zp-tabs{display:flex;padding:4px 8px 0;gap:2px;flex-shrink:0;border-bottom:1px solid rgba(0,0,0,0.07)}
+        .zp-tab{
+            flex:1;padding:6px 4px;border:none;background:transparent;border-radius:7px 7px 0 0;
+            font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;color:#6a8c6a;
+            cursor:pointer;border-bottom:2.5px solid transparent;transition:all 0.15s;
+        }
+        .zp-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+        .zp-tab:hover:not(.active){color:var(--primary);background:rgba(44,94,26,0.05)}
+
+        /* PANEL BODY */
+        .zp-body{flex:1;overflow-y:auto;padding:12px 12px 16px;scroll-behavior:smooth}
+        .zp-body::-webkit-scrollbar{width:3px}
+        .zp-body::-webkit-scrollbar-thumb{background:#c0dcc0;border-radius:2px}
+
+        /* stat cards */
+        .s-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+        .s-card{background:#f4fbf4;border-radius:9px;padding:8px 10px}
+        .s-lbl{font-size:8.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;color:#6a8c6a}
+        .s-val{font-size:14px;font-weight:700;color:#1a2a1a;margin-top:1px}
+        .blk{background:#f4fbf4;border-radius:9px;padding:10px 12px;margin-bottom:8px;font-size:11.5px;color:#2a4a2a;line-height:1.6}
+        .tip-blk{background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 9px 9px 0;padding:8px 11px;margin-bottom:8px;font-size:10.5px;color:#78350f;line-height:1.6}
+        .chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+        .chip{background:#e8f5e8;color:var(--primary);border-radius:50px;padding:2px 9px;font-size:9.5px;font-weight:600}
+        .sec-lbl{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#6a8c6a;margin:10px 0 5px}
+
+        /* NDVI bar */
+        .ndvi-wrap{background:#f4fbf4;border-radius:9px;padding:9px 11px;margin-bottom:10px}
+        .ndvi-lbl-row{display:flex;justify-content:space-between;font-size:8.5px;color:#8aaa8a;margin-bottom:3px}
+        .ndvi-track{height:5px;border-radius:3px;background:linear-gradient(90deg,#b45309,#ca8a04,#84cc16,#166534);position:relative}
+        .ndvi-cur{position:absolute;top:-5px;width:15px;height:15px;background:#fff;
+            border:2.5px solid var(--primary);border-radius:50%;transform:translateX(-50%);
+            box-shadow:0 2px 6px rgba(0,0,0,0.18);transition:left 0.5s ease}
+
+        /* timeline chart */
+        .timeline-wrap{background:#f4fbf4;border-radius:9px;padding:9px 11px;margin-bottom:10px}
+
+        /* crop hero card */
+        .dc-hero{
+            background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:12px;
+            padding:12px 12px 8px;margin-bottom:10px;border:1px solid #bbf7d0;
         }
 
-        .value-display {
-            margin-top: 8px; text-align: center;
-            background: var(--base-light); padding: 8px 10px; border-radius: 8px;
-            border: 1px solid #a3d977;
-            display: flex; align-items: baseline; justify-content: center; gap: 4px;
+        /* ── LEGEND ── */
+        #legend{
+            position:absolute;bottom:14px;right:14px;z-index:1001;
+            background:rgba(255,255,255,0.97);border-radius:14px;
+            padding:12px 14px;box-shadow:0 5px 20px rgba(0,0,0,0.15);
+            display:none;max-height:calc(100vh - 140px);overflow-y:auto;min-width:190px;
+        }
+        #legend.show{display:block}
+        .leg-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#6a8c6a;margin-bottom:8px}
+        .leg-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+        .leg-sw{width:14px;height:9px;border-radius:2px;flex-shrink:0}
+        .leg-nm{font-size:9.5px;color:#2a4a2a;font-weight:500}
+        .leg-code{font-size:8.5px;color:#8aaa8a}
+
+        /* ── BASEMAP BADGE ── */
+        #bmbadge{
+            position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+            z-index:1000;background:rgba(255,255,255,0.82);border-radius:50px;
+            padding:3px 12px;font-size:9.5px;color:#6a8c6a;font-weight:500;
+            box-shadow:0 1px 8px rgba(0,0,0,0.1);pointer-events:none;
         }
 
-        #param-value { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
-        #param-unit  { font-size: 0.85rem; color: var(--primary-dark); font-weight: 600; }
-
-        #loading-overlay {
-            display: none;
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(246,255,220,0.85);
-            z-index: 2000;
-            align-items: center; justify-content: center; flex-direction: column;
-            color: var(--primary-dark); font-size: 1.1rem; font-weight: bold;
+        /* ── TOAST ── */
+        #toast{
+            position:absolute;top:64px;left:50%;transform:translateX(-50%) translateY(-10px);
+            z-index:9999;background:rgba(44,94,26,0.92);color:#fff;
+            padding:6px 16px;border-radius:50px;font-size:11.5px;font-weight:600;
+            opacity:0;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            white-space:nowrap;box-shadow:0 3px 14px rgba(0,0,0,0.2);pointer-events:none;
         }
+        #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+        #toast.err{background:rgba(185,28,28,0.92)}
 
-        .spinner {
-            border: 4px solid rgba(44,94,26,0.2);
-            width: 50px; height: 50px; border-radius: 50%;
-            border-left-color: var(--primary-dark);
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+        /* ── FETCH FILTER MODAL ── */
+        #fetchFilterOverlay{
+            position:fixed;inset:0;z-index:5000;background:rgba(10,20,10,0.5);
+            backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;
         }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .leaflet-draw-toolbar a { width: 40px !important; height: 40px !important; line-height: 40px !important; }
-
-        .leaflet-popup-content-wrapper {
-            background: var(--panel-bg); border: 2px solid var(--primary-dark);
-            border-radius: 12px; text-align: center; padding: 0;
+        #fetchFilterOverlay.show{display:flex}
+        #fetchFilterBox{
+            background:rgba(255,255,255,0.99);border-radius:22px;
+            padding:26px 26px 20px;box-shadow:0 20px 60px rgba(0,0,0,0.25);
+            width:min(400px,calc(100vw - 28px));animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
         }
-        .leaflet-popup-content { font-size: 1.2rem; font-weight: bold; color: var(--accent); margin: 10px 15px; }
-        .leaflet-popup-tip { background: var(--primary-dark); }
-
-        .info.legend {
-            background: white; padding: 10px 15px; border-radius: 8px;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.4); font-size: 12px; color: #333; line-height: 24px;
+        .ff-header{display:flex;align-items:center;gap:9px;margin-bottom:20px}
+        .ff-icon{font-size:24px}
+        .ff-title{font-size:15px;font-weight:800;color:#1a2a1a}
+        .ff-sub{font-size:10.5px;color:#6a8c6a;margin-top:1px}
+        .ff-lbl{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#6a8c6a;margin-bottom:8px}
+        .ff-pill-row{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
+        .ff-pill{
+            flex:1;min-width:56px;padding:9px 7px;border:2px solid #e0eee0;border-radius:12px;
+            background:#f8fdf8;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;
+            color:var(--primary-light);cursor:pointer;text-align:center;line-height:1.2;transition:all 0.15s;
         }
-        .info.legend h4 { margin: 0 0 10px 0; font-size: 14px; }
+        .ff-pill .sub{font-size:8.5px;font-weight:500;color:#8aaa8a;display:block;margin-top:1px}
+        .ff-pill.selected{border-color:var(--primary);background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;box-shadow:0 3px 12px rgba(44,94,26,0.3)}
+        .ff-pill.selected .sub{color:rgba(255,255,255,0.7)}
+        .ff-pill:hover:not(.selected){border-color:var(--primary);background:#edf7ed;color:var(--primary)}
+        .ff-season-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:20px}
+        .ff-sc{padding:10px 9px 8px;border:2px solid #e0eee0;border-radius:12px;background:#f8fdf8;cursor:pointer;text-align:center;font-family:'Inter',sans-serif;transition:all 0.15s}
+        .ff-sc:hover{border-color:var(--primary);background:#edf7ed}
+        .ff-sc.selected{border-color:var(--primary);background:linear-gradient(135deg,#f0fdf4,#dcfce7);box-shadow:0 2px 10px rgba(44,94,26,0.15)}
+        .ff-sc-icon{font-size:20px;margin-bottom:3px}
+        .ff-sc-name{font-size:10.5px;font-weight:700;color:#1a2a1a}
+        .ff-sc.selected .ff-sc-name{color:var(--primary)}
+        .ff-sc-period{font-size:8.5px;color:#6a8c6a;margin-top:1px}
+        .ff-actions{display:flex;gap:9px;align-items:center}
+        .ff-cancel{flex:0 0 auto;padding:9px 16px;border:1.5px solid #e0eee0;border-radius:50px;background:transparent;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;color:#6a8c6a;cursor:pointer;transition:all 0.15s}
+        .ff-cancel:hover{border-color:#ccc;color:#2a4a2a}
+        .ff-go{flex:1;padding:11px 18px;background:linear-gradient(135deg,var(--primary),var(--primary-light));border:none;border-radius:50px;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 3px 14px rgba(44,94,26,0.3);transition:all 0.15s}
+        .ff-go:hover{transform:translateY(-1px);box-shadow:0 5px 20px rgba(44,94,26,0.4)}
 
-        .fertility-badge {
-            display: inline-block; padding: 4px 12px; border-radius: 20px;
-            font-weight: 800; text-transform: uppercase; font-size: 0.78rem;
-            margin-bottom: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        /* ── SOIL OVERVIEW GRID ── */
+        #soil-overview{display:none;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px}
+        .ov-card{background:#f8fafc;border-radius:6px;padding:5px 3px;border-left:3px solid #a3d977;text-align:center}
+        .ov-label{font-size:0.54rem;color:#64748b;text-transform:uppercase;margin-bottom:1px;letter-spacing:.03em}
+        .ov-value{font-size:0.78rem;font-weight:800;color:var(--accent)}
+        .ov-unit {font-size:0.5rem;color:#94a3b8}
+
+        /* ── EXISTING PANEL PIECES ── */
+        .fertility-badge{display:inline-block;padding:3px 11px;border-radius:20px;font-weight:800;text-transform:uppercase;font-size:0.75rem;margin-bottom:7px;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+        .fertility-low   {background:#fee2e2;color:#991b1b;border:1px solid #f87171}
+        .fertility-medium{background:#fef3c7;color:#92400e;border:1px solid #fbbf24}
+        .fertility-high  {background:#dcfce7;color:#166534;border:1px solid #4ade80}
+        .env-snapshot{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px;padding-top:8px;border-top:1px solid #eee}
+        .env-card{background:#f8fafc;padding:5px 8px;border-radius:7px;text-align:center}
+        .env-label{font-size:0.56rem;color:#64748b;text-transform:uppercase;margin-bottom:1px}
+        .env-val  {font-size:0.8rem;font-weight:bold;color:var(--primary)}
+        #download-pdf-btn{
+            display:flex;width:100%;margin-top:14px;padding:12px;
+            background:linear-gradient(135deg,var(--primary),var(--primary-light));
+            color:#fff;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;
+            cursor:pointer;box-shadow:0 4px 14px rgba(44,94,26,0.35);
+            align-items:center;justify-content:center;gap:8px;transition:transform .15s,box-shadow .15s;
         }
-        .fertility-low    { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
-        .fertility-medium { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
-        .fertility-high   { background: #dcfce7; color: #166534; border: 1px solid #4ade80; }
+        #download-pdf-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(44,94,26,0.45)}
 
-        .env-snapshot {
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: 5px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;
+        /* ── CROP MAP TAB CONTROLS ── */
+        .cm-crop-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:2px}
+        .cm-crop-pill{
+            padding:6px 4px;border:1.5px solid #c8e6c8;border-radius:8px;background:#fff;
+            font-family:'Inter',sans-serif;font-size:9.5px;font-weight:600;color:var(--primary);
+            cursor:pointer;text-align:center;transition:all 0.15s;line-height:1.3;
         }
-        .env-card { background: #f8fafc; padding: 5px 8px; border-radius: 7px; text-align: center; }
-        .env-label { font-size: 0.58rem; color: #64748b; text-transform: uppercase; margin-bottom: 1px; }
-        .env-val   { font-size: 0.82rem; font-weight: bold; color: var(--primary-dark); }
-
-        #download-pdf-btn {
-            display: flex; width: 100%; margin-top: 16px; padding: 14px;
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
-            color: #fff; border: none; border-radius: 10px;
-            font-size: 1rem; font-weight: 700; letter-spacing: 0.5px; cursor: pointer;
-            box-shadow: 0 4px 14px rgba(44,94,26,0.35);
-            transition: transform .15s, box-shadow .15s, opacity .15s;
-            align-items: center; justify-content: center; gap: 8px;
+        .cm-crop-pill:hover{border-color:var(--primary);background:#f0fbe7}
+        .cm-crop-pill.selected{background:var(--primary);color:#fff;border-color:var(--primary)}
+        .cm-crop-pill .cp-icon{font-size:14px;display:block;margin-bottom:2px}
+        #btn-cropmap{
+            width:100%;margin-top:12px;padding:11px;
+            background:linear-gradient(135deg,#1565c0,#1976d2);
+            color:#fff;border:none;border-radius:10px;font-family:'Inter',sans-serif;
+            font-size:11.5px;font-weight:700;cursor:pointer;
+            box-shadow:0 4px 14px rgba(21,101,192,0.35);transition:all .15s;
         }
-        #download-pdf-btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(44,94,26,0.45); }
-        #download-pdf-btn:active { transform: translateY(0); opacity: 0.9; }
-
-        /* Upload FAB */
-        #upload-fab {
-            position: fixed; bottom: 24px; right: 24px; z-index: 3000;
-            width: 56px; height: 56px; border-radius: 50%;
-            background: linear-gradient(135deg, #2c5e1a, #4a7c36);
-            color: #fff; border: none; cursor: pointer;
-            box-shadow: 0 4px 18px rgba(44,94,26,0.5);
-            display: flex; align-items: center; justify-content: center;
-            transition: transform .2s, box-shadow .2s;
+        #btn-cropmap:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 20px rgba(21,101,192,0.45)}
+        #btn-cropmap:disabled{opacity:0.5;cursor:not-allowed}
+        .cm-result-hero{
+            background:linear-gradient(135deg,#e8f5e9,#f0fbe7);
+            border:1.5px solid #c8e6c8;border-radius:10px;padding:12px;margin-top:10px;
         }
-        #upload-fab:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(44,94,26,0.6); }
-        #upload-fab .fab-tooltip {
-            position: absolute; right: 64px;
-            background: rgba(30,30,30,0.85); color: #fff; font-size: 0.75rem;
-            padding: 4px 10px; border-radius: 6px; white-space: nowrap;
-            pointer-events: none; opacity: 0; transition: opacity .2s;
+        .cm-stat-row{display:flex;gap:8px;margin-top:8px}
+        .cm-stat{flex:1;background:#fff;border-radius:8px;padding:7px;text-align:center;border:1px solid #e0f2e0}
+        .cm-stat-val{font-size:14px;font-weight:800;color:var(--primary)}
+        .cm-stat-lbl{font-size:8px;color:#6a8c6a;font-weight:600;margin-top:1px}
+
+        /* ── CROP TOOLTIP ON POLYGON ── */
+        .crop-tooltip{background:rgba(255,255,255,0.97)!important;border:1.5px solid var(--primary)!important;border-radius:11px!important;box-shadow:0 5px 18px rgba(0,0,0,0.14)!important;padding:7px 11px!important;font-family:'Inter',sans-serif!important;pointer-events:auto!important}
+        .crop-tooltip::before{display:none!important}
+        .ct-title{font-size:12.5px;font-weight:700;color:#1a4d1a;display:flex;align-items:center;justify-content:center;gap:4px}
+        .ct-sub{font-size:8.5px;color:#6a8c6a;margin-top:2px;text-align:center}
+        .ct-src{font-size:8px;color:#8aaa8a;margin-top:2px;text-align:center;border-top:1px solid rgba(0,0,0,0.05);padding-top:2px}
+
+        /* ── LEAFLET OVERRIDES ── */
+        .leaflet-draw-toolbar a{width:38px!important;height:38px!important;line-height:38px!important}
+        .leaflet-popup-content-wrapper{background:var(--panel-bg);border:2px solid var(--primary);border-radius:12px;text-align:center;padding:0}
+        .leaflet-popup-content{font-size:1.1rem;font-weight:bold;color:var(--accent);margin:10px 14px}
+        .leaflet-popup-tip{background:var(--primary)}
+        .info.legend{background:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 1px 5px rgba(0,0,0,0.4);font-size:12px;color:#333;line-height:24px}
+
+        select{width:100%;padding:11px;border-radius:8px;border:1px solid #ccc;font-size:0.95rem;background-color:#fff;outline:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%232c5e1a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");background-repeat:no-repeat;background-position:right 14px top 50%;background-size:11px auto}
+        .value-display{margin-top:8px;text-align:center;background:var(--base-light);padding:7px 10px;border-radius:8px;border:1px solid #a3d977;display:flex;align-items:baseline;justify-content:center;gap:4px}
+        #param-value{font-size:1.5rem;font-weight:800;color:var(--accent)}
+        #param-unit {font-size:0.82rem;color:var(--primary);font-weight:600}
+        #param-toggle{position:relative;z-index:1100}
+
+        /* ── UPLOAD MODAL ── */
+        #upload-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:4000;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+        #upload-modal-overlay.open{display:flex}
+        #upload-modal{background:#fff;width:100%;max-width:520px;border-top-left-radius:20px;border-top-right-radius:20px;padding:22px 22px 32px;box-shadow:0 -4px 30px rgba(0,0,0,0.2);position:relative;max-height:90vh;overflow-y:auto}
+        #upload-modal h2{margin:0 0 4px 0;font-size:1.1rem;color:var(--primary)}
+        #upload-modal .subtitle{font-size:0.78rem;color:#6b7280;margin:0 0 18px 0}
+        #upload-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#9ca3af}
+        #upload-modal-close:hover{color:#374151}
+        #drop-zone{border:2px dashed #a3d977;border-radius:12px;padding:28px 14px;text-align:center;cursor:pointer;transition:background .2s,border-color .2s;background:#f9fdf5;margin-bottom:14px}
+        #drop-zone.drag-over{background:#edffd6;border-color:var(--primary)}
+        #drop-zone p{margin:0;font-size:0.88rem;color:#6b7280}
+        #drop-zone strong{color:var(--primary)}
+        #file-input{display:none}
+        #selected-file-name{font-size:0.8rem;color:var(--primary);font-weight:600;margin-top:7px;min-height:16px}
+        .upload-options{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+        .upload-toggle{display:flex;align-items:center;gap:7px;font-size:0.83rem;color:#374151;cursor:pointer}
+        .upload-toggle input[type=checkbox]{width:15px;height:15px;accent-color:var(--primary);cursor:pointer}
+        #upload-submit-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:none;border-radius:10px;font-size:0.95rem;font-weight:700;cursor:pointer;transition:opacity .2s}
+        #upload-submit-btn:disabled{opacity:0.5;cursor:not-allowed}
+        #upload-result{display:none;margin-top:16px;border-radius:10px;padding:12px 14px;font-size:0.82rem;line-height:1.7}
+        #upload-result.result-ok {background:#f0fdf4;border:1px solid #86efac;color:#166534}
+        #upload-result.result-err{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b}
+        #col-hint-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:9px 11px;font-size:0.73rem;color:#475569;margin-bottom:14px;line-height:1.6}
+        #col-hint-box b{color:var(--primary)}
+        #col-hint-toggle{background:none;border:none;color:var(--primary-light);font-size:0.76rem;cursor:pointer;padding:0;margin-bottom:5px;text-decoration:underline}
+
+        @keyframes spin   {to{transform:rotate(360deg)}}
+        @keyframes fadeUp {from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+        @keyframes slideUp{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:translateY(0)}}
+
+        /* ── LAYOUT — map + sidebar side by side ── */
+        .map-container{display:flex;height:calc(100% - 54px);overflow:hidden}
+        #map{flex:1;min-width:0;position:relative}
+
+        /* ── RIGHT SIDEBAR ── */
+        #sb{
+            width:0;height:100%;background:#fff;flex-shrink:0;
+            border-left:2px solid #e4eed4;display:flex;flex-direction:column;
+            transition:width .3s cubic-bezier(.4,0,.2,1);overflow:hidden;
+            box-shadow:-4px 0 20px rgba(0,0,0,.1);position:relative;
         }
-        #upload-fab:hover .fab-tooltip { opacity: 1; }
-
-        /* Upload Modal */
-        #upload-modal-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.55); z-index: 4000;
-            align-items: flex-end; justify-content: center;
-            backdrop-filter: blur(4px);
+        #sb.open{width:370px}
+        #sb-close{
+            position:absolute;top:6px;right:8px;width:26px;height:26px;
+            border-radius:50%;border:none;background:rgba(0,0,0,.07);
+            color:#6a8c6a;font-size:12px;cursor:pointer;z-index:10;
+            display:flex;align-items:center;justify-content:center;transition:background .15s;
         }
-        #upload-modal-overlay.open { display: flex; }
-
-        #upload-modal {
-            background: #fff; width: 100%; max-width: 520px;
-            border-top-left-radius: 20px; border-top-right-radius: 20px;
-            padding: 24px 24px 36px 24px;
-            box-shadow: 0 -4px 30px rgba(0,0,0,0.2);
-            animation: slideUp 0.3s ease-out;
-            position: relative; max-height: 90vh; overflow-y: auto;
+        #sb-close:hover{background:rgba(0,0,0,.14)}
+        #sb-reopen{
+            display:none;position:fixed;right:0;top:50%;transform:translateY(-50%);
+            writing-mode:vertical-rl;text-orientation:mixed;
+            padding:14px 7px;background:#14532d;color:#fff;
+            border:none;border-radius:8px 0 0 8px;font-size:10.5px;font-weight:700;
+            font-family:'Inter',sans-serif;cursor:pointer;z-index:900;letter-spacing:.04em;
+            box-shadow:-3px 0 12px rgba(0,0,0,.18);transition:background .15s;
         }
-        #upload-modal h2    { margin: 0 0 4px 0; font-size: 1.2rem; color: var(--primary-dark); }
-        #upload-modal .subtitle { font-size: 0.8rem; color: #6b7280; margin: 0 0 20px 0; }
+        #sb-reopen:hover{background:#166534}
 
-        #upload-modal-close {
-            position: absolute; top: 16px; right: 18px;
-            background: none; border: none; font-size: 1.4rem; cursor: pointer;
-            color: #9ca3af; line-height: 1;
+        /* ── SIDEBAR TABS ── */
+        .sb-tabs{display:flex;border-bottom:2px solid #e4eed4;flex-shrink:0;background:#fafdf5;padding-top:2px}
+        .sb-tab{
+            flex:1;padding:10px 2px 8px;border:none;background:transparent;cursor:pointer;
+            font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;color:#6a8c6a;
+            border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .15s;
+            display:flex;flex-direction:column;align-items:center;gap:3px;
         }
-        #upload-modal-close:hover { color: #374151; }
+        .sb-tab .t-icon{font-size:15px}
+        .sb-tab.active{color:var(--primary);border-bottom-color:var(--primary);background:#fff}
+        .sb-tab:hover:not(.active){color:var(--primary);background:rgba(44,94,26,.04)}
+        .t-dot{width:6px;height:6px;border-radius:50%;display:none}
+        .t-dot.done{display:block;background:#16a34a}
+        .t-dot.loading{display:block;background:#f59e0b;animation:pulse .8s ease-in-out infinite alternate}
+        @keyframes pulse{from{opacity:.4}to{opacity:1}}
 
-        #drop-zone {
-            border: 2px dashed #a3d977; border-radius: 12px; padding: 32px 16px;
-            text-align: center; cursor: pointer;
-            transition: background .2s, border-color .2s;
-            background: #f9fdf5; margin-bottom: 16px;
+        /* ── PANES ── */
+        .sb-panes{flex:1;overflow:hidden;position:relative}
+        .sb-pane{position:absolute;inset:0;overflow-y:auto;padding:14px 14px 22px;display:none;scrollbar-width:thin}
+        .sb-pane.active{display:block}
+        .sb-pane::-webkit-scrollbar{width:3px}
+        .sb-pane::-webkit-scrollbar-thumb{background:#d4e8d4;border-radius:2px}
+
+        /* ── PLACEHOLDER ── */
+        .sb-ph{text-align:center;padding:36px 20px;color:#6a8c6a}
+        .sb-ph-icon{font-size:36px;margin-bottom:8px}
+        .sb-ph-title{font-size:12px;font-weight:700;color:#2a4a2a;margin-bottom:4px}
+        .sb-ph-sub{font-size:10.5px;line-height:1.5}
+
+        /* ── HOW IT WORKS CARD ── */
+        .hiw{margin:18px 0 4px;border-top:1px solid #e4eed4;padding-top:14px}
+        .hiw-title{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:800;
+            letter-spacing:.05em;color:#6a8c6a;text-transform:uppercase;cursor:pointer;user-select:none;margin-bottom:0}
+        .hiw-title span.arr{transition:transform .2s;display:inline-block;font-style:normal}
+        .hiw-title.open span.arr{transform:rotate(90deg)}
+        .hiw-body{display:none;margin-top:10px}
+        .hiw-title.open + .hiw-body{display:block}
+        .hiw-row{display:flex;gap:7px;align-items:flex-start;margin-bottom:7px}
+        .hiw-dot{width:6px;height:6px;border-radius:50%;background:#16a34a;flex-shrink:0;margin-top:3px}
+        .hiw-text{font-size:9.5px;color:#4a6a4a;line-height:1.5}
+        .hiw-text b{color:#14532d}
+        .hiw-tag{display:inline-block;background:#f0fdf4;border:1px solid #bbf7d0;
+            border-radius:4px;padding:1px 6px;font-size:8px;font-weight:700;color:#15803d;margin:2px 2px 0 0}
+
+        /* ── SETUP TAB ── */
+        .poly-stat{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:12px;padding:12px 14px;margin-bottom:14px;border:1px solid #bbf7d0}
+        .poly-stat-row{display:flex;gap:10px}
+        .ps-item{flex:1;text-align:center}
+        .ps-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#6a8c6a;margin-bottom:3px}
+        .ps-val{font-size:15px;font-weight:800;color:var(--primary)}
+        .ps-unit{font-size:9px;color:#6a8c6a}
+        .btn-analyze{
+            width:100%;padding:13px;background:linear-gradient(135deg,var(--primary),var(--primary-light));
+            border:none;border-radius:12px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;
+            color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(44,94,26,.3);
+            transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;
         }
-        #drop-zone.drag-over { background: #edffd6; border-color: var(--primary-dark); }
-        #drop-zone p { margin: 0; font-size: 0.9rem; color: #6b7280; }
-        #drop-zone strong { color: var(--primary-dark); }
-        #file-input { display: none; }
+        .btn-analyze:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 20px rgba(44,94,26,.4)}
+        .btn-analyze:disabled{opacity:.5;cursor:not-allowed}
 
-        #selected-file-name { font-size: 0.82rem; color: var(--primary-dark); font-weight: 600; margin-top: 8px; min-height: 18px; }
+        /* ── SOIL TAB ── */
+        .sb-sec{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#6a8c6a;margin:12px 0 6px}
+        .sb-card{background:#f4fbf4;border-radius:10px;padding:10px 12px;margin-bottom:8px}
+        .sb-tip{background:#fffbeb;border-left:3px solid #f59e0b;border-radius:0 9px 9px 0;padding:8px 11px;margin-bottom:8px;font-size:10.5px;color:#78350f;line-height:1.6}
+        .sb-grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+        .sb-gc{background:#f4fbf4;border-radius:9px;padding:8px 10px}
+        .sb-gc .lbl{font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#6a8c6a}
+        .sb-gc .val{font-size:13px;font-weight:700;color:#1a2a1a;margin-top:2px}
+        .sb-chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+        .sb-chip{background:#e8f5e8;color:var(--primary);border-radius:50px;padding:2px 9px;font-size:9px;font-weight:600}
+        .sb-blk{font-size:11px;color:#2a4a2a;line-height:1.65;margin-bottom:8px}
+        #soil-overview-sb{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px}
+        .ov-c{background:#f8fafc;border-radius:7px;padding:6px 4px;border-left:3px solid #a3d977;text-align:center}
+        .ov-c .lbl{font-size:7.5px;color:#64748b;text-transform:uppercase;margin-bottom:1px}
+        .ov-c .val{font-size:.82rem;font-weight:800;color:var(--accent)}
+        .ov-c .unit{font-size:7px;color:#94a3b8}
+        .fert-badge-sb{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:800;text-transform:uppercase;font-size:.72rem;margin-bottom:9px}
+        .fert-l{background:#fee2e2;color:#991b1b;border:1px solid #f87171}
+        .fert-m{background:#fef3c7;color:#92400e;border:1px solid #fbbf24}
+        .fert-h{background:#dcfce7;color:#166534;border:1px solid #4ade80}
+        .par-sel{width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid #e4eed4;font-size:.88rem;background:#fff;outline:none;font-family:inherit;color:#1a2a1a;-webkit-appearance:none;cursor:pointer;margin-bottom:8px;background-image:url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' width%3D'12' height%3D'12'%3E%3Cpath fill%3D'%232c5e1a' d%3D'M6 8L1 3h10z'%2F%3E%3C%2Fsvg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+        .val-disp-sb{text-align:center;background:var(--base-light);padding:9px;border-radius:9px;border:1.5px solid #a3d977;display:flex;align-items:baseline;justify-content:center;gap:5px;margin-bottom:10px}
+        #par-val-sb{font-size:1.55rem;font-weight:800;color:var(--accent)}
+        #par-unit-sb{font-size:.8rem;color:var(--primary);font-weight:600}
+        .env-g-sb{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+        .env-c-sb{background:#f8fafc;padding:6px 8px;border-radius:8px;text-align:center}
+        .env-c-sb .lbl{font-size:8px;color:#64748b;text-transform:uppercase;margin-bottom:1px}
+        .env-c-sb .val{font-size:.82rem;font-weight:bold;color:var(--primary)}
+        .btn-pdf{display:flex;width:100%;margin-top:14px;padding:11px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;align-items:center;justify-content:center;gap:7px;font-family:inherit;transition:all .15s}
+        .btn-pdf:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(44,94,26,.35)}
 
-        .upload-options { display: flex; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
-        .upload-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #374151; cursor: pointer; }
-        .upload-toggle input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--primary-dark); cursor: pointer; }
-
-        #upload-submit-btn {
-            width: 100%; padding: 14px;
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
-            color: #fff; border: none; border-radius: 10px;
-            font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity .2s;
-        }
-        #upload-submit-btn:disabled           { opacity: 0.5; cursor: not-allowed; }
-        #upload-submit-btn:not(:disabled):hover { opacity: 0.9; }
-
-        #upload-result { display: none; margin-top: 18px; border-radius: 10px; padding: 14px 16px; font-size: 0.84rem; line-height: 1.7; }
-        #upload-result.result-ok  { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
-        #upload-result.result-err { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
-        #upload-result .result-title { font-weight: 700; font-size: 1rem; margin-bottom: 8px; }
-        #upload-result .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-bottom: 8px; }
-        #upload-result .stat-item span:first-child { color: #6b7280; font-size: 0.78rem; }
-        #upload-result .stat-item span:last-child  { font-weight: 700; }
-
-        .rejected-list { max-height: 100px; overflow-y: auto; background: rgba(0,0,0,0.04); border-radius: 6px; padding: 6px 8px; font-size: 0.76rem; margin-top: 6px; }
-
-        #col-hint-box {
-            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
-            padding: 10px 12px; font-size: 0.75rem; color: #475569;
-            margin-bottom: 16px; line-height: 1.6;
-        }
-        #col-hint-box b { color: var(--primary-dark); }
-        #col-hint-toggle { background: none; border: none; color: var(--primary-light); font-size: 0.78rem; cursor: pointer; padding: 0; margin-bottom: 6px; text-decoration: underline; }
-
+        /* ── ZONE/CROP TABS ── */
+        .ndvi-wrap-sb{background:#f4fbf4;border-radius:9px;padding:9px 11px;margin-bottom:10px}
+        .ndvi-lbl-row-sb{display:flex;justify-content:space-between;font-size:8px;color:#8aaa8a;margin-bottom:3px}
+        .ndvi-track-sb{height:5px;border-radius:3px;background:linear-gradient(90deg,#b45309,#ca8a04,#84cc16,#166534);position:relative}
+        .ndvi-cur-sb{position:absolute;top:-5px;width:14px;height:14px;background:#fff;border:2.5px solid var(--primary);border-radius:50%;transform:translateX(-50%);box-shadow:0 2px 6px rgba(0,0,0,.18);transition:left .5s ease}
+        .dc-hero{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:12px;padding:12px;margin-bottom:10px;border:1px solid #bbf7d0}
+        .tl-wrap{background:#f4fbf4;border-radius:9px;padding:9px;margin-bottom:10px;overflow-x:auto}
+        .spin-inline{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(44,94,26,.2);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
     </style>
 </head>
-
 <body>
+<div class="header">
+    <a class="header-back" href="{% url 'user-page' %}">&#8592; Back</a>
+    <div class="header-title">
+        <h1>SoilMap</h1>
+        <p>{{ device.name }} &mdash; Draw area for analysis</p>
+    </div>
+</div>
 
-    <div class="header">
-        <a class="header-back" href="{% url 'user-page' %}">
-            &#8592; Back
-        </a>
-        <div class="header-title" style="margin-top: 10px;">
-            <h1>SoilMap</h1>
-            <p>{{ device.name }} &mdash; Draw area for analysis</p>
+<div class="map-container">
+    <div id="map"></div>
+
+    <!-- Location Search -->
+    <div id="location-search-wrap">
+        <div id="location-search-inner">
+            <span id="loc-search-icon">&#128269;</span>
+            <div id="loc-spin" style="display:none"></div>
+            <input id="location-search-input" type="text" placeholder="Search village, town, district..." autocomplete="off"/>
         </div>
+        <div id="location-suggestions"></div>
     </div>
 
-    <div class="map-container">
-        <div id="map"></div>
+    <!-- Raster mode (left side, positioned by JS after toolbox) -->
+    <div id="rasterBox">
+        <button class="rm-btn active" id="rmSoil" onclick="setRaster('soil')">&#127758; Soil Param</button>
+        <button class="rm-btn"        id="rmZone" onclick="setRaster('zone')">&#127757; Zone Overlay</button>
+        <button class="rm-btn"        id="rmNdvi" onclick="setRaster('ndvi')">&#127777; NDVI Heat</button>
+    </div>
 
-        <div id="location-search-wrap">
-            <input id="location-search-input" type="text" placeholder="Search village, town, district..." autocomplete="off" />
-            <div id="location-suggestions"></div>
+    <!-- Legend -->
+    <div id="legend">
+        <div class="leg-title">Köppen-Geiger Zones</div>
+    </div>
+
+    <!-- Basemap badge -->
+    <div id="bmbadge">Satellite (Esri)</div>
+
+    <!-- Toast -->
+    <div id="toast"></div>
+
+    <!-- Sidebar re-open tab (visible when sidebar is closed) -->
+    <button id="sb-reopen" onclick="openSidebar()" title="Open panel">
+        &#9664; Panel
+    </button>
+
+    <!-- RIGHT SIDEBAR with tabs -->
+    <div id="sb">
+        <button id="sb-close" onclick="closeSidebar()" title="Close">&#x2715;</button>
+
+        <!-- Tab bar -->
+        <div class="sb-tabs">
+            <button class="sb-tab active" id="tab-soil" onclick="showSbTab('soil')">
+                <span class="t-icon">&#127758;</span><span>Soil</span><span class="t-dot" id="dot-soil"></span>
+            </button>
+            <button class="sb-tab" id="tab-zone" onclick="showSbTab('zone')">
+                <span class="t-icon">&#127757;</span><span>Zone</span><span class="t-dot" id="dot-zone"></span>
+            </button>
+            <button class="sb-tab" id="tab-crop" onclick="showSbTab('crop')">
+                <span class="t-icon">&#127807;</span><span>Crop</span><span class="t-dot" id="dot-crop"></span>
+            </button>
+            <button class="sb-tab" id="tab-cropmap" onclick="showSbTab('cropmap')">
+                <span class="t-icon">&#128506;</span><span>Map</span><span class="t-dot" id="dot-cropmap"></span>
+            </button>
+            <button class="sb-tab" id="tab-cfg"  onclick="showSbTab('cfg')">
+                <span class="t-icon">&#9881;</span><span>Setup</span><span class="t-dot" id="dot-cfg"></span>
+            </button>
         </div>
 
-        <div id="loading-overlay">
-            <div class="spinner"></div>
-            Analyzing Soil...
-        </div>
+        <!-- Panes -->
+        <div class="sb-panes">
 
-        <div id="parameter-panel">
-            <button id="panel-tab" onclick="togglePanel()" title="Collapse / Expand">&#9664;</button>
-
-            <div id="panel-body">
-                <div id="fertility-container" style="text-align:center; margin-bottom:6px;">
-                    <span id="fertility-label" class="fertility-badge fertility-medium">Calculating...</span>
-                </div>
-
-                <div id="climate-zone-card" style="display:none; margin-bottom:12px; padding:10px 14px; border-radius:10px; border-left:4px solid #ccc; background:#f8fafc;">
-                    <div style="font-size:0.7rem; color:#64748b; text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px;">Agroclimatic Zone</div>
-                    <div id="climate-zone-name" style="font-size:0.95rem; font-weight:700; color:#1e293b;"></div>
-                    <div id="climate-zone-desc" style="font-size:0.72rem; color:#475569; margin-top:4px; line-height:1.4;"></div>
-                    <div id="climate-zone-tips" style="font-size:0.7rem; color:#16a34a; margin-top:5px; font-style:italic;"></div>
-                </div>
-
-                <h3>Soil Chemistry &amp; Texture</h3>
-
-                <!-- Quick overview of all values -->
-                <div id="soil-overview">
-                    <div class="ov-card" id="ov-ph">   <div class="ov-label">pH</div>   <div class="ov-value">--</div><div class="ov-unit">pH</div></div>
-                    <div class="ov-card" id="ov-ec">   <div class="ov-label">EC</div>   <div class="ov-value">--</div><div class="ov-unit">dS/m</div></div>
-                    <div class="ov-card" id="ov-n">    <div class="ov-label">N</div>    <div class="ov-value">--</div><div class="ov-unit">kg/ha</div></div>
-                    <div class="ov-card" id="ov-p">    <div class="ov-label">P</div>    <div class="ov-value">--</div><div class="ov-unit">kg/ha</div></div>
-                    <div class="ov-card" id="ov-k">    <div class="ov-label">K</div>    <div class="ov-value">--</div><div class="ov-unit">kg/ha</div></div>
-                    <div class="ov-card" id="ov-oc">   <div class="ov-label">OC</div>   <div class="ov-value">--</div><div class="ov-unit">%</div></div>
-                    <div class="ov-card" id="ov-s">    <div class="ov-label">S</div>    <div class="ov-value">--</div><div class="ov-unit">ppm</div></div>
-                    <div class="ov-card" id="ov-fe">   <div class="ov-label">Fe</div>   <div class="ov-value">--</div><div class="ov-unit">ppm</div></div>
-                    <div class="ov-card" id="ov-zn">   <div class="ov-label">Zn</div>   <div class="ov-value">--</div><div class="ov-unit">ppm</div></div>
-                    <div class="ov-card" id="ov-cu">   <div class="ov-label">Cu</div>   <div class="ov-value">--</div><div class="ov-unit">ppm</div></div>
-                    <div class="ov-card" id="ov-b">    <div class="ov-label">B</div>    <div class="ov-value">--</div><div class="ov-unit">ppm</div></div>
-                    <div class="ov-card" id="ov-mn">   <div class="ov-label">Mn</div>   <div class="ov-value">--</div><div class="ov-unit">ppm</div></div>
-                </div>
-
-                <select id="param-toggle">
-                    <optgroup label="Soil Chemistry">
-                        <option value="ph"             data-unit="pH">pH Level</option>
-                        <option value="ec"             data-unit="dS/m">Electric Conductivity (EC)</option>
-                        <option value="n"              data-unit="kg/ha">Nitrogen (N)</option>
-                        <option value="p"              data-unit="kg/ha">Phosphorus (P)</option>
-                        <option value="k"              data-unit="kg/ha">Potassium (K)</option>
-                        <option value="organic_carbon" data-unit="%">Organic Carbon (OC)</option>
-                        <option value="s"              data-unit="ppm">Sulfur (S)</option>
-                        <option value="fe"             data-unit="ppm">Iron (Fe)</option>
-                        <option value="zn"             data-unit="ppm">Zinc (Zn)</option>
-                        <option value="cu"             data-unit="ppm">Copper (Cu)</option>
-                        <option value="b"              data-unit="ppm">Boron (B)</option>
-                        <option value="mn"             data-unit="ppm">Manganese (Mn)</option>
-                    </optgroup>
-                    <optgroup label="Soil Physical Properties">
-                        <option value="sand_pct" data-unit="%">Sand Content</option>
-                        <option value="clay_pct" data-unit="%">Clay Content</option>
-                        <option value="silt_pct" data-unit="%">Silt Content</option>
-                    </optgroup>
-                </select>
-
-                <div class="value-display">
-                    <div id="param-value">--</div>
-                    <div id="param-unit">Unit</div>
-                </div>
-
-                <div class="env-snapshot">
-                    <div class="env-card"><div class="env-label">NDVI</div><div id="env-ndvi" class="env-val">--</div></div>
-                    <div class="env-card"><div class="env-label">Temp</div><div id="env-temp" class="env-val">--</div></div>
-                    <div class="env-card"><div class="env-label">Rainfall</div><div id="env-rain" class="env-val">--</div></div>
-                    <div class="env-card"><div class="env-label">Elev</div><div id="env-elev" class="env-val">--</div></div>
-                </div>
-
-                <button id="download-pdf-btn" onclick="generatePDF()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="7 10 12 15 17 10"/>
-                        <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
-                    Download Soil Report (PDF)
-                </button>
+            <!-- SOIL (first, active by default) -->
+            <div class="sb-pane active" id="pane-soil">
+                <div class="sb-ph"><div class="sb-ph-icon">&#127758;</div><div class="sb-ph-title">No Soil Data Yet</div><div class="sb-ph-sub">Draw a polygon on the map to start analysis.</div></div>
             </div>
-        </div>
-    </div>
 
-    <!-- Upload FAB -->
-    <!-- <button id="upload-fab" onclick="openUploadModal()" title="Upload Soil Data">
-        <span class="fab-tooltip">Upload Field Data</span>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-    </button> -->
+            <!-- ZONE -->
+            <div class="sb-pane" id="pane-zone">
+                <div class="sb-ph"><div class="sb-ph-icon">&#127757;</div><div class="sb-ph-title">No Zone Data Yet</div><div class="sb-ph-sub">Draw a polygon — zone loads automatically.</div></div>
+            </div>
+
+            <!-- CROP -->
+            <div class="sb-pane" id="pane-crop">
+                <div class="sb-ph"><div class="sb-ph-icon">&#127807;</div><div class="sb-ph-title">No Crop Data Yet</div><div class="sb-ph-sub">Draw a polygon — crop detection loads automatically (requires GEE).</div></div>
+            </div>
+
+            <!-- CROP MAP -->
+            <div class="sb-pane" id="pane-cropmap">
+                <div class="ff-lbl">&#127807; Crop Type</div>
+                <div class="cm-crop-grid" id="cmCropGrid">
+                    <button class="cm-crop-pill selected" data-c="paddy"     onclick="selCmCrop('paddy')">    <span class="cp-icon">🌾</span>Paddy/Rice</button>
+                    <button class="cm-crop-pill"          data-c="wheat"     onclick="selCmCrop('wheat')">    <span class="cp-icon">🌾</span>Wheat</button>
+                    <button class="cm-crop-pill"          data-c="sugarcane" onclick="selCmCrop('sugarcane')"><span class="cp-icon">🎋</span>Sugarcane</button>
+                    <button class="cm-crop-pill"          data-c="maize"     onclick="selCmCrop('maize')">    <span class="cp-icon">🌽</span>Maize</button>
+                    <button class="cm-crop-pill"          data-c="cotton"    onclick="selCmCrop('cotton')">   <span class="cp-icon">🌿</span>Cotton</button>
+                    <button class="cm-crop-pill"          data-c="soybean"   onclick="selCmCrop('soybean')">  <span class="cp-icon">🫘</span>Soybean</button>
+                    <button class="cm-crop-pill"          data-c="groundnut" onclick="selCmCrop('groundnut')"><span class="cp-icon">🥜</span>Groundnut</button>
+                    <button class="cm-crop-pill"          data-c="mustard"   onclick="selCmCrop('mustard')">  <span class="cp-icon">🌻</span>Mustard</button>
+                </div>
+
+                <div class="ff-lbl" style="margin-top:10px">&#128197; Data Period</div>
+                <div class="ff-pill-row" id="cmMonthsPills">
+                    <button class="ff-pill"          data-m="3"  onclick="selCmMonths(3)">3 mo</button>
+                    <button class="ff-pill selected"  data-m="6"  onclick="selCmMonths(6)">6 mo</button>
+                    <button class="ff-pill"          data-m="12" onclick="selCmMonths(12)">12 mo</button>
+                    <button class="ff-pill"          data-m="16" onclick="selCmMonths(16)">16 mo</button>
+                    <button class="ff-pill"          data-m="24" onclick="selCmMonths(24)">24 mo</button>
+                </div>
+
+                <div class="ff-lbl" style="margin-top:10px">&#128207; Radius</div>
+                <div class="ff-pill-row" id="cmRadiusPills">
+                    <button class="ff-pill"          data-r="0.5" onclick="selCmRadius(0.5)">0.5 km</button>
+                    <button class="ff-pill"          data-r="1"   onclick="selCmRadius(1)">1 km</button>
+                    <button class="ff-pill selected"  data-r="2"   onclick="selCmRadius(2)">2 km</button>
+                    <button class="ff-pill"          data-r="2.5" onclick="selCmRadius(2.5)">2.5 km</button>
+                    <button class="ff-pill"          data-r="3"   onclick="selCmRadius(3)">3 km</button>
+                </div>
+
+                <button id="btn-cropmap" onclick="runCropMap()" disabled>
+                    &#128506; Map Crop Coverage
+                </button>
+                <div id="cropmap-note" style="text-align:center;font-size:9.5px;color:#6a8c6a;margin-top:8px">
+                    Draw a polygon or place a marker to enable mapping
+                </div>
+                <div id="cropmap-result"></div>
+            </div>
+
+            <!-- SETUP -->
+            <div class="sb-pane" id="pane-cfg">
+                <div class="poly-stat" id="poly-stat">
+                    <div class="poly-stat-row">
+                        <div class="ps-item"><div class="ps-lbl">Area</div><div class="ps-val" id="ps-area">—</div><div class="ps-unit" id="ps-area-u">ha</div></div>
+                        <div class="ps-item"><div class="ps-lbl">Lat</div><div class="ps-val" id="ps-lat">—</div><div class="ps-unit">°N</div></div>
+                        <div class="ps-item"><div class="ps-lbl">Lon</div><div class="ps-val" id="ps-lon">—</div><div class="ps-unit">°E</div></div>
+                    </div>
+                </div>
+                <div class="ff-lbl">&#128207; SAR Radius</div>
+                <div class="ff-pill-row" id="radiusPills">
+                    <button class="ff-pill"         data-r="1" onclick="selRadius(1)">1 km<span class="sub">~314 ha</span></button>
+                    <button class="ff-pill selected" data-r="2" onclick="selRadius(2)">2 km<span class="sub">~1257 ha</span></button>
+                    <button class="ff-pill"         data-r="3" onclick="selRadius(3)">3 km<span class="sub">~2827 ha</span></button>
+                    <button class="ff-pill"         data-r="4" onclick="selRadius(4)">4 km<span class="sub">~5027 ha</span></button>
+                </div>
+                <div class="ff-lbl">&#127807; Crop Season</div>
+                <div class="ff-season-grid" id="seasonCards">
+                    <div class="ff-sc selected" data-s="kharif" onclick="selSeason('kharif')">
+                        <div class="ff-sc-icon">&#127783;</div>
+                        <div class="ff-sc-name">Kharif</div>
+                        <div class="ff-sc-period">Jun – Oct</div>
+                    </div>
+                    <div class="ff-sc" data-s="rabi" onclick="selSeason('rabi')">
+                        <div class="ff-sc-icon">&#10052;</div>
+                        <div class="ff-sc-name">Rabi</div>
+                        <div class="ff-sc-period">Nov – Mar</div>
+                    </div>
+                    <div class="ff-sc" data-s="zaid" onclick="selSeason('zaid')">
+                        <div class="ff-sc-icon">&#9728;</div>
+                        <div class="ff-sc-name">Zaid</div>
+                        <div class="ff-sc-period">Mar – Jun</div>
+                    </div>
+                    <div class="ff-sc" data-s="all" onclick="selSeason('all')">
+                        <div class="ff-sc-icon">&#128197;</div>
+                        <div class="ff-sc-name">All Seasons</div>
+                        <div class="ff-sc-period">Full Year</div>
+                    </div>
+                </div>
+                <button class="btn-analyze" id="btn-analyze" onclick="runAnalysis()" disabled>
+                    &#128640; Re-analyze Crop
+                </button>
+                <div id="cfg-note" style="text-align:center;font-size:9.5px;color:#6a8c6a;margin-top:10px">
+                    Draw a polygon on the map to enable analysis
+                </div>
+
+                <!-- GEE connectivity checker -->
+                <div style="margin-top:18px;border-top:1px solid #d4edda;padding-top:14px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                        <div style="font-size:10px;font-weight:700;color:#2a4a2a;letter-spacing:.03em">🛰 GEE Connectivity</div>
+                        <button id="btn-gee-check" onclick="checkGee()"
+                            style="padding:4px 12px;background:#14532d;color:#fff;border:none;border-radius:50px;font-size:9.5px;font-weight:700;cursor:pointer;font-family:inherit">
+                            Check
+                        </button>
+                    </div>
+                    <div id="gee-status-box" style="display:none;border-radius:10px;overflow:hidden;font-size:9.5px">
+                        <!-- filled by checkGee() -->
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- sb-panes -->
+    </div><!-- #sb -->
 
     <!-- Upload Modal -->
     <div id="upload-modal-overlay" onclick="handleOverlayClick(event)">
         <div id="upload-modal">
-            <button id="upload-modal-close" onclick="closeUploadModal()" aria-label="Close">&times;</button>
+            <button id="upload-modal-close" onclick="closeUploadModal()">&times;</button>
             <h2>&#127807; Upload Soil Field Data</h2>
-            <p class="subtitle">CSV or Excel file from soil testing machine &mdash; valid rows are added to the training dataset.</p>
-
+            <p class="subtitle">CSV or Excel file from soil testing machine — valid rows are added to the training dataset.</p>
             <button id="col-hint-toggle" onclick="toggleColHint()">&#9432; Show accepted column names</button>
             <div id="col-hint-box" style="display:none">
                 <b>Required:</b> lat, lon &nbsp;&bull;&nbsp;
                 <b>Soil chemistry (min 1):</b> ph, ec, n, p, k, organic_carbon, s, fe, zn, cu, b, mn<br>
-                <b>Optional:</b> ndvi, temperature, rainfall, elevation, clay_pct, sand_pct, silt_pct, state, district<br>
-                <b>Aliases auto-mapped:</b> latitude&rarr;lat, longitude/lng&rarr;lon, nitrogen&rarr;n, phosphorus&rarr;p, potassium&rarr;k, oc&rarr;organic_carbon, sulphur/sulfur&rarr;s, iron&rarr;fe, zinc&rarr;zn, copper&rarr;cu, boron&rarr;b, manganese&rarr;mn
+                <b>Optional:</b> ndvi, temperature, rainfall, elevation, clay_pct, sand_pct, silt_pct, state, district
             </div>
-
             <div id="drop-zone" onclick="document.getElementById('file-input').click()"
-                ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                <p><strong>Click to browse</strong> or drag &amp; drop here</p>
+                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <p><strong>Click to browse</strong> or drag &amp; drop</p>
                 <p>.csv &nbsp;&bull;&nbsp; .xlsx &nbsp;&bull;&nbsp; .xls</p>
             </div>
             <div id="selected-file-name"></div>
             <input type="file" id="file-input" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this)">
-
             <div class="upload-options">
                 <label class="upload-toggle"><input type="checkbox" id="chk-auto-retrain" checked> Auto-retrain model after upload</label>
                 <label class="upload-toggle"><input type="checkbox" id="chk-skip-enrich"> Skip satellite enrichment</label>
             </div>
-
             <button id="upload-submit-btn" disabled onclick="submitUpload()">Upload &amp; Ingest Data</button>
             <div id="upload-result"></div>
         </div>
     </div>
+</div><!-- .map-container -->
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+'use strict';
 
-    <script>
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
+/* ── Zone colour palette (15 Köppen zones) ──────────────────────────────────*/
+const ZONES = {
+  'Tropical Rainforest':          {color:'#006400',code:'Af'},
+  'Tropical Monsoon':             {color:'#228B22',code:'Am'},
+  'Tropical Savanna':             {color:'#9ACD32',code:'Aw'},
+  'Hot Desert':                   {color:'#FFD700',code:'BWh'},
+  'Cold Desert':                  {color:'#DAA520',code:'BWk'},
+  'Hot Semi-Arid':                {color:'#FF8C00',code:'BSh'},
+  'Cold Semi-Arid':               {color:'#CD853F',code:'BSk'},
+  'Mediterranean':                {color:'#FF6347',code:'Cs'},
+  'Humid Subtropical':            {color:'#4169E1',code:'Cfa'},
+  'Oceanic / Maritime Temperate': {color:'#6495ED',code:'Cfb'},
+  'Warm Continental':             {color:'#7B68EE',code:'Dfb'},
+  'Subarctic / Boreal':           {color:'#4B0082',code:'Dfc'},
+  'Tundra':                       {color:'#B0C4DE',code:'ET'},
+  'Polar / Ice Cap':              {color:'#CAEFFE',code:'EF'},
+  'Alpine / Highland':            {color:'#708090',code:'H'},
+};
 
-        const map = L.map('map', { zoomControl: false }).setView([20.5937, 78.9629], 5);
-        L.control.zoom({ position: 'topright' }).addTo(map);
+/* ── State ── */
+let map, satLayer, strLayer;
+let soilData = null, zoneData = null;
+let activePolygonLayer = null, activeMarkerLayer = null;
+let rasterGridGroup, legendControl = null;
+let legendShown = false, rasterMode = 'soil';
+let fetchRadius = 2, fetchSeason = 'kharif';
+let currentCoords = null, currentReqBody = null;
+let zoneRasterLayers = [];
+let cmCrop = 'paddy', cmMonths = 6, cmRadius = 2.0;
+let cropMapTileLayer = null;
 
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri', maxNativeZoom: 18, maxZoom: 20
-        }).addTo(map);
+/* ── Utils ── */
+function getCookie(n){let v=null;document.cookie.split(';').forEach(c=>{c=c.trim();if(c.startsWith(n+'='))v=decodeURIComponent(c.slice(n.length+1))});return v}
+function eh(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+let _tt;
+function toast(msg,err=false){const e=document.getElementById('toast');e.textContent=msg;e.classList.toggle('err',err);e.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>e.classList.remove('show'),3200)}
 
-        L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png', {
-            attribution: '', subdomains: 'abcd', maxZoom: 20
-        }).addTo(map);
+/* ═══ MAP INIT ═══ */
+function initMap() {
+    map = L.map('map', {zoomControl:false}).setView([20.5937, 78.9629], 5);
+    L.control.zoom({position:'topleft'}).addTo(map);
 
-        function togglePanel() {
-            const panel = document.getElementById('parameter-panel');
-            const tab   = document.getElementById('panel-tab');
-            panel.classList.toggle('collapsed');
-            tab.innerHTML = panel.classList.contains('collapsed') ? '&#9654;' : '&#9664;';
-        }
+    satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {attribution:'Tiles &copy; Esri', maxNativeZoom:18, maxZoom:20});
+    strLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        {attribution:'&copy; OSM &copy; CARTO', maxZoom:20});
+    satLayer.addTo(map);
 
-        // ── Climate zone (separate async call so it never slows soil data) ───
-        async function fetchClimateZone(lat, lon) {
-            const czCard = document.getElementById('climate-zone-card');
-            try {
-                const resp = await fetch(`${window.location.origin}/api/soil-map/climate-zone/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-                    body: JSON.stringify({ lat, lon })
-                });
-                const zd = await resp.json();
-                if (zd.zone) {
-                    document.getElementById('climate-zone-name').textContent =
-                        zd.zone + (zd.id ? '  (' + zd.id + ')' : '');
-                    document.getElementById('climate-zone-desc').textContent = zd.description || '';
-                    document.getElementById('climate-zone-tips').textContent =
-                        zd.growing_tips ? '💡 ' + zd.growing_tips : '';
-                    czCard.style.borderLeftColor = zd.color || '#a3d977';
-                    // Show location label if available
-                    if (zd.location) {
-                        let locEl = document.getElementById('climate-zone-location');
-                        if (!locEl) {
-                            locEl = document.createElement('div');
-                            locEl.id = 'climate-zone-location';
-                            locEl.style.cssText = 'font-size:0.65rem;color:#64748b;margin-top:3px;';
-                            czCard.insertBefore(locEl, czCard.firstChild);
-                        }
-                        locEl.textContent = '📍 ' + zd.location;
-                    }
-                } else {
-                    document.getElementById('climate-zone-name').textContent = 'Zone unavailable';
-                }
-            } catch (e) {
-                document.getElementById('climate-zone-name').textContent = 'Zone unavailable';
-            }
-        }
+    L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png',
+        {attribution:'', subdomains:'abcd', maxZoom:20}).addTo(map);
 
-        // ── Location Search ───────────────────────────────────────────────────
-        (function () {
-            const input = document.getElementById('location-search-input');
-            const list  = document.getElementById('location-suggestions');
-            let debounce = null, activeIdx = -1, lastResults = [];
+    rasterGridGroup = L.featureGroup().addTo(map);
 
-            function clearSuggestions() { list.innerHTML = ''; list.style.display = 'none'; activeIdx = -1; }
+    // Toolbox as Leaflet control — stacks below draw controls automatically
+    const toolCtrl = L.control({position:'topleft'});
+    toolCtrl.onAdd = function() {
+        const div = L.DomUtil.create('div','tb-group');
+        div.innerHTML =
+            `<button class="tb active" id="btnSat" title="Satellite" onclick="setBase('sat')">&#127759;</button>
+             <button class="tb"        id="btnStr" title="Street map" onclick="setBase('str')">&#128506;</button>
+             <button class="tb"        id="btnLeg" title="Zone legend" onclick="toggleLegend()">&#9707;</button>`;
+        L.DomEvent.disableClickPropagation(div);
+        return div;
+    };
+    toolCtrl.addTo(map);
 
-            function flyToResult(r) {
-                clearSuggestions(); input.value = '';
-                drawnItems.clearLayers(); rasterGridGroup.clearLayers();
-                if (legendControl) { map.removeControl(legendControl); legendControl = null; }
-                if (currentPopup) { map.closePopup(currentPopup); currentPopup = null; }
-                currentAnalysis = null; activePolygonLayer = null;
-                document.getElementById('parameter-panel').classList.remove('visible');
-                map.flyTo([r.lat, r.lon], 17, { animate: true, duration: 1.5 });
-                const m = L.marker([r.lat, r.lon]).addTo(map).bindPopup(r.name).openPopup();
-                setTimeout(() => map.removeLayer(m), 5000);
-            }
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            map.flyTo([pos.coords.latitude, pos.coords.longitude], 18, {animate:true, duration:1.5});
+            L.circleMarker([pos.coords.latitude, pos.coords.longitude],
+                {radius:8, fillColor:'#3b82f6', color:'#fff', weight:3, fillOpacity:1}).addTo(map);
+        }, null, {enableHighAccuracy:true});
+    }
 
-            input.addEventListener('input', function () {
-                clearTimeout(debounce);
-                const q = this.value.trim();
-                if (q.length < 2) { clearSuggestions(); return; }
-                debounce = setTimeout(async () => {
-                    try {
-                        const resp = await fetch(`/api/services/location-search/?q=${encodeURIComponent(q)}`, {
-                            headers: { 'X-CSRFToken': getCookie('csrftoken') }
-                        });
-                        const data = await resp.json();
-                        lastResults = data.results || [];
-                        list.innerHTML = '';
-                        if (!lastResults.length) { list.style.display = 'none'; return; }
-                        lastResults.forEach((r, i) => {
-                            const div = document.createElement('div');
-                            div.className = 'loc-suggestion';
-                            div.textContent = r.name;
-                            div.addEventListener('mousedown', e => { e.preventDefault(); flyToResult(r); });
-                            list.appendChild(div);
-                        });
-                        list.style.display = 'block';
-                    } catch (_) { clearSuggestions(); }
-                }, 300);
-            });
+    buildLegend();
+    setupDraw();
+    setupSearch();
+}
 
-            input.addEventListener('keydown', function (e) {
-                const items = list.querySelectorAll('.loc-suggestion');
-                if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, items.length - 1); items.forEach((el, i) => el.classList.toggle('active', i === activeIdx)); }
-                else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, -1); items.forEach((el, i) => el.classList.toggle('active', i === activeIdx)); }
-                else if (e.key === 'Enter' && activeIdx >= 0 && lastResults[activeIdx]) { e.preventDefault(); flyToResult(lastResults[activeIdx]); }
-                else if (e.key === 'Escape') clearSuggestions();
-            });
+/* ═══ SIDEBAR ═══ */
+function openSidebar() {
+    document.getElementById('sb').classList.add('open');
+    document.getElementById('sb-reopen').style.display = 'none';
+}
+function closeSidebar() {
+    document.getElementById('sb').classList.remove('open');
+    document.getElementById('sb-reopen').style.display = 'block';
+    resetSidebar();
+}
+function showSbTab(t) {
+    ['cfg','soil','zone','crop','cropmap'].forEach(id => {
+        document.getElementById('pane-'+id).classList.toggle('active', id===t);
+        document.getElementById('tab-'+id).classList.toggle('active', id===t);
+    });
+}
+function setDot(tab, state) {
+    const d = document.getElementById('dot-'+tab);
+    d.className = 't-dot' + (state ? ' '+state : '');
+}
+function resetSidebar() {
+    soilData = null; zoneData = null;
+    ['soil','zone','crop','cropmap'].forEach(t => setDot(t, ''));
+    document.getElementById('pane-soil').innerHTML = ph('&#127758;','No Soil Data Yet','Draw a polygon on the map, choose radius &amp; season, then analyze.', true);
+    document.getElementById('pane-zone').innerHTML = ph('&#127757;','No Zone Data Yet','Draw a polygon on the map, choose radius &amp; season, then analyze.', true);
+    document.getElementById('pane-crop').innerHTML = ph('&#127807;','No Crop Data Yet','Draw a polygon on the map, choose radius &amp; season, then analyze.', true);
+    document.getElementById('cropmap-result').innerHTML = '';
+    document.getElementById('btn-analyze').disabled = true;
+    document.getElementById('btn-cropmap').disabled = true;
+    document.getElementById('cfg-note').textContent = 'Draw a polygon on the map to enable analysis';
+    document.getElementById('cropmap-note').textContent = 'Draw a polygon or place a marker to enable mapping';
+    if (cropMapTileLayer) { map.removeLayer(cropMapTileLayer); cropMapTileLayer = null; }
+    clearRasters();
+}
+function ph(icon, title, sub, showBtn=false) {
+    const btn = showBtn
+        ? `<button onclick="currentReqBody?runAnalysis():toast('Draw a polygon on the map first',true)" style="margin-top:14px;padding:10px 22px;background:var(--primary);color:#fff;border:none;border-radius:50px;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(44,94,26,.25)">&#128640; Re-analyze Crop</button>`
+        : '';
+    return `<div class="sb-ph"><div class="sb-ph-icon">${icon}</div><div class="sb-ph-title">${title}</div><div class="sb-ph-sub">${sub}</div>${btn}</div>`;
+}
+function loadingPane(msg) {
+    return `<div style="padding:34px;text-align:center"><span class="spin-inline"></span><span style="font-size:11px;color:#6a8c6a">${msg}</span></div>`;
+}
 
-            document.addEventListener('click', e => {
-                if (!document.getElementById('location-search-wrap').contains(e.target)) clearSuggestions();
-            });
-        })();
+/* ── Basemap switcher ───────────────────────────────────────────────────────*/
+function setBase(type) {
+    if (type === 'sat') {
+        map.removeLayer(strLayer); map.addLayer(satLayer);
+        document.getElementById('bmbadge').textContent = 'Satellite (Esri)';
+    } else {
+        map.removeLayer(satLayer); map.addLayer(strLayer);
+        document.getElementById('bmbadge').textContent = 'Street Map (CartoDB)';
+    }
+    document.getElementById('btnSat').classList.toggle('active', type === 'sat');
+    document.getElementById('btnStr').classList.toggle('active', type === 'str');
+}
 
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(pos => {
-                map.flyTo([pos.coords.latitude, pos.coords.longitude], 18, { animate: true, duration: 1.5 });
-                L.circleMarker([pos.coords.latitude, pos.coords.longitude], {
-                    radius: 8, fillColor: "#3b82f6", color: "#fff", weight: 3, opacity: 1, fillOpacity: 1
-                }).addTo(map);
-            }, null, { enableHighAccuracy: true });
-        }
+/* ═══ RASTER MODE — exclusive, one at a time ═══ */
+function setRaster(mode) {
+    rasterMode = mode;
+    ['Soil','Zone','Ndvi'].forEach(m => {
+        const el = document.getElementById('rm' + m);
+        if (el) el.classList.toggle('active', m.toLowerCase() === mode);
+    });
+    clearRasters();  // always wipe before switching
+    if (mode === 'soil' && soilData)      updateSoilRaster();
+    else if (mode !== 'soil' && zoneData) buildZoneRaster(zoneData, mode);
+}
 
-        const drawnItems = new L.FeatureGroup();
-        map.addLayer(drawnItems);
-
-        const drawControl = new L.Control.Draw({
-            position: 'topleft',
-            draw: {
-                polygon: {
-                    allowIntersection: false, showArea: true,
-                    shapeOptions: { color: '#F6FFDC', weight: 3, fillColor: '#a3d977', fillOpacity: 0.4 }
-                },
-                polyline: false, circle: false, rectangle: false, marker: true, circlemarker: false
+/* ── Draw setup ─────────────────────────────────────────────────────────────*/
+function setupDraw() {
+    const drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+    const drawControl = new L.Control.Draw({
+        position: 'topleft',
+        draw: {
+            polygon: {
+                allowIntersection: false, showArea: true,
+                shapeOptions: {color:'#F6FFDC', weight:3, fillColor:'#a3d977', fillOpacity:0.4}
             },
-            edit: { featureGroup: drawnItems, remove: true }
+            polyline:false, circle:false, rectangle:false, marker:true, circlemarker:false
+        },
+        edit: {featureGroup: drawnItems, remove:true}
+    });
+    map.addControl(drawControl);
+
+    map.on(L.Draw.Event.CREATED, function(e) {
+        drawnItems.clearLayers();
+        clearRasters();
+        drawnItems.addLayer(e.layer);
+        resetSidebar();
+
+        if (e.layer instanceof L.Marker) {
+            activePolygonLayer = null; activeMarkerLayer = e.layer;
+            const ll = e.layer.getLatLng();
+            const isIndia = (ll.lat >= 6.5 && ll.lat <= 38.5 && ll.lng >= 68.0 && ll.lng <= 97.5);
+            if (!isIndia) { toast('Only trained on data within India.', true); drawnItems.clearLayers(); return; }
+            currentReqBody = {lat: ll.lat, lon: ll.lng};
+            currentCoords  = null;
+            document.getElementById('ps-area').textContent = '—';
+            document.getElementById('ps-lat').textContent  = ll.lat.toFixed(4);
+            document.getElementById('ps-lon').textContent  = ll.lng.toFixed(4);
+        } else {
+            activePolygonLayer = e.layer; activeMarkerLayer = null;
+            const latLngs    = e.layer.getLatLngs()[0];
+            const polyCoords = latLngs.map(ll => [ll.lat, ll.lng]);
+            if (polyCoords.length > 0) polyCoords.push(polyCoords[0]);
+            currentReqBody   = {polygon: polyCoords};
+            currentCoords    = latLngs.map(ll => [ll.lng, ll.lat]);  // [lon,lat]
+            const center     = e.layer.getBounds().getCenter();
+            const isIndia = (center.lat >= 6.5 && center.lat <= 38.5 && center.lng >= 68.0 && center.lng <= 97.5);
+            if (!isIndia) { toast('Only trained on data within India.', true); drawnItems.clearLayers(); return; }
+
+            // Compute polygon area (Shoelace on sphere)
+            let areaHa = 0;
+            const R6 = 6371000, nc = currentCoords.length;
+            for (let i = 0; i < nc; i++) {
+                const j = (i+1)%nc;
+                const dlon = (currentCoords[j][0]-currentCoords[i][0]) * Math.PI/180;
+                const la1  = currentCoords[i][1] * Math.PI/180;
+                const la2  = currentCoords[j][1] * Math.PI/180;
+                areaHa += dlon * (2 + Math.sin(la1) + Math.sin(la2));
+            }
+            areaHa = Math.abs(areaHa * R6*R6/2) / 10000;
+
+            document.getElementById('ps-area').textContent  = areaHa < 1 ? (areaHa*10000).toFixed(0) : areaHa.toFixed(2);
+            document.getElementById('ps-area-u').textContent = areaHa < 1 ? 'm²' : 'ha';
+            document.getElementById('ps-lat').textContent   = center.lat.toFixed(4);
+            document.getElementById('ps-lon').textContent   = center.lng.toFixed(4);
+        }
+
+        document.getElementById('btn-analyze').disabled = false;
+        document.getElementById('btn-cropmap').disabled = false;
+        document.getElementById('cfg-note').textContent = 'Zone loading… select radius & season, then tap Re-analyze Crop to run SAR detection';
+        document.getElementById('cropmap-note').textContent = 'Select crop, period & radius, then tap Map Crop Coverage';
+        openSidebar();
+        showSbTab('soil');
+
+        // Auto-fetch soil + zone immediately — neither requires setup settings
+        setDot('soil', 'loading');
+        setDot('zone', 'loading');
+        setDot('crop', 'loading');
+        document.getElementById('pane-soil').innerHTML = loadingPane('Analysing soil chemistry…');
+        document.getElementById('pane-zone').innerHTML = loadingPane('Detecting agroclimatic zone…');
+        document.getElementById('pane-crop').innerHTML = loadingPane('Detecting crop from SAR…');
+        fetchSoil(currentReqBody);
+        fetchZone(currentCoords, fetchRadius, fetchSeason);
+    });
+}
+
+function selRadius(km) {
+    fetchRadius = km;
+    document.querySelectorAll('#radiusPills .ff-pill').forEach(el =>
+        el.classList.toggle('selected', parseInt(el.dataset.r) === km));
+}
+function selSeason(s) {
+    fetchSeason = s;
+    document.querySelectorAll('#seasonCards .ff-sc').forEach(el =>
+        el.classList.toggle('selected', el.dataset.s === s));
+}
+
+/* ── Crop Map tab controls ───────────────────────────────────────────────────*/
+function selCmCrop(c) {
+    cmCrop = c;
+    document.querySelectorAll('#cmCropGrid .cm-crop-pill').forEach(el =>
+        el.classList.toggle('selected', el.dataset.c === c));
+}
+function selCmMonths(m) {
+    cmMonths = m;
+    document.querySelectorAll('#cmMonthsPills .ff-pill').forEach(el =>
+        el.classList.toggle('selected', parseInt(el.dataset.m) === m));
+}
+function selCmRadius(r) {
+    cmRadius = r;
+    document.querySelectorAll('#cmRadiusPills .ff-pill').forEach(el =>
+        el.classList.toggle('selected', parseFloat(el.dataset.r) === r));
+}
+
+async function runCropMap() {
+    const latEl = document.getElementById('ps-lat');
+    const lonEl = document.getElementById('ps-lon');
+    const lat = parseFloat(latEl.textContent);
+    const lon = parseFloat(lonEl.textContent);
+    if (isNaN(lat) || isNaN(lon)) { toast('Draw a polygon or place a marker first', true); return; }
+
+    setDot('cropmap', 'loading');
+    document.getElementById('cropmap-result').innerHTML = loadingPane('Running SAR crop detection…');
+    document.getElementById('btn-cropmap').disabled = true;
+
+    try {
+        const resp = await fetch('/api/soil-map/crop-coverage-map/', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','X-CSRFToken': getCookie('csrftoken')},
+            body: JSON.stringify({lat, lon, radius_km: cmRadius, crop: cmCrop, months_back: cmMonths})
         });
-        map.addControl(drawControl);
+        const data = await resp.json();
+        if (data.status === 'success') {
+            renderCropMapResult(data);
+            setDot('cropmap', 'done');
+        } else if (data.status === 'unavailable') {
+            document.getElementById('cropmap-result').innerHTML =
+                ph('🛰️','GEE Not Available', 'Configure GEE_PROJECT and SAR_GEE_SA_KEY in .env to enable SAR crop detection.');
+            setDot('cropmap', '');
+        } else {
+            document.getElementById('cropmap-result').innerHTML =
+                ph('&#128506;','Detection Failed', eh(data.error || 'Unknown error'));
+            setDot('cropmap', '');
+        }
+    } catch(err) {
+        document.getElementById('cropmap-result').innerHTML =
+            ph('&#128506;','Network Error', eh(err.message));
+        setDot('cropmap', '');
+    } finally {
+        document.getElementById('btn-cropmap').disabled = false;
+    }
+}
 
-        let currentAnalysis    = null;
-        let activePolygonLayer = null;
-        let activeMarkerLayer  = null;
-        let rasterGridGroup    = L.featureGroup().addTo(map);
-        let legendControl      = null;
-        let currentPopup       = null;
+function renderCropMapResult(d) {
+    // Remove old overlay
+    if (cropMapTileLayer) { map.removeLayer(cropMapTileLayer); cropMapTileLayer = null; }
 
-        const colormaps = {
-            'ph':             [{ max:4.5,hex:'#E24B4A'},{ max:5.5,hex:'#EF9F27'},{ max:6.5,hex:'#97C459'},{ max:7.5,hex:'#1D9E75'},{ max:8.5,hex:'#378ADD'},{ max:Infinity,hex:'#7F77DD'}],
-            'ec':             [{ max:0.2,hex:'#7F77DD'},{ max:0.8,hex:'#378ADD'},{ max:1.6,hex:'#1D9E75'},{ max:3.2,hex:'#639922'},{ max:6.4,hex:'#EF9F27'},{ max:Infinity,hex:'#E24B4A'}],
-            'n':              [{ max:50,hex:'#E24B4A'},{ max:100,hex:'#F09595'},{ max:200,hex:'#EF9F27'},{ max:300,hex:'#97C459'},{ max:400,hex:'#1D9E75'},{ max:Infinity,hex:'#7F77DD'}],
-            'p':              [{ max:5,hex:'#E24B4A'},{ max:10,hex:'#F09595'},{ max:20,hex:'#EF9F27'},{ max:40,hex:'#97C459'},{ max:60,hex:'#1D9E75'},{ max:Infinity,hex:'#7F77DD'}],
-            'k':              [{ max:80,hex:'#E24B4A'},{ max:120,hex:'#F09595'},{ max:200,hex:'#EF9F27'},{ max:300,hex:'#97C459'},{ max:500,hex:'#1D9E75'},{ max:Infinity,hex:'#7F77DD'}],
-            'organic_carbon': [{ max:0.25,hex:'#E24B4A'},{ max:0.5,hex:'#EF9F27'},{ max:0.75,hex:'#FAC775'},{ max:1.5,hex:'#97C459'},{ max:3.0,hex:'#1D9E75'},{ max:Infinity,hex:'#085041'}],
-            's':              [{ max:5,hex:'#E24B4A'},{ max:10,hex:'#F09595'},{ max:20,hex:'#EF9F27'},{ max:40,hex:'#97C459'},{ max:80,hex:'#1D9E75'},{ max:Infinity,hex:'#7F77DD'}],
-            'fe':             [{ max:2,hex:'#E24B4A'},{ max:4.5,hex:'#F09595'},{ max:9,hex:'#EF9F27'},{ max:20,hex:'#97C459'},{ max:50,hex:'#1D9E75'},{ max:Infinity,hex:'#7F77DD'}],
-            'zn':             [{ max:0.5,hex:'#E24B4A'},{ max:1.0,hex:'#F09595'},{ max:2.0,hex:'#EF9F27'},{ max:5.0,hex:'#97C459'},{ max:10.0,hex:'#1D9E75'},{ max:Infinity,hex:'#7F77DD'}],
-            'cu':             [{ max:0.2,hex:'#E24B4A'},{ max:0.5,hex:'#F09595'},{ max:1.0,hex:'#EF9F27'},{ max:5.0,hex:'#97C459'},{ max:15.0,hex:'#1D9E75'},{ max:Infinity,hex:'#7F77DD'}],
-            'b':              [{ max:0.2,hex:'#E24B4A'},{ max:0.5,hex:'#F09595'},{ max:1.0,hex:'#EF9F27'},{ max:2.0,hex:'#97C459'},{ max:5.0,hex:'#1D9E75'},{ max:Infinity,hex:'#7F77DD'}],
-            'mn':             [{ max:2,hex:'#E24B4A'},{ max:5,hex:'#F09595'},{ max:10,hex:'#EF9F27'},{ max:25,hex:'#97C459'},{ max:50,hex:'#1D9E75'},{ max:Infinity,hex:'#7F77DD'}],
-            'sand_pct':       [{ max:20,hex:'#f7f7f7'},{ max:40,hex:'#ffe5b4'},{ max:60,hex:'#f4c272'},{ max:80,hex:'#e29531'},{ max:Infinity,hex:'#b36305'}],
-            'clay_pct':       [{ max:10,hex:'#f2f0f7'},{ max:25,hex:'#cbc9e2'},{ max:40,hex:'#9e9ac8'},{ max:60,hex:'#756bb1'},{ max:Infinity,hex:'#54278f'}],
-            'silt_pct':       [{ max:10,hex:'#f7f7f7'},{ max:25,hex:'#cccccc'},{ max:50,hex:'#969696'},{ max:70,hex:'#636363'},{ max:Infinity,hex:'#252525'}]
+    const latEl = document.getElementById('ps-lat');
+    const lonEl = document.getElementById('ps-lon');
+    const lat = parseFloat(latEl.textContent);
+    const lon = parseFloat(lonEl.textContent);
+
+    if (d.tile_url) {
+        // Real GEE pixel-level tile overlay
+        cropMapTileLayer = L.tileLayer(d.tile_url, {opacity: 0.8, maxZoom: 20});
+        cropMapTileLayer.addTo(map);
+    } else {
+        // Fallback: shaded circle showing the radius + simulated coverage fill
+        const radiusM = d.radius_km * 1000;
+        const fillOpacity = Math.min(0.55, (d.coverage_pct / 100) * 0.8 + 0.1);
+        cropMapTileLayer = L.circle([lat, lon], {
+            radius: radiusM,
+            color: d.color,
+            weight: 2,
+            fillColor: d.color,
+            fillOpacity: fillOpacity,
+        }).addTo(map);
+        cropMapTileLayer.bindTooltip(
+            `${d.icon} ${d.label} — ${d.coverage_pct}% coverage`,
+            {permanent: false, direction: 'top'}
+        );
+        map.fitBounds(cropMapTileLayer.getBounds(), {padding: [30, 30]});
+    }
+
+    const simBadge = '<div style="font-size:8px;color:#6a8c6a;margin-top:4px">🛰 Sentinel-1 SAR + Sentinel-2 NDVI pixel detection</div>';
+
+    const period = d.period ? `${d.period.start} → ${d.period.end}` : '';
+    const areaStr = d.area_ha < 1 ? (d.area_ha * 10000).toFixed(0) + ' m²' : d.area_ha.toFixed(2) + ' ha';
+
+    document.getElementById('cropmap-result').innerHTML = `
+      <div class="cm-result-hero">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:28px">${eh(d.icon)}</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:800;color:#14532d">${eh(d.label)}</div>
+            <div style="font-size:8.5px;color:#6a8c6a">${eh(period)}</div>
+            ${simBadge}
+          </div>
+          <div style="width:14px;height:14px;border-radius:3px;background:${eh(d.color)};flex-shrink:0"></div>
+        </div>
+        <div class="cm-stat-row">
+          <div class="cm-stat">
+            <div class="cm-stat-val">${areaStr}</div>
+            <div class="cm-stat-lbl">CROP AREA</div>
+          </div>
+          <div class="cm-stat">
+            <div class="cm-stat-val">${d.coverage_pct}%</div>
+            <div class="cm-stat-lbl">COVERAGE</div>
+          </div>
+          <div class="cm-stat">
+            <div class="cm-stat-val">${d.radius_km} km</div>
+            <div class="cm-stat-lbl">RADIUS</div>
+          </div>
+        </div>
+      </div>${hiwBlock('cropmap')}`;
+}
+
+/* ── GEE connectivity check ────────────────────────────────────────────────*/
+async function checkGee() {
+    const box = document.getElementById('gee-status-box');
+    const btn = document.getElementById('btn-gee-check');
+    box.style.display = 'block';
+    box.innerHTML = `<div style="background:#f0fdf4;padding:10px 12px;color:#6a8c6a;font-size:9px">Checking GEE connection…</div>`;
+    btn.disabled = true;
+    try {
+        const resp = await fetch('/api/soil-map/gee-health/', {
+            headers: {'X-CSRFToken': getCookie('csrftoken')}
+        });
+        const d = await resp.json();
+        const ok      = d.gee_initialized && d.probe_ok;
+        const initOk  = d.gee_initialized;
+        const probeOk = d.probe_ok;
+        const cfg     = d.config || {};
+
+        const row = (label, val, good) => {
+            const dot = good === true ? '🟢' : good === false ? '🔴' : '⚪';
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.04)">
+                <span style="color:#4a6a4a">${label}</span>
+                <span style="font-weight:700;color:${good===true?'#16a34a':good===false?'#dc2626':'#6a8c6a'}">${dot} ${eh(String(val))}</span>
+            </div>`;
         };
 
-        function getAbsoluteColor(value, param) {
-            const scale = colormaps[param];
-            if (!scale) return '#cccccc';
-            for (let i = 0; i < scale.length; i++) { if (value <= scale[i].max) return scale[i].hex; }
-            return scale[scale.length - 1].hex;
-        }
+        const bg   = ok ? '#f0fdf4' : '#fff5f5';
+        const head = ok ? '🟢 GEE Connected' : (initOk ? '🟡 Init OK — Probe Failed' : '🔴 GEE Unavailable');
+        const headCol = ok ? '#14532d' : (initOk ? '#92400e' : '#991b1b');
 
-        const simplex = new SimplexNoise();
-        function noise(lat, lng, offset, scale) {
-            return (simplex.noise2D((lat + offset) * scale, (lng + offset) * scale) + 1) / 2;
-        }
+        box.innerHTML = `
+          <div style="background:${bg};padding:10px 12px">
+            <div style="font-weight:800;color:${headCol};font-size:10.5px;margin-bottom:8px">${head}</div>
+            ${row('Initialized', initOk ? 'Yes' : 'No', initOk)}
+            ${d.init_method ? row('Auth method', d.init_method === 'service_account' ? 'Service account key' : 'App Default Creds', true) : ''}
+            ${row('API probe', probeOk ? 'OK' : (d.probe_error||'Failed'), probeOk)}
+            ${row('GEE_PROJECT', cfg.GEE_PROJECT, cfg.project_set)}
+            ${row('SA key file', cfg.sa_key_exists ? 'Found' : (cfg.sa_key_set ? 'Set but file missing' : 'Not set'), cfg.sa_key_exists ? true : cfg.sa_key_set ? false : null)}
+            ${row('RF classifier asset', cfg.rf_asset_set ? cfg.GEE_RF_CLASSIFIER_ASSET : 'Not set (uses rule-based)', cfg.rf_asset_set ? true : null)}
+            <div style="color:#8aaa8a;font-size:8px;margin-top:6px;text-align:right">${d.elapsed_ms} ms</div>
+          </div>`;
+    } catch(err) {
+        box.innerHTML = `<div style="background:#fff5f5;padding:10px 12px;color:#dc2626;font-weight:700">Network error: ${eh(err.message)}</div>`;
+    } finally {
+        btn.disabled = false;
+    }
+}
 
-        function pointInPolygon(point, vs) {
-            let x = point[0], y = point[1], inside = false;
-            for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-                const xi = vs[i][0], yi = vs[i][1], xj = vs[j][0], yj = vs[j][1];
-                if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside;
-            }
-            return inside;
-        }
+/* ── Re-analyze crop with selected radius/season (zone also refreshes) ──────*/
+async function runAnalysis() {
+    if (!currentCoords) { toast('Draw a polygon first', true); return; }
+    setDot('zone','loading'); setDot('crop','loading');
+    document.getElementById('pane-zone').innerHTML = loadingPane('Detecting agroclimatic zone…');
+    document.getElementById('pane-crop').innerHTML = loadingPane('Detecting crop from SAR…');
+    showSbTab('zone');
+    try {
+        await fetchZone(currentCoords, fetchRadius, fetchSeason);
+    } catch(err) {
+        setDot('zone',''); setDot('crop','');
+        toast('Zone/crop fetch failed', true);
+    }
+}
 
-        map.on(L.Draw.Event.CREATED, async function(e) {
-            const layer = e.layer;
-            drawnItems.clearLayers();
-            rasterGridGroup.clearLayers();
-            drawnItems.addLayer(layer);
-
-            let requestBody = {};
-            let isIndia = false;
-
-            if (layer instanceof L.Marker) {
-                activePolygonLayer = null; activeMarkerLayer = layer;
-                const latlng = layer.getLatLng();
-                requestBody = { lat: latlng.lat, lon: latlng.lng };
-                isIndia = (latlng.lat >= 6.5 && latlng.lat <= 38.5 && latlng.lng >= 68.0 && latlng.lng <= 97.5);
-            } else {
-                activePolygonLayer = layer; activeMarkerLayer = null;
-                const latLngs = layer.getLatLngs()[0];
-                const polygonCoords = latLngs.map(ll => [ll.lat, ll.lng]);
-                if (polygonCoords.length > 0) polygonCoords.push(polygonCoords[0]);
-                requestBody = { polygon: polygonCoords };
-                const center = layer.getBounds().getCenter();
-                isIndia = (center.lat >= 6.5 && center.lat <= 38.5 && center.lng >= 68.0 && center.lng <= 97.5);
-            }
-
-            if (!isIndia) {
-                alert("Only trained on data within India.");
-                drawnItems.clearLayers();
-                return;
-            }
-
-            document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('parameter-panel').classList.remove('visible');
-
-            try {
-                const response = await fetch(`${window.location.origin}/api/predict/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-                    body: JSON.stringify(requestBody)
-                });
-                const data = await response.json();
-
-                if (data.status === 'success') {
-                    const fert  = data.fertility_assessment || 'Medium';
-                    const fertEl = document.getElementById('fertility-label');
-                    fertEl.innerText  = `Soil Fertility: ${fert}`;
-                    fertEl.className  = `fertility-badge fertility-${fert.toLowerCase()}`;
-
-                    const env = data.environmental_factors || {};
-                    document.getElementById('env-ndvi').innerText = env.ndvi || '--';
-                    document.getElementById('env-temp').innerText = (env.temperature_c  || '--') + '°C';
-                    document.getElementById('env-rain').innerText = (env.rainfall_mm    || '--') + 'mm';
-                    document.getElementById('env-elev').innerText = (env.elevation_m    || '--') + 'm';
-
-                    // Climate zone — show a loading skeleton, fetch separately
-                    const czCard = document.getElementById('climate-zone-card');
-                    document.getElementById('climate-zone-name').textContent = 'Detecting zone…';
-                    document.getElementById('climate-zone-desc').textContent = '';
-                    document.getElementById('climate-zone-tips').textContent = '';
-                    czCard.style.borderLeftColor = '#94a3b8';
-                    czCard.style.display = 'block';
-                    // Compute centroid lat/lon for the zone call
-                    const _czLat = data.coordinates ? data.coordinates.lat : (requestBody.lat || 0);
-                    const _czLon = data.coordinates ? data.coordinates.lon : (requestBody.lon || 0);
-                    fetchClimateZone(_czLat, _czLon);
-
-                    // Populate overview grid
-                    const chem = data.predicted_soil_chemistry || {};
-                    const ovMap = { ph:'ov-ph', ec:'ov-ec', n:'ov-n', p:'ov-p', k:'ov-k',
-                                    organic_carbon:'ov-oc', s:'ov-s', fe:'ov-fe',
-                                    zn:'ov-zn', cu:'ov-cu', b:'ov-b', mn:'ov-mn' };
-                    Object.entries(ovMap).forEach(([key, id]) => {
-                        const card = document.getElementById(id);
-                        if (!card) return;
-                        let val = parseFloat(chem[key]);
-                        if (key === 'ph' && val > 14) while (val > 14) val /= 10;
-                        card.querySelector('.ov-value').textContent = isNaN(val) ? '--' : val.toFixed(2);
-                    });
-                    document.getElementById('soil-overview').style.display = 'grid';
-
-                    // Show and expand panel
-                    const panel = document.getElementById('parameter-panel');
-                    panel.classList.add('visible');
-                    panel.classList.remove('collapsed');
-                    document.getElementById('panel-tab').innerHTML = '&#9664;';
-
-                    currentAnalysis = { ...data.predicted_soil_chemistry, ...data.environmental_factors };
-                    updateMapOverlay();
-                }
-            } finally {
-                document.getElementById('loading-overlay').style.display = 'none';
-            }
+/* ── Soil chemistry fetch ────────────────────────────────────────────────────*/
+async function fetchSoil(body) {
+    try {
+        const resp = await fetch(`${window.location.origin}/api/predict/`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+            body: JSON.stringify(body)
         });
+        const data = await resp.json();
+        if (data.status === 'success') {
+            soilData = data;
+            renderSoilPane(data);
+            setDot('soil','done');
+            if (rasterMode === 'soil') updateSoilRaster();
+            toast('Soil analysis complete');
+        } else {
+            document.getElementById('pane-soil').innerHTML = ph('&#127758;','Soil Analysis Failed', eh(data.error||'Unknown error'));
+            setDot('soil','');
+        }
+    } catch(err) {
+        document.getElementById('pane-soil').innerHTML = ph('&#127758;','Network Error', eh(err.message));
+        setDot('soil','');
+    }
+}
 
-        document.getElementById('param-toggle').addEventListener('change', updateMapOverlay);
+/* ── How-it-works collapsible card ─────────────────────────────────────────*/
+function hiwBlock(tab) {
+    const id = `hiw-${tab}`;
+    const content = {
+        soil: {
+            title: 'How soil values are calculated',
+            rows: [
+                ['🛰', '<b>NDVI</b> — Sentinel-2 vegetation index fetched from Google Earth Engine for the polygon centroid, 90-day window.'],
+                ['🌤', '<b>Weather</b> — Annual temperature &amp; rainfall from <b>Open-Meteo Historical Archive</b> (2024, 1-year average).'],
+                ['⛰', '<b>Elevation</b> — SRTM 30m DEM via Open-Meteo elevation API; GEE USGS/SRTMGL1_003 as fallback.'],
+                ['🪨', '<b>Soil texture</b> — Clay, sand, silt % from <b>ISRIC SoilGrids</b> 250m global dataset (REST API).'],
+                ['🤖', '<b>ML prediction</b> — 12 soil parameters (pH, EC, N, P, K, OC, S, Fe, Zn, Cu, B, Mn) predicted by <b>LightGBM</b> models trained on Indian soil lab data. Parameters are predicted in chain order (each feeds the next).'],
+                ['🌿', '<b>Fertility score</b> — ICAR-normalised score 0–100 across N, P, K, OC, pH; classified High/Medium/Low by a <b>Random Forest</b> classifier.'],
+            ]
+        },
+        zone: {
+            title: 'How the zone is classified',
+            rows: [
+                ['🌤', '<b>Climate data</b> — Temperature &amp; rainfall fetched live from <b>Open-Meteo Historical Archive</b> (12-month daily averages for the centroid coordinates).'],
+                ['⛰', '<b>Elevation</b> — Derived from Open-Meteo forecast API elevation field.'],
+                ['🗺', '<b>Zone rules</b> — Rule-based classifier checks annual rainfall, mean temperature, and elevation thresholds against <b>Köppen-Geiger</b> climate categories (Tropical, Semi-Arid, Desert, Subtropical, Alpine, etc.).'],
+                ['📍', '<b>India sub-zones</b> — If centroid is within India, further sub-classified into Karnataka / National agroclimatic zones based on coordinate bounds and rainfall bands.'],
+                ['🌱', '<b>NDVI</b> — Displayed as a vegetation health indicator; fetched from GEE Sentinel-2 if available, otherwise estimated from latitude.'],
+            ]
+        },
+        crop: {
+            title: 'How crop is detected',
+            rows: [
+                ['📡', '<b>Sentinel-1 SAR (VH band)</b> — 15-day composite backscatter values from Google Earth Engine over the polygon buffer. VH backscatter changes distinctly for flooded paddy vs dry crops.'],
+                ['🌿', '<b>Sentinel-2 NDVI</b> — Paired 15-day NDVI composites track greenness rise and fall through the season.'],
+                ['📈', '<b>Rule-based detection</b> — VH trajectory (flood dip → rise → peak) identifies <b>Paddy</b>; sustained high VH + NDVI = <b>Sugarcane</b>; NDVI peak then drop = <b>Wheat</b>; warm-season peak = <b>Maize/Cotton</b>.'],
+                ['🗓', '<b>Season window</b> — Date range set by selected season (Kharif: Jun–Nov, Rabi: Oct–Apr, Zaid: Mar–Jun). Radius sets the buffer around the polygon centroid for SAR queries.'],
+            ]
+        },
+        cropmap: {
+            title: 'How the crop coverage map works',
+            rows: [
+                ['📡', '<b>Sentinel-1 SAR feature stack</b> — VH/VV mean, variance, min, max, slope-over-time, and VH/VV ratio are computed over the selected months in GEE.'],
+                ['🌿', '<b>Sentinel-2 NDVI</b> — Median composite for the period added as a vegetation feature.'],
+                ['🤖', '<b>Classifier</b> — If a <b>Random Forest asset</b> is set in GEE_RF_CLASSIFIER_ASSET, it classifies each pixel. Otherwise a rule-based threshold classifier runs on the SAR features.'],
+                ['🗺', '<b>Tile URL</b> — GEE renders a coloured pixel mask directly and returns a tile URL that Leaflet loads as a map overlay.'],
+                ['📐', '<b>Area</b> — Pixel count × pixel area (10m²) sums the crop area in hectares within the radius buffer.'],
+            ]
+        }
+    };
+    const c = content[tab];
+    if (!c) return '';
+    const rows = c.rows.map(([icon, text]) =>
+        `<div class="hiw-row"><span style="font-size:12px;flex-shrink:0">${icon}</span><div class="hiw-text">${text}</div></div>`
+    ).join('');
+    return `<div class="hiw">
+      <div class="hiw-title" id="${id}-title" onclick="toggleHiw('${id}')">
+        <span class="arr">▶</span> ℹ️ ${c.title}
+      </div>
+      <div class="hiw-body" id="${id}-body">${rows}</div>
+    </div>`;
+}
+function toggleHiw(id) {
+    const t = document.getElementById(id+'-title');
+    const b = document.getElementById(id+'-body');
+    if (!t || !b) return;
+    const open = t.classList.toggle('open');
+    b.style.display = open ? 'block' : 'none';
+}
 
-        function updateMapOverlay() {
-            if (!currentAnalysis) return;
-            const selectedParam  = document.getElementById('param-toggle').value;
-            const selectedOption = document.getElementById('param-toggle').options[document.getElementById('param-toggle').selectedIndex];
-            const unit           = selectedOption.getAttribute('data-unit');
-            const paramName      = selectedOption.text;
+function renderSoilPane(data) {
+    const fert  = data.fertility_assessment || 'Medium';
+    const fc    = fert.toLowerCase() === 'high' ? 'fert-h' : fert.toLowerCase() === 'low' ? 'fert-l' : 'fert-m';
+    const chem  = data.predicted_soil_chemistry || {};
+    const env   = data.environmental_factors    || {};
 
-            let baseValue = parseFloat(currentAnalysis[selectedParam]);
-            if (selectedParam === 'ph' && baseValue > 14) while (baseValue > 14) baseValue /= 10;
+    const PARAMS = [
+        ['ph','pH','pH'],['ec','EC','dS/m'],['n','N','kg/ha'],['p','P','kg/ha'],['k','K','kg/ha'],
+        ['organic_carbon','OC','%'],['s','S','ppm'],['fe','Fe','ppm'],['zn','Zn','ppm'],
+        ['cu','Cu','ppm'],['b','B','ppm'],['mn','Mn','ppm']
+    ];
+    const cards = PARAMS.map(([k,label,unit]) => {
+        let v = parseFloat(chem[k]); if (k==='ph' && v>14) while(v>14) v/=10;
+        return `<div class="ov-c"><div class="lbl">${label}</div><div class="val">${isNaN(v)?'—':v.toFixed(2)}</div><div class="unit">${unit}</div></div>`;
+    }).join('');
 
-            document.getElementById('param-value').innerText = isNaN(baseValue) ? 'N/A' : baseValue.toFixed(2);
-            document.getElementById('param-unit').innerText  = unit;
+    const opts = [
+        ['ph','pH Level','pH'],['ec','Electric Conductivity','dS/m'],
+        ['n','Nitrogen (N)','kg/ha'],['p','Phosphorus (P)','kg/ha'],['k','Potassium (K)','kg/ha'],
+        ['organic_carbon','Organic Carbon','%'],['s','Sulfur','ppm'],['fe','Iron (Fe)','ppm'],
+        ['zn','Zinc (Zn)','ppm'],['cu','Copper (Cu)','ppm'],['b','Boron (B)','ppm'],['mn','Manganese (Mn)','ppm'],
+        ['sand_pct','Sand Content','%'],['clay_pct','Clay Content','%'],['silt_pct','Silt Content','%']
+    ].map(([k,n,u]) => `<option value="${k}" data-unit="${u}">${n}</option>`).join('');
 
-            rasterGridGroup.clearLayers();
-            if (!activePolygonLayer) return;
+    document.getElementById('pane-soil').innerHTML = `
+      <div class="${fc} fert-badge-sb">Soil Fertility: ${eh(fert)}</div>
+      <div id="soil-overview-sb">${cards}</div>
+      <div class="sb-sec">&#127774; Parameter Map</div>
+      <select class="par-sel" id="par-sel-sb" onchange="updateSoilRaster()">${opts}</select>
+      <div class="val-disp-sb"><span id="par-val-sb">—</span><span id="par-unit-sb">pH</span></div>
+      <div class="sb-sec">&#127782; Environmental</div>
+      <div class="env-g-sb">
+        <div class="env-c-sb"><div class="lbl">NDVI</div><div class="val">${env.ndvi||'—'}</div></div>
+        <div class="env-c-sb"><div class="lbl">Temp</div><div class="val">${env.temperature_c!=null?env.temperature_c+'°C':'—'}</div></div>
+        <div class="env-c-sb"><div class="lbl">Rainfall</div><div class="val">${env.rainfall_mm!=null?env.rainfall_mm+'mm':'—'}</div></div>
+        <div class="env-c-sb"><div class="lbl">Elevation</div><div class="val">${env.elevation_m!=null?env.elevation_m+'m':'—'}</div></div>
+      </div>
+      <button class="btn-pdf" onclick="generatePDF()">&#128196; Download PDF Report</button>`;
 
-            const bounds    = activePolygonLayer.getBounds();
-            const latDiff   = bounds.getNorth() - bounds.getSouth();
-            const lngDiff   = bounds.getEast()  - bounds.getWest();
-            const latStep   = latDiff / 65;
-            const lngStep   = lngDiff / 65;
-            const noiseScale = 1.5 / Math.max(latDiff, lngDiff);
+    soilData._merged = {...chem, ...env};
+    document.getElementById('pane-soil').insertAdjacentHTML('beforeend', hiwBlock('soil'));
+    updateSoilRaster();
+}
 
-            const scale      = colormaps[selectedParam];
-            const lastFinite = scale.filter(s => s.max !== Infinity);
-            const cmapMax    = lastFinite[lastFinite.length - 1].max;
-            if (isNaN(baseValue) || baseValue === null) baseValue = cmapMax / 2;
-            const minValue   = 0;
-            const maxValue   = cmapMax * 1.05;
+/* ── Zone + crop fetch ───────────────────────────────────────────────────────*/
+async function fetchZone(coords, radius, season) {
+    try {
+        const resp = await fetch(`${window.location.origin}/api/soil-map/analyze-polygon/`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+            body: JSON.stringify({coordinates: coords, radius_km: radius, season: season})
+        });
+        const data = await resp.json();
+        if (data.status === 'done') {
+            zoneData = data;
+            renderZonePane(data);
+            renderCropPane(data.crop_predictions, data.area_ha);
+            setDot('zone','done'); setDot('crop','done');
+            // Auto-show zone raster + legend whenever zone data arrives
+            rasterMode = 'zone';
+            buildZoneRaster(data, 'zone');
+            const crop = data.crop_predictions || {};
+            toast(`${crop.icon||'🌱'} ${crop.detected_crop||'Zone'} detected`);
+        } else {
+            document.getElementById('pane-zone').innerHTML = ph('&#127757;','Zone Analysis Failed', eh(data.error||'Unknown error'));
+            document.getElementById('pane-crop').innerHTML = ph('&#127807;','Crop Detection Failed', eh(data.error||'Unknown error'));
+            setDot('zone',''); setDot('crop','');
+        }
+    } catch(err) {
+        document.getElementById('pane-zone').innerHTML = ph('&#127757;','Network Error', eh(err.message));
+        document.getElementById('pane-crop').innerHTML = ph('&#127807;','Network Error', eh(err.message));
+        setDot('zone',''); setDot('crop','');
+    }
+}
 
-            const seedOffset = selectedParam.length * 10;
-            const vs = activePolygonLayer.getLatLngs()[0].map(ll => [ll.lat, ll.lng]);
+function renderZonePane(data) {
+    const zname  = data.zone_name    || 'Unknown Zone';
+    const zone   = data.zone_data    || {};
+    const clim   = data.climate_data || {};
+    const loc    = data.location     || {};
+    const cen    = data.centroid     || {};
+    const area   = data.area_ha      || 0;
+    const zinfo  = ZONES[zname] || {color:'#2c5e1a', code:'—'};
+    const zcolor = zone.color || zinfo.color;
+    const ndvi   = (clim.gee_signals||{}).ndvi || clim.ndvi || 0.5;
+    const ndviPct = Math.min(96, Math.max(4, ndvi * 100));
+    const src    = clim.sat_data_source || clim.data_source || '—';
+    const areaStr = area < 1 ? (area*10000).toFixed(0)+' m²' : area.toFixed(2)+' ha';
 
-            for (let lat = bounds.getSouth(); lat <= bounds.getNorth(); lat += latStep) {
-                for (let lng = bounds.getWest(); lng <= bounds.getEast(); lng += lngStep) {
-                    const clat = lat + latStep / 2, clng = lng + lngStep / 2;
-                    if (pointInPolygon([clat, clng], vs)) {
-                        const noiseVal  = noise(clat, clng, seedOffset, noiseScale);
-                        const cellValue = minValue + noiseVal * (maxValue - minValue);
-                        const color     = getAbsoluteColor(cellValue, selectedParam);
-                        L.rectangle([[lat, lng], [lat + latStep, lng + lngStep]], {
-                            stroke: false, fillColor: color, fillOpacity: 0.85
-                        }).addTo(rasterGridGroup);
-                    }
-                }
+    document.getElementById('pane-zone').innerHTML = `
+      <div class="sb-card" style="border-left:4px solid ${zcolor}">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:10px;height:10px;border-radius:50%;background:${zcolor};flex-shrink:0"></div>
+          <div style="font-weight:800;font-size:13px;color:${zcolor}">${eh(zname)}</div>
+          <div style="margin-left:auto;font-size:9px;color:#8aaa8a;font-family:monospace">${eh(zone.id||zinfo.code||'—')}</div>
+        </div>
+        <div style="font-size:9px;color:#6a8c6a;margin-top:3px">${eh(loc.display_name||(cen.lat?`${cen.lat.toFixed(4)}°, ${cen.lon.toFixed(4)}°`:'—'))}</div>
+        <div style="font-size:9px;color:#6a8c6a">${areaStr} · ${eh(data.season||'')} · ${data.radius_km||2}km radius</div>
+      </div>
+      ${zone.description ? `<div class="sb-blk">${eh(zone.description)}</div>` : ''}
+      ${zone.growing_tips ? `<div class="sb-tip"><b>Growing Tips:</b> ${eh(zone.growing_tips)}</div>` : ''}
+      <div class="sb-sec">Climate Data</div>
+      <div class="sb-grid2">
+        <div class="sb-gc"><div class="lbl">Annual Rainfall</div><div class="val">${clim.annual_rainfall?clim.annual_rainfall.toFixed(0)+' mm':'—'}</div></div>
+        <div class="sb-gc"><div class="lbl">Avg Temperature</div><div class="val">${clim.average_temp?clim.average_temp.toFixed(1)+'°C':'—'}</div></div>
+        <div class="sb-gc"><div class="lbl">Max Temp</div><div class="val">${clim.max_temp?clim.max_temp.toFixed(1)+'°C':'—'}</div></div>
+        <div class="sb-gc"><div class="lbl">Min Temp</div><div class="val">${clim.min_temp?clim.min_temp.toFixed(1)+'°C':'—'}</div></div>
+        <div class="sb-gc"><div class="lbl">Elevation</div><div class="val">${clim.elevation?clim.elevation.toFixed(0)+' m':'—'}</div></div>
+        <div class="sb-gc"><div class="lbl">NDVI Index</div><div class="val" style="color:#16a34a">${ndvi.toFixed(2)}</div></div>
+      </div>
+      <div class="sb-sec">Vegetation Index (NDVI)</div>
+      <div class="ndvi-wrap-sb">
+        <div class="ndvi-lbl-row-sb"><span>Bare Soil</span><span>Moderate</span><span>Dense Veg.</span></div>
+        <div class="ndvi-track-sb"><div class="ndvi-cur-sb" style="left:${ndviPct}%"></div></div>
+        <div style="font-size:8px;color:#8aaa8a;margin-top:4px">Source: ${eh(src)}</div>
+      </div>
+      ${zone.soil_types&&zone.soil_types.length?`<div class="sb-sec">Soil Types</div><div class="sb-chips">${zone.soil_types.map(s=>`<span class="sb-chip">${eh(s)}</span>`).join('')}</div>`:''}
+      ${zone.ndvi_range?`<div class="sb-sec">NDVI Typical Range</div><div class="sb-blk" style="font-family:monospace;font-size:10px">${eh(zone.ndvi_range)}</div>`:''}
+      ${hiwBlock('zone')}`;
+}
+
+function renderCropPane(crop, area_ha) {
+    const area = area_ha || 0;
+    if (!crop) {
+        document.getElementById('pane-crop').innerHTML = `
+          <div class="sb-ph">
+            <div class="sb-ph-icon">🛰️</div>
+            <div class="sb-ph-title">GEE Satellite Data Unavailable</div>
+            <div class="sb-ph-sub">Crop detection requires Google Earth Engine.<br>
+              Configure <code style="background:#f0fdf4;padding:1px 5px;border-radius:4px;font-size:10px">GEE_PROJECT</code> and
+              <code style="background:#f0fdf4;padding:1px 5px;border-radius:4px;font-size:10px">SAR_GEE_SA_KEY</code> in your <code style="background:#f0fdf4;padding:1px 5px;border-radius:4px;font-size:10px">.env</code> file to enable SAR crop detection.</div>
+          </div>`;
+        setDot('crop','');
+        return;
+    }
+    const timeline   = crop.timeline || [];
+    const cropName   = crop.detected_crop || '—';
+    const cropIcon   = crop.icon || '🌱';
+    const confidence = crop.confidence || 0;
+    const desc       = crop.description || '';
+    const srcLabel   = `🛰 ${eh(crop.source||'')}`;
+    const confColor  = confidence >= 80 ? '#16a34a' : confidence >= 60 ? '#ca8a04' : '#dc2626';
+    const areaStr    = area < 1 ? (area*10000).toFixed(0)+' m²' : area.toFixed(2)+' ha';
+
+    if (activePolygonLayer && cropName !== '—') {
+        activePolygonLayer.unbindTooltip();
+        activePolygonLayer.bindTooltip(
+            `<div class="ct-title">${cropIcon} <span>${eh(cropName)}</span></div>
+             <div class="ct-sub">Confidence: ${confidence}% · ${areaStr}</div>
+             <div class="ct-src">🛰 Sentinel-1 SAR + Sentinel-2 NDVI</div>`,
+            {permanent:true, className:'crop-tooltip', direction:'center', interactive:true}
+        ).openTooltip();
+    }
+
+    let html = `
+      <div class="dc-hero">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">
+          <span style="font-size:26px;line-height:1">${cropIcon}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13.5px;font-weight:800;color:#14532d;line-height:1.2">${eh(cropName)}</div>
+            <div style="font-size:8.5px;color:#6a8c6a;margin-top:2px">${srcLabel}</div>
+          </div>
+          <div style="text-align:center;min-width:38px">
+            <div style="font-size:15px;font-weight:800;color:${confColor}">${confidence}%</div>
+            <div style="font-size:7.5px;color:#8aaa8a;font-weight:600">CONF.</div>
+          </div>
+        </div>
+        ${desc?`<div style="font-size:10px;color:#2a4a2a;line-height:1.6;border-top:1px solid #bbf7d0;padding-top:7px">${eh(desc)}</div>`:''}
+      </div>
+      <div class="sb-sec">${eh(crop.period||'')} — 15-Day VH &amp; NDVI</div>`;
+
+    if (timeline.length > 0) {
+        const W=310,cH=100,lPad=26,rPad=26,tPad=4;
+        const pW=W-lPad-rPad, n=timeline.length, xStep=pW/Math.max(1,n-1);
+        const vhVals=timeline.map(t=>t.vh).filter(v=>v!=null);
+        const ndviVals=timeline.map(t=>t.ndvi).filter(v=>v!=null);
+        const vhMin=vhVals.length?Math.min(...vhVals)-1:-25;
+        const vhMax=vhVals.length?Math.max(...vhVals)+1:-10;
+        const nMin=ndviVals.length?Math.min(...ndviVals)-0.05:0;
+        const nMax=ndviVals.length?Math.max(...ndviVals)+0.05:1;
+        const vhR=Math.max(0.1,vhMax-vhMin), nR=Math.max(0.01,nMax-nMin);
+        const yVH=v=>tPad+cH-((v-vhMin)/vhR)*cH;
+        const yN=v=>tPad+cH-((v-nMin)/nR)*cH;
+        let svg=`<div class="tl-wrap"><svg width="${W}" height="${cH+tPad+28}" viewBox="0 0 ${W} ${cH+tPad+28}" font-family="Inter,sans-serif">`;
+        for(let i=0;i<=4;i++){
+            const gy=tPad+(i/4)*cH;
+            svg+=`<line x1="${lPad}" y1="${gy}" x2="${W-rPad}" y2="${gy}" stroke="#e8e8e8" stroke-width="0.5"/>`;
+            svg+=`<text x="${lPad-2}" y="${gy+3}" font-size="6.5" fill="#15803d" text-anchor="end">${(vhMax-(i/4)*vhR).toFixed(0)}</text>`;
+            if(ndviVals.length) svg+=`<text x="${W-rPad+2}" y="${gy+3}" font-size="6.5" fill="#0369a1" text-anchor="start">${(nMax-(i/4)*nR).toFixed(2)}</text>`;
+        }
+        timeline.forEach((t,i)=>{
+            if(i%2===0){const x=lPad+i*xStep;svg+=`<text x="${x.toFixed(1)}" y="${cH+tPad+13}" text-anchor="middle" font-size="7" font-weight="600" fill="#6a8c6a">${t.date}</text>`;}
+        });
+        let vhPts=[],nPts=[];
+        timeline.forEach((t,i)=>{
+            const x=lPad+i*xStep;
+            if(t.vh!=null){vhPts.push(`${x.toFixed(1)},${yVH(t.vh).toFixed(1)}`);svg+=`<circle cx="${x.toFixed(1)}" cy="${yVH(t.vh).toFixed(1)}" r="2.2" fill="#15803d"><title>${t.date}: VH ${t.vh} dB</title></circle>`;}
+            if(t.ndvi!=null){nPts.push(`${x.toFixed(1)},${yN(t.ndvi).toFixed(1)}`);svg+=`<circle cx="${x.toFixed(1)}" cy="${yN(t.ndvi).toFixed(1)}" r="2.2" fill="#0369a1"><title>${t.date}: NDVI ${t.ndvi}</title></circle>`;}
+        });
+        if(vhPts.length>1) svg+=`<polyline points="${vhPts.join(' ')}" fill="none" stroke="#15803d" stroke-width="1.8" stroke-linejoin="round"/>`;
+        if(nPts.length>1)  svg+=`<polyline points="${nPts.join(' ')}"  fill="none" stroke="#0369a1" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="4,2"/>`;
+        const legY=cH+tPad+20;
+        svg+=`<rect x="${lPad}" y="${legY}" width="8" height="4" rx="1" fill="#15803d"/><text x="${lPad+10}" y="${legY+4}" font-size="7.5" fill="#15803d" font-weight="600">VH (dB)</text>`;
+        if(ndviVals.length) svg+=`<rect x="${lPad+66}" y="${legY}" width="8" height="4" rx="1" fill="#0369a1"/><text x="${lPad+76}" y="${legY+4}" font-size="7.5" fill="#0369a1" font-weight="600">NDVI</text>`;
+        svg+=`</svg></div>`;
+        html += svg;
+    } else {
+        html += `<div class="sb-blk" style="text-align:center;color:#6a8c6a">No timeline data for this period.</div>`;
+    }
+    document.getElementById('pane-crop').innerHTML = html + hiwBlock('crop');
+}
+
+/* ── Raster cleanup (clears soil grid + zone overlays + legend) ─────────────*/
+function clearRasters() {
+    if (rasterGridGroup) rasterGridGroup.clearLayers();
+    zoneRasterLayers.forEach(l => map.removeLayer(l));
+    zoneRasterLayers.length = 0;
+    if (legendControl) { map.removeControl(legendControl); legendControl = null; }
+    document.getElementById('rasterBox').classList.remove('show');
+}
+
+/* ── Zone raster overlay (canvas imageOverlay) ───────────────────────────── */
+
+function hexToRgb(hex) {
+    const h = hex.replace('#','');
+    if (h.length===3) return [parseInt(h[0]+h[0],16),parseInt(h[1]+h[1],16),parseInt(h[2]+h[2],16)];
+    return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+}
+function lerp(a,b,t){
+    const ah=a.slice(1),bh=b.slice(1);
+    const r=Math.round(parseInt(ah.slice(0,2),16)*(1-t)+parseInt(bh.slice(0,2),16)*t).toString(16).padStart(2,'0');
+    const g=Math.round(parseInt(ah.slice(2,4),16)*(1-t)+parseInt(bh.slice(2,4),16)*t).toString(16).padStart(2,'0');
+    const bl=Math.round(parseInt(ah.slice(4,6),16)*(1-t)+parseInt(bh.slice(4,6),16)*t).toString(16).padStart(2,'0');
+    return '#'+r+g+bl;
+}
+function ndviCol(v){
+    if(v<0.25) return lerp('#7f1d1d','#ca8a04',v/0.25);
+    if(v<0.5)  return lerp('#ca8a04','#84cc16',(v-0.25)/0.25);
+    if(v<0.75) return lerp('#84cc16','#16a34a',(v-0.5)/0.25);
+    return lerp('#16a34a','#14532d',(v-0.75)/0.25);
+}
+function pip(lat,lng,pts){
+    let inside=false;
+    for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+        const xi=pts[i].lng,yi=pts[i].lat,xj=pts[j].lng,yj=pts[j].lat;
+        if(((yi>lat)!==(yj>lat))&&(lng<(xj-xi)*(lat-yi)/(yj-yi)+xi))inside=!inside;
+    }
+    return inside;
+}
+function hash(x,y){return Math.abs(Math.sin(x*12.9898+y*78.233)*43758.5453)%1}
+function valNoise(x,y){
+    const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy;
+    const sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);
+    return(hash(ix,iy)*(1-sx)+hash(ix+1,iy)*sx)*(1-sy)+(hash(ix,iy+1)*(1-sx)+hash(ix+1,iy+1)*sx)*sy;
+}
+function fbm(x,y){let v=0,a=0.5,f=1;for(let i=0;i<4;i++){v+=valNoise(x*f,y*f)*a;a*=0.5;f*=2}return v}
+
+function buildZoneRaster(data, mode) {
+    zoneRasterLayers.forEach(l => map.removeLayer(l));
+    zoneRasterLayers.length = 0;
+    if (!activePolygonLayer || !data) return;
+    const b = activePolygonLayer.getBounds();
+    const s=b.getSouth(),n=b.getNorth(),w=b.getWest(),e=b.getEast();
+    const RES=200, canvas=document.createElement('canvas');
+    canvas.width=RES; canvas.height=RES;
+    const ctx=canvas.getContext('2d'), imgData=ctx.createImageData(RES,RES), pixels=imgData.data;
+    const zone=data.zone_data||{}, clim=data.climate_data||{};
+    const ndviBase=(clim.gee_signals||{}).ndvi||clim.ndvi||0.5;
+    const zcolor=zone.color||(ZONES[data.zone_name]||{color:'#2c5e1a'}).color;
+    const zc=hexToRgb(zcolor);
+    const verts=activePolygonLayer.getLatLngs()[0];
+    for(let y=0;y<RES;y++){
+        const lat=n-(y/RES)*(n-s);
+        for(let x=0;x<RES;x++){
+            const lng=w+(x/RES)*(e-w), idx=(y*RES+x)*4;
+            if(!pip(lat,lng,verts)){pixels[idx+3]=0;continue}
+            const nx=x*0.1,ny=y*0.1,sn=fbm(nx,ny);
+            let r,g,bl,a=185;
+            if(mode==='zone'){
+                const mod=0.6+sn*0.8;
+                r=Math.min(255,zc[0]*mod); g=Math.min(255,zc[1]*mod); bl=Math.min(255,zc[2]*mod);
+            } else {
+                const nv=Math.min(1,Math.max(0,ndviBase+(sn*0.4-0.2)));
+                const col=hexToRgb(ndviCol(nv)); r=col[0]; g=col[1]; bl=col[2]; a=190;
             }
-            activePolygonLayer.setStyle({ color: '#fff', weight: 2, opacity: 0.8, dashArray: '4,4', fillOpacity: 0 });
-
-            const legendScale = colormaps[selectedParam];
-            let legendHTML = '';
-            [...legendScale].reverse().forEach((item, index) => {
-                const prevMax = legendScale[legendScale.length - index - 2];
-                const label   = item.max === Infinity
-                    ? `> ${prevMax ? prevMax.max : 0}`
-                    : (index === legendScale.length - 1 ? `< ${item.max}` : `${prevMax ? prevMax.max : 0} – ${item.max}`);
-                legendHTML += `<div style="display:flex;align-items:center;margin-bottom:6px;">
-                    <div style="width:18px;height:18px;background:${item.hex};margin-right:10px;border-radius:3px;"></div>
-                    <span>${label}</span></div>`;
-            });
-
-            if (legendControl) map.removeControl(legendControl);
-            legendControl = L.control({ position: 'bottomleft' });
-            legendControl.onAdd = () => {
-                const div = L.DomUtil.create('div', 'info legend');
-                div.style.cssText = 'padding:12px 14px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);';
-                div.innerHTML = `<h4 style="margin:0 0 10px 0;">${paramName} (${unit})</h4>${legendHTML}`;
-                return div;
-            };
-            legendControl.addTo(map);
-
-            if (currentPopup) map.removeLayer(currentPopup);
-            currentPopup = L.popup({ closeButton: false, autoClose: false, closeOnClick: false })
-                .setLatLng(bounds.getCenter())
-                .setContent(`${isNaN(baseValue) ? 'N/A' : baseValue.toFixed(2)} ${unit}`)
-                .addTo(map);
+            pixels[idx]=r; pixels[idx+1]=g; pixels[idx+2]=bl; pixels[idx+3]=a;
         }
+    }
+    ctx.putImageData(imgData,0,0);
+    const overlay=L.imageOverlay(canvas.toDataURL(),b,{opacity:1,interactive:false}).addTo(map);
+    zoneRasterLayers.push(overlay);
+    activePolygonLayer.setStyle({fillOpacity:0, weight:2, color:'#111', opacity:0.8, dashArray:''});
+    document.getElementById('rasterBox').classList.add('show');
+}
 
-        // ── PDF Report ────────────────────────────────────────────────────────
-        function generatePDF() {
-            if (!currentAnalysis) return;
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+/* ── Legend ─────────────────────────────────────────────────────────────────*/
+function buildLegend() {
+    const leg = document.getElementById('legend');
+    Object.entries(ZONES).forEach(([name, z]) => {
+        const row = document.createElement('div');
+        row.className = 'leg-row';
+        row.innerHTML = `<div class="leg-sw" style="background:${z.color}"></div><span class="leg-nm">${name}</span><span class="leg-code">${z.code}</span>`;
+        leg.appendChild(row);
+    });
+}
+function toggleLegend() {
+    legendShown = !legendShown;
+    document.getElementById('legend').classList.toggle('show', legendShown);
+    document.getElementById('btnLeg').classList.toggle('active', legendShown);
+}
 
-            const GREEN_DARK = [44,94,26], GREEN_LIGHT = [74,124,54], ACCENT = [211,84,0];
-            const BG_LIGHT = [246,255,220], TEXT_DARK = [30,30,30], TEXT_GREY = [100,100,100], WHITE = [255,255,255];
-            const pageW = doc.internal.pageSize.getWidth();
-            const margin = 15, colW = pageW - margin * 2;
-            let y = 0;
+/* ── Location Search ─────────────────────────────────────────────────────────*/
+function setupSearch() {
+    const input   = document.getElementById('location-search-input');
+    const list    = document.getElementById('location-suggestions');
+    const icon    = document.getElementById('loc-search-icon');
+    const spinner = document.getElementById('loc-spin');
+    let debounce = null, activeIdx = -1, lastResults = [];
 
-            // Header
-            doc.setFillColor(...GREEN_DARK);
-            doc.rect(0, 0, pageW, 38, 'F');
-            doc.setFontSize(22); doc.setFont('helvetica','bold'); doc.setTextColor(...WHITE);
-            doc.text('SoilMap', margin, 17);
-            doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(163,217,119);
-            doc.text('Soil Intelligence Report', margin, 25);
-            const now = new Date();
-            doc.setFontSize(9); doc.setTextColor(...WHITE);
-            doc.text(
-                `Generated: ${now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}  ${now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`,
-                pageW - margin, 25, { align: 'right' }
-            );
-            y = 46;
-
-            // Fertility banner
-            const fertText  = document.getElementById('fertility-label').innerText;
-            const fertLower = fertText.toLowerCase();
-            let fertBg, fertFg;
-            if (fertLower.includes('high'))       { fertBg=[220,252,231]; fertFg=[22,101,52]; }
-            else if (fertLower.includes('low'))   { fertBg=[254,226,226]; fertFg=[153,27,27]; }
-            else                                   { fertBg=[254,243,199]; fertFg=[146,64,14]; }
-            doc.setFillColor(...fertBg);
-            doc.roundedRect(margin, y, colW, 14, 3, 3, 'F');
-            doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...fertFg);
-            doc.text(fertText.toUpperCase(), pageW / 2, y + 9.5, { align: 'center' });
-            y += 22;
-
-            function sectionHeader(title) {
-                doc.setFillColor(...GREEN_DARK);
-                doc.rect(margin, y, colW, 8, 'F');
-                doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...WHITE);
-                doc.text(title, margin + 4, y + 5.5);
-                y += 12;
-            }
-
-            let rowEven = true;
-            function tableRow(label, value, unit) {
-                doc.setFillColor(...(rowEven ? BG_LIGHT : WHITE));
-                doc.rect(margin, y, colW, 9, 'F');
-                doc.setFontSize(9.5); doc.setFont('helvetica','normal'); doc.setTextColor(...TEXT_DARK);
-                doc.text(label, margin + 3, y + 6);
-                doc.setFont('helvetica','bold'); doc.setTextColor(...ACCENT);
-                doc.text(String(value), margin + colW * 0.60, y + 6);
-                doc.setFont('helvetica','normal'); doc.setTextColor(...TEXT_GREY);
-                doc.text(unit, margin + colW * 0.82, y + 6);
-                doc.setDrawColor(220,220,220);
-                doc.line(margin, y + 9, margin + colW, y + 9);
-                y += 9; rowEven = !rowEven;
-            }
-
-            // Plot info
-            if (activePolygonLayer) {
-                sectionHeader('PLOT INFORMATION');
-                let localEven = true;
-                const center  = activePolygonLayer.getBounds().getCenter();
-                const latLngs = activePolygonLayer.getLatLngs()[0];
-                let area = 0;
-                const R = 6371000;
-                for (let i = 0; i < latLngs.length; i++) {
-                    const j = (i + 1) % latLngs.length;
-                    const phi1 = latLngs[i].lat * Math.PI / 180, phi2 = latLngs[j].lat * Math.PI / 180;
-                    area += (latLngs[j].lng - latLngs[i].lng) * Math.PI / 180 * (2 + Math.sin(phi1) + Math.sin(phi2));
-                }
-                area = Math.abs(area * R * R / 2);
-                function plotRow(label, value, unit) {
-                    doc.setFillColor(...(localEven ? BG_LIGHT : WHITE));
-                    doc.rect(margin, y, colW, 9, 'F');
-                    doc.setFontSize(9.5); doc.setFont('helvetica','normal'); doc.setTextColor(...TEXT_DARK);
-                    doc.text(label, margin + 3, y + 6);
-                    doc.setFont('helvetica','bold'); doc.setTextColor(...ACCENT);
-                    doc.text(String(value), margin + colW * 0.60, y + 6);
-                    doc.setFont('helvetica','normal'); doc.setTextColor(...TEXT_GREY);
-                    doc.text(unit, margin + colW * 0.82, y + 6);
-                    doc.setDrawColor(220,220,220);
-                    doc.line(margin, y + 9, margin + colW, y + 9);
-                    y += 9; localEven = !localEven;
-                }
-                plotRow('Center Latitude',  center.lat.toFixed(5), '°N');
-                plotRow('Center Longitude', center.lng.toFixed(5), '°E');
-                plotRow('Approx. Plot Area', (area / 10000).toFixed(3), 'ha');
-                plotRow('Vertices', String(latLngs.length), '');
-                y += 6;
-            } else if (activeMarkerLayer) {
-                sectionHeader('LOCATION INFORMATION');
-                const latlng = activeMarkerLayer.getLatLng();
-                let localEven = true;
-                function markerRow(label, value, unit) {
-                    doc.setFillColor(...(localEven ? BG_LIGHT : WHITE));
-                    doc.rect(margin, y, colW, 9, 'F');
-                    doc.setFontSize(9.5); doc.setFont('helvetica','normal'); doc.setTextColor(...TEXT_DARK);
-                    doc.text(label, margin + 3, y + 6);
-                    doc.setFont('helvetica','bold'); doc.setTextColor(...ACCENT);
-                    doc.text(String(value), margin + colW * 0.60, y + 6);
-                    doc.setFont('helvetica','normal'); doc.setTextColor(...TEXT_GREY);
-                    doc.text(unit, margin + colW * 0.82, y + 6);
-                    doc.setDrawColor(220,220,220);
-                    doc.line(margin, y + 9, margin + colW, y + 9);
-                    y += 9; localEven = !localEven;
-                }
-                markerRow('Latitude',  latlng.lat.toFixed(5), '°N');
-                markerRow('Longitude', latlng.lng.toFixed(5), '°E');
-                y += 6;
-            }
-
-            // Soil chemistry
-            sectionHeader('SOIL CHEMISTRY');
-            const chemParams = [
-                ['ph','pH Level','pH'], ['ec','Electric Conductivity','dS/m'],
-                ['n','Nitrogen (N)','kg/ha'], ['p','Phosphorus (P)','kg/ha'], ['k','Potassium (K)','kg/ha'],
-                ['organic_carbon','Organic Carbon','%'], ['s','Sulfur','ppm'],
-                ['fe','Iron (Fe)','ppm'], ['zn','Zinc (Zn)','ppm'],
-                ['cu','Copper (Cu)','ppm'], ['b','Boron (B)','ppm'], ['mn','Manganese (Mn)','ppm']
-            ];
-            chemParams.forEach(([key, label, unit]) => {
-                let val = parseFloat(currentAnalysis[key]);
-                if (key === 'ph' && val > 14) while (val > 14) val /= 10;
-                tableRow(label, isNaN(val) ? 'N/A' : val.toFixed(2), unit);
-            });
-            y += 6;
-
-            // Soil texture
-            sectionHeader('SOIL TEXTURE');
-            [['sand_pct','Sand Content','%'],['clay_pct','Clay Content','%'],['silt_pct','Silt Content','%']].forEach(([key,label,unit]) => {
-                const val = parseFloat(currentAnalysis[key]);
-                tableRow(label, isNaN(val) ? 'N/A' : val.toFixed(1), unit);
-            });
-            y += 6;
-
-            // Environmental
-            sectionHeader('ENVIRONMENTAL FACTORS');
-            const env = currentAnalysis;
-            [
-                ['ndvi','NDVI',''],
-                ['temperature_c','Temperature','°C'],
-                ['rainfall_mm','Annual Rainfall','mm'],
-                ['elevation_m','Elevation','m']
-            ].forEach(([key,label,unit]) => {
-                const val = parseFloat(env[key]);
-                tableRow(label, isNaN(val) ? 'N/A' : val.toFixed(2), unit);
-            });
-
-            doc.save(`SoilMap_Report_${new Date().toISOString().slice(0,10)}.pdf`);
-        }
-
-        // ── Upload Modal ──────────────────────────────────────────────────────
-        let selectedFile = null;
-
-        function openUploadModal()  { document.getElementById('upload-modal-overlay').classList.add('open'); }
-        function closeUploadModal() { document.getElementById('upload-modal-overlay').classList.remove('open'); }
-        function handleOverlayClick(e) { if (e.target === document.getElementById('upload-modal-overlay')) closeUploadModal(); }
-        function toggleColHint() {
-            const box = document.getElementById('col-hint-box');
-            box.style.display = box.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function handleDragOver(e)  { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
-        function handleDragLeave(e) { document.getElementById('drop-zone').classList.remove('drag-over'); }
-        function handleDrop(e) {
-            e.preventDefault();
-            document.getElementById('drop-zone').classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            if (file) setFile(file);
-        }
-
-        function handleFileSelect(input) { if (input.files[0]) setFile(input.files[0]); }
-
-        function setFile(file) {
-            selectedFile = file;
-            document.getElementById('selected-file-name').textContent = file.name;
-            document.getElementById('upload-submit-btn').disabled = false;
-            document.getElementById('upload-result').style.display = 'none';
-        }
-
-        async function submitUpload() {
-            if (!selectedFile) return;
-            const btn = document.getElementById('upload-submit-btn');
-            btn.disabled = true;
-            btn.textContent = 'Uploading...';
-
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-            formData.append('auto_retrain',  document.getElementById('chk-auto-retrain').checked  ? '1' : '0');
-            formData.append('skip_enrich',   document.getElementById('chk-skip-enrich').checked   ? '1' : '0');
-
-            const resultEl = document.getElementById('upload-result');
+    function setLoading(on) {
+        icon.style.display    = on ? 'none' : '';
+        spinner.style.display = on ? 'block' : 'none';
+    }
+    function clearSug() { list.innerHTML = ''; list.style.display = 'none'; activeIdx = -1; }
+    function flyTo(r) {
+        clearSug(); input.value = ''; setLoading(false);
+        clearRasters();
+        soilData = null; zoneData = null; activePolygonLayer = null;
+        closeSidebar();
+        map.flyTo([r.lat, r.lon], 17, {animate:true, duration:1.5});
+        const m = L.marker([r.lat, r.lon]).addTo(map).bindPopup(r.name).openPopup();
+        setTimeout(() => map.removeLayer(m), 4000);
+    }
+    input.addEventListener('input', function() {
+        clearTimeout(debounce);
+        const q = this.value.trim();
+        if (q.length < 2) { clearSug(); setLoading(false); return; }
+        setLoading(true);
+        debounce = setTimeout(async () => {
             try {
-                const resp = await fetch(`/api/soil-map/upload/{{ device.id }}/`, {
-                    method: 'POST',
-                    headers: { 'X-CSRFToken': getCookie('csrftoken') },
-                    body: formData
-                });
+                const resp = await fetch(`/api/location-search/?q=${encodeURIComponent(q)}`,
+                    {headers:{'X-CSRFToken':getCookie('csrftoken')}});
                 const data = await resp.json();
-                if (resp.ok && data.status === 'success') {
-                    resultEl.className = 'result-ok';
-                    resultEl.innerHTML = `<div class="result-title">&#10003; Upload successful</div>
-                        <div class="stat-grid">
-                            <div class="stat-item"><span>Rows received</span><span>${data.rows_received ?? '--'}</span></div>
-                            <div class="stat-item"><span>Rows ingested</span><span>${data.rows_ingested ?? '--'}</span></div>
-                            <div class="stat-item"><span>Rejected</span><span>${data.rows_rejected ?? '--'}</span></div>
-                            <div class="stat-item"><span>Model retrained</span><span>${data.retrained ? 'Yes' : 'No'}</span></div>
-                        </div>
-                        ${data.rejected_reasons?.length ? `<div class="rejected-list">${data.rejected_reasons.join('<br>')}</div>` : ''}`;
-                } else {
-                    resultEl.className = 'result-err';
-                    resultEl.innerHTML = `<div class="result-title">&#9888; Upload failed</div>${data.detail || data.error || 'Unknown error'}`;
-                }
-            } catch (err) {
-                resultEl.className = 'result-err';
-                resultEl.innerHTML = `<div class="result-title">&#9888; Network error</div>${err.message}`;
-            } finally {
-                resultEl.style.display = 'block';
-                btn.disabled = false;
-                btn.textContent = 'Upload & Ingest Data';
+                lastResults = data.results || [];
+                list.innerHTML = '';
+                if (!lastResults.length) { list.style.display = 'none'; setLoading(false); return; }
+                lastResults.forEach((r,i) => {
+                    const div = document.createElement('div');
+                    div.className = 'loc-suggestion';
+                    div.textContent = r.name;
+                    div.addEventListener('mousedown', e => { e.preventDefault(); flyTo(r); });
+                    list.appendChild(div);
+                });
+                list.style.display = 'block';
+            } catch { clearSug(); }
+            finally { setLoading(false); }
+        }, 300);
+    });
+    input.addEventListener('keydown', function(e) {
+        const items = list.querySelectorAll('.loc-suggestion');
+        if (e.key==='ArrowDown') { e.preventDefault(); activeIdx=Math.min(activeIdx+1,items.length-1); items.forEach((el,i)=>el.classList.toggle('active',i===activeIdx)); }
+        else if (e.key==='ArrowUp') { e.preventDefault(); activeIdx=Math.max(activeIdx-1,-1); items.forEach((el,i)=>el.classList.toggle('active',i===activeIdx)); }
+        else if (e.key==='Enter' && activeIdx>=0 && lastResults[activeIdx]) { e.preventDefault(); flyTo(lastResults[activeIdx]); }
+        else if (e.key==='Escape') clearSug();
+    });
+    document.addEventListener('click', e => {
+        if (!document.getElementById('location-search-wrap').contains(e.target)) clearSug();
+    });
+}
+
+
+/* ── Soil colormaps + overlay ────────────────────────────────────────────────*/
+const colormaps = {
+    'ph':            [{max:4.5,hex:'#E24B4A'},{max:5.5,hex:'#EF9F27'},{max:6.5,hex:'#97C459'},{max:7.5,hex:'#1D9E75'},{max:8.5,hex:'#378ADD'},{max:Infinity,hex:'#7F77DD'}],
+    'ec':            [{max:0.2,hex:'#7F77DD'},{max:0.8,hex:'#378ADD'},{max:1.6,hex:'#1D9E75'},{max:3.2,hex:'#639922'},{max:6.4,hex:'#EF9F27'},{max:Infinity,hex:'#E24B4A'}],
+    'n':             [{max:50,hex:'#E24B4A'},{max:100,hex:'#F09595'},{max:200,hex:'#EF9F27'},{max:300,hex:'#97C459'},{max:400,hex:'#1D9E75'},{max:Infinity,hex:'#7F77DD'}],
+    'p':             [{max:5,hex:'#E24B4A'},{max:10,hex:'#F09595'},{max:20,hex:'#EF9F27'},{max:40,hex:'#97C459'},{max:60,hex:'#1D9E75'},{max:Infinity,hex:'#7F77DD'}],
+    'k':             [{max:80,hex:'#E24B4A'},{max:120,hex:'#F09595'},{max:200,hex:'#EF9F27'},{max:300,hex:'#97C459'},{max:500,hex:'#1D9E75'},{max:Infinity,hex:'#7F77DD'}],
+    'organic_carbon':[{max:0.25,hex:'#E24B4A'},{max:0.5,hex:'#EF9F27'},{max:0.75,hex:'#FAC775'},{max:1.5,hex:'#97C459'},{max:3.0,hex:'#1D9E75'},{max:Infinity,hex:'#085041'}],
+    's':             [{max:5,hex:'#E24B4A'},{max:10,hex:'#F09595'},{max:20,hex:'#EF9F27'},{max:40,hex:'#97C459'},{max:80,hex:'#1D9E75'},{max:Infinity,hex:'#7F77DD'}],
+    'fe':            [{max:2,hex:'#E24B4A'},{max:4.5,hex:'#F09595'},{max:9,hex:'#EF9F27'},{max:20,hex:'#97C459'},{max:50,hex:'#1D9E75'},{max:Infinity,hex:'#7F77DD'}],
+    'zn':            [{max:0.5,hex:'#E24B4A'},{max:1.0,hex:'#F09595'},{max:2.0,hex:'#EF9F27'},{max:5.0,hex:'#97C459'},{max:10.0,hex:'#1D9E75'},{max:Infinity,hex:'#7F77DD'}],
+    'cu':            [{max:0.2,hex:'#E24B4A'},{max:0.5,hex:'#F09595'},{max:1.0,hex:'#EF9F27'},{max:5.0,hex:'#97C459'},{max:15.0,hex:'#1D9E75'},{max:Infinity,hex:'#7F77DD'}],
+    'b':             [{max:0.2,hex:'#E24B4A'},{max:0.5,hex:'#F09595'},{max:1.0,hex:'#EF9F27'},{max:2.0,hex:'#97C459'},{max:5.0,hex:'#1D9E75'},{max:Infinity,hex:'#7F77DD'}],
+    'mn':            [{max:2,hex:'#E24B4A'},{max:5,hex:'#F09595'},{max:10,hex:'#EF9F27'},{max:25,hex:'#97C459'},{max:50,hex:'#1D9E75'},{max:Infinity,hex:'#7F77DD'}],
+    'sand_pct':      [{max:20,hex:'#f7f7f7'},{max:40,hex:'#ffe5b4'},{max:60,hex:'#f4c272'},{max:80,hex:'#e29531'},{max:Infinity,hex:'#b36305'}],
+    'clay_pct':      [{max:10,hex:'#f2f0f7'},{max:25,hex:'#cbc9e2'},{max:40,hex:'#9e9ac8'},{max:60,hex:'#756bb1'},{max:Infinity,hex:'#54278f'}],
+    'silt_pct':      [{max:10,hex:'#f7f7f7'},{max:25,hex:'#cccccc'},{max:50,hex:'#969696'},{max:70,hex:'#636363'},{max:Infinity,hex:'#252525'}]
+};
+function getAbsoluteColor(value, param) {
+    const scale = colormaps[param];
+    if (!scale) return '#cccccc';
+    for (let i=0;i<scale.length;i++) if (value<=scale[i].max) return scale[i].hex;
+    return scale[scale.length-1].hex;
+}
+const simplex = new SimplexNoise();
+function noise(lat, lng, offset, scale) { return (simplex.noise2D((lat+offset)*scale,(lng+offset)*scale)+1)/2; }
+function pointInPolygon(point,vs){
+    let x=point[0],y=point[1],inside=false;
+    for(let i=0,j=vs.length-1;i<vs.length;j=i++){
+        const xi=vs[i][0],yi=vs[i][1],xj=vs[j][0],yj=vs[j][1];
+        if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;
+    }
+    return inside;
+}
+
+function updateSoilRaster() {
+    if (!soilData || !activePolygonLayer) return;
+    const sel = document.getElementById('par-sel-sb');
+    if (!sel) return;
+    const opt    = sel.options[sel.selectedIndex];
+    const param  = sel.value, unit = opt.getAttribute('data-unit'), paramName = opt.text;
+    const merged = soilData._merged || {
+        ...(soilData.predicted_soil_chemistry||{}),
+        ...(soilData.environmental_factors||{})
+    };
+
+    let base = parseFloat(merged[param]);
+    if (param === 'ph' && base > 14) while (base > 14) base /= 10;
+
+    const parVal  = document.getElementById('par-val-sb');
+    const parUnit = document.getElementById('par-unit-sb');
+    if (parVal)  parVal.textContent  = isNaN(base) ? '—' : base.toFixed(2);
+    if (parUnit) parUnit.textContent = unit;
+
+    rasterGridGroup.clearLayers();
+    zoneRasterLayers.forEach(l => map.removeLayer(l));
+    zoneRasterLayers.length = 0;
+
+    const bounds = activePolygonLayer.getBounds();
+    const latDiff=bounds.getNorth()-bounds.getSouth(), lngDiff=bounds.getEast()-bounds.getWest();
+    const latStep=latDiff/65, lngStep=lngDiff/65;
+    const noiseScale=1.5/Math.max(latDiff,lngDiff);
+    const scale=colormaps[param];
+    if (!scale) return;
+    const lastFin=scale.filter(s=>s.max!==Infinity);
+    const cmapMax=lastFin[lastFin.length-1].max;
+    let bv=base; if(isNaN(bv)||bv===null) bv=cmapMax/2;
+    const minValue=0, maxValue=cmapMax*1.05, seedOffset=param.length*10;
+    const vs=activePolygonLayer.getLatLngs()[0].map(ll=>[ll.lat,ll.lng]);
+
+    for(let lat=bounds.getSouth();lat<=bounds.getNorth();lat+=latStep){
+        for(let lng=bounds.getWest();lng<=bounds.getEast();lng+=lngStep){
+            const clat=lat+latStep/2, clng=lng+lngStep/2;
+            if(pointInPolygon([clat,clng],vs)){
+                const nv=noise(clat,clng,seedOffset,noiseScale);
+                const cv=minValue+nv*(maxValue-minValue);
+                L.rectangle([[lat,lng],[lat+latStep,lng+lngStep]],
+                    {stroke:false,fillColor:getAbsoluteColor(cv,param),fillOpacity:0.85}).addTo(rasterGridGroup);
             }
         }
+    }
+    activePolygonLayer.setStyle({color:'#fff',weight:2,opacity:0.8,dashArray:'4,4',fillOpacity:0});
 
-    </script>
+    let legendHTML='';
+    [...scale].reverse().forEach((item,index) => {
+        const prevMax=scale[scale.length-index-2];
+        const label=item.max===Infinity ? `> ${prevMax?prevMax.max:0}` : (index===scale.length-1?`< ${item.max}`:`${prevMax?prevMax.max:0} – ${item.max}`);
+        legendHTML+=`<div style="display:flex;align-items:center;margin-bottom:5px"><div style="width:16px;height:16px;background:${item.hex};margin-right:9px;border-radius:3px"></div><span>${label}</span></div>`;
+    });
+    if (legendControl) map.removeControl(legendControl);
+    legendControl = L.control({position:'bottomleft'});
+    legendControl.onAdd = () => {
+        const div = L.DomUtil.create('div','info legend');
+        div.style.cssText='padding:11px 13px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15)';
+        div.innerHTML=`<h4 style="margin:0 0 9px 0">${paramName} (${unit})</h4>${legendHTML}`;
+        return div;
+    };
+    legendControl.addTo(map);
+    document.getElementById('rasterBox').classList.add('show');
+}
+
+/* ── PDF Report ──────────────────────────────────────────────────────────────*/
+function generatePDF() {
+    if (!soilData) return;
+    const chem = soilData.predicted_soil_chemistry || {};
+    const env  = soilData.environmental_factors    || {};
+    const fert = soilData.fertility_assessment     || 'Medium';
+
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const GD=[44,94,26],AC=[211,84,0],BGL=[246,255,220],TK=[30,30,30],TG=[100,100,100],W=[255,255,255];
+    const pW=doc.internal.pageSize.getWidth(), mg=15, cW=pW-mg*2;
+    let y=0;
+    doc.setFillColor(...GD); doc.rect(0,0,pW,36,'F');
+    doc.setFontSize(21); doc.setFont('helvetica','bold'); doc.setTextColor(...W);
+    doc.text('SoilMap', mg, 16);
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(163,217,119);
+    doc.text('Soil Intelligence Report', mg, 24);
+    const now=new Date();
+    doc.setFontSize(8.5); doc.setTextColor(...W);
+    doc.text(`Generated: ${now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}  ${now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`,pW-mg,24,{align:'right'});
+    y=44;
+    const ft=fert.toLowerCase();
+    let fb,ff; if(ft.includes('high')){fb=[220,252,231];ff=[22,101,52]}else if(ft.includes('low')){fb=[254,226,226];ff=[153,27,27]}else{fb=[254,243,199];ff=[146,64,14]}
+    doc.setFillColor(...fb); doc.roundedRect(mg,y,cW,13,3,3,'F');
+    doc.setFontSize(10.5); doc.setFont('helvetica','bold'); doc.setTextColor(...ff);
+    doc.text(('SOIL FERTILITY: '+fert).toUpperCase(),pW/2,y+9,{align:'center'});
+    y+=20;
+    function secH(t){doc.setFillColor(...GD);doc.rect(mg,y,cW,7.5,'F');doc.setFontSize(9.5);doc.setFont('helvetica','bold');doc.setTextColor(...W);doc.text(t,mg+3,y+5.2);y+=11}
+    let re=true;
+    function tRow(l,v,u){doc.setFillColor(...(re?BGL:W));doc.rect(mg,y,cW,8.5,'F');doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...TK);doc.text(l,mg+3,y+5.5);doc.setFont('helvetica','bold');doc.setTextColor(...AC);doc.text(String(v),mg+cW*0.60,y+5.5);doc.setFont('helvetica','normal');doc.setTextColor(...TG);doc.text(u,mg+cW*0.82,y+5.5);doc.setDrawColor(220,220,220);doc.line(mg,y+8.5,mg+cW,y+8.5);y+=8.5;re=!re}
+    secH('SOIL CHEMISTRY');
+    [['ph','pH Level','pH'],['ec','Electric Conductivity','dS/m'],['n','Nitrogen (N)','kg/ha'],['p','Phosphorus (P)','kg/ha'],['k','Potassium (K)','kg/ha'],['organic_carbon','Organic Carbon','%'],['s','Sulfur','ppm'],['fe','Iron (Fe)','ppm'],['zn','Zinc (Zn)','ppm'],['cu','Copper (Cu)','ppm'],['b','Boron (B)','ppm'],['mn','Manganese (Mn)','ppm']].forEach(([k,l,u])=>{
+        let v=parseFloat(chem[k]); if(k==='ph'&&v>14)while(v>14)v/=10;
+        tRow(l,isNaN(v)?'N/A':v.toFixed(2),u);
+    });
+    y+=5; secH('SOIL TEXTURE');
+    [['sand_pct','Sand Content','%'],['clay_pct','Clay Content','%'],['silt_pct','Silt Content','%']].forEach(([k,l,u])=>{const v=parseFloat(chem[k]);tRow(l,isNaN(v)?'N/A':v.toFixed(1),u)});
+    y+=5; secH('ENVIRONMENTAL FACTORS');
+    [['ndvi','NDVI',''],['temperature_c','Temperature','°C'],['rainfall_mm','Annual Rainfall','mm'],['elevation_m','Elevation','m']].forEach(([k,l,u])=>{const v=parseFloat(env[k]);tRow(l,isNaN(v)?'N/A':v.toFixed(2),u)});
+    doc.save(`SoilMap_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
+/* ── Upload Modal ────────────────────────────────────────────────────────────*/
+let selectedFile=null;
+function openUploadModal() {document.getElementById('upload-modal-overlay').classList.add('open')}
+function closeUploadModal(){document.getElementById('upload-modal-overlay').classList.remove('open')}
+function handleOverlayClick(e){if(e.target===document.getElementById('upload-modal-overlay'))closeUploadModal()}
+function toggleColHint(){const b=document.getElementById('col-hint-box');b.style.display=b.style.display==='none'?'block':'none'}
+function handleDragOver(e) {e.preventDefault();document.getElementById('drop-zone').classList.add('drag-over')}
+function handleDragLeave(e){document.getElementById('drop-zone').classList.remove('drag-over')}
+function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)setFile(f)}
+function handleFileSelect(input){if(input.files[0])setFile(input.files[0])}
+function setFile(file){selectedFile=file;document.getElementById('selected-file-name').textContent=file.name;document.getElementById('upload-submit-btn').disabled=false;document.getElementById('upload-result').style.display='none'}
+async function submitUpload(){
+    if(!selectedFile)return;
+    const btn=document.getElementById('upload-submit-btn'); btn.disabled=true; btn.textContent='Uploading…';
+    const fd=new FormData(); fd.append('file',selectedFile);
+    fd.append('auto_retrain',document.getElementById('chk-auto-retrain').checked?'1':'0');
+    fd.append('skip_enrich',document.getElementById('chk-skip-enrich').checked?'1':'0');
+    const resultEl=document.getElementById('upload-result');
+    try {
+        const resp=await fetch(`/api/soil-map/upload/{{ device.id }}/`,{method:'POST',headers:{'X-CSRFToken':getCookie('csrftoken')},body:fd});
+        const data=await resp.json();
+        if(resp.ok&&data.status==='success'){
+            resultEl.className='result-ok';
+            resultEl.innerHTML=`<div style="font-weight:700;font-size:1rem;margin-bottom:7px">&#10003; Upload successful</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;margin-bottom:7px">
+                    <div><span style="color:#6b7280;font-size:0.76rem">Rows received</span><br><b>${data.rows_received??'--'}</b></div>
+                    <div><span style="color:#6b7280;font-size:0.76rem">Rows ingested</span><br><b>${data.rows_ingested??'--'}</b></div>
+                </div>`;
+        } else {
+            resultEl.className='result-err';
+            resultEl.innerHTML=`<div style="font-weight:700">&#9888; Upload failed</div>${data.detail||data.error||'Unknown error'}`;
+        }
+    } catch(err){
+        resultEl.className='result-err';
+        resultEl.innerHTML=`<div style="font-weight:700">&#9888; Network error</div>${err.message}`;
+    } finally {
+        resultEl.style.display='block'; btn.disabled=false; btn.textContent='Upload & Ingest Data';
+    }
+}
+
+window.addEventListener('DOMContentLoaded', initMap);
+</script>
 </body>
 </html>

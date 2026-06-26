@@ -12,19 +12,18 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
+load_dotenv(BASE_DIR / '.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'Yk7f7tji8QeJj1pOpna2zNqdRm3kzBz_'
+SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 # Application definition
 
@@ -37,7 +36,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'authapp',
     'agriapp',
-    'map',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
@@ -84,12 +82,12 @@ WSGI_APPLICATION = 'agriculture_project_backend.wsgi.application'
 
 DATABASES = {
    'default': {
-       'ENGINE': 'django.db.backends.postgresql_psycopg2',
-       'NAME': 'myproject1',
-               'USER': 'myprojectuser',
-               'PASSWORD': 'password',
-               'HOST': 'localhost',
-               'PORT': '',
+       'ENGINE'  : 'django.db.backends.postgresql_psycopg2',
+       'NAME'    : os.environ.get('DB_NAME', 'myproject1'),
+       'USER'    : os.environ.get('DB_USER', 'myprojectuser'),
+       'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+       'HOST'    : os.environ.get('DB_HOST', 'localhost'),
+       'PORT'    : os.environ.get('DB_PORT', ''),
    }
 }
 
@@ -232,11 +230,6 @@ LOGIN_URL = '/'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 314572800  # 300MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760   # 10MB (rest streams to disk)
 
-RAZORPAY_API_KEY    = ''
-RAZORPAY_SECRET_KEY = ''
-WEBHOOK_SECRET      = ''
-
-
-# RAZORPAY_API_KEY    = 'rzp_live_S9ffa56iaiMZyO'
-# RAZORPAY_SECRET_KEY = '8BMVK58P8DD7CAsaLrFenNqc'
-# WEBHOOK_SECRET      = 'arkashine_webhook_secret'
+RAZORPAY_API_KEY    = os.environ.get('RAZORPAY_API_KEY', '')
+RAZORPAY_SECRET_KEY = os.environ.get('RAZORPAY_SECRET_KEY', '')
+WEBHOOK_SECRET      = os.environ.get('WEBHOOK_SECRET', '')

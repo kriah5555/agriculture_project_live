@@ -105,4 +105,9 @@ urlpatterns = [
     # ── Location AJAX ────────────────────────────────────────────────────────────
     path('location/states/',                        v.location_states,                          name='location-states'),
     path('location/districts/',                     v.location_districts,                       name='location-districts'),
+    path('api/location-search/',                    v.location_search,                          name='location-search'),
+
+    # ── Map ──────────────────────────────────────────────────────────────────────
+    path('map/',                                    v.map_view,                                 name='map'),
+    path('map-devise/<int:pk>',                     v.map_view,                                 name='map-devise'),
 ]

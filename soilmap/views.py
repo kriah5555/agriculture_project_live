@@ -18,7 +18,9 @@ from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from drf_spectacular.openapi import OpenApiTypes
 
 from agriapp.models import Devise, DeviseApisFields
-from agri_ai.zone import classify_zone as _classify_zone, classify_global_climate_zone, CLIMATE_ZONE_METADATA
+from agri_ai.zone     import classify_zone as _classify_zone, classify_global_climate_zone, CLIMATE_ZONE_METADATA
+from agri_ai.analysis import analyze_polygon as _analyze_polygon
+from agri_ai.gee      import get_crop_coverage_map, CROP_CATALOG
 
 # ── ML pipeline setup ─────────────────────────────────────────────────────────
 from agri_ai.soil     import load_models, predict_for_point, classify_fertility
@@ -471,6 +473,35 @@ def export_soil_data_csv(request, device_id):
 
     return resp
 
+# ── Polygon Zone + SAR analysis (sync) ───────────────────────────────────────
+
+@extend_schema(
+    tags=['SoilMap'],
+    summary='Zone + SAR crop analysis for a drawn polygon',
+    request={
+        'application/json': {
+            'type': 'object',
+            'properties': {
+                'coordinates': {'type': 'array', 'description': 'Array of [lon, lat] pairs'},
+                'radius_km':   {'type': 'number', 'example': 2},
+                'season':      {'type': 'string', 'example': 'kharif'},
+            },
+        }
+    },
+    responses={200: OpenApiResponse(description='Zone + crop detection result')},
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def analyze_polygon(request):
+    coords    = request.data.get('coordinates', [])
+    radius_km = float(request.data.get('radius_km', 2))
+    season    = request.data.get('season', 'kharif')
+    if len(coords) < 3:
+        return Response({'error': 'Provide at least 3 [lon,lat] pairs.'}, status=status.HTTP_400_BAD_REQUEST)
+    result = _analyze_polygon(coords, radius_km, season)
+    return Response(result)
+
+
 # ── Climate Zone endpoint ─────────────────────────────────────────────────────
 
 @extend_schema(
@@ -554,4 +585,120 @@ def classify_climate_zone(request):
             'elevation_m':  round(climate.get('elevation', 0), 1),
             'data_source':  climate.get('data_source', ''),
         },
+    })
+
+
+# ── Crop Coverage Map endpoint ────────────────────────────────────────────────
+
+@extend_schema(
+    tags=['SoilMap'],
+    summary='Pixel-level crop coverage map for a point + radius',
+    request={
+        'application/json': {
+            'type': 'object',
+            'properties': {
+                'lat':        {'type': 'number', 'example': 26.5},
+                'lon':        {'type': 'number', 'example': 83.7},
+                'radius_km':  {'type': 'number', 'example': 2.0},
+                'crop':       {'type': 'string', 'example': 'paddy'},
+                'months_back':{'type': 'integer','example': 6},
+            },
+            'required': ['lat', 'lon'],
+        }
+    },
+    responses={200: OpenApiResponse(description='Crop coverage result with GEE tile URL and area stats')},
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def crop_coverage_map(request):
+    data       = request.data
+    lat        = data.get('lat')
+    lon        = data.get('lon')
+    if lat is None or lon is None:
+        return Response({'error': 'lat and lon are required.'}, status=status.HTTP_400_BAD_REQUEST)
+    radius_km  = float(data.get('radius_km',   2.0))
+    crop       = data.get('crop', 'paddy')
+    months_back = int(data.get('months_back',  6))
+    if crop not in CROP_CATALOG:
+        return Response({'error': f'Unknown crop "{crop}". Valid: {list(CROP_CATALOG)}'}, status=status.HTTP_400_BAD_REQUEST)
+    result = get_crop_coverage_map(float(lat), float(lon), radius_km, crop, months_back)
+    return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def gee_health(request):
+    """
+    GEE connectivity probe.
+    Reads .env directly every call — no os.environ caching issues,
+    no server restart needed after editing .env.
+    """
+    import os, time, ee
+    from dotenv import dotenv_values
+    from pathlib import Path
+    import agri_ai.gee.service as _svc
+
+    env_path = Path(__file__).resolve().parent.parent / '.env'
+    env = dotenv_values(env_path)
+
+    project  = env.get("GEE_PROJECT", "")   or ""
+    sa_key   = env.get("SAR_GEE_SA_KEY", "") or ""
+    rf_asset = env.get("GEE_RF_CLASSIFIER_ASSET", "") or ""
+
+    config = {
+        'GEE_PROJECT':             project  or '(not set)',
+        'SAR_GEE_SA_KEY':          sa_key   or '(not set)',
+        'GEE_RF_CLASSIFIER_ASSET': rf_asset or '(not set)',
+        'project_set':   bool(project),
+        'sa_key_set':    bool(sa_key),
+        'sa_key_exists': bool(sa_key and os.path.isfile(sa_key)),
+        'rf_asset_set':  bool(rf_asset),
+    }
+
+    ok = False
+    probe_ok = False
+    probe_error = None
+    init_method = None
+
+    t0 = time.monotonic()
+    try:
+        if sa_key and os.path.isfile(sa_key):
+            creds = ee.ServiceAccountCredentials(email=None, key_file=sa_key)
+            ee.Initialize(creds, project=project or None)
+            init_method = 'service_account'
+        elif project:
+            ee.Initialize(project=project)
+            init_method = 'adc'
+        else:
+            raise RuntimeError("GEE_PROJECT not set in .env")
+
+        ok = True
+        # Update module cache so the rest of the app uses the now-working credentials
+        _svc._GEE_PROJECT     = project
+        _svc._SA_KEY_PATH     = sa_key
+        _svc._RF_ASSET_ID     = rf_asset
+        _svc._GEE_AVAILABLE   = True
+        _svc._GEE_INITIALIZED = True
+
+        try:
+            ee.Image("USGS/SRTMGL1_003").getInfo()
+            probe_ok = True
+        except Exception as e:
+            probe_ok = False
+            probe_error = str(e)
+
+    except Exception as e:
+        probe_error = str(e)
+        _svc._GEE_INITIALIZED = False
+        _svc._GEE_AVAILABLE   = False
+
+    elapsed_ms = round((time.monotonic() - t0) * 1000)
+
+    return Response({
+        'gee_initialized': ok,
+        'probe_ok':        probe_ok,
+        'probe_error':     probe_error,
+        'init_method':     init_method,
+        'elapsed_ms':      elapsed_ms,
+        'config':          config,
     })

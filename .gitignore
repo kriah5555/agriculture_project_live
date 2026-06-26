@@ -2,6 +2,9 @@
 /agriapp/migrations/
 /map/migrations/
 
+# Environment variables — never commit secrets
+.env
+
 
 **/__pycache__/
 **/migrations/

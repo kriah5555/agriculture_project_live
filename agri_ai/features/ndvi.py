@@ -5,10 +5,14 @@ Module to fetch mean NDVI values from Google Earth Engine
 using Sentinel-2 Surface Reflectance imagery.
 """
 
+import os
 import ee
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-PROJECT_ID      = "soilmain"
+PROJECT_ID      = os.environ.get("GEE_PROJECT", "soilmain")
 COLLECTION      = "COPERNICUS/S2_SR_HARMONIZED"
 CLOUD_THRESHOLD = 20 # Max allowed cloud percentage
 SCALE_METERS    = 10 # Sentinel-2 native resolution for B4/B8

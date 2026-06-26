@@ -20,7 +20,6 @@ from django.views.generic import UpdateView, TemplateView, CreateView, View
 from django.urls import reverse
 from django.contrib import messages #import messages
 from datetime import datetime
-from map.views import get_marker_color
 from django.contrib.auth.models import User, Group
 from .devise_details import *
 from .import FertilizerCalculation
@@ -2332,3 +2331,60 @@ def location_search(request):
         return Response({'error': 'Location service timed out'}, status=drf_status.HTTP_504_GATEWAY_TIMEOUT)
     except Exception as e:
         return Response({'error': str(e)}, status=drf_status.HTTP_502_BAD_GATEWAY)
+
+
+def get_marker_color(devise):
+    if devise:
+        api_thresholds = APICountThreshold.objects.filter(devise=devise).first()
+        if devise.devise_type == 'soilsaathi':
+            api_count = len(DeviseApis.objects.filter(device=devise))
+        else:
+            api_count = len(DeviseApisFields.objects.filter(device=devise))
+        color = 'pink'
+
+        if api_thresholds:
+            if api_count >= api_thresholds.red:
+                color = 'red'
+            if api_count >= api_thresholds.orange and api_count <= api_thresholds.red:
+                color = 'orange'
+            if api_count >= api_thresholds.blue and api_count <= api_thresholds.orange:
+                color = 'blue'
+            if api_count >= api_thresholds.green and api_count <= api_thresholds.blue:
+                color = 'green'
+            if api_count < api_thresholds.green:
+                color = 'pink'
+    return color
+
+
+@login_required(login_url='/admin-login/')
+def map_view(request, **kwargs):
+    zoom = 0
+    pk = ''
+
+    if request.method == 'POST':
+        pk = request.POST['pk']
+    elif kwargs:
+        pk = kwargs['pk']
+
+    if pk:
+        devises = DeviseLocation.objects.filter(devise__pk=pk)
+        zoom = 19
+    else:
+        devises = DeviseLocation.objects.all()
+
+    display_devises_location = dict()
+    for devices_location in devises:
+        display_devises_location[devices_location.pk] = {
+            'name': devices_location.devise.name,
+            'latitude': devices_location.latitude,
+            'longitude': devices_location.longitude,
+            'devise_pk': devices_location.devise.pk,
+            'color': get_marker_color(devices_location.devise),
+        }
+
+    context = {
+        'filter_devise_list': DeviseLocation.objects.all(),
+        'devises': display_devises_location,
+        'zoom': zoom,
+    }
+    return render(request, 'agriapp/map_index.html', context=context)

@@ -1,6 +1,5 @@
 import authapp
 import agriapp
-import map
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
@@ -16,7 +15,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/predict/', soilmap_views.predict_soil, name='soil-predict'),
     path('', include('agriapp.urls')),
-    path('', include('map.urls')),
     path('api/', include('devise_apis.urls')),
     path('api/mobile/', include('devise_apis.mobile_urls')),
     path('', include('reports.urls')),

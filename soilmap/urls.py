@@ -8,4 +8,7 @@ urlpatterns = [
     path('api/soil-map/data/<int:device_id>/',          views.list_soil_data,             name='soil-map-data'),
     path('api/soil-map/data/<int:device_id>/export/',   views.export_soil_data_csv,       name='soil-map-data-export'),
     path('api/soil-map/climate-zone/',                  views.classify_climate_zone,      name='soil-map-climate-zone'),
+    path('api/soil-map/analyze-polygon/',               views.analyze_polygon,            name='soil-map-analyze-polygon'),
+    path('api/soil-map/crop-coverage-map/',             views.crop_coverage_map,          name='soil-map-crop-coverage'),
+    path('api/soil-map/gee-health/',                    views.gee_health,                 name='soil-map-gee-health'),
 ]

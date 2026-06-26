@@ -7,9 +7,13 @@ Primary:  Open-Meteo forecast API  (free, no auth, fast)
 Fallback: Google Earth Engine SRTM (requires GEE project permission)
 """
 
+import os
 import requests as _req
+from dotenv import load_dotenv
 
-_GEE_PROJECT = "soilmain"
+load_dotenv()
+
+_GEE_PROJECT = os.environ.get("GEE_PROJECT", "soilmain")
 _SRTM        = "USGS/SRTMGL1_003"
 _SCALE_M     = 30
 
