@@ -149,11 +149,16 @@ SPECTACULAR_SETTINGS = {
         {'name': 'SoilLIFE',      'description': 'SoilLIFE biological sensor readings'},
         {'name': 'PHBottle',      'description': 'PHBottle pH sensor readings'},
         {'name': 'Account',       'description': 'User profile and password management'},
+        {'name': 'CarbonCredits', 'description': 'Carbon credit calculation, farm analysis, and PDF report generation'},
     ],
     'SCHEMA_PATH_PREFIX': '/api/',
     'COMPONENT_SPLIT_REQUEST': True,
     'SORT_OPERATIONS': False,
 }
+
+# Carbon credit engine settings
+CARBON_MARKET_RATE      = 1400.0   # ₹ per carbon credit
+OPENWEATHERMAP_API_KEY  = ''        # set to fetch live weather; leave blank to use user-provided values
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

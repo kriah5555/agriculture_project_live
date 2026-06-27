@@ -74,6 +74,11 @@ Soil Map      (requires auth)                      (soilmap/views.py + services/
   GET   /api/mobile/soil-map/devices/<id>/readings/         All sensor readings for a soil-map device
   GET   /api/mobile/soil-map/devices/<id>/readings/export/  Download readings as CSV
 
+CarbonCredits (requires auth)                      (devices/carbon_credits.py — proxy to Carbon Credit FastAPI service)
+  POST  /api/mobile/carbon-credits/calculate/       calculateCarbon  — compute & save carbon credit report
+  POST  /api/mobile/carbon-credits/analyze/         analyzeFarm      — full farm sustainability analysis (no save)
+  GET   /api/mobile/carbon-credits/pdf-report/      buildPdfReportUrl — stream PDF carbon credit report
+
 """
 from django.urls import path
 from . import mobile_api as m
@@ -85,6 +90,7 @@ from .devices import ph_bottle  as pb
 from agriapp import farmer_api as fa
 from soilmap  import views     as sm
 from agriapp  import views     as svc
+from .devices import carbon_credits as cc
 
 urlpatterns = [
     # ── Auth ──────────────────────────────────────────────────────────────────
@@ -160,4 +166,9 @@ urlpatterns = [
     path('soil-map/location-search/',                            svc.location_search,      name='mobile_sm_location_search'),
     path('soil-map/devices/<int:device_id>/readings/',           sm.list_soil_data,        name='mobile_sm_readings'),
     path('soil-map/devices/<int:device_id>/readings/export/',    sm.export_soil_data_csv,  name='mobile_sm_readings_export'),
+
+    # ── CarbonCredits ─────────────────────────────────────────────────────────
+    path('carbon-credits/calculate/',  cc.calculate_carbon,      name='mobile_cc_calculate'),
+    path('carbon-credits/analyze/',    cc.analyze_farm,          name='mobile_cc_analyze'),
+    path('carbon-credits/pdf-report/', cc.build_pdf_report_url,  name='mobile_cc_pdf_report'),
 ]

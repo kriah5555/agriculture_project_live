@@ -9,7 +9,7 @@ from .models import (
     ContactDetails, UserRequest, Devise, DeviseApis, APICountThreshold,
     ColumnName, DeviseLocation, DeviseApisFields,
     SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS,
-    SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES, PH_BOTTLE_FIELDS, SOIL_MAP_FIELDS,
+    SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES, DEVICE_ICONS, PH_BOTTLE_FIELDS, SOIL_MAP_FIELDS,
     UserProfile, USER_TYPE_CHOICES,
     Farmer, FarmerStatusHistory, FARMER_STATUS_CHOICES, SEASON_CHOICES,
     PartnerPayment, PaymentAttachment,
@@ -223,6 +223,10 @@ class Users(AdminRequiredMixin, TemplateView):
 
         context['active_page'] = "users"
         context['users']       = users_list
+        context['device_info'] = [
+            {'key': k, 'name': v, 'icon': DEVICE_ICONS.get(k, 'fa-microchip')}
+            for k, v in DEVICE_NAMES.items()
+        ]
         return context
 
 class UserForm(forms.Form):

@@ -8,11 +8,21 @@ from . import FertilizerCalculation as f
 CROP_LIST      = f.get_crop_list()
 
 DEVICE_NAMES = {
-    'soilsaathi': 'SoiLENZ',
-    'atmo_sense': 'SoilSparsh',
-    'soil_life' : 'SoilLIFE',
-    'ph_bottle' : 'PHBottle',
-    'soil_map'  : 'SoilMap',
+    'soilsaathi'    : 'SoiLENZ',
+    'atmo_sense'    : 'SoilSparsh',
+    'soil_life'     : 'SoilLIFE',
+    'ph_bottle'     : 'PHBottle',
+    'soil_map'      : 'SoilMap',
+    'carbon_credits': 'CarbonCredits',
+}
+
+DEVICE_ICONS = {
+    'soilsaathi'    : 'fa-leaf',
+    'atmo_sense'    : 'fa-wind',
+    'soil_life'     : 'fa-seedling',
+    'ph_bottle'     : 'fa-flask',
+    'soil_map'      : 'fa-map',
+    'carbon_credits': 'fa-coins',
 }
 
 DEVICE_CHOICES = list(DEVICE_NAMES.items())

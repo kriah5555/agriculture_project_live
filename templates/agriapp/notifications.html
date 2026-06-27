@@ -88,7 +88,7 @@
                 {% for req in user_requests_pending %}
                   <div class="notif-item"
                        data-search="{{ req.username|lower }} {{ req.email|lower }}"
-                       onclick="showRequest({{ req.pk }}, '{{ req.username }}', '{{ req.email }}', '{{ req.phone }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'pending', '{% url 'resolve-user-request' req.pk %}')">
+                       onclick="showRequest({{ req.pk }}, '{{ req.username }}', '{{ req.email }}', '{{ req.phone }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'pending', '{% url 'resolve-user-request' req.pk %}', '{{ req.request_type }}')">
                     <span class="notif-dot dot-pending"></span>
                     <div style="flex:1;min-width:0;">
                       <div class="d-flex align-items-center gap-2 mb-1">
@@ -116,7 +116,7 @@
                 {% for req in user_requests_resolved %}
                   <div class="notif-item"
                        data-search="{{ req.username|lower }} {{ req.email|lower }}"
-                       onclick="showRequest({{ req.pk }}, '{{ req.username }}', '{{ req.email }}', '{{ req.phone }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'resolved', '')">
+                       onclick="showRequest({{ req.pk }}, '{{ req.username }}', '{{ req.email }}', '{{ req.phone }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'resolved', '', '{{ req.request_type }}')">
                     <span class="notif-dot dot-resolved"></span>
                     <div style="flex:1;min-width:0;">
                       <div class="d-flex align-items-center gap-2 mb-1">
@@ -227,14 +227,17 @@
     });
   }
 
-  function showRequest(id, username, email, phone, typeName, message, date, status, resolveUrl) {
+  function showRequest(id, username, email, phone, typeName, message, date, status, resolveUrl, requestType) {
     document.querySelectorAll('.notif-item').forEach(el => el.classList.remove('selected'));
     event.currentTarget.classList.add('selected');
 
-    const isPending = status === 'pending';
-    const typeLabel = typeName.includes('Forgot')
+    const isPending   = status === 'pending';
+    const isPasswordType = requestType === 'forgot_password' || requestType === 'change_password';
+    const typeLabel = requestType === 'forgot_password'
       ? '<span style="background:#fff3cd;color:#664d03;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">Forgot Password</span>'
-      : '<span style="background:#cfe2ff;color:#084298;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">Change Password</span>';
+      : requestType === 'change_password'
+        ? '<span style="background:#cfe2ff;color:#084298;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">Change Password</span>'
+        : '<span style="background:#e8f5e9;color:#1b5e20;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;"><i class="fas fa-leaf me-1"></i>Soil Partner Interest</span>';
 
     document.getElementById('detailContent').innerHTML = `
       <div style="text-align:left;">
@@ -263,11 +266,12 @@
         ${isPending ? `
           <hr>
           <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            ${isPasswordType ? `
             <a href="/change-password/${username}/"
                class="btn btn-primary"
                style="background:linear-gradient(135deg,#1a3a9f,#0d7cf5);border:none;border-radius:8px;font-weight:700;">
               <i class="fas fa-key me-1"></i> Reset Password
-            </a>
+            </a>` : ''}
             <a href="${resolveUrl}"
                class="btn btn-success"
                style="border-radius:8px;font-weight:700;">

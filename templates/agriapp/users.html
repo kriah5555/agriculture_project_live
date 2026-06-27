@@ -17,11 +17,14 @@
     font-size: 11px; font-weight: 600; padding: 3px 7px;
     border-radius: 20px; margin: 2px 2px;
     white-space: nowrap;
+    background: #f5f5f5; color: #424242; border: 1px solid #bdbdbd;
   }
-  .db-soilsaathi { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
-  .db-atmo_sense { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
-  .db-soil_life  { background: #f3e5f5; color: #6a1b9a; border: 1px solid #ce93d8; }
-  .db-ph_bottle  { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+  .db-soilsaathi     { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  .db-atmo_sense     { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+  .db-soil_life      { background: #f3e5f5; color: #6a1b9a; border: 1px solid #ce93d8; }
+  .db-ph_bottle      { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+  .db-soil_map       { background: #e0f7fa; color: #00695c; border: 1px solid #80cbc4; }
+  .db-carbon_credits { background: #fffde7; color: #f57f17; border: 1px solid #fff176; }
 </style>
 
 <div style="padding: 0 0 16px 0;">
@@ -105,18 +108,13 @@
                 {% endif %}
               </td>
               <td style="padding:10px 16px;">
-                {% if "soilsaathi" in user.device_types %}
-                  <span class="device-badge db-soilsaathi"><i class="fas fa-leaf"></i> SoiLENZ</span>
-                {% endif %}
-                {% if "atmo_sense" in user.device_types %}
-                  <span class="device-badge db-atmo_sense"><i class="fas fa-wind"></i> SoilSparsh</span>
-                {% endif %}
-                {% if "soil_life" in user.device_types %}
-                  <span class="device-badge db-soil_life"><i class="fas fa-seedling"></i> SoilLIFE</span>
-                {% endif %}
-                {% if "ph_bottle" in user.device_types %}
-                  <span class="device-badge db-ph_bottle"><i class="fas fa-flask"></i> PHBottle</span>
-                {% endif %}
+                {% for d in device_info %}
+                  {% if d.key in user.device_types %}
+                    <span class="device-badge db-{{ d.key }}">
+                      <i class="fas {{ d.icon }}"></i> {{ d.name }}
+                    </span>
+                  {% endif %}
+                {% endfor %}
                 {% if not user.device_types %}
                   <span class="text-muted" style="font-size:12px;"><i class="fas fa-minus"></i> None</span>
                 {% endif %}
