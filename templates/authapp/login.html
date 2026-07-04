@@ -4,14 +4,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="{% static 'theme/theme.js' %}"></script>
   <title>ArkaShine - User Login</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="{% static 'login.css' %}">
   <style>
     body { background: linear-gradient(to bottom, #f7f5f4, #d1cece); min-height: 100vh; margin: 0; }
   </style>
+  <link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
 </head>
 <body>
+<button type="button" class="theme-toggle-btn theme-toggle-fixed" title="Toggle dark mode">
+  <i data-theme-icon class="fas fa-moon"></i>
+</button>
 <section class="login-block" style="height:100vh;">
   <div class="container" style="padding-top:80px;">
     <div class="row">

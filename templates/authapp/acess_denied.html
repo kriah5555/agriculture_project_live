@@ -1,6 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="{% static 'theme/theme.js' %}"></script>
     <style>
         body{
             font-family: 'Ropa Sans', sans-serif;
@@ -30,8 +34,13 @@
             }
     </style>
 <link href="https://fonts.googleapis.com/css?family=Ropa+Sans" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
 </head>
 <body>
+<button type="button" class="theme-toggle-btn theme-toggle-fixed" title="Toggle dark mode">
+  <i data-theme-icon class="fas fa-moon"></i>
+</button>
 <div class="error-main">
 <h1>Oops!</h1>
 <div class="error-heading">!</div>

@@ -8,9 +8,10 @@
     <meta charset="utf-8">
     <title>ArkaShine - Deep tech for sustainable agriculture</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <script src="{% static 'theme/theme.js' %}"></script>
     <meta content="Free HTML Templates" name="keywords">
     <meta content="Free HTML Templates" name="description">
-    
+
     <!-- Bootstrap CSS -->
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Web Fonts -->
@@ -28,10 +29,16 @@
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="{% static '/home/css/style.css' %}" rel="stylesheet">
-    
+
+    <!-- Shared theme (dark mode + responsive) -->
+    <link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
+
 </head>
 
 <body data-spy="scroll" data-target=".navbar" data-offset="51">
+ <button type="button" class="theme-toggle-btn theme-toggle-fixed" title="Toggle dark mode">
+   <i data-theme-icon class="fas fa-moon"></i>
+ </button>
  <!-- Navbar Start -->
 <nav class="navbar fixed-top shadow-sm navbar-expand-lg my-navbar py-1 py-lg-0 px-lg-5">
     <a href="index.html" class="navbar-brand d-block d-lg-none">

@@ -1,8 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="{% static 'theme/theme.js' %}"></script>
 <title>SoiLENZ Soil Health Report — {{ meta.farmer_name }}</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -35,6 +37,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;background:#d0d0d0;c
   .print-btn{position:fixed;top:14px;right:14px;z-index:999;
     padding:8px 16px;background:#1a3c14;color:#fff;border:none;
     border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;}
+  .theme-toggle-fixed{right:150px;}
 }
 @media print{
   html,body{background:#fff;padding:0;margin:0;}
@@ -175,8 +178,12 @@ tr:nth-child(even) td{background:#f9fafb;}
 .mb2{margin-bottom:2px;}.mb4{margin-bottom:4px;}.px8{padding:0 8px;}.p8{padding:8px;}
 .bold{font-weight:700;}.small{font-size:8.5px;}
 </style>
+<link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
 </head>
 <body>
+<button type="button" class="theme-toggle-btn theme-toggle-fixed" title="Toggle dark mode">
+  <i data-theme-icon class="fas fa-moon"></i>
+</button>
 <button class="print-btn" onclick="window.print()"><i class="fas fa-download"></i> Download PDF</button>
 
 {% with ph=preds.ph ec=preds.ec oc=preds.organic_carbon n=preds.n p=preds.p k=preds.k ca=preds.ca mg=preds.mg s=preds.s fe=preds.fe mn=preds.mn cu=preds.cu zn=preds.zn b=preds.b %}

@@ -1,0 +1,189 @@
+/* ==========================================================================
+   Shared theme: CSS variables, dark mode overrides, responsive helpers.
+   Included on every page alongside theme.js. Additive only — never remove
+   or override page-specific layout/flow behavior, only color + breakpoints.
+   ========================================================================== */
+
+:root {
+  --tc-bg: #eef0f5;
+  --tc-surface: #ffffff;
+  --tc-surface-alt: #f4f5f8;
+  --tc-text: #1a1a1a;
+  --tc-text-muted: #6c757d;
+  --tc-border: #dee2e6;
+  --tc-primary: #1a2f6b;
+  --tc-primary-contrast: #ffffff;
+  --tc-input-bg: #ffffff;
+  --tc-link: #1a2f6b;
+  --tc-shadow: rgba(0, 0, 0, 0.08);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --tc-bg: #12141c;
+  --tc-surface: #1b1e29;
+  --tc-surface-alt: #232635;
+  --tc-text: #e7e9ee;
+  --tc-text-muted: #9aa0ad;
+  --tc-border: #333747;
+  --tc-primary: #3b5bdb;
+  --tc-primary-contrast: #ffffff;
+  --tc-input-bg: #232635;
+  --tc-link: #7aa2ff;
+  --tc-shadow: rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+/* ── Theme toggle button (used on every page) ───────────────────────── */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--tc-border);
+  background: var(--tc-surface);
+  color: var(--tc-text);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.theme-toggle-btn:hover { background: var(--tc-surface-alt); }
+
+.theme-toggle-fixed {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 2000;
+  box-shadow: 0 2px 8px var(--tc-shadow);
+}
+
+/* ── Dark-mode overrides for common Bootstrap components ────────────── */
+[data-theme="dark"] body {
+  background-color: var(--tc-bg);
+  color: var(--tc-text);
+}
+
+[data-theme="dark"] .card,
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .list-group-item,
+[data-theme="dark"] .dropdown-menu,
+[data-theme="dark"] .offcanvas,
+[data-theme="dark"] .popover,
+[data-theme="dark"] .toast {
+  background-color: var(--tc-surface);
+  color: var(--tc-text);
+  border-color: var(--tc-border);
+}
+
+[data-theme="dark"] .card-header,
+[data-theme="dark"] .card-footer,
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer,
+[data-theme="dark"] thead,
+[data-theme="dark"] th {
+  background-color: var(--tc-surface-alt);
+  color: var(--tc-text);
+  border-color: var(--tc-border);
+}
+
+[data-theme="dark"] .table {
+  color: var(--tc-text);
+  border-color: var(--tc-border);
+}
+[data-theme="dark"] .table > :not(caption) > * > * {
+  background-color: var(--tc-surface);
+  color: var(--tc-text);
+  border-color: var(--tc-border);
+}
+[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: var(--tc-surface-alt);
+}
+[data-theme="dark"] .table-hover > tbody > tr:hover > * {
+  background-color: var(--tc-surface-alt);
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: var(--tc-input-bg);
+  color: var(--tc-text);
+  border-color: var(--tc-border);
+}
+[data-theme="dark"] .form-control::placeholder { color: var(--tc-text-muted); }
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+  background-color: var(--tc-input-bg);
+  color: var(--tc-text);
+}
+[data-theme="dark"] .form-label,
+[data-theme="dark"] label,
+[data-theme="dark"] .form-check-label {
+  color: var(--tc-text);
+}
+[data-theme="dark"] .input-group-text {
+  background-color: var(--tc-surface-alt);
+  color: var(--tc-text);
+  border-color: var(--tc-border);
+}
+
+[data-theme="dark"] .btn-light,
+[data-theme="dark"] .btn-outline-secondary {
+  background-color: var(--tc-surface-alt);
+  color: var(--tc-text);
+  border-color: var(--tc-border);
+}
+[data-theme="dark"] .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+
+[data-theme="dark"] a { color: var(--tc-link); }
+[data-theme="dark"] .text-muted { color: var(--tc-text-muted) !important; }
+[data-theme="dark"] .text-dark { color: var(--tc-text) !important; }
+[data-theme="dark"] hr { border-color: var(--tc-border); opacity: 0.5; }
+
+[data-theme="dark"] .bg-white { background-color: var(--tc-surface) !important; }
+[data-theme="dark"] .bg-light { background-color: var(--tc-surface-alt) !important; color: var(--tc-text); }
+[data-theme="dark"] .badge.bg-light { background-color: var(--tc-surface-alt) !important; color: var(--tc-text) !important; }
+[data-theme="dark"] .border { border-color: var(--tc-border) !important; }
+
+[data-theme="dark"] .pagination .page-link {
+  background-color: var(--tc-surface);
+  color: var(--tc-text);
+  border-color: var(--tc-border);
+}
+[data-theme="dark"] .pagination .page-item.disabled .page-link {
+  background-color: var(--tc-surface-alt);
+  color: var(--tc-text-muted);
+}
+
+[data-theme="dark"] .alert-success { background-color: rgba(25, 135, 84, .2); color: #b7f0cf; border-color: rgba(25, 135, 84, .35); }
+[data-theme="dark"] .alert-danger  { background-color: rgba(220, 53, 69, .2); color: #f5b8c0; border-color: rgba(220, 53, 69, .35); }
+[data-theme="dark"] .alert-warning { background-color: rgba(255, 193, 7, .15); color: #ffe083; border-color: rgba(255, 193, 7, .3); }
+[data-theme="dark"] .alert-info    { background-color: rgba(13, 202, 240, .15); color: #a6e9f7; border-color: rgba(13, 202, 240, .3); }
+
+[data-theme="dark"] ::-webkit-scrollbar-track { background: var(--tc-bg); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: var(--tc-border); }
+
+/* ── Responsive helpers (mobile / tablet) ───────────────────────────── */
+@media (max-width: 767.98px) {
+  table.table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .container, .container-fluid {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .modal-dialog { margin: 8px; }
+  .card { margin-bottom: 12px; }
+}
+
+@media (max-width: 575.98px) {
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.4rem; }
+  h3 { font-size: 1.2rem; }
+  .btn { font-size: 0.9rem; }
+}

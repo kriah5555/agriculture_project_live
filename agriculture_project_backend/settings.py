@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'versions',
     'razorpay_app',
     'soilmap',
+    'leaflenz',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +70,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'agriapp.context_processors.notifications_badge',
             ],
         },
     },

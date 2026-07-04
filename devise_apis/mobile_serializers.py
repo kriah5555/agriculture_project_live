@@ -9,7 +9,9 @@ from agriapp.models import (
     Devise, DeviseApis, DeviseApisFields, DeviseLocation,
     APICountThreshold, DEVICE_NAMES,
     ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_MAP_FIELDS,
+    LEAFLENZ_FIELDS,
 )
+from agri_ai.leaf import parse_class_label, get_disease_details
 
 
 # ── Auth ─────────────────────────────────────────────────────────────────────
@@ -157,6 +159,7 @@ FIELD_LABELS = {
     'soil_life' : _sensor_fields(SOIL_LIFE_FIELDS),
     'ph_bottle' : _sensor_fields(PH_BOTTLE_FIELDS),
     'soil_map'  : _sensor_fields(SOIL_MAP_FIELDS),
+    'leaflenz'  : _sensor_fields(LEAFLENZ_FIELDS),
 }
 
 
@@ -197,6 +200,37 @@ class FieldsReadingCreateSerializer(serializers.ModelSerializer):
             'field1', 'field2', 'field3', 'field4', 'field5',
             'field6', 'field7', 'field8',
         ]
+
+
+# ── LeafLenz (leaf disease scan) ──────────────────────────────────────────────
+
+class LeafLenzReadingSerializer(FieldsReadingSerializer):
+    """
+    FieldsReadingSerializer + disease details derived from `tag` (the raw
+    predicted class label, e.g. 'Tomato___Early_blight') and field1 (confidence).
+    """
+    plant_name   = serializers.SerializerMethodField()
+    disease_name = serializers.SerializerMethodField()
+    disease_info = serializers.SerializerMethodField()
+
+    class Meta(FieldsReadingSerializer.Meta):
+        fields = FieldsReadingSerializer.Meta.fields + ['plant_name', 'disease_name', 'disease_info']
+
+    def get_plant_name(self, obj):
+        plant, _ = parse_class_label(obj.tag or 'fallback')
+        return plant
+
+    def get_disease_name(self, obj):
+        _, disease = parse_class_label(obj.tag or 'fallback')
+        return disease
+
+    def get_disease_info(self, obj):
+        details = get_disease_details(obj.tag or 'fallback')
+        return {
+            'description'           : details.get('description', 'N/A'),
+            'symptoms'              : details.get('symptoms', 'N/A'),
+            'treatment_and_prevention': details.get('treatment_prevention', 'N/A'),
+        }
 
 
 # ── Threshold ─────────────────────────────────────────────────────────────────

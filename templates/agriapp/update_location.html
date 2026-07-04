@@ -32,9 +32,9 @@
               {{ field.label }}
             </label>
             {% if field.name == 'devise' %}
-              <select name="{{ field.html_name }}" class="form-control" style="border-radius:8px; border:1.5px solid #d1d5db; font-size:14px;">
+              <div class="location-devise-select">
                 {{ field }}
-              </select>
+              </div>
             {% else %}
               <input type="number" step="any"
                      name="{{ field.html_name }}"
@@ -69,6 +69,16 @@
 
   </div>
 </div>
+
+<style>
+  .location-devise-select select {
+    width: 100%;
+    border-radius: 8px;
+    border: 1.5px solid #d1d5db;
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+</style>
 
 <script>
   var str     = "{{ request.path }}";

@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from agriapp.models import (
-    DeviseApis, DeviseApisFields, APICountThreshold, Farmer,
+    DeviseApis, DeviseApisFields, APICountThreshold, Farmer, UserRequest,
 )
 from devise_apis.mobile_serializers import (
     FieldsReadingSerializer,
@@ -21,10 +21,44 @@ from devise_apis.mobile_serializers import (
 
 # ── Threshold check ───────────────────────────────────────────────────────────
 
+def _raise_usage_alert(device, category, current_count, threshold_value):
+    """
+    Creates a pending UserRequest alert (usage_warning / usage_limit_reached) for
+    the admin Notifications page, unless one of the same category is already
+    pending for this device (avoids duplicate alerts on every subsequent call
+    once a tier has been crossed).
+    """
+    already_pending = UserRequest.objects.filter(
+        request_type=category, device=device, status=UserRequest.STATUS_PENDING,
+    ).exists()
+    if already_pending:
+        return
+
+    device_label = device.name or f'Device #{device.pk}'
+    email = (device.user.email if device.user_id and device.user.email else device.email) or ''
+    stage = 'is nearing its API call limit' if category == UserRequest.USAGE_WARNING else 'has reached its API call limit'
+    UserRequest.objects.create(
+        user         = device.user,
+        device       = device,
+        username     = device_label,
+        email        = email,
+        phone        = device.phone or '',
+        request_type = category,
+        message      = (
+            f"Device '{device_label}' (ID {device.pk}) {stage}: "
+            f"{current_count}/{threshold_value} API calls used. "
+            f"Please review and update the device's usage limit."
+        ),
+    )
+
+
 def check_threshold(device):
     """
     Returns a 403 Response if the device has exceeded its API call red-limit,
-    or None if the write is allowed.
+    or None if the write is allowed. Also raises an admin notification
+    ('usage_warning' at the orange tier, 'usage_limit_reached' at/past the red
+    tier) the first time each tier is crossed, so an admin can review and raise
+    the device's limit.
 
     Usage in any view that saves a reading:
         blocked = check_threshold(device)
@@ -42,6 +76,7 @@ def check_threshold(device):
         current = DeviseApisFields.objects.filter(device=device).count()
 
     if current >= threshold.red:
+        _raise_usage_alert(device, UserRequest.USAGE_LIMIT_REACHED, current, threshold.red)
         return Response(
             {
                 'detail'   : 'API call limit reached for this device. Please contact the admin.',
@@ -51,6 +86,15 @@ def check_threshold(device):
             },
             status=status.HTTP_403_FORBIDDEN,
         )
+
+    # This call is allowed and will push the count to `current + 1` — raise an
+    # alert now if that lands in the orange (warning) or red (limit reached) tier.
+    new_count = current + 1
+    if new_count >= threshold.red:
+        _raise_usage_alert(device, UserRequest.USAGE_LIMIT_REACHED, new_count, threshold.red)
+    elif new_count >= threshold.orange:
+        _raise_usage_alert(device, UserRequest.USAGE_WARNING, new_count, threshold.orange)
+
     return None
 
 

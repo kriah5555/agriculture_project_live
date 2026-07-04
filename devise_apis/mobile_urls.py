@@ -53,6 +53,13 @@ PHBottle readings (ph_bottle)                      (devices/ph_bottle.py)
   POST  /api/mobile/devices/<id>/ph-bottle/create/        Create reading
   GET   /api/mobile/devices/<id>/ph-bottle/<cid>/         Single reading
 
+LeafLenz readings (leaflenz)                       (devices/leaflenz.py)
+  GET   /api/mobile/devices/<id>/leaflenz/                List scans
+  POST  /api/mobile/devices/<id>/leaflenz/scan/           Upload a leaf photo → ONNX prediction + save
+  GET   /api/mobile/devices/<id>/leaflenz/<cid>/          Single scan (with disease info)
+  GET   /api/mobile/devices/<id>/leaflenz/stats/          Total scans + plant distribution for a device
+  GET   /api/mobile/leaflenz/diseases/                    Static disease encyclopedia (description/symptoms/treatment)
+
 Account       (requires auth)                      (mobile_api.py / auth_api.py)
   GET   /api/mobile/account/profile/               Get profile
   PATCH /api/mobile/account/profile/update/        Update profile
@@ -87,6 +94,7 @@ from .devices import soilsaathi as ss
 from .devices import atmo_sense as atmo
 from .devices import soil_life  as sl
 from .devices import ph_bottle  as pb
+from .devices import leaflenz   as ll
 from agriapp import farmer_api as fa
 from soilmap  import views     as sm
 from agriapp  import views     as svc
@@ -136,6 +144,13 @@ urlpatterns = [
     path('devices/<int:device_id>/ph-bottle/',                       pb.ph_bottle_list,   name='mobile_pb_list'),
     path('devices/<int:device_id>/ph-bottle/create/',                pb.ph_bottle_create, name='mobile_pb_create'),
     path('devices/<int:device_id>/ph-bottle/<int:call_id>/',         pb.ph_bottle_detail, name='mobile_pb_detail'),
+
+    # ── LeafLenz (leaflenz) device-specific routes ────────────────────────────
+    path('devices/<int:device_id>/leaflenz/',                       ll.leaflenz_list,   name='mobile_ll_list'),
+    path('devices/<int:device_id>/leaflenz/scan/',                  ll.leaflenz_scan,   name='mobile_ll_scan'),
+    path('devices/<int:device_id>/leaflenz/stats/',                 ll.leaflenz_stats,  name='mobile_ll_stats'),
+    path('devices/<int:device_id>/leaflenz/<int:call_id>/',         ll.leaflenz_detail, name='mobile_ll_detail'),
+    path('leaflenz/diseases/',                                      ll.leaflenz_diseases, name='mobile_ll_diseases'),
 
     # ── Account ───────────────────────────────────────────────────────────────
     path('account/profile/',           m.account_profile,        name='mobile_profile'),

@@ -10,10 +10,12 @@ from .models import (
     ColumnName, DeviseLocation, DeviseApisFields,
     SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS,
     SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES, DEVICE_ICONS, PH_BOTTLE_FIELDS, SOIL_MAP_FIELDS,
+    LEAFLENZ_FIELDS,
     UserProfile, USER_TYPE_CHOICES,
     Farmer, FarmerStatusHistory, FARMER_STATUS_CHOICES, SEASON_CHOICES,
     PartnerPayment, PaymentAttachment,
 )
+from agri_ai.leaf import parse_class_label, get_disease_details
 
 from . import UserFunctions
 from django.views.generic import UpdateView, TemplateView, CreateView, View
@@ -23,6 +25,7 @@ from datetime import datetime
 from django.contrib.auth.models import User, Group
 from .devise_details import *
 from .import FertilizerCalculation
+from .overview_dashboard import build_overview_context
 
 from django.shortcuts import get_object_or_404
 from django.conf import settings
@@ -117,7 +120,7 @@ def userPage(request):
         match devise.devise_type:
             case "soilsaathi":
                 devise.api_used = DeviseApis.objects.filter(device=devise).count()
-            case "atmo_sense" | "soil_life" | "ph_bottle":
+            case "atmo_sense" | "soil_life" | "ph_bottle" | "leaflenz":
                 devise.api_used = DeviseApisFields.objects.filter(device=devise).count()
             case _:
                 devise.api_used = 0
@@ -473,6 +476,7 @@ def notifications(request, **kwargs):
         'notification_inactive'  : notifications_all.filter(status=False),
         'user_requests_pending'  : user_requests_all.filter(status=UserRequest.STATUS_PENDING),
         'user_requests_resolved' : user_requests_all.filter(status=UserRequest.STATUS_RESOLVED),
+        'active_page'            : 'notifications',
     }
     return render(request, template_name = template_name, context = context)
 
@@ -492,22 +496,6 @@ def devise_list(request, **kwargs):
     context = {
         'devise_count' :len(devises),
         'devises'      : devises,
-    }
-    return render(request, template_name = template_name, context = context)
-
-@admin_required
-def api_list(request, **kwargs):
-    n, p, k, name = '', '', '', ''
-    if request.method == 'POST':
-        name = request.POST['area_name']
-        
-    devise = get_object_or_404(Devise, pk=kwargs['pk'])
-    apis = DeviseApis.objects.filter(device__pk=kwargs['pk'], area_name__contains=name)
-    template_name     = 'agriapp/api_list.html'
-    context = {
-        'api_count'   : len(apis),
-        'apis'        : apis,
-        'devise' : devise,
     }
     return render(request, template_name = template_name, context = context)
 
@@ -587,11 +575,11 @@ def user_details(request, **kwargs):
         match devise.devise_type:
             case "soilsaathi":
                 devise.api_used = DeviseApis.objects.filter(device=devise).count()
-            case "atmo_sense" | "soil_life" | "ph_bottle":
+            case "atmo_sense" | "soil_life" | "ph_bottle" | "leaflenz":
                 devise.api_used = DeviseApisFields.objects.filter(device=devise).count()
             case _:
-                devise.api_used = 0  
-    
+                devise.api_used = 0
+
     # Always ensure a profile exists so the Edit button is available for all user types
     profile, _ = UserProfile.objects.get_or_create(user=user)
     is_sp   = profile.user_type == 'soil_partner'
@@ -679,6 +667,25 @@ def api_overview(request, **kwargs):
             'fields'          : json.dumps(PH_BOTTLE_FIELDS),
             'latitude'        : devise_location.latitude if devise_location else '',
             'longitude'       : devise_location.longitude if devise_location else '',
+        }
+
+    elif "leaflenz-api-overview" in request.path:
+        template_name = 'agriapp/leaflenz_api_details.html'
+        devise_data   = get_object_or_404(DeviseApisFields, pk=kwargs['pk'])
+        raw_label     = devise_data.tag or 'fallback'
+        plant_name, disease_name = parse_class_label(raw_label)
+        details       = get_disease_details(raw_label)
+        context       = {
+            'device'       : devise_data.device,
+            'api_pk'       : devise_data.pk,
+            'reading'      : devise_data,
+            'plant_name'   : plant_name,
+            'disease_name' : disease_name,
+            'is_healthy'   : disease_name.lower() == 'healthy',
+            'confidence_pct': round((devise_data.field1 or 0) * 100, 1),
+            'description'  : details.get('description', 'N/A'),
+            'symptoms'     : details.get('symptoms', 'N/A'),
+            'treatment'    : details.get('treatment_prevention', 'N/A'),
         }
 
     else :
@@ -946,6 +953,18 @@ class SoiLENZDashboard(AdminRequiredMixin, TemplateView):
         }
         return context
 
+class AdminOverviewDashboard(AdminRequiredMixin, TemplateView):
+    """Experimental admin analytics overview, backed by real queries against
+    Farmer / Devise / DeviseApis(Fields) / PartnerPayment / UserRequest etc.
+    See agriapp/overview_dashboard.py for the aggregation logic."""
+    template_name = 'agriapp/admin_overview_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['active_page'] = 'admin-overview'
+        context.update(build_overview_context())
+        return context
+
 class Dashboard(AdminRequiredMixin, TemplateView):
     template_name = 'agriapp/admin_panel.html'
     def get_context_data(self, **kwargs):
@@ -1181,11 +1200,10 @@ class AddDeviceLocation(AdminRequiredMixin, CreateView):
     fields        = ['devise', 'latitude', 'longitude']
     template_name = 'agriapp/update_location.html'
 
-    def get_context_data(self, **kwargs):
-        context = super(AddDeviceLocation, self).get_context_data(**kwargs)
-        pk      = self.kwargs['pk']
+    def form_valid(self, form):
+        response = super().form_valid(form)
         messages.success(self.request, "Location updated successfully")
-        return context
+        return response
 
     def get_success_url(self):
         return reverse('device-details', kwargs={'pk': self.request.POST['success']})
@@ -1236,6 +1254,9 @@ class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
                     queryset = DeviseApisFields.objects.filter(device=devise).order_by('-created_at')
                 case "ph_bottle":
                     headers  = PH_BOTTLE_FIELDS
+                    queryset = DeviseApisFields.objects.filter(device=devise).order_by('-created_at')
+                case "leaflenz":
+                    headers  = LEAFLENZ_FIELDS
                     queryset = DeviseApisFields.objects.filter(device=devise).order_by('-created_at')
                 case _:
                     return JsonResponse({'error': 'Invalid device type'}, status=400)
@@ -1593,7 +1614,7 @@ def soil_partner_enquiry(request):
 
 @admin_required
 def delete_api_call(request, pk):
-    """Delete a single API call record (DeviseApis or DeviseApisFields)."""
+    """Delete a single API call record (DeviseApis or DeviseApisFields), along with its linked image file, if any."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed.'}, status=405)
     device_type = request.POST.get('device_type', '')
@@ -1601,6 +1622,13 @@ def delete_api_call(request, pk):
         obj = get_object_or_404(DeviseApis, pk=pk)
     else:
         obj = get_object_or_404(DeviseApisFields, pk=pk)
+        if obj.image_path and obj.image_path.startswith(settings.MEDIA_URL):
+            file_path = os.path.join(settings.MEDIA_ROOT, obj.image_path[len(settings.MEDIA_URL):])
+            if os.path.isfile(file_path):
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    pass
     obj.delete()
     return JsonResponse({'success': True})
 
@@ -2019,6 +2047,11 @@ def api_reading_delete_image(request, pk):
 @admin_required
 def payment_history(request):
     from django.db.models import Sum, Count, Q
+    from django.db.models.functions import TruncMonth
+    from django.utils import timezone as tz
+    from datetime import timedelta
+    from .dashboard_utils import month_buckets, month_labels, fill_monthly, trend_fields, format_inr_short
+
     qs = PartnerPayment.objects.select_related('user', 'farmer', 'created_by').prefetch_related('attachments')
 
     # Filters
@@ -2063,6 +2096,78 @@ def payment_history(request):
         paid_count     = Count('id', filter=Q(status='paid')),
         pending_count  = Count('id', filter=Q(status='pending')),
     )
+    totals['avg_amount'] = (
+        float(totals['total_amount']) / totals['total_count']
+        if totals['total_amount'] and totals['total_count'] else 0
+    )
+
+    # ── Overview: charts + trends, all computed from the same filtered `qs` ──
+    now           = tz.now()
+    last_30       = now - timedelta(days=30)
+    prev_30_start = now - timedelta(days=60)
+    twelve_months_ago = now - timedelta(days=365)
+
+    paid_last_30 = float(qs.filter(status='paid', created_at__gte=last_30).aggregate(t=Sum('amount'))['t'] or 0)
+    paid_prev_30 = float(qs.filter(status='paid', created_at__gte=prev_30_start, created_at__lt=last_30).aggregate(t=Sum('amount'))['t'] or 0)
+    count_last_30 = qs.filter(created_at__gte=last_30).count()
+    count_prev_30 = qs.filter(created_at__gte=prev_30_start, created_at__lt=last_30).count()
+
+    overview_kpis = {
+        'collected_30d_display': format_inr_short(paid_last_30),
+        'records_30d'          : count_last_30,
+    }
+    overview_kpis.update(trend_fields('collected', paid_last_30, paid_prev_30))
+    overview_kpis.update(trend_fields('records', count_last_30, count_prev_30))
+
+    buckets_12 = month_buckets(12)
+    paid_by_month = (
+        qs.filter(status='paid', created_at__gte=twelve_months_ago)
+        .annotate(month=TruncMonth('created_at')).values('month')
+        .annotate(total=Sum('amount')).order_by('month')
+    )
+    pending_by_month = (
+        qs.filter(status='pending', created_at__gte=twelve_months_ago)
+        .annotate(month=TruncMonth('created_at')).values('month')
+        .annotate(total=Sum('amount')).order_by('month')
+    )
+    monthly_trend = {
+        'labels' : month_labels(buckets_12),
+        'paid'   : [float(v) for v in fill_monthly(paid_by_month, buckets_12, 'total')],
+        'pending': [float(v) for v in fill_monthly(pending_by_month, buckets_12, 'total')],
+    }
+
+    status_split = {
+        'labels': ['Paid', 'Pending'],
+        'data'  : [float(totals['paid_amount'] or 0), float(totals['pending_amount'] or 0)],
+    }
+
+    top_partners_rows = list(
+        qs.filter(status='paid').values('user__username', 'user__first_name', 'user__last_name')
+        .annotate(total=Sum('amount')).order_by('-total')[:5]
+    )
+    max_partner_total = max((float(r['total']) for r in top_partners_rows), default=0)
+    top_partners = [
+        {
+            'name' : (f"{r['user__first_name']} {r['user__last_name']}".strip() or r['user__username']),
+            'total': float(r['total']),
+            'pct'  : round(float(r['total']) / max_partner_total * 100) if max_partner_total else 0,
+        }
+        for r in top_partners_rows
+    ]
+
+    pending_qs           = qs.filter(status='pending')
+    pending_over_30_count = pending_qs.filter(created_at__lt=last_30).count()
+    oldest_pending        = pending_qs.order_by('created_at').first()
+    oldest_pending_days   = (now - oldest_pending.created_at).days if oldest_pending else 0
+
+    overview = {
+        'kpis'                : overview_kpis,
+        'monthly_trend_json'  : json.dumps(monthly_trend, cls=DjangoJSONEncoder),
+        'status_split_json'   : json.dumps(status_split, cls=DjangoJSONEncoder),
+        'top_partners'        : top_partners,
+        'pending_over_30_count': pending_over_30_count,
+        'oldest_pending_days' : oldest_pending_days,
+    }
 
     soil_partners = User.objects.filter(profile__user_type='soil_partner').order_by('username')
 
@@ -2076,6 +2181,7 @@ def payment_history(request):
         'page_obj'      : page_obj,
         'soil_partners' : soil_partners,
         'totals'        : totals,
+        'overview'      : overview,
         'filters'       : {
             'user_id': user_id, 'status': status_filter,
             'date_from': date_from, 'date_to': date_to,

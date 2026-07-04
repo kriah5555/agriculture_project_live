@@ -6,8 +6,8 @@
         body {
             margin: 0;
             padding-top: 40px;
-            color: #2e323c;
-            background: #f5f6fa;
+            color: var(--tc-text, #2e323c);
+            background: var(--tc-bg, #f5f6fa);
             position: relative;
             height: 100%;
         }
@@ -33,7 +33,7 @@
             margin: 0;
             font-size: 0.8rem;
             font-weight: 400;
-            color: #9fa8b9;
+            color: var(--tc-text-muted, #9fa8b9);
         }
         .account-settings .about {
             margin: 2rem 0 0 0;
@@ -47,17 +47,17 @@
             font-size: 0.825rem;
         }
         .form-control {
-            border: 1px solid #cfd1d8;
+            border: 1px solid var(--tc-border, #cfd1d8);
             -webkit-border-radius: 2px;
             -moz-border-radius: 2px;
             border-radius: 2px;
             font-size: .825rem;
-            background: #ffffff;
-            color: #2e323c;
+            background: var(--tc-surface, #ffffff);
+            color: var(--tc-text, #2e323c);
         }
 
         .card {
-            background: #ffffff;
+            background: var(--tc-surface, #ffffff);
             -webkit-border-radius: 5px;
             -moz-border-radius: 5px;
             border-radius: 5px;

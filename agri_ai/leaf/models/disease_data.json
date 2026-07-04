@@ -1,0 +1,290 @@
+{
+  "Apple___Apple_scab": {
+    "plant_name": "Apple",
+    "disease_name": "Apple Scab",
+    "description": "Apple scab is a serious fungal disease caused by Venturia inaequalis. It affects apple trees, lowering fruit quality and yield, and can cause significant foliage loss.",
+    "symptoms": "Olive-green to dark brown velvety spots develop on leaves and fruit. Leaf lesions turn dark brown to black and can cause leaves to curl, yellow, and drop early. Fruit develops cracked, corky, scab-like lesions.",
+    "treatment_prevention": "Rake and destroy fallen leaves in autumn to reduce winter survival of spores. Prune the tree canopy to improve air circulation. Apply organic sulfur or copper-based fungicides in early spring during leaf bud burst."
+  },
+  "Apple___Black_rot": {
+    "plant_name": "Apple",
+    "disease_name": "Black Rot",
+    "description": "Black rot is caused by the fungus Botryosphaeria obtusa. It affects apple tree leaves, fruit, and limbs, leading to leaf drop, rotten fruit, and cankers on branches.",
+    "symptoms": "Leaves show small purple spots that expand into 'frogeye' spots (brown centers with purple margins). Fruit develops a firm, dark brown rot with concentric rings, eventually turning black and shriveling into a dry 'mummy'. Limbs develop sunken cankers.",
+    "treatment_prevention": "Prune out dead wood, cankered limbs, and mummified fruit from the tree and ground during winter dormancy. Apply protective fungicides starting at green tip stage."
+  },
+  "Apple___Cedar_apple_rust": {
+    "plant_name": "Apple",
+    "disease_name": "Cedar Apple Rust",
+    "description": "Cedar apple rust is a fungal disease caused by Gymnosporangium juniperi-virginianae. It requires both apple trees and red cedar/juniper trees in close proximity to complete its life cycle.",
+    "symptoms": "Bright yellow-orange spots appear on the upper surface of leaves in spring. Later, tiny cup-like projections (aecia) appear on the leaf undersides, releasing orange spores. Heavy infections cause leaf drop.",
+    "treatment_prevention": "Avoid planting red cedars within several hundred yards of apple trees. Apply protective fungicides (like myclobutanil) to apple trees during early spring leaf development."
+  },
+  "Apple___healthy": {
+    "plant_name": "Apple",
+    "disease_name": "Healthy",
+    "description": "The apple leaf appears completely healthy, showing no signs of fungal, bacterial, or viral disease.",
+    "symptoms": "Uniform green color, clear leaf margins, normal vein pattern, and no spots or blemishes.",
+    "treatment_prevention": "Maintain consistent watering, proper pruning, and fertilization. Continue to inspect foliage regularly for early signs of pests or disease."
+  },
+  "Corn___Common_rust": {
+    "plant_name": "Corn (Maize)",
+    "disease_name": "Common Rust",
+    "description": "Common rust is caused by the fungus Puccinia sorghi. It is favored by cool temperatures and high humidity.",
+    "symptoms": "Elongated golden-brown to reddish-orange powdery pustules (uredinia) on both upper and lower leaf surfaces. In severe cases, leaves may turn yellow and die.",
+    "treatment_prevention": "Plant rust-resistant corn varieties. Rotate crops and tillage to reduce residue. Apply foliar fungicides if disease appears early in the season."
+  },
+  "Corn___Gray_leaf_spot": {
+    "plant_name": "Corn (Maize)",
+    "disease_name": "Gray Leaf Spot",
+    "description": "Gray leaf spot is caused by the fungus Cercospora zeae-maydis. It is a highly destructive corn disease that thrives in warm, humid weather.",
+    "symptoms": "Small, tan spots with yellow halos that expand into long, narrow, rectangular gray-to-tan lesions restricted by leaf veins (resembling matchsticks).",
+    "treatment_prevention": "Use resistant hybrids. Rotate crops away from corn for at least one year. Manage tillage to bury infected plant residues. Apply fungicides if scouting indicates threshold level is reached."
+  },
+  "Corn___Northern_Leaf_Blight": {
+    "plant_name": "Corn (Maize)",
+    "disease_name": "Northern Leaf Blight",
+    "description": "Northern leaf blight is caused by the fungus Exserohilum turcicum, favored by moderate temperatures and wet, humid conditions.",
+    "symptoms": "Long, cigar-shaped, grayish-green to tan lesions (1 to 6 inches long) starting on lower leaves and moving upwards. Spores form a dark, dusty layer on lesions in humid weather.",
+    "thought": "This is a detailed list of common diseases.",
+    "treatment_prevention": "Plant resistant hybrids. Practice crop rotation and bury crop residues. Use foliar fungicides if necessary."
+  },
+  "Corn___healthy": {
+    "plant_name": "Corn (Maize)",
+    "disease_name": "Healthy",
+    "description": "The corn foliage appears healthy with normal development.",
+    "symptoms": "Healthy green color, standard leaf structure without spotting, streaks, or pustules.",
+    "treatment_prevention": "Ensure good soil drainage, weed control, and balanced nitrogen fertilization."
+  },
+  "Grape___Black_rot": {
+    "plant_name": "Grape",
+    "disease_name": "Black Rot",
+    "description": "Black rot is caused by the fungus Guignardia bidwellii. It is a highly destructive disease affecting grape leaves, shoots, and berries.",
+    "symptoms": "Small, circular, reddish-brown spots on leaves, which develop tiny black dots (pycnidia) in the center. Berries turn dark, shrivel into hard, black, wrinkled mummies.",
+    "treatment_prevention": "Prune grapevines to improve airflow and sunlight. Remove and destroy mummified berries. Apply preventative fungicides from bud break through fruit set."
+  },
+  "Grape___Esca": {
+    "plant_name": "Grape",
+    "disease_name": "Esca (Black Measles)",
+    "description": "Esca is a complex fungal disease affecting the wood and foliage of grapevines, caused by several species of wood-infecting fungi.",
+    "symptoms": "Leaves show 'tiger-stripe' patterns of yellowing and browning between veins. Berries develop small, dark spots (black measles) and may shrivel.",
+    "treatment_prevention": "Protect pruning wounds with sealing paste or fungicides. Avoid pruning during wet weather. Remove and destroy infected vines to limit spread."
+  },
+  "Grape___Leaf_blight": {
+    "plant_name": "Grape",
+    "disease_name": "Leaf Blight (Isariopsis)",
+    "description": "Leaf blight is caused by the fungus Pseudocercospora vitis. It usually appears late in the season.",
+    "symptoms": "Dull red to brown spots on leaves that expand and dry out. Leaves may curl and drop prematurely in severe cases.",
+    "treatment_prevention": "Clean up fallen leaves under the vine. Maintain proper canopy management to ensure air circulation. Apply fungicides if disease occurs early in the season."
+  },
+  "Grape___healthy": {
+    "plant_name": "Grape",
+    "disease_name": "Healthy",
+    "description": "The grape foliage is healthy and free from active disease.",
+    "symptoms": "Uniformly green leaves, firm tissue, healthy grape clusters, and no spotting.",
+    "treatment_prevention": "Perform seasonal pruning, canopy thinning, and maintain consistent soil moisture."
+  },
+  "Potato___Early_blight": {
+    "plant_name": "Potato",
+    "disease_name": "Early Blight",
+    "description": "Early blight is a fungal disease caused by Alternaria solani. It targets potato foliage and stems, reducing tuber yields.",
+    "symptoms": "Dark brown, circular spots with characteristic concentric rings ('target board' pattern) appearing first on older lower leaves. Leaves yellow and eventually die.",
+    "treatment_prevention": "Plant certified disease-free seed tubers. Apply protectant copper-based fungicides. Rotate crops with non-solanaceous plants. Avoid overhead irrigation."
+  },
+  "Potato___Late_blight": {
+    "plant_name": "Potato",
+    "disease_name": "Late Blight",
+    "description": "Late blight is a highly destructive disease caused by the oomycete Phytophthora infestans, famously responsible for the Irish Potato Famine.",
+    "symptoms": "Dark, water-soaked, irregular lesions on leaves that expand rapidly. In humid conditions, a white fuzzy growth appears on the undersides of infected leaves. Tubers show dry, reddish-brown rot.",
+    "treatment_prevention": "Plant certified seed. Apply preventative fungicides. Destroy volunteer potato plants and dump piles. Harvest only when vines are completely dead."
+  },
+  "Potato___healthy": {
+    "plant_name": "Potato",
+    "disease_name": "Healthy",
+    "description": "The potato plant leaves are healthy.",
+    "symptoms": "Deep green color, fully expanded leaves, no dry spots, halos, or fuzzy growth.",
+    "treatment_prevention": "Keep plants well-weeded and watered. Practice crop rotation to maintain soil health."
+  },
+  "Rice___Bacterial_blight": {
+    "plant_name": "Rice",
+    "disease_name": "Bacterial Blight",
+    "description": "Bacterial blight is caused by Xanthomonas oryzae pv. oryzae. It is one of the most critical bacterial diseases affecting rice crops worldwide.",
+    "symptoms": "Water-soaked stripes starting at leaf tips and margins, turning yellow-to-white wavy lesions along the leaf length. Droplets of bacterial ooze may form on leaves in high humidity.",
+    "treatment_prevention": "Use resistant rice varieties. Avoid high nitrogen fertilizer rates which favor the bacteria. Keep fields clean of weeds. Drain fields if disease is detected early."
+  },
+  "Rice___Brown_spot": {
+    "plant_name": "Rice",
+    "disease_name": "Brown Spot",
+    "description": "Brown spot is a fungal disease caused by Bipolaris oryzae, often associated with nutrient-deficient soils.",
+    "symptoms": "Numerous small, oval brown spots with grey or yellow centers (resembling sesame seeds) covering leaf surfaces. Severe infections can dry out entire leaves.",
+    "treatment_prevention": "Apply balanced fertilizers (potassium and micronutrients). Treat seeds with hot water or fungicides before planting. Improve soil drainage."
+  },
+  "Rice___Leaf_smut": {
+    "plant_name": "Rice",
+    "disease_name": "Leaf Smut",
+    "description": "Leaf smut is a minor fungal disease caused by Entyloma oryzae. It usually occurs late in the season and rarely causes economic losses.",
+    "symptoms": "Small, raised, black, angular spots (sori) on both leaf surfaces. Leaves turn yellow and dry up from the tips.",
+    "treatment_prevention": "Grow resistant varieties. Maintain balanced nutrition. Usually, chemical control is not cost-effective or necessary."
+  },
+  "Rice___healthy": {
+    "plant_name": "Rice",
+    "disease_name": "Healthy",
+    "description": "The rice crop leaves are healthy and functioning normally.",
+    "symptoms": "Slender, upright green leaves without lesions, discoloration, or black spots.",
+    "treatment_prevention": "Ensure proper water management (flooding and drying cycles) and balanced soil nutrients."
+  },
+  "Tomato___Bacterial_spot": {
+    "plant_name": "Tomato",
+    "disease_name": "Bacterial Spot",
+    "description": "Bacterial spot is caused by Xanthomonas species. It is highly contagious in warm, wet conditions.",
+    "symptoms": "Small, dark, water-soaked spots on leaves. The centers of spots dry out and fall out, creating a 'shot-hole' appearance. Fruit develops raised, dark, scabby lesions.",
+    "treatment_prevention": "Avoid overhead watering. Apply copper-based bactericides early. Disinfect stakes and tools. Remove infected crop debris immediately."
+  },
+  "Tomato___Early_blight": {
+    "plant_name": "Tomato",
+    "disease_name": "Early Blight",
+    "description": "Early blight is caused by the fungus Alternaria solani. It targets solanaceous crops like tomatoes and potatoes.",
+    "symptoms": "Dark brown, circular lesions with concentric rings ('target board') starting on older, lower leaves. Affected leaves yellow and drop off, exposing fruit to sunscald.",
+    "treatment_prevention": "Mulch the soil to prevent soil-borne spores from splashing onto lower leaves. Prune lower leaves to improve airflow. Apply copper or chlorothalonil fungicides."
+  },
+  "Tomato___Late_blight": {
+    "plant_name": "Tomato",
+    "disease_name": "Late Blight",
+    "description": "Late blight is a highly destructive disease caused by Phytophthora infestans, thriving in cool, wet weather.",
+    "symptoms": "Large, dark, water-soaked spots on leaves and stems that expand rapidly and turn black. White fuzzy mold appears on leaf undersides in high humidity. Fruit develops large, firm, greasy brown blotches.",
+    "treatment_prevention": "Grow resistant cultivars. Keep foliage dry (use drip irrigation). Space plants for air circulation. Immediately pull and bag infected plants to prevent spore release."
+  },
+  "Tomato___Leaf_Mold": {
+    "plant_name": "Tomato",
+    "disease_name": "Leaf Mold",
+    "description": "Leaf mold is caused by Passalora fulva, primarily affecting greenhouse tomatoes under high relative humidity.",
+    "symptoms": "Pale green or yellow spots on the upper leaf surfaces, with olive-green to brown velvety spore growth on the underside. Leaves curl, wither, and drop.",
+    "treatment_prevention": "Keep relative humidity below 85% by increasing ventilation and heat. Avoid wetting foliage when watering. Apply fungicides at first sign."
+  },
+  "Tomato___Septoria_leaf_spot": {
+    "plant_name": "Tomato",
+    "disease_name": "Septoria Leaf Spot",
+    "description": "Septoria leaf spot is caused by Septoria lycopersici. It is a common foliar disease of tomatoes.",
+    "symptoms": "Numerous tiny, circular spots with dark borders and grey/tan centers containing pinhead-sized black dots (pycnidia) on lower leaves.",
+    "treatment_prevention": "Avoid overhead watering. Mulch around plants. Practice crop rotation. Apply copper-based fungicides regularly during damp weather."
+  },
+  "Tomato___Spider_mites_Two-spotted_spider_mite": {
+    "plant_name": "Tomato",
+    "disease_name": "Spider Mites Infestation",
+    "description": "Spider mites (Tetranychus urticae) are tiny, sap-sucking arachnids that multiply rapidly in dry, hot conditions.",
+    "symptoms": "Leaves show fine yellow-to-white speckling (stippling). Under heavy infestation, fine silk webbing covers leaves and growing tips. Leaves turn yellow, bronze, and drop.",
+    "treatment_prevention": "Spray plants with a strong stream of water to knock off mites. Apply neem oil, insecticidal soap, or horticultural oils. Introduce predatory mites (natural predators)."
+  },
+  "Tomato___Target_Spot": {
+    "plant_name": "Tomato",
+    "disease_name": "Target Spot",
+    "description": "Target spot is caused by the fungus Corynespora cassiicola, thriving in warm, humid weather.",
+    "symptoms": "Small, dark spots on leaves that expand, showing concentric rings. Lesions may coalesce, causing leaf drop.",
+    "treatment_prevention": "Ensure good air circulation. Remove lower infected leaves. Apply protectant fungicides."
+  },
+  "Tomato___Tomato_Yellow_Leaf_Curl_Virus": {
+    "plant_name": "Tomato",
+    "disease_name": "Yellow Leaf Curl Virus",
+    "description": "Tomato Yellow Leaf Curl Virus (TYLCV) is a viral disease transmitted by silverleaf whiteflies.",
+    "symptoms": "Severe plant stunting, erect branches, and leaves curling upward and inward. Leaves turn yellow along margins and between veins. Flowers drop, resulting in severe yield loss.",
+    "treatment_prevention": "Cover beds with insect netting. Use yellow sticky cards to monitor/trap whiteflies. Apply insecticidal soaps or neem oil to control whitefly vector. Grow TYLCV-resistant varieties."
+  },
+  "Tomato___Tomato_mosaic_virus": {
+    "plant_name": "Tomato",
+    "disease_name": "Tomato Mosaic Virus",
+    "description": "Tomato Mosaic Virus (ToMV) is a highly stable virus that easily spreads mechanically via hands, tools, or contact between plants.",
+    "symptoms": "Light and dark green mottled mosaic patterns on leaves. Leaves may be distorted, blistered, or puckered. Internal browning can occur in fruit.",
+    "treatment_prevention": "Buy certified disease-free seeds. Disinfect pruning shears, stakes, and cages with 10% bleach solution. Wash hands with soap and water after handling plants. Pull and destroy infected plants."
+  },
+  "Tomato___healthy": {
+    "plant_name": "Tomato",
+    "disease_name": "Healthy",
+    "description": "The tomato plant leaves are healthy.",
+    "symptoms": "Normal leaf color, smooth margins, strong stems, and no spotting, yellowing, or curling.",
+    "treatment_prevention": "Provide deep watering at the base of the plant. Apply balanced organic fertilizers. Prune suckers to improve airflow."
+  },
+  "Mango___Anthracnose": {
+    "plant_name": "Mango",
+    "disease_name": "Anthracnose",
+    "description": "Anthracnose is caused by the fungus Colletotrichum gloeosporioides. It is the most common and destructive disease affecting mango foliage and fruits, especially in wet conditions.",
+    "symptoms": "Dark brown to black spots on leaves, which may grow and coalesce into large necrotic areas. Leaf margins can shrivel and leaves may drop prematurely.",
+    "treatment_prevention": "Prune infected branches to improve canopy airflow. Destroy fallen leaves to prevent fungal spores from overwintering. Apply copper-based fungicides during vegetative flush."
+  },
+  "Mango___Bacterial_Canker": {
+    "plant_name": "Mango",
+    "disease_name": "Bacterial Canker",
+    "description": "Bacterial canker (or bacterial black spot) is caused by Xanthomonas campestris pv. mangiferaeindicae. It spreads through wind-driven rain and pruning tools.",
+    "symptoms": "Water-soaked spots on leaves that turn dark brown to black and develop a yellow halo. Spots can coalesce into necrotic patches. Cankers may form on twigs and branches.",
+    "treatment_prevention": "Avoid pruning in wet weather. Sanitize tools between cuts. Apply copper oxychloride sprays at regular intervals during wet seasons."
+  },
+  "Mango___Cutting_Weevil": {
+    "plant_name": "Mango",
+    "disease_name": "Cutting Weevil Damage",
+    "description": "The mango leaf-cutting weevil (Deporaus marginatus) cuts new leaves near the base after laying eggs.",
+    "symptoms": "Young leaves are cut cleanly across the blade, appearing as if snipped by scissors. Dropped leaves contain weevil eggs.",
+    "treatment_prevention": "Collect and burn or bury the fallen cut leaves to destroy the weevil larvae. Maintain clean orchards and spray suitable insecticides if infestations are severe."
+  },
+  "Mango___Die_Back": {
+    "plant_name": "Mango",
+    "disease_name": "Die Back",
+    "description": "Die back is a fungal disease caused by Lasiodiplodia theobromae, leading to the drying and dying back of twigs and branches.",
+    "symptoms": "Drying and leaf-browning starting at the branch tips and progressing downwards. Twigs turn blackish-brown and shrivel. Leaves dry up and remain attached to dead twigs.",
+    "treatment_prevention": "Prune diseased twigs 3 inches below the infected area and apply pruning paste. Ensure proper tree nutrition and irrigation to avoid stress."
+  },
+  "Mango___Gall_Midge": {
+    "plant_name": "Mango",
+    "disease_name": "Gall Midge Infestation",
+    "description": "Mango gall midges (Erosomyia mangiferae) lay eggs in young leaves and buds, forming protective galls.",
+    "symptoms": "Small, raised, circular pimple-like bumps (galls) on leaf surfaces. Leaves may curl, dry up, and drop off during heavy infestations.",
+    "treatment_prevention": "Prune lower branches to expose the soil to sunlight. Practice shallow tillage under the canopy to destroy pupae. Apply systemic insecticides during new growth flushes."
+  },
+  "Mango___healthy": {
+    "plant_name": "Mango",
+    "disease_name": "Healthy",
+    "description": "The mango foliage appears completely healthy, showing normal color, growth, and structure.",
+    "symptoms": "Shiny green leaves, firm tissue, normal veins, and no spots or cuts.",
+    "treatment_prevention": "Maintain regular watering, fertilization, and sunlight exposure. Prune periodically to allow light penetration."
+  },
+  "Mango___Powdery_Mildew": {
+    "plant_name": "Mango",
+    "disease_name": "Powdery Mildew",
+    "description": "Powdery mildew is caused by the fungus Oidium mangiferae. It is highly active during cool, dry nights followed by warm days.",
+    "symptoms": "White, powdery fungal growth appearing on leaf surfaces, flowers, and young fruits. Infected leaves curl, dry, and drop.",
+    "treatment_prevention": "Avoid crowded planting. Prune dense canopies to reduce relative humidity. Apply sulfur-based fungicides during the flowering flushes."
+  },
+  "Mango___Sooty_Mould": {
+    "plant_name": "Mango",
+    "disease_name": "Sooty Mould",
+    "description": "Sooty mould is a black fungus that grows on the sugary honeydew excreted by sap-sucking insects like scale insects, mealybugs, and aphids.",
+    "symptoms": "A black, soot-like film covers leaf surfaces, blocking sunlight and reducing photosynthesis. Leaf tissue underneath remains healthy.",
+    "treatment_prevention": "Control the honey-dew producing insects using horticultural oils or insecticides. Wash the soot off the leaves with water sprays if necessary."
+  },
+  "Mango___fruit": {
+    "plant_name": "Mango (Fruit)",
+    "disease_name": "Fruit Classification",
+    "description": "Mango fruit classification or general ripeness check.",
+    "symptoms": "N/A",
+    "treatment_prevention": "Perform regular pest control and proper post-harvest handling."
+  },
+  "Pineapple___fruit": {
+    "plant_name": "Pineapple (Fruit)",
+    "disease_name": "Fruit Classification",
+    "description": "Pineapple fruit classification, defect checking, or ripeness monitoring.",
+    "symptoms": "N/A",
+    "treatment_prevention": "Maintain proper harvesting schedules and discard decayed or bruised fruits."
+  },
+  "Pomegranate___fruit": {
+    "plant_name": "Pomegranate (Fruit)",
+    "disease_name": "Fruit Classification",
+    "description": "Pomegranate fruit classification, defect checking, or ripeness monitoring.",
+    "symptoms": "N/A",
+    "treatment_prevention": "Ensure timely application of crop protection sprays and handle carefully during packaging."
+  },
+  "fallback": {
+    "plant_name": "Unknown Plant",
+    "disease_name": "Unknown Condition",
+    "description": "The system identified a leaf but was unable to classify a specific disease with high confidence. This may be due to complex leaf patterns, dust, or a plant species not represented in our training database.",
+    "symptoms": "General visual anomalies or unrecognized leaf markings.",
+    "treatment_prevention": "Inspect the plant for pests like aphids or scale insects. Ensure the plant receives proper water and sunlight. Consult a local agricultural expert or nursery if symptoms worsen."
+  }
+}

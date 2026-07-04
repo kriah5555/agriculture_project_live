@@ -22,6 +22,7 @@ pycparser==2.22
 
 # ── Data Science & ML ─────────────────────────────────────────────────────────
 numpy==2.2.6
+onnxruntime==1.19.2
 pandas==2.3.0
 scipy==1.15.3
 scikit-learn==1.7.0

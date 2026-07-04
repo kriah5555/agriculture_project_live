@@ -24,9 +24,9 @@ urlpatterns = [
     path('api-overview/<int:pk>/',                  v.api_overview,                     name="api-overview"),
     path('api-edit/<int:pk>/',                      UpdateApi.as_view(),                name="api-edit"),
     path('add-api/',                                CreateApi.as_view(),                name="add-api"),
-    path('api-list/<int:pk>/',                      v.api_list,                         name="api-list"),
     path('change-password/<str:uid>',               v.change_password,                  name="change-password"),
     path('welcome/',                                Dashboard.as_view(),                name="welcome"),
+    path('admin-overview/',                         AdminOverviewDashboard.as_view(),   name="admin-overview-dashboard"),
     path('dashboard/',                              v.dashboard,                        name="dashboard"),
     path('notifications/',                          v.notifications,                    name="notifications"),
     path('notifications/<int:pk>/',                 v.notifications,                    name="notifications"),
@@ -58,6 +58,7 @@ urlpatterns = [
     path('soil-life-api-overview/<int:pk>/',        v.api_overview,                     name="soil-life-api-overview"),
     path('ph-bottle-dashboard/',                    PHBottleDashboard.as_view(),        name="ph-bottle-dashboard"),
     path('ph-bottle-api-overview/<int:pk>/',        v.api_overview,                     name="ph-bottle-api-overview"),
+    path('leaflenz-api-overview/<int:pk>/',         v.api_overview,                     name="leaflenz-api-overview"),
 
     # ── AJAX / JSON endpoints ────────────────────────────────────────────────────
     path('devise-api-calls/<int:id>/',              GetDeviseApiCallsJsonData.as_view(),        name="devise-api-calls"),

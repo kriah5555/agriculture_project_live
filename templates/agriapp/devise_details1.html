@@ -67,9 +67,6 @@
         <a href="{% url 'edit-devise' devise.pk %}" class="action-btn primary">
           <i class="fas fa-edit"></i> Edit Device
         </a>
-        <a href="{% url 'api-overview' devise.pk %}" class="action-btn secondary">
-          <i class="fas fa-list-alt"></i> View API Calls
-        </a>
         {% if location %}
           <a href="{% url 'map-devise' devise.pk %}" class="action-btn secondary">
             <i class="fas fa-map-marker-alt"></i> View Location
@@ -78,19 +75,16 @@
             <i class="fas fa-map-pin"></i> Update Location
           </a>
         {% else %}
-          <a href="{% url 'map-devise' devise.pk %}" class="action-btn secondary">
-            <i class="fas fa-map-marker-alt"></i> View Location
-          </a>
           <a href="{% url 'add-location' devise.pk %}" class="action-btn secondary">
             <i class="fas fa-plus-circle"></i> Add Location
           </a>
         {% endif %}
         <button class="action-btn warning"
           onclick="showFormPopup('{{ devise.pk }}', {
-            red   : {{ api_threshold.red }},
-            orange: {{ api_threshold.orange }},
-            blue  : {{ api_threshold.blue }},
-            green : {{ api_threshold.green }}
+            red   : {{ api_threshold.red|default:100 }},
+            orange: {{ api_threshold.orange|default:80 }},
+            blue  : {{ api_threshold.blue|default:50 }},
+            green : {{ api_threshold.green|default:20 }}
           })">
           <i class="fas fa-sliders-h"></i> API Threshold Limits
         </button>
@@ -124,10 +118,10 @@
           <button type="button"
             style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;"
             onclick="showFormPopup('{{ devise.pk }}', {
-              red   : {{ api_threshold.red }},
-              orange: {{ api_threshold.orange }},
-              blue  : {{ api_threshold.blue }},
-              green : {{ api_threshold.green }}
+              red   : {{ api_threshold.red|default:100 }},
+              orange: {{ api_threshold.orange|default:80 }},
+              blue  : {{ api_threshold.blue|default:50 }},
+              green : {{ api_threshold.green|default:20 }}
             })">
             <i class="fas fa-pencil me-1"></i> Edit
           </button>
@@ -135,22 +129,22 @@
         <div class="threshold-row">
           <span class="threshold-dot" style="background:#dc3545;"></span>
           <span>Red — Block limit</span>
-          <span class="threshold-val" style="color:#dc3545;">{{ api_threshold.red }}</span>
+          <span class="threshold-val" style="color:#dc3545;">{{ api_threshold.red|default:"—" }}</span>
         </div>
         <div class="threshold-row">
           <span class="threshold-dot" style="background:#fd7e14;"></span>
           <span>Orange — High usage</span>
-          <span class="threshold-val" style="color:#fd7e14;">{{ api_threshold.orange }}</span>
+          <span class="threshold-val" style="color:#fd7e14;">{{ api_threshold.orange|default:"—" }}</span>
         </div>
         <div class="threshold-row">
           <span class="threshold-dot" style="background:#0d6efd;"></span>
           <span>Blue — Moderate</span>
-          <span class="threshold-val" style="color:#0d6efd;">{{ api_threshold.blue }}</span>
+          <span class="threshold-val" style="color:#0d6efd;">{{ api_threshold.blue|default:"—" }}</span>
         </div>
         <div class="threshold-row">
           <span class="threshold-dot" style="background:#198754;"></span>
           <span>Green — Low usage</span>
-          <span class="threshold-val" style="color:#198754;">{{ api_threshold.green }}</span>
+          <span class="threshold-val" style="color:#198754;">{{ api_threshold.green|default:"—" }}</span>
         </div>
       </div>
 

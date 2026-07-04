@@ -25,6 +25,10 @@
   .badge-change   { background:#cfe2ff;color:#084298; }
   .badge-contact  { background:#e2e3e5;color:#383d41; }
   .badge-interest { background:#d1f7df;color:#145a32; }
+  .badge-warning  { background:#ffe5cc;color:#8a4b00; }
+  .badge-critical { background:#f8d7da;color:#842029; }
+  .dot-warning  { background:#fd7e14; }
+  .dot-critical { background:#dc3545; }
   .detail-panel { background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.07);padding:28px; }
   .detail-label { font-size:12px;color:#6c757d;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px; }
   .detail-value { font-size:15px;color:#111;margin-bottom:16px; }
@@ -55,7 +59,7 @@
         <!-- Tabs -->
         <div class="d-flex gap-2 p-3 border-bottom bg-light">
           <button class="tab-btn active" id="tab-requests" onclick="switchTab('requests')">
-            User Requests
+            Notifications
             {% if user_requests_pending %}
               <span class="badge bg-danger ms-1">{{ user_requests_pending|length }}</span>
             {% endif %}
@@ -88,8 +92,8 @@
                 {% for req in user_requests_pending %}
                   <div class="notif-item"
                        data-search="{{ req.username|lower }} {{ req.email|lower }}"
-                       onclick="showRequest({{ req.pk }}, '{{ req.username }}', '{{ req.email }}', '{{ req.phone }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'pending', '{% url 'resolve-user-request' req.pk %}', '{{ req.request_type }}')">
-                    <span class="notif-dot dot-pending"></span>
+                       onclick="showRequest({{ req.pk }}, '{{ req.username }}', '{{ req.email }}', '{{ req.phone }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'pending', '{% url 'resolve-user-request' req.pk %}', '{{ req.request_type }}', '{% if req.device_id %}{% url 'device-details' req.device_id %}{% endif %}', '{% if req.user_id %}{% url 'user-details' req.user.username %}{% endif %}')">
+                    <span class="notif-dot {% if req.request_type == 'usage_limit_reached' %}dot-critical{% elif req.request_type == 'usage_warning' %}dot-warning{% else %}dot-pending{% endif %}"></span>
                     <div style="flex:1;min-width:0;">
                       <div class="d-flex align-items-center gap-2 mb-1">
                         <strong style="font-size:14px;">{{ req.username }}</strong>
@@ -97,6 +101,10 @@
                           <span class="badge-type badge-forgot">Forgot PW</span>
                         {% elif req.request_type == 'soil_partner_interest' %}
                           <span class="badge-type badge-interest"><i class="fas fa-leaf me-1"></i>Soil Partner</span>
+                        {% elif req.request_type == 'usage_warning' %}
+                          <span class="badge-type badge-warning"><i class="fas fa-triangle-exclamation me-1"></i>Usage Warning</span>
+                        {% elif req.request_type == 'usage_limit_reached' %}
+                          <span class="badge-type badge-critical"><i class="fas fa-circle-exclamation me-1"></i>Limit Reached</span>
                         {% else %}
                           <span class="badge-type badge-change">Change PW</span>
                         {% endif %}
@@ -116,7 +124,7 @@
                 {% for req in user_requests_resolved %}
                   <div class="notif-item"
                        data-search="{{ req.username|lower }} {{ req.email|lower }}"
-                       onclick="showRequest({{ req.pk }}, '{{ req.username }}', '{{ req.email }}', '{{ req.phone }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'resolved', '', '{{ req.request_type }}')">
+                       onclick="showRequest({{ req.pk }}, '{{ req.username }}', '{{ req.email }}', '{{ req.phone }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'resolved', '', '{{ req.request_type }}', '{% if req.device_id %}{% url 'device-details' req.device_id %}{% endif %}', '{% if req.user_id %}{% url 'user-details' req.user.username %}{% endif %}')">
                     <span class="notif-dot dot-resolved"></span>
                     <div style="flex:1;min-width:0;">
                       <div class="d-flex align-items-center gap-2 mb-1">
@@ -125,6 +133,10 @@
                           <span class="badge-type badge-forgot">Forgot PW</span>
                         {% elif req.request_type == 'soil_partner_interest' %}
                           <span class="badge-type badge-interest"><i class="fas fa-leaf me-1"></i>Soil Partner</span>
+                        {% elif req.request_type == 'usage_warning' %}
+                          <span class="badge-type badge-warning"><i class="fas fa-triangle-exclamation me-1"></i>Usage Warning</span>
+                        {% elif req.request_type == 'usage_limit_reached' %}
+                          <span class="badge-type badge-critical"><i class="fas fa-circle-exclamation me-1"></i>Limit Reached</span>
                         {% else %}
                           <span class="badge-type badge-change">Change PW</span>
                         {% endif %}
@@ -227,23 +239,30 @@
     });
   }
 
-  function showRequest(id, username, email, phone, typeName, message, date, status, resolveUrl, requestType) {
+  function showRequest(id, username, email, phone, typeName, message, date, status, resolveUrl, requestType, deviceUrl, userUrl) {
     document.querySelectorAll('.notif-item').forEach(el => el.classList.remove('selected'));
     event.currentTarget.classList.add('selected');
 
     const isPending   = status === 'pending';
     const isPasswordType = requestType === 'forgot_password' || requestType === 'change_password';
+    const isUsageAlert   = requestType === 'usage_warning' || requestType === 'usage_limit_reached';
     const typeLabel = requestType === 'forgot_password'
       ? '<span style="background:#fff3cd;color:#664d03;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">Forgot Password</span>'
       : requestType === 'change_password'
         ? '<span style="background:#cfe2ff;color:#084298;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;">Change Password</span>'
-        : '<span style="background:#e8f5e9;color:#1b5e20;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;"><i class="fas fa-leaf me-1"></i>Soil Partner Interest</span>';
+        : requestType === 'usage_warning'
+          ? '<span style="background:#ffe5cc;color:#8a4b00;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;"><i class="fas fa-triangle-exclamation me-1"></i>Usage Warning</span>'
+          : requestType === 'usage_limit_reached'
+            ? '<span style="background:#f8d7da;color:#842029;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;"><i class="fas fa-circle-exclamation me-1"></i>Limit Reached</span>'
+            : '<span style="background:#e8f5e9;color:#1b5e20;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;"><i class="fas fa-leaf me-1"></i>Soil Partner Interest</span>';
+    const iconBg   = requestType === 'usage_limit_reached' ? '#dc3545' : requestType === 'usage_warning' ? '#fd7e14' : 'linear-gradient(135deg,#1a3a9f,#0d7cf5)';
+    const iconGlyp = isUsageAlert ? 'fa-microchip' : 'fa-key';
 
     document.getElementById('detailContent').innerHTML = `
       <div style="text-align:left;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-          <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#1a3a9f,#0d7cf5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;">
-            <i class="fas fa-key"></i>
+          <div style="width:48px;height:48px;border-radius:12px;background:${iconBg};display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;">
+            <i class="fas ${iconGlyp}"></i>
           </div>
           <div>
             <div style="font-size:1.1rem;font-weight:700;">${username}</div>
@@ -263,6 +282,22 @@
         <div class="detail-value" style="white-space:pre-wrap;">${message || '—'}</div>
         <div class="detail-label">Submitted</div>
         <div class="detail-value">${date}</div>
+        ${isUsageAlert && (deviceUrl || userUrl) ? `
+          <hr>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            ${deviceUrl ? `
+            <a href="${deviceUrl}"
+               class="btn btn-primary"
+               style="background:linear-gradient(135deg,#1a3a9f,#0d7cf5);border:none;border-radius:8px;font-weight:700;">
+              <i class="fas fa-microchip me-1"></i> View Device &amp; Update Limit
+            </a>` : ''}
+            ${userUrl ? `
+            <a href="${userUrl}"
+               class="btn btn-outline-secondary"
+               style="border-radius:8px;font-weight:700;">
+              <i class="fas fa-user me-1"></i> View User
+            </a>` : ''}
+          </div>` : ''}
         ${isPending ? `
           <hr>
           <div style="display:flex;gap:12px;flex-wrap:wrap;">

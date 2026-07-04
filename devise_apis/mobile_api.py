@@ -25,10 +25,10 @@ from rest_framework import serializers as drf_serializers
 
 from agriapp.models import (
     Devise, DeviseApis, DeviseApisFields, DeviseLocation,
-    APICountThreshold, DEVICE_NAMES,
-    SOIL_SAATHI_FIELDS, ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS,
+    DEVICE_NAMES,
+    SOIL_SAATHI_FIELDS, ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, LEAFLENZ_FIELDS,
 )
-from .devices._common import resolve_farmer
+from .devices._common import check_threshold, resolve_farmer
 from .mobile_serializers import (
     DeviceTypeSerializer,
     DeviceListSerializer,
@@ -155,6 +155,7 @@ _FIELD_SCHEMA_MAP = {
     'atmo_sense': ATMO_SENSE_FIELDS,
     'soil_life' : SOIL_LIFE_FIELDS,
     'ph_bottle' : PH_BOTTLE_FIELDS,
+    'leaflenz'  : LEAFLENZ_FIELDS,
 }
 
 @extend_schema(
@@ -321,22 +322,9 @@ def api_call_create(request, device_id):
     device = _get_user_device(request, device_id)
 
     # ── Threshold check ──────────────────────────────────────────────────────
-    threshold = APICountThreshold.objects.filter(devise=device).first()
-    if threshold:
-        if device.devise_type == 'soilsaathi':
-            current_count = DeviseApis.objects.filter(device=device).count()
-        else:
-            current_count = DeviseApisFields.objects.filter(device=device).count()
-
-        if current_count >= threshold.red:
-            return Response(
-                {
-                    'detail' : 'API call limit reached for this device. Please contact the admin.',
-                    'limit'  : threshold.red,
-                    'current': current_count,
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
+    blocked = check_threshold(device)
+    if blocked:
+        return blocked
 
     # ── Resolve optional farmer link ─────────────────────────────────────────
     farmer = resolve_farmer(request, request.data.get('farmer_id'))

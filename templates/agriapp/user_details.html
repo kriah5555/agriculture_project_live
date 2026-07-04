@@ -628,6 +628,7 @@
     soil_life : { color: '#6a1b9a', label: 'SoilLIFE',    icon: 'fa-seedling'      },
     ph_bottle : { color: '#e65100', label: 'PHBottle',    icon: 'fa-flask'         },
     soil_map  : { color: '#2c5e1a', label: 'SoilMap',     icon: 'fa-map-marked-alt'},
+    leaflenz  : { color: '#2c5e1a', label: 'LeafLenz',    icon: 'fa-camera'        },
   };
 
   function showDeviceDetails(device, clickedEl) {
@@ -707,6 +708,30 @@
       }
     } else if (soilMapBanner) {
       soilMapBanner.style.display = 'none';
+    }
+
+    // Show/hide "Open LeafLenz" banner for leaflenz devices
+    let leaflenzBanner = document.getElementById('leaflenz-banner');
+    if (device.devise_type === 'leaflenz') {
+      if (!leaflenzBanner) {
+        leaflenzBanner = document.createElement('div');
+        leaflenzBanner.id = 'leaflenz-banner';
+        leaflenzBanner.style.cssText = 'margin-top:16px;';
+        leaflenzBanner.innerHTML = `
+          <a id="leaflenz-open-btn" href="/leaflenz-admin/${device.pk}/" target="_blank"
+             style="display:flex;align-items:center;justify-content:center;gap:10px;
+                    padding:16px 24px;border-radius:12px;text-decoration:none;color:#fff;
+                    background:linear-gradient(135deg,#2c5e1a,#4a7c36);
+                    font-weight:700;font-size:1rem;box-shadow:0 4px 14px rgba(44,94,26,.35);">
+            <i class="fas fa-camera"></i> Open LeafLenz
+          </a>`;
+        document.getElementById('api-details-container').before(leaflenzBanner);
+      } else {
+        leaflenzBanner.style.display = 'block';
+        document.getElementById('leaflenz-open-btn').href = `/leaflenz-admin/${device.pk}/`;
+      }
+    } else if (leaflenzBanner) {
+      leaflenzBanner.style.display = 'none';
     }
 
     document.getElementById('api-details-container').style.display = 'block';
@@ -921,6 +946,7 @@
       soilsaathi: '/api-overview',
       atmo_sense: '/atmos-sense-api-overview',
       soil_life : '/soil-life-api-overview',
+      leaflenz  : '/leaflenz-api-overview',
     };
     const endpoint = endpoints[selected_devise.devise_type];
     if (endpoint) window.location.href = `${endpoint}/${id}/`;

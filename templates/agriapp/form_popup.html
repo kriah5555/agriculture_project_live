@@ -1,7 +1,13 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="{% static 'theme/theme.js' %}"></script>
+
+  <!-- FONT AWESOME -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 
   <style>
     #formOverlay {
@@ -82,10 +88,21 @@
       display: block;
       margin: 20px auto 0;
     }
+
+    @media (max-width: 576px) {
+      #formPopup {
+        width: 90%;
+      }
+    }
   </style>
+  <link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
 </head>
 
 <body>
+
+  <button type="button" class="theme-toggle-btn theme-toggle-fixed" title="Toggle dark mode">
+    <i data-theme-icon class="fas fa-moon"></i>
+  </button>
 
   <!-- Trigger Button Example -->
   <!-- <button onclick="showDynamicAPIForm('Soil Analysis Form')">Open Dynamic Form</button> -->

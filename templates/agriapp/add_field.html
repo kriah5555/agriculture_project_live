@@ -5,15 +5,26 @@
 		<meta charset="utf-8">
 		<title>RegistrationForm_v10 by Colorlib</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="{% static 'theme/theme.js' %}"></script>
 
 		<!-- LINEARICONS -->
 		<link rel="stylesheet" href="{% static '/register/fonts/linearicons/style.css' %}">
-		
+
 		<!-- STYLE CSS -->
 		<link rel="stylesheet" href="{% static '/register/css/style.css' %}">
+
+		<!-- FONT AWESOME -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+		<!-- SHARED THEME (dark mode + responsive) -->
+		<link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
 	</head>
 
 	<body>
+
+		<button type="button" class="theme-toggle-btn theme-toggle-fixed" title="Toggle dark mode">
+			<i data-theme-icon class="fas fa-moon"></i>
+		</button>
 
 		<!-- success message -->
 		{% if messages %}

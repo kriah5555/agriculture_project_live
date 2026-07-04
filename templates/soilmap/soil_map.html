@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="{% static 'theme/theme.js' %}"></script>
     <title>SoilMap — {{ device.name }}</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
@@ -513,8 +514,13 @@
         .tl-wrap{background:#f4fbf4;border-radius:9px;padding:9px;margin-bottom:10px;overflow-x:auto}
         .spin-inline{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(44,94,26,.2);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
 </head>
 <body>
+<button type="button" class="theme-toggle-btn theme-toggle-fixed" title="Toggle dark mode">
+    <i data-theme-icon class="fas fa-moon"></i>
+</button>
 <div class="header">
     <a class="header-back" href="{% url 'user-page' %}">&#8592; Back</a>
     <div class="header-title">

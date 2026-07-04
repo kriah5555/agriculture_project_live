@@ -14,6 +14,7 @@ DEVICE_NAMES = {
     'ph_bottle'     : 'PHBottle',
     'soil_map'      : 'SoilMap',
     'carbon_credits': 'CarbonCredits',
+    'leaflenz'      : 'LeafLenz',
 }
 
 DEVICE_ICONS = {
@@ -23,6 +24,7 @@ DEVICE_ICONS = {
     'ph_bottle'     : 'fa-flask',
     'soil_map'      : 'fa-map',
     'carbon_credits': 'fa-coins',
+    'leaflenz'      : 'fa-camera',
 }
 
 DEVICE_CHOICES = list(DEVICE_NAMES.items())
@@ -142,6 +144,16 @@ SOIL_MAP_FIELDS = {
     'latitude'  : 'Latitude',
     'longitude' : 'Longitude',
     'created_at': 'Uploaded At',
+}
+
+LEAFLENZ_FIELDS = {
+    'id'        : 'ID',
+    'tag'       : 'Predicted Label',
+    'image_path': 'Leaf Image',
+    'field1'    : 'Confidence (%)',
+    'latitude'  : 'Latitude',
+    'longitude' : 'Longitude',
+    'created_at': 'Scanned At',
 }
 
 class ContactDetails(models.Model):
@@ -293,17 +305,22 @@ class APICountThreshold(models.Model):
 
 class UserRequest(models.Model):
     """
-    Stores user-initiated requests (forgot password, change password).
+    Stores user-initiated requests (forgot password, change password) as well as
+    system-raised device usage alerts (usage_warning, usage_limit_reached).
     Each entry appears in the admin Notifications page as an unread item
     until an admin marks it resolved.
     """
     FORGOT_PASSWORD       = 'forgot_password'
     CHANGE_PASSWORD       = 'change_password'
     SOIL_PARTNER_INTEREST = 'soil_partner_interest'
+    USAGE_WARNING         = 'usage_warning'
+    USAGE_LIMIT_REACHED   = 'usage_limit_reached'
     REQUEST_TYPES = [
         (FORGOT_PASSWORD,       'Forgot Password'),
         (CHANGE_PASSWORD,       'Change Password Request'),
         (SOIL_PARTNER_INTEREST, 'Soil Partner Interest'),
+        (USAGE_WARNING,         'Usage Warning'),
+        (USAGE_LIMIT_REACHED,   'Usage Limit Reached'),
     ]
     STATUS_PENDING  = 'pending'
     STATUS_RESOLVED = 'resolved'
@@ -315,6 +332,11 @@ class UserRequest(models.Model):
     user         = models.ForeignKey(
         'auth.User', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='requests'
+    )
+    device       = models.ForeignKey(
+        'Devise', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='usage_requests',
+        help_text='Set for usage_warning / usage_limit_reached alerts, linking back to the device.',
     )
     username     = models.CharField(max_length=150)
     email        = models.EmailField()
