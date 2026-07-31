@@ -122,6 +122,11 @@
         <i class="fas fa-mortar-pestle me-1"></i> Fertilizer Advisory
       </button>
     </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-croprec-btn" data-bs-toggle="tab" data-bs-target="#tab-croprec" type="button" role="tab">
+        <i class="fas fa-list-ol me-1"></i> Crop Match
+      </button>
+    </li>
   </ul>
 
   <div class="tab-content" id="apiOverviewTabsContent">
@@ -630,6 +635,136 @@
   </div>
   <!-- /tab-fertilizer -->
 
+  <div class="tab-pane fade" id="tab-croprec" role="tabpanel">
+
+    <!-- State used for this recommendation, with manual override -->
+    <div class="detail-card p-3 mb-3">
+      <form method="get" class="d-flex flex-wrap align-items-end gap-2">
+        <input type="hidden" name="tab" value="croprec">
+        <div>
+          <label class="form-label mb-1" style="font-size:12px;font-weight:600;">State</label>
+          <select name="croprec_state" class="form-select form-select-sm" style="min-width:220px;">
+            <option value="">-- Auto-detected --</option>
+            {% for s in crop_rec_states %}
+            <option value="{{ s }}" {% if s == crop_recommendation_v2.state %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="fas fa-check me-1"></i> Check
+        </button>
+      </form>
+      <div class="text-muted mt-2" style="font-size:12px;">
+        State is auto-detected from {% if api.farmer %}the linked farmer profile{% else %}this reading{% endif %}.
+        If it's missing or wrong, pick a state above and click Check. Scored directly against this reading's own pH, EC, OC, N-P-K and micronutrient values.
+      </div>
+    </div>
+
+    {% if crop_recommendation_v2.error %}
+    <div class="alert alert-warning mb-0">
+      {% if crop_recommendation_v2.error == 'missing_state' %}
+        State couldn't be determined automatically for this reading — this usually means it isn't linked to a farmer record. Select a state above, then click Check.
+      {% elif crop_recommendation_v2.error == 'unknown_state' %}
+        "{{ crop_recommendation_v2.state }}" isn't in the reference dataset. Pick a valid state above.
+      {% elif crop_recommendation_v2.error == 'no_crops_for_state' %}
+        No crops found for "{{ crop_recommendation_v2.state }}" in the reference dataset.
+      {% else %}
+        Couldn't generate a crop recommendation for this reading.
+      {% endif %}
+    </div>
+    {% else %}
+
+    <div class="detail-card mb-3">
+      <div class="card-header-grad"><h6><i class="fas fa-list-ol me-2"></i>Top 5 Matches — {{ crop_recommendation_v2.state }}</h6></div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 fert-table" style="font-size:13px;">
+          <thead><tr><th>#</th><th>Crop</th><th>Category</th><th>Zone</th><th style="min-width:140px;">Match Score</th><th>Temp</th></tr></thead>
+          <tbody>
+            {% for c in crop_recommendation_v2.top_crops %}
+            <tr>
+              <td>{{ c.rank }}</td>
+              <td class="fert-param-label">
+                {{ c.crop_name }}
+                {% if c.is_notable %}<span class="badge bg-warning text-dark ms-1">★ Notable</span>{% endif %}
+              </td>
+              <td>{{ c.category }}</td>
+              <td>{{ c.zone_name }}</td>
+              <td>
+                <div class="progress" style="height:16px;">
+                  <div class="progress-bar {% if c.score_pct >= 75 %}bg-success{% elif c.score_pct >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                       style="width:{{ c.score_pct }}%;font-size:10px;">{{ c.score_pct }}%</div>
+                </div>
+              </td>
+              <td>
+                {% if c.weather_score.status == 'ok' %}<span class="badge bg-success">OK</span>
+                {% elif c.weather_score.status == 'missing' %}<span class="badge bg-secondary">N/A</span>
+                {% else %}<span class="badge bg-warning text-dark">{{ c.weather_score.status }}</span>{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% for c in crop_recommendation_v2.top_crops %}
+    <div class="detail-card mb-3">
+      <div class="card-header-grad d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="fas fa-seedling me-2"></i>#{{ c.rank }} {{ c.crop_name }}</h6>
+        <button class="btn btn-sm btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#croprec-detail-{{ c.rank }}">
+          Details
+        </button>
+      </div>
+      {% if c.weather_score %}
+      <div class="nutrient-row px-3 pt-3">
+        <div class="nutrient-label">
+          <span><i class="fas fa-thermometer-half me-1"></i>Ideal: {{ c.weather_score.ideal_range }}</span>
+          {% if crop_recommendation_v2.temp_current %}<strong>Now: {{ crop_recommendation_v2.temp_current }}°C</strong>{% endif %}
+        </div>
+        <div class="progress">
+          <div class="progress-bar {% if c.weather_score.status == 'ok' %}bg-success{% elif c.weather_score.status == 'missing' %}bg-secondary{% else %}bg-warning{% endif %}"
+               style="width:{{ c.weather_score.pct }}%;"></div>
+        </div>
+      </div>
+      {% endif %}
+      <div class="collapse" id="croprec-detail-{{ c.rank }}">
+        <div class="row g-0">
+          <div class="col-md-6" style="border-right:1px solid #f0f2f5;">
+            <div class="p-3">
+              <strong style="font-size:12px;color:#5a6472;">Crop Guide</strong>
+              {% if c.additional_info %}
+              <div class="info-row"><span class="info-label">Duration</span><span class="info-value">{{ c.additional_info.crop_duration }}</span></div>
+              <div class="info-row"><span class="info-label">Sowing Season</span><span class="info-value">{{ c.additional_info.best_sowing_season }}</span></div>
+              <div class="info-row"><span class="info-label">Water Requirement</span><span class="info-value">{{ c.additional_info.water_requirement }}</span></div>
+              <div class="info-row"><span class="info-label">Common Pests</span><span class="info-value">{{ c.additional_info.common_pests }}</span></div>
+              <div class="info-row"><span class="info-label">Recommended Fertilizers</span><span class="info-value">{{ c.additional_info.recommended_fertilizers }}</span></div>
+              <div class="info-row"><span class="info-label">Harvest Time</span><span class="info-value">{{ c.additional_info.harvest_time }}</span></div>
+              {% else %}
+              <p class="text-muted mb-0" style="font-size:13px;">Not available for this crop.</p>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3">
+              <strong style="font-size:12px;color:#5a6472;">Deficiencies vs. Ideal Range</strong>
+              {% if c.nutrient_deficiencies %}
+              <ul class="mb-0" style="font-size:13px;padding-left:18px;">
+                {% for d in c.nutrient_deficiencies %}<li>{{ d }}</li>{% endfor %}
+              </ul>
+              {% else %}
+              <p class="text-success mb-0" style="font-size:13px;">All measured parameters within ideal range.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    {% endif %}
+  </div>
+  <!-- /tab-croprec -->
+
   </div>
   <!-- /tab-content -->
 </div>
@@ -637,7 +772,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     var params  = new URLSearchParams(window.location.search);
-    var tabBtns = { farmer: 'tab-farmer-btn', recommendation: 'tab-recommendation-btn', fertilizer: 'tab-fertilizer-btn' };
+    var tabBtns = { farmer: 'tab-farmer-btn', recommendation: 'tab-recommendation-btn', fertilizer: 'tab-fertilizer-btn', croprec: 'tab-croprec-btn' };
     var btnId   = tabBtns[params.get('tab')];
     if (btnId) {
       var btn = document.getElementById(btnId);

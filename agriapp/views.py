@@ -16,8 +16,9 @@ from .models import (
     PartnerPayment, PaymentAttachment,
 )
 from agri_ai.leaf import parse_class_label, get_disease_details
-from reports.views import build_recommendation, build_fertilizer_recommendation
+from reports.views import build_recommendation, build_fertilizer_recommendation, build_crop_recommendation_v2
 from agri_ai.fertilizer import get_states as get_fertilizer_states, get_crops_for_state as get_fertilizer_crops_for_state
+from agri_ai.crop_recommendation import get_states as get_crop_rec_states
 
 from . import UserFunctions
 from django.views.generic import UpdateView, TemplateView, CreateView, View
@@ -704,6 +705,8 @@ def api_overview(request, **kwargs):
         fert_crop        = request.GET.get('fert_crop', '').strip()
         fertilizer_states = get_fertilizer_states()
 
+        croprec_state    = request.GET.get('croprec_state', '').strip()
+
         context = {
             'api'                       : api,
             'devise_name'               : api.device.name,
@@ -717,6 +720,8 @@ def api_overview(request, **kwargs):
             'fertilizer_recommendation' : build_fertilizer_recommendation(api, fert_state or None, fert_crop or None),
             'fertilizer_states'         : fertilizer_states,
             'fertilizer_state_crops_json': json.dumps({s: get_fertilizer_crops_for_state(s) for s in fertilizer_states}),
+            'crop_recommendation_v2'    : build_crop_recommendation_v2(api, croprec_state or None),
+            'crop_rec_states'           : get_crop_rec_states(),
         }
 
     return render(request, template_name = template_name, context=context)

@@ -7,6 +7,8 @@ Routes (mounted under /api/mobile/devices/<id>/soilsaathi/):
   GET  /<cid>/                Reading detail
   GET  /recommendations/      Fertilizer recommendations (FertilizerCalculation engine)
   GET  /ai-recommendation/    ML crop recommendation (?call_id=<id>)
+  GET  /fertilizer-recommendation/  RDF-based fertilizer recommendation (?call_id=&state=&crop=)
+  GET  /crop-recommendation/  Rule-based top-5 crop recommendation (?call_id=&state=)
   GET  /<cid>/pdf/            Download soil parameters PDF (from api-overview)
   GET  /<cid>/recommendation-pdf/  Download full 6-page SoiLENZ PDF report
 
@@ -290,6 +292,59 @@ def soilsaathi_fertilizer_recommendation(request, device_id):
         reading,
         state_override=request.query_params.get('state'),
         crop_override=request.query_params.get('crop'),
+    )
+
+    return Response({
+        'device_id'   : device.id,
+        'reading_id'  : reading.id,
+        'reading_date': reading.created_at,
+        **result,
+    })
+
+
+# ── Detailed crop recommendation (rule-based, explainable, top-5) ─────────────
+
+@extend_schema(
+    tags=['SoiLENZ'],
+    summary='Get detailed crop recommendation (rule-based, top 5)',
+    description=(
+        'Runs the rule-based, explainable multi-crop recommender against a reading\'s '
+        'own pH, EC, OC, N-P-K and micronutrient values. Returns the top 5 best-suited '
+        'crops for the state, each with a per-parameter score breakdown, deficiency '
+        'notes, and a Crop Guide (duration, sowing season, water requirement, pests, '
+        'recommended fertilizers, harvest time). State is taken from the linked farmer '
+        'profile unless explicitly overridden with `state` — use the override when the '
+        'reading has no linked farmer or the auto-detected state doesn\'t match the '
+        'reference dataset.'
+    ),
+    parameters=[
+        OpenApiParameter('call_id', OpenApiTypes.INT, description='Specific reading ID (optional; defaults to latest)'),
+        OpenApiParameter('state', OpenApiTypes.STR, description='Override state (must match the reference dataset)'),
+    ],
+    responses={
+        200: OpenApiResponse(description='Top-5 crop recommendation result (or an {"error": ...} payload when state can\'t be resolved)'),
+        404: OpenApiResponse(description='No readings found'),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def soilsaathi_crop_recommendation(request, device_id):
+    """Rule-based top-5 crop recommendation for a SoiLENZ reading."""
+    from reports.views import build_crop_recommendation_v2
+
+    device  = get_user_device(request, device_id)
+    call_id = request.query_params.get('call_id')
+
+    if call_id:
+        reading = get_object_or_404(DeviseApis, pk=call_id, device=device)
+    else:
+        reading = DeviseApis.objects.filter(device=device).order_by('-created_at').first()
+        if not reading:
+            return Response({'detail': 'No readings found for this device.'}, status=status.HTTP_404_NOT_FOUND)
+
+    result = build_crop_recommendation_v2(
+        reading,
+        state_override=request.query_params.get('state'),
     )
 
     return Response({

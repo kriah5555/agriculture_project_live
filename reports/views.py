@@ -6,6 +6,7 @@ import requests as _requests
 
 from agri_ai.crop import run_model
 from agri_ai.fertilizer import recommend_fertilizer
+from agri_ai.crop_recommendation import recommend_crops, get_states as get_crop_rec_states
 from .report_builder import build_report_context
 
 
@@ -129,6 +130,49 @@ def build_fertilizer_recommendation(api_data, state_override=None, crop_override
     result = recommend_fertilizer(state, crop, soil_values)
     result.setdefault('state', state)
     result.setdefault('crop', crop)
+    return result
+
+
+# ── Detailed crop recommendation (api-overview Crop Match tab + mobile API) ───
+
+def build_crop_recommendation_v2(api_data, state_override=None):
+    """Run the rule-based, explainable multi-crop recommender for a DeviseApis
+    reading, used by the api-overview page's Crop Match tab and its mobile API
+    counterpart. Returns top-5 crops with per-parameter score breakdown,
+    deficiencies, and a Crop Guide (duration/season/water/pests/fertilizer/
+    harvest), scored against this reading's own ph/ec/oc/npk/micronutrient
+    values — no external dataset input required.
+
+    State is pulled from the linked Farmer first (only place state is
+    recorded), overridable when there's no linked farmer or it doesn't match
+    the reference dataset's state names.
+    """
+    if not api_data:
+        return {'error': 'no_reading'}
+
+    farmer = api_data.farmer
+    state  = (state_override or (farmer.state if farmer else '') or '').strip()
+    if not state:
+        return {'error': 'missing_state'}
+
+    soil_values = {
+        'ph': api_data.ph, 'ec': api_data.ec, 'oc': api_data.oc,
+        'n':  api_data.nitrogen, 'p': api_data.phosphorous, 'k': api_data.potassium,
+        's':  api_data.sulphur, 'ca': api_data.calcium, 'mg': api_data.magnesium,
+        'zn': api_data.zinc, 'fe': api_data.iron, 'mn': api_data.manganese,
+        'cu': api_data.copper, 'b': api_data.boron,
+    }
+
+    temp_current = None
+    lat, lon = api_data.latitude, api_data.longitude
+    if lat and lon:
+        try:
+            temp_current, _humidity, _rainfall = _fetch_climate_for_recommendation(lat, lon)
+        except RuntimeError:
+            temp_current = None
+
+    result = recommend_crops(state, soil_values, temp_current=temp_current)
+    result.setdefault('state', state)
     return result
 
 
