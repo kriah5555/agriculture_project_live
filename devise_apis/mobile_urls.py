@@ -35,6 +35,7 @@ SoiLENZ readings (soilsaathi)                      (devices/soilsaathi.py)
   GET   /api/mobile/devices/<id>/soilsaathi/<cid>/            Single reading
   GET   /api/mobile/devices/<id>/soilsaathi/recommendations/  Fertilizer recommendations
   GET   /api/mobile/devices/<id>/soilsaathi/ai-recommendation/ AI crop recommendation (ML)
+  GET   /api/mobile/devices/<id>/soilsaathi/fertilizer-recommendation/ RDF-based fertilizer recommendation (?call_id=&state=&crop=)
   GET   /api/mobile/devices/<id>/soilsaathi/<cid>/pdf/             Soil parameters PDF (api-overview report)
   GET   /api/mobile/devices/<id>/soilsaathi/<cid>/recommendation-pdf/  Full 6-page SoiLENZ PDF report
 
@@ -80,6 +81,10 @@ Soil Map      (requires auth)                      (soilmap/views.py + services/
                                                    Returns: [{ name, lat, lon, type }]
   GET   /api/mobile/soil-map/devices/<id>/readings/         All sensor readings for a soil-map device
   GET   /api/mobile/soil-map/devices/<id>/readings/export/  Download readings as CSV
+  GET   /api/mobile/soil-map/fertilizer-options/            States + crops-by-state for the fertilizer picker
+  POST  /api/mobile/soil-map/fertilizer-recommendation/     RDF-based fertilizer recommendation for a lat/lon or polygon
+                                                             Body: { lat, lon } OR { polygon: [[lat,lon], ...] }, + state (optional), crop
+                                                             Returns: per-parameter soil status, adjusted N:P:K, Urea/DAP/MOP doses
 
 CarbonCredits (requires auth)                      (devices/carbon_credits.py — proxy to Carbon Credit FastAPI service)
   POST  /api/mobile/carbon-credits/calculate/       calculateCarbon  — compute & save carbon credit report
@@ -127,6 +132,7 @@ urlpatterns = [
     path('devices/<int:device_id>/soilsaathi/<int:call_id>/',        ss.soilsaathi_detail,          name='mobile_ss_detail'),
     path('devices/<int:device_id>/soilsaathi/recommendations/',        ss.soilsaathi_recommendations,    name='mobile_ss_recommendations'),
     path('devices/<int:device_id>/soilsaathi/ai-recommendation/',     ss.soilsaathi_ai_recommendation,  name='mobile_ss_ai_recommendation'),
+    path('devices/<int:device_id>/soilsaathi/fertilizer-recommendation/', ss.soilsaathi_fertilizer_recommendation, name='mobile_ss_fertilizer_recommendation'),
     path('devices/<int:device_id>/soilsaathi/<int:call_id>/pdf/',                ss.soilsaathi_pdf,               name='mobile_ss_pdf'),
     path('devices/<int:device_id>/soilsaathi/<int:call_id>/recommendation-pdf/', ss.soilsaathi_recommendation_pdf, name='mobile_ss_recommendation_pdf'),
 
@@ -181,6 +187,8 @@ urlpatterns = [
     path('soil-map/location-search/',                            svc.location_search,      name='mobile_sm_location_search'),
     path('soil-map/devices/<int:device_id>/readings/',           sm.list_soil_data,        name='mobile_sm_readings'),
     path('soil-map/devices/<int:device_id>/readings/export/',    sm.export_soil_data_csv,  name='mobile_sm_readings_export'),
+    path('soil-map/fertilizer-options/',                         sm.fertilizer_options,        name='mobile_sm_fertilizer_options'),
+    path('soil-map/fertilizer-recommendation/',                  sm.fertilizer_recommendation, name='mobile_sm_fertilizer_recommendation'),
 
     # ── CarbonCredits ─────────────────────────────────────────────────────────
     path('carbon-credits/calculate/',  cc.calculate_carbon,      name='mobile_cc_calculate'),

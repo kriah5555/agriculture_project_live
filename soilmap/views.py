@@ -17,10 +17,16 @@ from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from drf_spectacular.openapi import OpenApiTypes
 
-from agriapp.models import Devise, DeviseApisFields
-from agri_ai.zone     import classify_zone as _classify_zone, classify_global_climate_zone, CLIMATE_ZONE_METADATA
-from agri_ai.analysis import analyze_polygon as _analyze_polygon
-from agri_ai.gee      import get_crop_coverage_map, CROP_CATALOG
+from agriapp.models    import Devise, DeviseApisFields
+from agri_ai.zone      import classify_zone as _classify_zone, classify_global_climate_zone, CLIMATE_ZONE_METADATA
+from agri_ai.zone.classifier import get_location_details
+from agri_ai.analysis  import analyze_polygon as _analyze_polygon
+from agri_ai.gee       import get_crop_coverage_map, CROP_CATALOG
+from agri_ai.fertilizer import (
+    recommend_fertilizer,
+    get_states as get_fertilizer_states,
+    get_crops_for_state as get_fertilizer_crops_for_state,
+)
 
 # ── ML pipeline setup ─────────────────────────────────────────────────────────
 from agri_ai.soil     import load_models, predict_for_point, classify_fertility
@@ -159,6 +165,123 @@ def predict_soil(request):
             response_data['plot_polygon'] = polygon
 
         return Response(response_data)
+
+    except Exception as e:
+        return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ── Fertilizer recommendation for a map point (RDF Rule Book engine) ──────────
+
+@extend_schema(
+    tags=['SoilMap'],
+    summary='List states + crops for the fertilizer recommendation dropdowns',
+    description='Returns every state in the RDF reference dataset and, per state, the crops available for it.',
+    responses={200: OpenApiResponse(description='States + crops-by-state', response={
+        'type': 'object',
+        'properties': {
+            'states':         {'type': 'array', 'items': {'type': 'string'}},
+            'crops_by_state': {'type': 'object'},
+        },
+    })},
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def fertilizer_options(request):
+    states = get_fertilizer_states()
+    return Response({
+        'states':         states,
+        'crops_by_state': {s: get_fertilizer_crops_for_state(s) for s in states},
+    })
+
+
+@extend_schema(
+    tags=['SoilMap'],
+    summary='RDF-based fertilizer recommendation for a map point',
+    description=(
+        'Runs the same LightGBM soil prediction as /api/predict/ for a lat/lon point '
+        '(or polygon centroid), then feeds the result into the RDF Rule Book engine '
+        'along with a crop to get per-parameter status, adjusted N:P:K, and Urea/DAP/MOP doses.\n\n'
+        'The state is auto-detected via reverse geocoding when not supplied — pass `state` '
+        'explicitly to override it (e.g. when detection is wrong or unavailable). '
+        '`crop` is required for a full result; call /api/soil-map/fertilizer-options/ to '
+        'populate a state/crop picker.\n\n'
+        'Note: calcium and magnesium aren\'t part of the ML soil model, so they default to 0.'
+    ),
+    request={
+        'application/json': {
+            'type': 'object',
+            'properties': {
+                'lat':     {'type': 'number', 'example': 15.3173},
+                'lon':     {'type': 'number', 'example': 75.7139},
+                'polygon': {'type': 'array', 'items': {'type': 'array', 'items': {'type': 'number'}}},
+                'state':   {'type': 'string', 'description': 'Override the auto-detected state'},
+                'crop':    {'type': 'string', 'description': 'Crop name (required for a full recommendation)'},
+            },
+        }
+    },
+    responses={
+        200: OpenApiResponse(description='Fertilizer recommendation (or an {"error": ...} payload when state/crop can\'t be resolved)'),
+        400: OpenApiResponse(description='Missing or invalid coordinates'),
+        503: OpenApiResponse(description='Prediction models not loaded on this server'),
+    },
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def fertilizer_recommendation(request):
+    try:
+        data    = request.data
+        polygon = data.get('polygon')
+
+        if polygon and isinstance(polygon, list) and len(polygon) >= 3:
+            lat = sum(p[0] for p in polygon) / len(polygon)
+            lon = sum(p[1] for p in polygon) / len(polygon)
+        else:
+            lat = float(data.get('lat', 0))
+            lon = float(data.get('lon', 0))
+
+        if lat == 0 and lon == 0:
+            return Response({'error': 'Provide valid lat/lon or a polygon.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not lgbm_models:
+            return Response({'error': 'Prediction models are not loaded on this server.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        preds, _env_features = predict_for_point(
+            lat, lon, lgbm_models,
+            get_weather,
+            get_ndvi,
+            get_elevation,
+            get_soil_texture,
+        )
+
+        soil_values = {
+            'ph':             preds.get('ph') or 0.0,
+            'ec':             preds.get('ec') or 0.0,
+            'organic_carbon': preds.get('organic_carbon') or 0.0,
+            'nitrogen':       preds.get('n') or 0.0,
+            'phosphorus':     preds.get('p') or 0.0,
+            'potassium':      preds.get('k') or 0.0,
+            'sulphur':        preds.get('s') or 0.0,
+            'iron':           preds.get('fe') or 0.0,
+            'zinc':           preds.get('zn') or 0.0,
+            'copper':         preds.get('cu') or 0.0,
+            'boron':          preds.get('b') or 0.0,
+            'manganese':      preds.get('mn') or 0.0,
+            'calcium':        0.0,  # not part of the ML soil model
+            'magnesium':      0.0,  # not part of the ML soil model
+        }
+
+        state = (data.get('state') or '').strip()
+        if not state:
+            state = get_location_details(lat, lon).get('address', {}).get('state', '') or ''
+
+        crop = (data.get('crop') or '').strip()
+
+        result = recommend_fertilizer(state, crop, soil_values)
+        result.setdefault('state', state)
+        result.setdefault('crop', crop)
+        result['coordinates']              = {'lat': lat, 'lon': lon}
+        result['predicted_soil_chemistry'] = preds
+        return Response(result)
 
     except Exception as e:
         return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)

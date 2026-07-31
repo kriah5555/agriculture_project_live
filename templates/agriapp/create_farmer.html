@@ -93,6 +93,14 @@
         <!-- Location -->
         <div class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Location</div>
         <div class="row g-3 mb-3">
+          <div class="col-12 field-group" style="position:relative;">
+            <label for="location-search-input">Search Location</label>
+            <input type="text" id="location-search-input" class="form-control"
+                   placeholder="Search village, town, district..." autocomplete="off" />
+            <div id="location-suggestions" style="display:none;position:absolute;z-index:20;left:0;right:0;
+                 background:#fff;border:1px solid #dee2e6;border-radius:6px;max-height:220px;overflow-y:auto;
+                 box-shadow:0 4px 10px rgba(0,0,0,.08);"></div>
+          </div>
           <div class="col-md-4 field-group">
             <label for="state">State <span class="text-danger">*</span></label>
             <input type="text" id="state" class="form-control" name="state" required />
@@ -201,6 +209,62 @@
       if (input.value.length === 12) input.dispatchEvent(new Event('input'));
     });
   }
+
+  // ── Location search (Nominatim, same API as Soil Map) ───────────────────────
+  (function() {
+    const input = document.getElementById('location-search-input');
+    const box   = document.getElementById('location-suggestions');
+    let timer   = null;
+
+    function clearSuggestions() {
+      box.style.display = 'none';
+      box.innerHTML = '';
+    }
+
+    function pick(r) {
+      const addr = r.address || {};
+      if (addr.state) document.getElementById('state').value = addr.state;
+      const district = addr.state_district || addr.county || addr.district || '';
+      if (district) document.getElementById('district').value = district;
+      const village = addr.village || addr.town || addr.city || addr.hamlet || addr.suburb || '';
+      if (village) document.getElementById('village').value = village;
+      document.getElementById('latitude').value  = r.lat;
+      document.getElementById('longitude').value = r.lon;
+      input.value = r.name;
+      clearSuggestions();
+    }
+
+    input.addEventListener('input', function() {
+      const q = this.value.trim();
+      clearTimeout(timer);
+      if (q.length < 2) { clearSuggestions(); return; }
+      timer = setTimeout(() => {
+        fetch(`/api/location-search/?q=${encodeURIComponent(q)}`)
+          .then(r => r.json())
+          .then(d => {
+            const results = d.results || [];
+            if (!results.length) { clearSuggestions(); return; }
+            box.innerHTML = '';
+            results.forEach(r => {
+              const item = document.createElement('div');
+              item.textContent = r.name;
+              item.style.cssText = 'padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #f0f0f0;';
+              item.addEventListener('mouseenter', () => item.style.background = '#f5f7fb');
+              item.addEventListener('mouseleave', () => item.style.background = '#fff');
+              item.addEventListener('click', () => pick(r));
+              box.appendChild(item);
+            });
+            box.style.display = 'block';
+          }).catch(() => clearSuggestions());
+      }, 350);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#location-search-input') && !e.target.closest('#location-suggestions')) {
+        clearSuggestions();
+      }
+    });
+  })();
 
   function getLocation() {
     if (!navigator.geolocation) { alert('Geolocation not supported by your browser.'); return; }

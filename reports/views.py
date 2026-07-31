@@ -5,8 +5,8 @@ from django.template.loader import render_to_string
 import requests as _requests
 
 from agri_ai.crop import run_model
+from agri_ai.fertilizer import recommend_fertilizer
 from .report_builder import build_report_context
-from agriapp.models import DeviseApis
 
 
 def _fetch_climate_for_recommendation(lat, lon):
@@ -61,40 +61,75 @@ def _fetch_climate_for_recommendation(lat, lon):
 
 # ── Dashboard (existing AI recommendation page) ───────────────────────────────
 
-def get_recommendation(request):
-    api_id   = request.GET.get("api_id")
-    if not api_id:
-        return HttpResponseBadRequest("Missing api_id parameter.")
-    try:
-        api_id   = int(api_id)
-        api_data = DeviseApis.objects.select_related('farmer').filter(pk=api_id).first()
-    except ValueError:
-        return HttpResponseBadRequest("Invalid 'api_id' parameter.")
+def build_recommendation(api_data):
+    """Run the crop-suitability model for a DeviseApis reading, used by the
+    api-overview page's Crop Recommendation tab."""
+    if not api_data:
+        return 'No data found for the provided api id.'
 
-    if api_data:
-        lat, lon = api_data.latitude, api_data.longitude
-        if lat and lon:
-            try:
-                temperature, humidity, rainfall = _fetch_climate_for_recommendation(lat, lon)
-            except RuntimeError:
-                temperature, humidity, rainfall = 26.0, 65.0, 750.0
-        else:
+    lat, lon = api_data.latitude, api_data.longitude
+    if lat and lon:
+        try:
+            temperature, humidity, rainfall = _fetch_climate_for_recommendation(lat, lon)
+        except RuntimeError:
             temperature, humidity, rainfall = 26.0, 65.0, 750.0
-        result = run_model({
-            'N':           [api_data.nitrogen],
-            'P':           [api_data.phosphorous],
-            'K':           [api_data.potassium],
-            'temperature': [temperature],
-            'humidity':    [humidity],
-            'ph':          [api_data.ph],
-            'rainfall':    [rainfall],
-        })
     else:
-        result = 'No data found for the provided api id.'
-    return render(request, 'reports/crop_recom_dashb.html', {
-        'recommendation': result,
-        'soil_nutrients': api_data,
+        temperature, humidity, rainfall = 26.0, 65.0, 750.0
+
+    return run_model({
+        'N':           [api_data.nitrogen],
+        'P':           [api_data.phosphorous],
+        'K':           [api_data.potassium],
+        'temperature': [temperature],
+        'humidity':    [humidity],
+        'ph':          [api_data.ph],
+        'rainfall':    [rainfall],
     })
+
+
+# ── Fertilizer recommendation (api-overview Fertilizer tab + mobile API) ──────
+
+def build_fertilizer_recommendation(api_data, state_override=None, crop_override=None):
+    """Run the RDF-based fertilizer engine for a DeviseApis reading, used by the
+    api-overview page's Fertilizer tab and its mobile API counterpart.
+
+    State/crop are pulled from the linked Farmer first (the only place state is
+    recorded), falling back to the reading's own crop_type. Either can be
+    overridden explicitly — needed when a reading has no linked farmer, or the
+    auto-detected crop doesn't match the reference dataset's naming.
+    """
+    if not api_data:
+        return {'error': 'no_reading'}
+
+    farmer = api_data.farmer
+    state  = (state_override or (farmer.state if farmer else '') or '').strip()
+    crop   = (
+        crop_override
+        or (farmer.crop if farmer and farmer.crop else '')
+        or api_data.crop_type.replace('_or_', '/').replace('_', ' ').title()
+    ).strip()
+
+    soil_values = {
+        'ph':             api_data.ph,
+        'ec':             api_data.ec,
+        'organic_carbon': api_data.oc,
+        'nitrogen':       api_data.nitrogen,
+        'phosphorus':     api_data.phosphorous,
+        'potassium':      api_data.potassium,
+        'sulphur':        api_data.sulphur,
+        'calcium':        api_data.calcium,
+        'magnesium':      api_data.magnesium,
+        'zinc':           api_data.zinc,
+        'iron':           api_data.iron,
+        'manganese':      api_data.manganese,
+        'copper':         api_data.copper,
+        'boron':          api_data.boron,
+    }
+
+    result = recommend_fertilizer(state, crop, soil_values)
+    result.setdefault('state', state)
+    result.setdefault('crop', crop)
+    return result
 
 
 # ── HTML Report preview ───────────────────────────────────────────────────────

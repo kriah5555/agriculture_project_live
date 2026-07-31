@@ -815,7 +815,7 @@
             }
           }
           const eyeHref = selected_devise.devise_type === 'soilsaathi'
-            ? `/crop-recommendation-dashboard/?api_id=${api.id}`
+            ? `/api-overview/${api.id}/?tab=recommendation`
             : selected_devise.devise_type === 'soil_map'
               ? `/soil-map-admin/${selected_devise.pk}/`
               : `/${selected_devise.devise_type === 'atmo_sense' ? 'atmos-sense' : selected_devise.devise_type.replace('_','-')}-api-overview/${api.id}/`;

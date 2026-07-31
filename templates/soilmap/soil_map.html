@@ -583,6 +583,9 @@
             <button class="sb-tab" id="tab-cropmap" onclick="showSbTab('cropmap')">
                 <span class="t-icon">&#128506;</span><span>Map</span><span class="t-dot" id="dot-cropmap"></span>
             </button>
+            <button class="sb-tab" id="tab-fert" onclick="showSbTab('fert')">
+                <span class="t-icon">&#129514;</span><span>Fertilizer</span><span class="t-dot" id="dot-fert"></span>
+            </button>
             <button class="sb-tab" id="tab-cfg"  onclick="showSbTab('cfg')">
                 <span class="t-icon">&#9881;</span><span>Setup</span><span class="t-dot" id="dot-cfg"></span>
             </button>
@@ -645,6 +648,11 @@
                     Draw a polygon or place a marker to enable mapping
                 </div>
                 <div id="cropmap-result"></div>
+            </div>
+
+            <!-- FERTILIZER -->
+            <div class="sb-pane" id="pane-fert">
+                <div class="sb-ph"><div class="sb-ph-icon">&#129514;</div><div class="sb-ph-title">No Fertilizer Data Yet</div><div class="sb-ph-sub">Draw a marker or polygon on the map, then pick a crop below.</div></div>
             </div>
 
             <!-- SETUP -->
@@ -769,7 +777,7 @@ const ZONES = {
 
 /* ── State ── */
 let map, satLayer, strLayer;
-let soilData = null, zoneData = null;
+let soilData = null, zoneData = null, fertRecommendation = null, fertOptions = null;
 let activePolygonLayer = null, activeMarkerLayer = null;
 let rasterGridGroup, legendControl = null;
 let legendShown = false, rasterMode = 'soil';
@@ -838,7 +846,7 @@ function closeSidebar() {
     resetSidebar();
 }
 function showSbTab(t) {
-    ['cfg','soil','zone','crop','cropmap'].forEach(id => {
+    ['cfg','soil','zone','crop','cropmap','fert'].forEach(id => {
         document.getElementById('pane-'+id).classList.toggle('active', id===t);
         document.getElementById('tab-'+id).classList.toggle('active', id===t);
     });
@@ -848,11 +856,12 @@ function setDot(tab, state) {
     d.className = 't-dot' + (state ? ' '+state : '');
 }
 function resetSidebar() {
-    soilData = null; zoneData = null;
-    ['soil','zone','crop','cropmap'].forEach(t => setDot(t, ''));
+    soilData = null; zoneData = null; fertRecommendation = null;
+    ['soil','zone','crop','cropmap','fert'].forEach(t => setDot(t, ''));
     document.getElementById('pane-soil').innerHTML = ph('&#127758;','No Soil Data Yet','Draw a polygon on the map, choose radius &amp; season, then analyze.', true);
     document.getElementById('pane-zone').innerHTML = ph('&#127757;','No Zone Data Yet','Draw a polygon on the map, choose radius &amp; season, then analyze.', true);
     document.getElementById('pane-crop').innerHTML = ph('&#127807;','No Crop Data Yet','Draw a polygon on the map, choose radius &amp; season, then analyze.', true);
+    document.getElementById('pane-fert').innerHTML = ph('&#129514;','No Fertilizer Data Yet','Draw a marker or polygon on the map, then pick a crop below.');
     document.getElementById('cropmap-result').innerHTML = '';
     document.getElementById('btn-analyze').disabled = true;
     document.getElementById('btn-cropmap').disabled = true;
@@ -974,6 +983,7 @@ function setupDraw() {
         document.getElementById('pane-crop').innerHTML = loadingPane('Detecting crop from SAR…');
         fetchSoil(currentReqBody);
         fetchZone(currentCoords, fetchRadius, fetchSeason);
+        renderFertPane();
     });
 }
 
@@ -1192,6 +1202,108 @@ async function fetchSoil(body) {
     } catch(err) {
         document.getElementById('pane-soil').innerHTML = ph('&#127758;','Network Error', eh(err.message));
         setDot('soil','');
+    }
+}
+
+/* ── Fertilizer recommendation (RDF Rule Book engine) ───────────────────────*/
+async function fetchFertOptions() {
+    if (fertOptions) return fertOptions;
+    const resp = await fetch(`${window.location.origin}/api/soil-map/fertilizer-options/`, {
+        headers: {'X-CSRFToken': getCookie('csrftoken')}
+    });
+    fertOptions = await resp.json();
+    return fertOptions;
+}
+
+async function renderFertPane(presetState) {
+    setDot('fert', 'loading');
+    document.getElementById('pane-fert').innerHTML = loadingPane('Loading state/crop list…');
+    const opts   = await fetchFertOptions();
+    const states = opts.states || [];
+
+    document.getElementById('pane-fert').innerHTML = `
+      <div class="sb-sec">&#127811; State &amp; Crop</div>
+      <select class="par-sel" id="fert-state-sel">
+        <option value="">-- Detect from location --</option>
+        ${states.map(s => `<option value="${s}" ${s===presetState?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <input type="text" id="fert-crop-input" list="fert-crop-datalist" placeholder="Type or select a crop"
+             style="width:100%;margin-top:8px;padding:9px 12px;border:1px solid #cfe3cf;border-radius:8px;font-family:inherit;font-size:11.5px">
+      <datalist id="fert-crop-datalist"></datalist>
+      <button class="btn-pdf" style="margin-top:10px" onclick="runFertRecommendation()">&#129514; Get Recommendation</button>
+      <div id="fert-result"></div>`;
+
+    const stateSel = document.getElementById('fert-state-sel');
+    const fillCrops = (state) => {
+        const list = document.getElementById('fert-crop-datalist');
+        list.innerHTML = (opts.crops_by_state[state] || []).map(c => `<option value="${c}"></option>`).join('');
+    };
+    stateSel.addEventListener('change', () => fillCrops(stateSel.value));
+    if (presetState) fillCrops(presetState);
+    setDot('fert', '');
+}
+
+async function runFertRecommendation() {
+    if (!currentReqBody) { toast('Draw a marker or polygon on the map first', true); return; }
+    const state = document.getElementById('fert-state-sel').value;
+    const crop  = document.getElementById('fert-crop-input').value.trim();
+    if (!crop) { toast('Enter or select a crop first', true); return; }
+
+    const resultBox = document.getElementById('fert-result');
+    resultBox.innerHTML = loadingPane('Computing fertilizer recommendation…');
+    setDot('fert', 'loading');
+    try {
+        const resp = await fetch(`${window.location.origin}/api/soil-map/fertilizer-recommendation/`, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+            body: JSON.stringify({...currentReqBody, state, crop})
+        });
+        const data = await resp.json();
+        fertRecommendation = data;
+
+        if (data.state) document.getElementById('fert-state-sel').value = data.state;
+
+        if (data.error) {
+            const msgs = {
+                missing_state_or_crop: 'Pick a state and enter a crop, then try again.',
+                unknown_state:         `"${eh(data.state||'')}" isn't in the reference dataset — pick a valid state.`,
+                crop_not_found:        `"${eh(data.crop||'')}" wasn't found for ${eh(data.state||'')}. Try: ${(data.crops||[]).slice(0,8).map(eh).join(', ')}`,
+            };
+            resultBox.innerHTML = `<div class="sb-ph"><div class="sb-ph-icon">&#9888;</div><div class="sb-ph-sub">${msgs[data.error] || 'Could not generate a recommendation.'}</div></div>`;
+            setDot('fert', '');
+            return;
+        }
+
+        const rows = (data.param_results || []).map(p => {
+            const cls = (p.status.includes('Low') || p.status.includes('Deficient')) ? 'fert-l'
+                      : (p.status.includes('Medium') || p.status.includes('Marginal')) ? 'fert-m' : 'fert-h';
+            return `<div class="ov-c"><div class="lbl">${eh(p.label)}</div><div class="val">${eh(String(p.value))}</div><div class="unit ${cls}" style="display:inline-block;border-radius:8px;padding:1px 5px;margin-top:2px">${eh(p.status)}</div></div>`;
+        }).join('');
+
+        resultBox.innerHTML = `
+          <div class="sb-sec">&#127807; ${eh(data.crop)} in ${eh(data.state)}</div>
+          <div id="fert-overview-sb">${rows}</div>
+          <div class="sb-sec">&#9878; RDF &amp; Adjusted N:P:K</div>
+          <div class="env-g-sb">
+            <div class="env-c-sb"><div class="lbl">Standard RDF</div><div class="val">${eh(data.rdf_ratio)}</div></div>
+            <div class="env-c-sb"><div class="lbl">Adjusted N:P:K</div><div class="val">${data.n_adj}:${data.p_adj}:${data.k_adj}</div></div>
+          </div>
+          <div class="sb-sec">&#129514; Recommended Fertilizer (kg/ha)</div>
+          <div class="env-g-sb">
+            <div class="env-c-sb"><div class="lbl">Urea</div><div class="val">${data.urea}</div></div>
+            <div class="env-c-sb"><div class="lbl">DAP</div><div class="val">${data.dap}</div></div>
+            <div class="env-c-sb"><div class="lbl">MOP</div><div class="val">${data.mop}</div></div>
+          </div>
+          <div class="sb-sec">&#128200; Estimated Yield (kg/ha)</div>
+          <div class="env-g-sb">
+            <div class="env-c-sb"><div class="lbl">Normal Practice</div><div class="val">${data.normal_yield}</div></div>
+            <div class="env-c-sb"><div class="lbl">Recommended</div><div class="val">${data.rec_yield}</div></div>
+          </div>`;
+        setDot('fert', 'done');
+        toast('Fertilizer recommendation ready');
+    } catch (err) {
+        resultBox.innerHTML = ph('&#129514;', 'Network Error', eh(err.message));
+        setDot('fert', '');
     }
 }
 

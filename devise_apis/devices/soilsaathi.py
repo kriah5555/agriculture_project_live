@@ -247,6 +247,59 @@ def soilsaathi_ai_recommendation(request, device_id):
     })
 
 
+# ── Fertilizer recommendation (RDF Rule Book engine) ──────────────────────────
+
+@extend_schema(
+    tags=['SoiLENZ'],
+    summary='Get RDF-based fertilizer recommendation',
+    description=(
+        'Runs the RDF Rule Book engine against a reading and returns per-parameter '
+        'soil status, adjusted N:P:K, and Urea/DAP/MOP doses. State/crop are taken '
+        'from the linked farmer profile (falling back to the reading\'s crop_type) '
+        'unless explicitly overridden with `state`/`crop` — use the override when '
+        'the reading has no linked farmer or the auto-detected crop name doesn\'t '
+        'match the reference dataset.'
+    ),
+    parameters=[
+        OpenApiParameter('call_id', OpenApiTypes.INT, description='Specific reading ID (optional; defaults to latest)'),
+        OpenApiParameter('state', OpenApiTypes.STR, description='Override state (must match the reference dataset)'),
+        OpenApiParameter('crop', OpenApiTypes.STR, description='Override crop name'),
+    ],
+    responses={
+        200: OpenApiResponse(description='Fertilizer recommendation result (or an {"error": ...} payload when state/crop can\'t be resolved)'),
+        404: OpenApiResponse(description='No readings found'),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def soilsaathi_fertilizer_recommendation(request, device_id):
+    """RDF-based fertilizer recommendation for a SoiLENZ reading."""
+    from reports.views import build_fertilizer_recommendation
+
+    device  = get_user_device(request, device_id)
+    call_id = request.query_params.get('call_id')
+
+    if call_id:
+        reading = get_object_or_404(DeviseApis, pk=call_id, device=device)
+    else:
+        reading = DeviseApis.objects.filter(device=device).order_by('-created_at').first()
+        if not reading:
+            return Response({'detail': 'No readings found for this device.'}, status=status.HTTP_404_NOT_FOUND)
+
+    result = build_fertilizer_recommendation(
+        reading,
+        state_override=request.query_params.get('state'),
+        crop_override=request.query_params.get('crop'),
+    )
+
+    return Response({
+        'device_id'   : device.id,
+        'reading_id'  : reading.id,
+        'reading_date': reading.created_at,
+        **result,
+    })
+
+
 # ── Soil parameters PDF (mirrors /download_api_response_pdf/<pk>/) ────────────
 
 @extend_schema(

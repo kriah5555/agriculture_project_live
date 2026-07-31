@@ -163,7 +163,7 @@
               {% for notif in notification_active %}
                 <div class="notif-item"
                      data-search="{{ notif.name|lower }} {{ notif.mail|lower }} {{ notif.phone|lower }}"
-                     onclick="showContact('{{ notif.name|escapejs }}','{{ notif.phone }}','{{ notif.mail }}','{{ notif.message|escapejs }}', true, '{% url 'notifications' notif.pk %}')">
+                     onclick="showContact({{ notif.pk }}, '{{ notif.name|escapejs }}','{{ notif.phone }}','{{ notif.mail }}','{{ notif.message|escapejs }}', true, '{% url 'notifications' notif.pk %}')">
                   <span class="notif-dot dot-unread"></span>
                   <div style="flex:1;min-width:0;">
                     <div class="d-flex align-items-center gap-2 mb-1">
@@ -185,7 +185,7 @@
               {% for notif in notification_inactive %}
                 <div class="notif-item"
                      data-search="{{ notif.name|lower }} {{ notif.mail|lower }} {{ notif.phone|lower }}"
-                     onclick="showContact('{{ notif.name|escapejs }}','{{ notif.phone }}','{{ notif.mail }}','{{ notif.message|escapejs }}', false, '')">
+                     onclick="showContact({{ notif.pk }}, '{{ notif.name|escapejs }}','{{ notif.phone }}','{{ notif.mail }}','{{ notif.message|escapejs }}', false, '')">
                   <span class="notif-dot dot-read"></span>
                   <div style="flex:1;min-width:0;">
                     <div class="d-flex align-items-center gap-2 mb-1">
@@ -223,6 +223,23 @@
 </div>
 
 <script>
+  const NOTIF_CSRF = '{{ csrf_token }}';
+
+  function deleteNotification(kind, pk) {
+    if (!confirm('Delete this notification? This cannot be undone.')) return;
+    const url = kind === 'request' ? `/delete-user-request/${pk}/` : `/delete-contact-notification/${pk}/`;
+    fetch(url, { method: 'POST', headers: { 'X-CSRFToken': NOTIF_CSRF } })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) {
+          location.reload();
+        } else {
+          alert(d.error || 'Could not delete this notification.');
+        }
+      })
+      .catch(() => alert('Error deleting notification.'));
+  }
+
   function switchTab(tab) {
     document.getElementById('panel-requests').style.display = tab === 'requests' ? '' : 'none';
     document.getElementById('panel-contact').style.display  = tab === 'contact'  ? '' : 'none';
@@ -314,10 +331,17 @@
             </a>
           </div>` : ''
         }
+        <hr>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="javascript:void(0)" onclick="deleteNotification('request', ${id})"
+             class="btn btn-outline-danger" style="border-radius:8px;font-weight:700;">
+            <i class="fas fa-trash me-1"></i> Delete
+          </a>
+        </div>
       </div>`;
   }
 
-  function showContact(name, phone, mail, message, isUnread, markUrl) {
+  function showContact(pk, name, phone, mail, message, isUnread, markUrl) {
     document.querySelectorAll('.notif-item').forEach(el => el.classList.remove('selected'));
     event.currentTarget.classList.add('selected');
 
@@ -345,6 +369,13 @@
             <i class="fas fa-check me-1"></i> Mark as Read
           </a>` : ''
         }
+        <hr>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="javascript:void(0)" onclick="deleteNotification('contact', ${pk})"
+             class="btn btn-outline-danger" style="border-radius:8px;font-weight:700;">
+            <i class="fas fa-trash me-1"></i> Delete
+          </a>
+        </div>
       </div>`;
   }
 </script>

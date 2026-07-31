@@ -23,6 +23,17 @@
   .action-btn       { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px;
                       font-size:13px; font-weight:600; text-decoration:none; transition:opacity .2s; border:none; cursor:pointer; }
   .action-btn:hover { opacity:.85; }
+
+  /* Fertilizer Advisory tab */
+  .fert-table thead th   { background:#f7f9fc; color:#5a6472; font-size:11px; font-weight:700; letter-spacing:.4px;
+                            text-transform:uppercase; border-bottom:2px solid #e9ecf2; padding:10px 14px; white-space:nowrap; }
+  .fert-table tbody td   { padding:10px 14px; vertical-align:middle; border-color:#eef0f5; }
+  .fert-table tbody tr:nth-child(even) { background:#fafbfd; }
+  .fert-table tbody tr:hover { background:#f0f5ff; }
+  .fert-table .badge     { font-size:11px; font-weight:600; padding:5px 9px; border-radius:6px; }
+  .fert-param-label      { font-weight:600; color:#333; }
+  .fert-dose             { color:#555; }
+  .fert-chart-card canvas { max-height:220px; }
 </style>
 
 <div style="padding:8px 4px 24px;">
@@ -53,7 +64,7 @@
         <i class="fas fa-chart-bar"></i> Full Chart
       </a>
       <a href="#recomended-crops" class="action-btn" style="background:#e8f5e9;color:#2e7d32;">
-        <i class="fas fa-seedling"></i> Recommendations
+        <i class="fas fa-seedling"></i> Fertilizer Doses
       </a>
       <a href="{% url 'download-api-response-pdf' api.pk %}" class="action-btn" style="background:#fce4ec;color:#c62828;">
         <i class="fas fa-file-pdf"></i> PDF
@@ -67,6 +78,54 @@
     </div>
   </div>
 
+  <!-- Download PDF Banner -->
+  <div class="alert d-flex align-items-center justify-content-between py-2 px-3 mb-3 mx-2 flex-wrap gap-2"
+       style="background:linear-gradient(90deg,#1e4d2b,#2e7d32);border-radius:10px;border:none;">
+    <div class="d-flex align-items-center gap-3">
+      <i class="fas fa-file-pdf" style="font-size:22px;color:#fff;"></i>
+      <div>
+        <div style="color:#fff;font-weight:700;font-size:14px;">SoiLENZ Advisory Report</div>
+        <div style="color:#c8e6c9;font-size:12px;">6-page AI soil health PDF — crop suitability, amendment plan, carbon credit dashboard</div>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="/soil-report/?api_id={{ soil_nutrients.pk }}" target="_blank"
+         class="btn btn-outline-light btn-sm fw-bold" style="white-space:nowrap;">
+        <i class="fas fa-eye me-1"></i> View HTML Report
+      </a>
+      <a href="/soil-report-pdf/?api_id={{ soil_nutrients.pk }}"
+         class="btn btn-light btn-sm fw-bold" style="white-space:nowrap;color:#1e4d2b;">
+        <i class="fas fa-download me-1"></i> Download PDF Report
+      </a>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-3 px-2" id="apiOverviewTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-overview-btn" data-bs-toggle="tab" data-bs-target="#tab-overview" type="button" role="tab">
+        <i class="fas fa-flask me-1"></i> Overview
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-farmer-btn" data-bs-toggle="tab" data-bs-target="#tab-farmer" type="button" role="tab">
+        <i class="fas fa-user me-1"></i> Farmer
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-recommendation-btn" data-bs-toggle="tab" data-bs-target="#tab-recommendation" type="button" role="tab">
+        <i class="fas fa-seedling me-1"></i> Crop Recommendation
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-fertilizer-btn" data-bs-toggle="tab" data-bs-target="#tab-fertilizer" type="button" role="tab">
+        <i class="fas fa-mortar-pestle me-1"></i> Fertilizer Advisory
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="apiOverviewTabsContent">
+  <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
   <div class="row g-3">
 
     <!-- Left: API meta + core params -->
@@ -165,7 +224,427 @@
 
     </div>
   </div>
+  </div>
+  <!-- /tab-overview -->
+
+  <div class="tab-pane fade" id="tab-farmer" role="tabpanel">
+    {% if api.farmer %}
+    <div class="row g-3">
+      <div class="col-lg-6">
+        <div class="detail-card">
+          <div class="card-header-grad">
+            <h6><i class="fas fa-user me-2"></i>Farmer</h6>
+            <a href="{% url 'farmer-detail' api.farmer.pk %}" style="color:#fff;font-size:12px;text-decoration:underline;">View Full Profile</a>
+          </div>
+          <div class="info-row"><span class="info-label">Name</span>     <span class="info-value">{{ api.farmer.farmer_name }}</span></div>
+          <div class="info-row"><span class="info-label">Phone</span>    <span class="info-value">{{ api.farmer.phone|default:"--" }}</span></div>
+          <div class="info-row"><span class="info-label">Village</span>  <span class="info-value">{{ api.farmer.village }}</span></div>
+          <div class="info-row"><span class="info-label">District</span> <span class="info-value">{{ api.farmer.district }}, {{ api.farmer.state }}</span></div>
+          <div class="info-row"><span class="info-label">Crop</span>     <span class="info-value">{{ api.farmer.crop }}</span></div>
+          <div class="info-row"><span class="info-label">Land Area</span><span class="info-value">{{ api.farmer.land_area }} acres</span></div>
+          <div class="info-row"><span class="info-label">Season</span>  <span class="info-value">{{ api.farmer.get_season_display }}</span></div>
+          <div class="info-row"><span class="info-label">Status</span>   <span class="info-value"><span class="badge bg-{{ api.farmer.badge_class }}">{{ api.farmer.get_status_display }}</span></span></div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="text-center text-muted py-5">
+      <i class="fas fa-user-slash mb-2" style="font-size:32px;"></i>
+      <p>This reading isn't linked to any farmer.</p>
+    </div>
+    {% endif %}
+  </div>
+  <!-- /tab-farmer -->
+
+  <div class="tab-pane fade" id="tab-recommendation" role="tabpanel">
+
+    <div class="row g-3 mb-3">
+      <!-- Crop Recommendation Card -->
+      <div class="col-lg-6">
+        <div class="detail-card p-4">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="header-title" style="font-size:1.5rem;font-weight:600;">Recommended Crop</div>
+            <a href="/crop-recommendation-pdf/?api_id={{ soil_nutrients.pk }}"
+               class="btn btn-success btn-sm"
+               title="Download SoiLENZ PDF Report">
+              <i class="fas fa-file-pdf me-1"></i>Download PDF
+            </a>
+          </div>
+          <h3 class="text-primary">{{ recommendation|capfirst }}</h3>
+          <p>Based on current nutrient values and environmental conditions.</p>
+          <div class="progress" style="height: 20px;">
+            <div class="progress-bar bg-success" style="width: 80%;">Suitability: 80%</div>
+          </div>
+        </div>
+
+        <!-- Additional Recommendations Card -->
+        <div class="detail-card p-4" style="min-height: 250px;">
+          <div class="header-title mb-2" style="font-size:1.5rem;font-weight:600;">Additional Recommendations</div>
+          <div class="row g-3">
+            <div class="progress-bar-style d-flex justify-content-between flex-wrap">
+              <div class="text-center">
+                <p style="font-size:1.5rem;">Wheat</p>
+                <div class="progress" style="width: 150px; height: 10px;">
+                  <div class="progress-bar bg-success" style="width: 70%;"></div>
+                </div>
+                <small>70%</small>
+              </div>
+              <div class="text-center">
+                <p style="font-size:1.5rem;">Rice</p>
+                <div class="progress" style="width: 150px; height: 10px;">
+                  <div class="progress-bar bg-success" style="width: 85%;"></div>
+                </div>
+                <small>85%</small>
+              </div>
+              <div class="text-center">
+                <p style="font-size:1.5rem;">Maize</p>
+                <div class="progress" style="width: 150px; height: 10px;">
+                  <div class="progress-bar bg-success" style="width: 60%;"></div>
+                </div>
+                <small>60%</small>
+              </div>
+              <div class="text-center">
+                <p style="font-size:1.5rem;">Soybean</p>
+                <div class="progress" style="width: 150px; height: 10px;">
+                  <div class="progress-bar bg-success" style="width: 75%;"></div>
+                </div>
+                <small>75%</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map Section -->
+      <div class="col-lg-6">
+        <div class="detail-card p-3">
+          <div class="header-title mb-2" style="font-size:1.5rem;font-weight:600;">Location Map</div>
+          <div id="rec-map" class="bg-light" style="height: 400px; border-radius: 8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Soil Nutrient Grid -->
+    <div class="detail-card p-4">
+      <div class="header-title mb-3" style="font-size:1.5rem;font-weight:600;">Soil Nutrient Grid</div>
+      <div class="table-responsive">
+        <table class="table table-bordered text-center align-middle mb-0">
+          <tbody>
+            <tr>
+              <td><strong>Nitrogen (N)</strong><br>{{ api.nitrogen }}<div id="pie_N" style="width:100px;height:100px;margin:auto;"></div></td>
+              <td><strong>Phosphorous (P)</strong><br>{{ api.phosphorous }}<div id="pie_P" style="width:100px;height:100px;margin:auto;"></div></td>
+              <td><strong>Potassium (K)</strong><br>{{ api.potassium }}<div id="pie_K" style="width:100px;height:100px;margin:auto;"></div></td>
+              <td><strong>Calcium (Ca)</strong><br>{{ api.calcium }}<div id="pie_Ca" style="width:100px;height:100px;margin:auto;"></div></td>
+              <td><strong>Magnesium (Mg)</strong><br>{{ api.magnesium }}<div id="pie_Mg" style="width:100px;height:100px;margin:auto;"></div></td>
+              <td><strong>Sulphur (S)</strong><br>{{ api.sulphur }}<div id="pie_S" style="width:100px;height:100px;margin:auto;"></div></td>
+              <td><strong>Iron (Fe)</strong><br>{{ api.iron }}<div id="pie_Fe" style="width:100px;height:100px;margin:auto;"></div></td>
+            </tr>
+            <tr>
+              <td><strong>Manganese (Mn)</strong><br>{{ api.manganese }}<div id="pie_Mn" style="width:100px;height:100px;margin:auto;"></div></td>
+              <td><strong>Zinc (Zn)</strong><br>{{ api.zinc }}<div id="pie_Zn" style="width:100px;height:100px;margin:auto;"></div></td>
+              <td><strong>Copper (Cu)</strong><br>{{ api.copper }}<div id="pie_Cu" style="width:100px;height:100px;margin:auto;"></div></td>
+              <td><strong>Boron (B)</strong><br>{{ api.boron }}<div id="pie_B" style="width:100px;height:100px;margin:auto;"></div></td>
+              <td><strong>Molybdenum (Mo)</strong><br>{{ api.molybdenum }}<div id="pie_Mo" style="width:100px;height:100px;margin:auto;"></div></td>
+              <td><strong>Chlorine (Cl)</strong><br>{{ api.chlorine }}<div id="pie_Cl" style="width:100px;height:100px;margin:auto;"></div></td>
+              <td><strong>Nickel (Ni)</strong><br>{{ api.nickel }}<div id="pie_Ni" style="width:100px;height:100px;margin:auto;"></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+      // Real reading values as a % of the same reference ranges used for the
+      // Overview tab's progress bars (not the random/dummy split the old
+      // standalone dashboard page used).
+      var nutrientPct = {
+        N:  Math.min({% widthratio api.nitrogen 560 100 %}, 100),
+        P:  Math.min({% widthratio api.phosphorous 56 100 %}, 100),
+        K:  Math.min({% widthratio api.potassium 336 100 %}, 100),
+        Ca: Math.min({% widthratio api.calcium 5 100 %}, 100),
+        Mg: Math.min({% widthratio api.magnesium 4 100 %}, 100),
+        S:  Math.min({% widthratio api.sulphur 30 100 %}, 100),
+        Fe: Math.min({% widthratio api.iron 15 100 %}, 100),
+        Mn: Math.min({% widthratio api.manganese 12 100 %}, 100),
+        Zn: Math.min({% widthratio api.zinc 3 100 %}, 100),
+        Cu: Math.min({% widthratio api.copper 3 100 %}, 100),
+        B:  Math.min({% widthratio api.boron 3 100 %}, 100),
+        Mo: Math.min({% widthratio api.molybdenum 1 100 %}, 100),
+        Cl: Math.min({% widthratio api.chlorine 10 100 %}, 100),
+        Ni: Math.min({% widthratio api.nickel 1 100 %}, 100)
+      };
+
+      var chartsLoaded = false, nutrientGridDrawn = false;
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(function () { chartsLoaded = true; maybeDrawNutrientGrid(); });
+
+      function maybeDrawNutrientGrid() {
+        if (nutrientGridDrawn || !chartsLoaded) return;
+        var pane = document.getElementById('tab-recommendation');
+        if (!pane.classList.contains('active')) return;
+        nutrientGridDrawn = true;
+        Object.keys(nutrientPct).forEach(function (key) { drawNutrientPie(key); });
+      }
+
+      function drawNutrientPie(key) {
+        var pct  = nutrientPct[key];
+        var data = google.visualization.arrayToDataTable([
+          ['Section', 'Value'],
+          ['Available', pct],
+          ['Deficit', 100 - pct]
+        ]);
+        var options = {
+          is3D: true,
+          legend: 'none',
+          chartArea: { width: '90%', height: '90%' },
+          slices: { 0: { color: '#3498db' }, 1: { color: '#FFC300' } },
+          width: 100,
+          height: 100
+        };
+        new google.visualization.PieChart(document.getElementById('pie_' + key)).draw(data, options);
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        var recMap = L.map('rec-map').setView([15.5, 78.5], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(recMap);
+
+        // Mock district NPK overlay (illustrative regional layer, not tied to this reading)
+        var npkValues = { "Chittoor": 45, "Anantapur": 20, "Kadapa": 65, "Kurnool": 35 };
+        function getColor(value) {
+          return value > 60 ? '#d73027' :
+                 value > 40 ? '#fc8d59' :
+                 value > 20 ? '#fee08b' :
+                 value > 10 ? '#d9ef8b' :
+                              '#91cf60';
+        }
+        fetch('/static/mapdata/districts.geojson')
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            L.geoJSON(data, {
+              style: function (feature) {
+                var district = feature.properties.DISTRICT || feature.properties.DIST_NAME;
+                var value    = npkValues[district] || 0;
+                return { fillColor: getColor(value), color: "#333", weight: 1, fillOpacity: 0.6 };
+              }
+            }).addTo(recMap);
+          })
+          .catch(function () {});
+
+        {% if soil_nutrients.latitude and soil_nutrients.longitude %}
+          var recMarker = L.circleMarker([{{ soil_nutrients.latitude }}, {{ soil_nutrients.longitude }}], {
+            radius: 7, color: '#007bff', fillColor: '#007bff', fillOpacity: 0.9, weight: 1
+          }).addTo(recMap);
+          recMap.setView([{{ soil_nutrients.latitude }}, {{ soil_nutrients.longitude }}], 12);
+        {% endif %}
+
+        // The map/charts are initialized inside a hidden Bootstrap tab-pane, so
+        // they size/draw wrong until the pane is actually shown — fix up on switch.
+        var recTabBtn = document.getElementById('tab-recommendation-btn');
+        if (recTabBtn) {
+          recTabBtn.addEventListener('shown.bs.tab', function () {
+            recMap.invalidateSize();
+            maybeDrawNutrientGrid();
+          });
+        }
+      });
+    </script>
+
+  </div>
+  <!-- /tab-recommendation -->
+
+  <div class="tab-pane fade" id="tab-fertilizer" role="tabpanel">
+
+    <!-- State/Crop used for this recommendation, with manual override -->
+    <div class="detail-card p-3 mb-3">
+      <form method="get" class="d-flex flex-wrap align-items-end gap-2">
+        <input type="hidden" name="tab" value="fertilizer">
+        <div>
+          <label class="form-label mb-1" style="font-size:12px;font-weight:600;">State</label>
+          <select name="fert_state" class="form-select form-select-sm" style="min-width:180px;">
+            <option value="">-- Auto-detected --</option>
+            {% for s in fertilizer_states %}
+            <option value="{{ s }}" {% if s == fertilizer_recommendation.state %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label mb-1" style="font-size:12px;font-weight:600;">Crop</label>
+          <input type="text" name="fert_crop" id="fert-crop-input" class="form-control form-control-sm" style="min-width:180px;"
+                 list="fert-crop-list" value="{{ fertilizer_recommendation.crop|default:'' }}" placeholder="Type or select a crop">
+          <datalist id="fert-crop-list"></datalist>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="fas fa-check me-1"></i> Check
+        </button>
+      </form>
+      <div class="text-muted mt-2" style="font-size:12px;">
+        State/crop are auto-detected from {% if api.farmer %}the linked farmer profile{% else %}this reading{% endif %}.
+        If it's missing or doesn't match, pick a state — the crop list below it updates to match — then click Check.
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var stateCrops = {{ fertilizer_state_crops_json|safe }};
+        var stateSelect = document.querySelector('#tab-fertilizer select[name="fert_state"]');
+        var cropList    = document.getElementById('fert-crop-list');
+
+        function fillCropList(state) {
+          cropList.innerHTML = '';
+          (stateCrops[state] || []).forEach(function (c) {
+            var opt = document.createElement('option');
+            opt.value = c;
+            cropList.appendChild(opt);
+          });
+        }
+
+        if (stateSelect) {
+          fillCropList(stateSelect.value);
+          stateSelect.addEventListener('change', function () { fillCropList(this.value); });
+        }
+      })();
+    </script>
+
+    {% if fertilizer_recommendation.error %}
+    <div class="alert alert-warning mb-0">
+      {% if fertilizer_recommendation.error == 'missing_state_or_crop' %}
+        State and/or crop couldn't be determined automatically for this reading — this usually means it isn't linked to a farmer record. Select a state and enter a crop above, then click Check.
+      {% elif fertilizer_recommendation.error == 'unknown_state' %}
+        "{{ fertilizer_recommendation.state }}" isn't in the reference dataset. Pick a valid state above.
+      {% elif fertilizer_recommendation.error == 'crop_not_found' %}
+        "{{ fertilizer_recommendation.crop }}" wasn't found for {{ fertilizer_recommendation.state }} in the reference dataset.
+        {% if fertilizer_recommendation.crops %}Try one of: {{ fertilizer_recommendation.crops|slice:":10"|join:", " }}{% endif %}
+      {% else %}
+        Couldn't generate a fertilizer recommendation for this reading.
+      {% endif %}
+    </div>
+    {% else %}
+
+    <div class="detail-card">
+      <div class="card-header-grad"><h6><i class="fas fa-vial me-2"></i>Soil Parameter Analysis</h6></div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 fert-table" style="font-size:13px;">
+          <thead><tr><th>Parameter</th><th>Value</th><th>Status</th><th>Practice</th><th>Dose</th></tr></thead>
+          <tbody>
+            {% for p in fertilizer_recommendation.param_results %}
+            {% if p.label %}
+            <tr>
+              <td class="fert-param-label">{{ p.label }}</td>
+              <td>{{ p.value }}</td>
+              <td>
+                {% if 'Low' in p.status or 'Deficient' in p.status %}<span class="badge bg-danger"><i class="fas fa-arrow-down me-1" style="font-size:9px;"></i>{{ p.status }}</span>
+                {% elif 'Medium' in p.status or 'Marginal' in p.status %}<span class="badge bg-warning text-dark">{{ p.status }}</span>
+                {% else %}<span class="badge bg-success"><i class="fas fa-check me-1" style="font-size:9px;"></i>{{ p.status }}</span>{% endif %}
+              </td>
+              <td>{{ p.practice|default:"—" }}</td>
+              <td class="fert-dose">{{ p.dose|default:"—" }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row g-3 mt-1 align-items-stretch">
+      <div class="col-lg-6 d-flex flex-column">
+        <div class="detail-card">
+          <div class="card-header-grad"><h6><i class="fas fa-balance-scale me-2"></i>RDF &amp; Adjusted N:P:K</h6></div>
+          <div class="info-row"><span class="info-label">Standard RDF ({{ fertilizer_recommendation.rdf_ratio }})</span><span class="info-value">N {{ fertilizer_recommendation.n_rdf }} : P {{ fertilizer_recommendation.p_rdf }} : K {{ fertilizer_recommendation.k_rdf }} kg/ha</span></div>
+          <div class="info-row"><span class="info-label">Adjusted for soil status</span><span class="info-value">N {{ fertilizer_recommendation.n_adj }} : P {{ fertilizer_recommendation.p_adj }} : K {{ fertilizer_recommendation.k_adj }} kg/ha</span></div>
+        </div>
+        <div class="detail-card flex-grow-1">
+          <div class="card-header-grad"><h6><i class="fas fa-seedling me-2"></i>Recommended Fertilizer (kg/ha)</h6></div>
+          <div class="info-row"><span class="info-label">Urea</span><span class="info-value">{{ fertilizer_recommendation.urea }} <span class="text-muted">(default: {{ fertilizer_recommendation.current_urea }})</span></span></div>
+          <div class="info-row"><span class="info-label">DAP</span><span class="info-value">{{ fertilizer_recommendation.dap }} <span class="text-muted">(default: {{ fertilizer_recommendation.current_dap }})</span></span></div>
+          <div class="info-row"><span class="info-label">MOP</span><span class="info-value">{{ fertilizer_recommendation.mop }} <span class="text-muted">(default: {{ fertilizer_recommendation.current_mop }})</span></span></div>
+        </div>
+      </div>
+      <div class="col-lg-6 d-flex flex-column">
+        <div class="detail-card fert-chart-card">
+          <div class="card-header-grad"><h6><i class="fas fa-chart-bar me-2"></i>Fertilizer: Current vs Required</h6></div>
+          <div class="p-3"><canvas id="fertChart"></canvas></div>
+        </div>
+        <div class="detail-card fert-chart-card flex-grow-1">
+          <div class="card-header-grad"><h6><i class="fas fa-chart-line me-2"></i>Estimated Yield (kg/ha)</h6></div>
+          <div class="p-3"><canvas id="fertYieldChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var drawn = false;
+        function drawFertilizerCharts() {
+          if (drawn) return;
+          drawn = true;
+          var GRAY = '#c3c2b7', BLUE = '#2a78d6', GREEN = '#008300';
+          var gridColor = 'rgba(0,0,0,0.06)';
+          var tickColor = '#7a7f8a';
+
+          new Chart(document.getElementById('fertChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+              labels: ['Urea', 'DAP', 'MOP'],
+              datasets: [
+                { label: 'Current (Default)', data: [{{ fertilizer_recommendation.current_urea }}, {{ fertilizer_recommendation.current_dap }}, {{ fertilizer_recommendation.current_mop }}],
+                  backgroundColor: GRAY, borderRadius: 4, borderSkipped: false, maxBarThickness: 32 },
+                { label: 'Required (Soil-Based)', data: [{{ fertilizer_recommendation.urea }}, {{ fertilizer_recommendation.dap }}, {{ fertilizer_recommendation.mop }}],
+                  backgroundColor: BLUE, borderRadius: 4, borderSkipped: false, maxBarThickness: 32 }
+              ]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: true, aspectRatio: 1.8,
+              plugins: { legend: { position: 'top', labels: { boxWidth: 10, boxHeight: 10, color: tickColor, font: { size: 12 } } },
+                         tooltip: { callbacks: { label: function (ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y + ' kg/ha'; } } } },
+              scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor } },
+                y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } }
+              }
+            }
+          });
+          new Chart(document.getElementById('fertYieldChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+              labels: ['Normal Practice', 'Recommended'],
+              datasets: [{ label: 'Yield (kg/ha)', data: [{{ fertilizer_recommendation.normal_yield }}, {{ fertilizer_recommendation.rec_yield }}],
+                backgroundColor: [GRAY, GREEN], borderRadius: 4, borderSkipped: false, maxBarThickness: 48 }]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: true, aspectRatio: 1.8,
+              plugins: { legend: { display: false },
+                         tooltip: { callbacks: { label: function (ctx) { return ctx.parsed.y + ' kg/ha'; } } } },
+              scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor } },
+                y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } }
+              }
+            }
+          });
+        }
+        var fertTabBtn = document.getElementById('tab-fertilizer-btn');
+        if (fertTabBtn) { fertTabBtn.addEventListener('shown.bs.tab', drawFertilizerCharts); }
+      })();
+    </script>
+    {% endif %}
+  </div>
+  <!-- /tab-fertilizer -->
+
+  </div>
+  <!-- /tab-content -->
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var params  = new URLSearchParams(window.location.search);
+    var tabBtns = { farmer: 'tab-farmer-btn', recommendation: 'tab-recommendation-btn', fertilizer: 'tab-fertilizer-btn' };
+    var btnId   = tabBtns[params.get('tab')];
+    if (btnId) {
+      var btn = document.getElementById(btnId);
+      if (btn) new bootstrap.Tab(btn).show();
+    }
+  });
+</script>
 
 <!-- ── Chart popups (CSS-based, kept exactly as original) ── -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>

@@ -11,4 +11,6 @@ urlpatterns = [
     path('api/soil-map/analyze-polygon/',               views.analyze_polygon,            name='soil-map-analyze-polygon'),
     path('api/soil-map/crop-coverage-map/',             views.crop_coverage_map,          name='soil-map-crop-coverage'),
     path('api/soil-map/gee-health/',                    views.gee_health,                 name='soil-map-gee-health'),
+    path('api/soil-map/fertilizer-options/',            views.fertilizer_options,         name='soil-map-fertilizer-options'),
+    path('api/soil-map/fertilizer-recommendation/',     views.fertilizer_recommendation,  name='soil-map-fertilizer-recommendation'),
 ]

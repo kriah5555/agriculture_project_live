@@ -16,6 +16,8 @@ from .models import (
     PartnerPayment, PaymentAttachment,
 )
 from agri_ai.leaf import parse_class_label, get_disease_details
+from reports.views import build_recommendation, build_fertilizer_recommendation
+from agri_ai.fertilizer import get_states as get_fertilizer_states, get_crops_for_state as get_fertilizer_crops_for_state
 
 from . import UserFunctions
 from django.views.generic import UpdateView, TemplateView, CreateView, View
@@ -689,7 +691,7 @@ def api_overview(request, **kwargs):
         }
 
     else :
-        api                = get_object_or_404(DeviseApis, pk=kwargs['pk'])
+        api                = get_object_or_404(DeviseApis.objects.select_related('farmer'), pk=kwargs['pk'])
         template_name      = 'agriapp/api_soil_sathi_details.html'
         all_dynamic_fields = UserFunctions.get_all_dynamic_fields()
         dynamic_field_data = {field.field_name : (UserFunctions.get_all_dynamic_field_value(api, field).field_value if UserFunctions.get_all_dynamic_field_value(api, field) else 0.0) for field in all_dynamic_fields}
@@ -698,14 +700,23 @@ def api_overview(request, **kwargs):
         fields_data        = [getattr(api, i) for i in fields]
         import random
 
+        fert_state       = request.GET.get('fert_state', '').strip()
+        fert_crop        = request.GET.get('fert_crop', '').strip()
+        fertilizer_states = get_fertilizer_states()
+
         context = {
-            'api'                : api,
-            'devise_name'        : api.device.name,
-            'dynamic_fields'     : dynamic_field_data,
-            'crops_data'         : crops_data,
-            'fields'             : ','.join(fields),
-            'fields_data'        : ','.join(map(str, fields_data)),
-            'fields_data_colors' : ','.join([f"rgba({random.randint(100,255)}, 0, 0, 0.5)" for i in fields_data]),
+            'api'                       : api,
+            'devise_name'               : api.device.name,
+            'dynamic_fields'            : dynamic_field_data,
+            'crops_data'                : crops_data,
+            'fields'                    : ','.join(fields),
+            'fields_data'               : ','.join(map(str, fields_data)),
+            'fields_data_colors'        : ','.join([f"rgba({random.randint(100,255)}, 0, 0, 0.5)" for i in fields_data]),
+            'recommendation'            : build_recommendation(api),
+            'soil_nutrients'            : api,
+            'fertilizer_recommendation' : build_fertilizer_recommendation(api, fert_state or None, fert_crop or None),
+            'fertilizer_states'         : fertilizer_states,
+            'fertilizer_state_crops_json': json.dumps({s: get_fertilizer_crops_for_state(s) for s in fertilizer_states}),
         }
 
     return render(request, template_name = template_name, context=context)
@@ -1577,6 +1588,25 @@ def resolve_user_request(request, pk):
     return redirect('notifications')
 
 
+# ── Delete a notification (admin action from notifications page) ─────────────
+
+@admin_required
+def delete_user_request(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    req = get_object_or_404(UserRequest, pk=pk)
+    req.delete()
+    return JsonResponse({'success': True})
+
+@admin_required
+def delete_contact_notification(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    contact = get_object_or_404(ContactDetails, pk=pk)
+    contact.delete()
+    return JsonResponse({'success': True})
+
+
 # ── Soil Partner Interest / Enquiry (public) ──────────────────────────────────
 
 def soil_partner_enquiry(request):
@@ -2426,14 +2456,15 @@ def location_search(request):
     try:
         resp = _loc_requests.get(
             _NOMINATIM_URL,
-            params={'q': q, 'format': 'json', 'limit': 6, 'accept-language': 'en'},
+            params={'q': q, 'format': 'json', 'limit': 6, 'accept-language': 'en', 'addressdetails': 1},
             headers=_NOMINATIM_HEADERS,
             timeout=5,
         )
         resp.raise_for_status()
         results = [
             {'name': item.get('display_name', ''), 'lat': float(item['lat']),
-             'lon': float(item['lon']), 'type': item.get('type', '')}
+             'lon': float(item['lon']), 'type': item.get('type', ''),
+             'address': item.get('address', {})}
             for item in resp.json()
         ]
         return Response({'results': results})
