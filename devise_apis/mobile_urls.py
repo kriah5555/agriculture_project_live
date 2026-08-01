@@ -37,6 +37,8 @@ SoiLENZ readings (soilsaathi)                      (devices/soilsaathi.py)
   GET   /api/mobile/devices/<id>/soilsaathi/ai-recommendation/ AI crop recommendation (ML)
   GET   /api/mobile/devices/<id>/soilsaathi/fertilizer-recommendation/ RDF-based fertilizer recommendation (?call_id=&state=&crop=)
   GET   /api/mobile/devices/<id>/soilsaathi/crop-recommendation/      Rule-based top-5 crop recommendation (?call_id=&state=)
+  GET   /api/mobile/devices/<id>/soilsaathi/yield-options/            State/district/crop hierarchy + prefill for yield estimator (?call_id=)
+  GET   /api/mobile/devices/<id>/soilsaathi/yield-prediction/         District-level yield prediction (?call_id=&district=&crop=&soc=&pH=&N=&P=&K=)
   GET   /api/mobile/devices/<id>/soilsaathi/<cid>/pdf/             Soil parameters PDF (api-overview report)
   GET   /api/mobile/devices/<id>/soilsaathi/<cid>/recommendation-pdf/  Full 6-page SoiLENZ PDF report
 
@@ -135,6 +137,8 @@ urlpatterns = [
     path('devices/<int:device_id>/soilsaathi/ai-recommendation/',     ss.soilsaathi_ai_recommendation,  name='mobile_ss_ai_recommendation'),
     path('devices/<int:device_id>/soilsaathi/fertilizer-recommendation/', ss.soilsaathi_fertilizer_recommendation, name='mobile_ss_fertilizer_recommendation'),
     path('devices/<int:device_id>/soilsaathi/crop-recommendation/',       ss.soilsaathi_crop_recommendation,       name='mobile_ss_crop_recommendation'),
+    path('devices/<int:device_id>/soilsaathi/yield-options/',              ss.soilsaathi_yield_options,             name='mobile_ss_yield_options'),
+    path('devices/<int:device_id>/soilsaathi/yield-prediction/',           ss.soilsaathi_yield_prediction,          name='mobile_ss_yield_prediction'),
     path('devices/<int:device_id>/soilsaathi/<int:call_id>/pdf/',                ss.soilsaathi_pdf,               name='mobile_ss_pdf'),
     path('devices/<int:device_id>/soilsaathi/<int:call_id>/recommendation-pdf/', ss.soilsaathi_recommendation_pdf, name='mobile_ss_recommendation_pdf'),
 

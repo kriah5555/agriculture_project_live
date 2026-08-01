@@ -9,6 +9,8 @@ Routes (mounted under /api/mobile/devices/<id>/soilsaathi/):
   GET  /ai-recommendation/    ML crop recommendation (?call_id=<id>)
   GET  /fertilizer-recommendation/  RDF-based fertilizer recommendation (?call_id=&state=&crop=)
   GET  /crop-recommendation/  Rule-based top-5 crop recommendation (?call_id=&state=)
+  GET  /yield-options/        State/district/crop hierarchy + prefill for the yield estimator (?call_id=)
+  GET  /yield-prediction/     District-level yield prediction (?call_id=&district=&crop=&soc=&pH=&N=&P=&K=)
   GET  /<cid>/pdf/            Download soil parameters PDF (from api-overview)
   GET  /<cid>/recommendation-pdf/  Download full 6-page SoiLENZ PDF report
 
@@ -345,6 +347,139 @@ def soilsaathi_crop_recommendation(request, device_id):
     result = build_crop_recommendation_v2(
         reading,
         state_override=request.query_params.get('state'),
+    )
+
+    return Response({
+        'device_id'   : device.id,
+        'reading_id'  : reading.id,
+        'reading_date': reading.created_at,
+        **result,
+    })
+
+
+# ── Yield prediction (district-level, formula-based + live NDVI) ─────────────
+
+@extend_schema(
+    tags=['SoiLENZ'],
+    summary='Get state/district/crop hierarchy + prefill for the yield estimator',
+    description=(
+        'Returns the full State -> District -> [crops] hierarchy used to drive the '
+        'yield estimator\'s cascading dropdowns, plus a prefill block (state/district/crop '
+        'auto-detected from the linked farmer + reading, and soc/pH/N/P/K taken from the '
+        'reading\'s own soil values) so the mobile client can preselect everything.'
+    ),
+    parameters=[
+        OpenApiParameter('call_id', OpenApiTypes.INT, description='Specific reading ID (optional; defaults to latest)'),
+    ],
+    responses={
+        200: OpenApiResponse(description='Hierarchy + prefill payload'),
+        404: OpenApiResponse(description='No readings found'),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def soilsaathi_yield_options(request, device_id):
+    """Hierarchy + prefill for the yield estimator (mirrors the web tab's initial context)."""
+    from agri_ai.yield_estimator import get_hierarchy
+
+    device  = get_user_device(request, device_id)
+    call_id = request.query_params.get('call_id')
+
+    if call_id:
+        reading = get_object_or_404(DeviseApis, pk=call_id, device=device)
+    else:
+        reading = DeviseApis.objects.filter(device=device).order_by('-created_at').first()
+        if not reading:
+            return Response({'detail': 'No readings found for this device.'}, status=status.HTTP_404_NOT_FOUND)
+
+    hierarchy = get_hierarchy()
+    farmer    = reading.farmer
+
+    state = next((s for s in hierarchy if farmer and s.lower() == (farmer.state or '').lower()), '')
+    district = ''
+    if state and farmer:
+        district = next((d for d in hierarchy[state] if d.lower() == (farmer.district or '').lower()), '')
+    crop = ''
+    if district:
+        crop = next((c for c in hierarchy[state][district] if c.lower() == (reading.crop_type or '').lower()), '')
+
+    return Response({
+        'device_id'  : device.id,
+        'reading_id' : reading.id,
+        'hierarchy'  : hierarchy,
+        'prefill'    : {
+            'state'   : state,
+            'district': district,
+            'crop'    : crop,
+            'soc'     : reading.oc or 0.5,
+            'pH'      : reading.ph or 6.5,
+            'N'       : reading.nitrogen or 200,
+            'P'       : reading.phosphorous or 20,
+            'K'       : reading.potassium or 150,
+            'lat'     : reading.latitude,
+            'lon'     : reading.longitude,
+        },
+    })
+
+
+@extend_schema(
+    tags=['SoiLENZ'],
+    summary='Get predicted crop yield for a district/crop',
+    description=(
+        'predicted_yield = potential_yield (historical district-crop average) * soil_factor '
+        '(from soc/pH/N/P/K) * water_factor (rainfall + irrigation) * ndvi_factor (live MODIS '
+        'NDVI at the reading\'s own lat/lon via GEE, defaulting to 0.7 if unavailable). '
+        'soc/pH/N/P/K default to the reading\'s own values when not passed explicitly.'
+    ),
+    parameters=[
+        OpenApiParameter('call_id', OpenApiTypes.INT, description='Specific reading ID (optional; defaults to latest)'),
+        OpenApiParameter('district', OpenApiTypes.STR, description='District name (required, must match reference dataset)'),
+        OpenApiParameter('crop', OpenApiTypes.STR, description='Crop name (required, must match reference dataset)'),
+        OpenApiParameter('soc', OpenApiTypes.FLOAT, description='Soil organic carbon % (default: reading value)'),
+        OpenApiParameter('pH', OpenApiTypes.FLOAT, description='Soil pH (default: reading value)'),
+        OpenApiParameter('N', OpenApiTypes.FLOAT, description='Nitrogen kg/ha (default: reading value)'),
+        OpenApiParameter('P', OpenApiTypes.FLOAT, description='Phosphorus kg/ha (default: reading value)'),
+        OpenApiParameter('K', OpenApiTypes.FLOAT, description='Potassium kg/ha (default: reading value)'),
+    ],
+    responses={
+        200: OpenApiResponse(description='Yield prediction result (or {"status": "not_available", ...} when no data for the district/crop)'),
+        400: OpenApiResponse(description='Missing district/crop'),
+        404: OpenApiResponse(description='No readings found'),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def soilsaathi_yield_prediction(request, device_id):
+    """District-level yield prediction for a SoiLENZ reading."""
+    from agri_ai.yield_estimator import estimate_yield
+
+    device  = get_user_device(request, device_id)
+    call_id = request.query_params.get('call_id')
+
+    if call_id:
+        reading = get_object_or_404(DeviseApis, pk=call_id, device=device)
+    else:
+        reading = DeviseApis.objects.filter(device=device).order_by('-created_at').first()
+        if not reading:
+            return Response({'detail': 'No readings found for this device.'}, status=status.HTTP_404_NOT_FOUND)
+
+    district = request.query_params.get('district', '').strip()
+    crop     = request.query_params.get('crop', '').strip()
+    if not district or not crop:
+        return Response({'detail': 'district and crop are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def _param(name, fallback):
+        raw = request.query_params.get(name)
+        return float(raw) if raw not in (None, '') else fallback
+
+    result = estimate_yield(
+        district, crop,
+        soc=_param('soc', reading.oc or 0.5),
+        pH=_param('pH', reading.ph or 6.5),
+        N=_param('N', reading.nitrogen or 200),
+        P=_param('P', reading.phosphorous or 20),
+        K=_param('K', reading.potassium or 150),
+        lat=reading.latitude, lon=reading.longitude,
     )
 
     return Response({

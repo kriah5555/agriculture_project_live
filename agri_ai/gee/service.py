@@ -516,3 +516,32 @@ def get_crop_coverage_map(lat: float, lon: float, radius_km: float,
     except Exception as exc:
         logger.exception("get_crop_coverage_map failed")
         return {"status": "error", "error": str(exc)}
+
+
+# ── Point NDVI (yield estimator) ──────────────────────────────────────────────
+
+def get_point_ndvi(lat: float, lon: float) -> dict | None:
+    """
+    Mean MODIS NDVI over the trailing 365 days at a single point.
+    Returns None if GEE is unavailable or no NDVI value could be read.
+    """
+    if not _try_init_gee():
+        logger.warning("GEE unavailable — point NDVI skipped.")
+        return None
+    try:
+        end_dt   = datetime.utcnow()
+        start_dt = end_dt - timedelta(days=365)
+        point    = ee.Geometry.Point([lon, lat])
+        modis    = ee.ImageCollection("MODIS/061/MOD13A2").select("NDVI")
+        img      = modis.filterDate(start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d")).mean()
+        raw      = img.reduceRegion(ee.Reducer.mean(), point, 1000).get("NDVI").getInfo()
+        if raw is None:
+            return None
+        return {
+            "ndvi_raw":    round(raw, 1),
+            "ndvi_factor": round(min(1.0, raw / 7000.0), 4),
+            "source":      "MODIS_MOD13A2_trailing_365d",
+        }
+    except Exception as exc:
+        logger.warning(f"get_point_ndvi failed: {exc}")
+        return None

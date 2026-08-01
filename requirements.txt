@@ -21,6 +21,7 @@ cffi==1.17.1
 pycparser==2.22
 
 # ── Data Science & ML ─────────────────────────────────────────────────────────
+earthengine-api==1.7.24
 numpy==2.2.6
 onnxruntime==1.19.2
 pandas==2.3.0

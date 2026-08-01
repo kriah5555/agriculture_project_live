@@ -19,6 +19,7 @@ from agri_ai.leaf import parse_class_label, get_disease_details
 from reports.views import build_recommendation, build_fertilizer_recommendation, build_crop_recommendation_v2
 from agri_ai.fertilizer import get_states as get_fertilizer_states, get_crops_for_state as get_fertilizer_crops_for_state
 from agri_ai.crop_recommendation import get_states as get_crop_rec_states
+from agri_ai.yield_estimator import get_hierarchy as get_yield_hierarchy, estimate_yield
 
 from . import UserFunctions
 from django.views.generic import UpdateView, TemplateView, CreateView, View
@@ -705,8 +706,11 @@ def api_overview(request, **kwargs):
         fert_crop        = request.GET.get('fert_crop', '').strip()
         fertilizer_states = get_fertilizer_states()
 
-        croprec_state    = request.GET.get('croprec_state', '').strip()
-
+        # 'recommendation' (Crop Recommendation tab) and 'crop_recommendation_v2'
+        # (Crop Match tab) both need a live Open-Meteo climate fetch, which was
+        # blocking this page's initial render even when those tabs were never
+        # opened. Both are now fetched lazily by their own tab's JS instead —
+        # see api_recommendation_text / api_tab_croprec below.
         context = {
             'api'                       : api,
             'devise_name'               : api.device.name,
@@ -715,16 +719,86 @@ def api_overview(request, **kwargs):
             'fields'                    : ','.join(fields),
             'fields_data'               : ','.join(map(str, fields_data)),
             'fields_data_colors'        : ','.join([f"rgba({random.randint(100,255)}, 0, 0, 0.5)" for i in fields_data]),
-            'recommendation'            : build_recommendation(api),
             'soil_nutrients'            : api,
             'fertilizer_recommendation' : build_fertilizer_recommendation(api, fert_state or None, fert_crop or None),
             'fertilizer_states'         : fertilizer_states,
             'fertilizer_state_crops_json': json.dumps({s: get_fertilizer_crops_for_state(s) for s in fertilizer_states}),
-            'crop_recommendation_v2'    : build_crop_recommendation_v2(api, croprec_state or None),
             'crop_rec_states'           : get_crop_rec_states(),
         }
 
     return render(request, template_name = template_name, context=context)
+
+@admin_required
+def api_recommendation_text(request, pk):
+    """Crop Recommendation tab's ML result, fetched lazily (needs a live
+    Open-Meteo climate call) only when that tab is actually opened."""
+    api = get_object_or_404(DeviseApis, pk=pk)
+    return JsonResponse({'recommendation': build_recommendation(api)})
+
+@admin_required
+def api_tab_croprec(request, pk):
+    """Crop Match tab content, fetched lazily (needs a live Open-Meteo climate
+    call) only when that tab is actually opened. Returns an HTML fragment."""
+    api           = get_object_or_404(DeviseApis.objects.select_related('farmer'), pk=pk)
+    croprec_state = request.GET.get('croprec_state', '').strip()
+    context = {
+        'api'                    : api,
+        'crop_recommendation_v2' : build_crop_recommendation_v2(api, croprec_state or None),
+        'crop_rec_states'        : get_crop_rec_states(),
+    }
+    return render(request, 'agriapp/_tab_croprec_content.html', context)
+
+@admin_required
+def api_yield_options(request, pk):
+    """Hierarchy + prefill for the yield estimator, fetched lazily only when
+    the Yield Predictor tab is opened — keeps it off the initial page load."""
+    api    = get_object_or_404(DeviseApis.objects.select_related('farmer'), pk=pk)
+    farmer = api.farmer if api.farmer_id else None
+
+    yield_hierarchy = get_yield_hierarchy()
+    yield_state     = next((s for s in yield_hierarchy if farmer and s.lower() == (farmer.state or '').lower()), '')
+    yield_district   = ''
+    if yield_state and farmer:
+        yield_district = next((d for d in yield_hierarchy[yield_state] if d.lower() == (farmer.district or '').lower()), '')
+    yield_crop = ''
+    if yield_district:
+        yield_crop = next((c for c in yield_hierarchy[yield_state][yield_district] if c.lower() == (api.crop_type or '').lower()), '')
+
+    return JsonResponse({
+        'hierarchy': yield_hierarchy,
+        'prefill': {
+            'soc'     : api.oc or 0.5,
+            'pH'      : api.ph or 6.5,
+            'N'       : api.nitrogen or 200,
+            'P'       : api.phosphorous or 20,
+            'K'       : api.potassium or 150,
+            'state'   : yield_state,
+            'district': yield_district,
+            'crop'    : yield_crop,
+            'lat'     : api.latitude,
+            'lon'     : api.longitude,
+        },
+    })
+
+@admin_required
+def api_yield_predict(request, pk):
+    api    = get_object_or_404(DeviseApis, pk=pk)
+    district = request.GET.get('district', '').strip()
+    crop     = request.GET.get('crop', '').strip()
+    if not district or not crop:
+        return JsonResponse({"error": "District and crop are required."}, status=400)
+    soc = float(request.GET.get('soc', api.oc or 0.5))
+    pH  = float(request.GET.get('pH', api.ph or 6.5))
+    N   = float(request.GET.get('N', api.nitrogen or 200))
+    P   = float(request.GET.get('P', api.phosphorous or 20))
+    K   = float(request.GET.get('K', api.potassium or 150))
+    result = estimate_yield(district, crop, soc, pH, N, P, K, lat=api.latitude, lon=api.longitude)
+    return JsonResponse(result)
+
+@admin_required
+def api_yield_history(request, pk):
+    # No historical per-year yield series is available yet for this data source.
+    return JsonResponse({"years": {}})
 
 class UpdateApi(AdminRequiredMixin, UpdateView):
     model         = DeviseApis

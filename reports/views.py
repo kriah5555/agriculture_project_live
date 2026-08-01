@@ -62,20 +62,29 @@ def _fetch_climate_for_recommendation(lat, lon):
 
 # ── Dashboard (existing AI recommendation page) ───────────────────────────────
 
-def build_recommendation(api_data):
+def build_recommendation(api_data, climate=None):
     """Run the crop-suitability model for a DeviseApis reading, used by the
-    api-overview page's Crop Recommendation tab."""
+    api-overview page's Crop Recommendation tab.
+
+    climate: optional pre-fetched (temperature, humidity, rainfall) tuple —
+    pass this when the caller already fetched climate for the same lat/lon
+    elsewhere (e.g. also for build_crop_recommendation_v2) to avoid a second
+    redundant Open-Meteo round trip on the same page load.
+    """
     if not api_data:
         return 'No data found for the provided api id.'
 
-    lat, lon = api_data.latitude, api_data.longitude
-    if lat and lon:
-        try:
-            temperature, humidity, rainfall = _fetch_climate_for_recommendation(lat, lon)
-        except RuntimeError:
-            temperature, humidity, rainfall = 26.0, 65.0, 750.0
+    if climate is not None:
+        temperature, humidity, rainfall = climate
     else:
-        temperature, humidity, rainfall = 26.0, 65.0, 750.0
+        lat, lon = api_data.latitude, api_data.longitude
+        if lat and lon:
+            try:
+                temperature, humidity, rainfall = _fetch_climate_for_recommendation(lat, lon)
+            except RuntimeError:
+                temperature, humidity, rainfall = 26.0, 65.0, 750.0
+        else:
+            temperature, humidity, rainfall = 26.0, 65.0, 750.0
 
     return run_model({
         'N':           [api_data.nitrogen],
@@ -135,7 +144,7 @@ def build_fertilizer_recommendation(api_data, state_override=None, crop_override
 
 # ── Detailed crop recommendation (api-overview Crop Match tab + mobile API) ───
 
-def build_crop_recommendation_v2(api_data, state_override=None):
+def build_crop_recommendation_v2(api_data, state_override=None, climate=None):
     """Run the rule-based, explainable multi-crop recommender for a DeviseApis
     reading, used by the api-overview page's Crop Match tab and its mobile API
     counterpart. Returns top-5 crops with per-parameter score breakdown,
@@ -146,6 +155,13 @@ def build_crop_recommendation_v2(api_data, state_override=None):
     State is pulled from the linked Farmer first (only place state is
     recorded), overridable when there's no linked farmer or it doesn't match
     the reference dataset's state names.
+
+    climate: optional pre-fetched (temperature, humidity, rainfall) tuple —
+    pass this when the caller already fetched climate for the same lat/lon
+    elsewhere (e.g. also for build_recommendation) to avoid a second
+    redundant Open-Meteo round trip on the same page load. When omitted,
+    fetches it here same as before; when the fetch fails, temp_current stays
+    None (shown as "N/A" rather than a guessed value).
     """
     if not api_data:
         return {'error': 'no_reading'}
@@ -163,13 +179,16 @@ def build_crop_recommendation_v2(api_data, state_override=None):
         'cu': api_data.copper, 'b': api_data.boron,
     }
 
-    temp_current = None
-    lat, lon = api_data.latitude, api_data.longitude
-    if lat and lon:
-        try:
-            temp_current, _humidity, _rainfall = _fetch_climate_for_recommendation(lat, lon)
-        except RuntimeError:
-            temp_current = None
+    if climate is not None:
+        temp_current = climate[0]
+    else:
+        temp_current = None
+        lat, lon = api_data.latitude, api_data.longitude
+        if lat and lon:
+            try:
+                temp_current, _humidity, _rainfall = _fetch_climate_for_recommendation(lat, lon)
+            except RuntimeError:
+                temp_current = None
 
     result = recommend_crops(state, soil_values, temp_current=temp_current)
     result.setdefault('state', state)
