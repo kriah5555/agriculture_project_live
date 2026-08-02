@@ -37,7 +37,6 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;background:#d0d0d0;c
   .print-btn{position:fixed;top:14px;right:14px;z-index:999;
     padding:8px 16px;background:#1a3c14;color:#fff;border:none;
     border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;}
-  .theme-toggle-fixed{right:150px;}
 }
 @media print{
   html,body{background:#fff;padding:0;margin:0;}
@@ -181,9 +180,6 @@ tr:nth-child(even) td{background:#f9fafb;}
 <link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
 </head>
 <body>
-<button type="button" class="theme-toggle-btn theme-toggle-fixed" title="Toggle dark mode">
-  <i data-theme-icon class="fas fa-moon"></i>
-</button>
 <button class="print-btn" onclick="window.print()"><i class="fas fa-download"></i> Download PDF</button>
 
 {% with ph=preds.ph ec=preds.ec oc=preds.organic_carbon n=preds.n p=preds.p k=preds.k ca=preds.ca mg=preds.mg s=preds.s fe=preds.fe mn=preds.mn cu=preds.cu zn=preds.zn b=preds.b %}

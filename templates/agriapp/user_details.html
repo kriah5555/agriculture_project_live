@@ -272,6 +272,9 @@
 
             <div class="device-item-actions d-flex align-items-center">
               <a href="{% url 'device-details' device.pk %}" onclick="event.stopPropagation();" title="Details"><i class="fas fa-info-circle"></i></a>
+              {% if device.devise_type == 'soilsaathi' %}
+              <a href="{% url 'soil-visualizer-dashboard' device.pk %}" onclick="event.stopPropagation();" target="_blank" title="Soil Map"><i class="fas fa-layer-group"></i></a>
+              {% endif %}
               <a href="{% url 'edit-devise' device.pk %}" onclick="event.stopPropagation();" title="Edit"><i class="fas fa-pencil"></i></a>
               <a href="{% url 'export-device-apis' device.pk %}" onclick="event.stopPropagation();" title="Export APIs"><i class="fas fa-file-export"></i></a>
               <a href="#" onclick="event.stopPropagation(); showNpkPopup({{ device.pk }});" title="Compare Nutrients"><i class="fas fa-chart-line"></i></a>

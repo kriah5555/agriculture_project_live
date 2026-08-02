@@ -30,8 +30,9 @@
             font-size:0.82rem;font-weight:600;text-decoration:none;font-family:'Inter',sans-serif;
         }
         .header-back:hover{background:rgba(44,94,26,0.08)}
-        .header-title h1{color:var(--primary);font-size:1.15rem;font-weight:800}
-        .header-title p {color:var(--primary-light);font-size:0.72rem;margin-top:1px}
+        .header-title{max-width:calc(100vw - 170px)}
+        .header-title h1{color:var(--primary);font-size:1.15rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .header-title p {color:var(--primary-light);font-size:0.72rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
         /* ── MAP ── */
         .map-container{position:relative;height:calc(100% - 54px);width:100%}
@@ -513,14 +514,36 @@
         .dc-hero{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:12px;padding:12px;margin-bottom:10px;border:1px solid #bbf7d0}
         .tl-wrap{background:#f4fbf4;border-radius:9px;padding:9px;margin-bottom:10px;overflow-x:auto}
         .spin-inline{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(44,94,26,.2);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+
+        /* ── MOBILE / SMALL SCREENS ──
+           #sb is a flex sibling of #map at a fixed 370px width; on screens
+           narrower than that it would get clipped by .map-container's
+           overflow:hidden. Turn it into a full-screen overlay instead so it
+           always fits, regardless of viewport width. */
+        @media (max-width: 767.98px){
+            #sb{position:absolute;top:0;right:0;height:100%;z-index:1500;box-shadow:-2px 0 24px rgba(0,0,0,.25)}
+            #sb.open{width:100%}
+            #location-search-wrap{width:calc(100% - 76px)}
+            #legend{left:14px;right:14px;width:auto;min-width:0;max-width:none}
+            .sb-tab{font-size:8.5px;padding:9px 1px 7px}
+            .sb-tab .t-icon{font-size:13px}
+            #upload-modal{padding:20px 18px 26px}
+        }
+        @media (max-width: 575.98px){
+            .header-title{max-width:calc(100vw - 140px)}
+            #location-search-wrap{width:calc(100% - 60px);top:8px}
+            #location-search-input{font-size:0.8rem}
+            #legend{padding:10px 12px}
+            .leg-title{font-size:8px}
+            .sb-tab span:not(.t-icon):not(.t-dot){font-size:7.5px}
+            #fetchFilterBox{padding:20px 18px 16px}
+            .ff-pill{min-width:48px;padding:8px 5px}
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
 </head>
 <body>
-<button type="button" class="theme-toggle-btn theme-toggle-fixed" title="Toggle dark mode">
-    <i data-theme-icon class="fas fa-moon"></i>
-</button>
 <div class="header">
     <a class="header-back" href="{% url 'user-page' %}">&#8592; Back</a>
     <div class="header-title">

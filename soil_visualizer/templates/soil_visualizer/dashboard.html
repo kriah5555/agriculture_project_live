@@ -1,0 +1,162 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soil Visualizer — {{ devise.name }}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.20.0/dist/leaflet-geoman.css" />
+  <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.20.0/dist/leaflet-geoman.js"></script>
+
+  <script src="{% static 'theme/theme.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'soil_visualizer/css/dashboard.css' %}" />
+</head>
+<body>
+
+  <div id="root">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="d-flex-row">
+          <div>
+            <h1>Soil Visualizer</h1>
+            <p>{{ devise.name }} &middot; Local Raster Interpolation Engine</p>
+          </div>
+          <button type="button" class="theme-toggle-btn" title="Toggle dark mode">
+            <i data-theme-icon class="fas fa-moon"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-content">
+        <!-- Parameter tabs card -->
+        <div class="card">
+          <div class="card-title-bar">
+            <h3>Soil Parameter Overlay</h3>
+          </div>
+          <div class="parameter-tabs" id="parameter-tabs"></div>
+        </div>
+
+        <!-- Added to Map list card — every point (each with its own drawn boundary) -->
+        <div class="card" id="points-section" style="display: flex; flex-direction: column; min-height: 260px; max-height: 360px;">
+          <div class="card-title-bar">
+            <h3>Added to Map</h3>
+            <button class="btn btn-primary btn-sm" id="add-manual-point-btn-trigger" onclick="startManualPointDraw()">
+              + Manual Point
+            </button>
+          </div>
+          <div class="list-container" id="points-list" style="flex-grow: 1;"></div>
+        </div>
+
+        <!-- Post-draw confirm form (shown after a boundary is drawn on the map) —
+             kept right after "Added to Map" and above "All Readings" (which can get
+             long) so it's visible without hunting for it, and JS also scrolls it
+             into view explicitly when it opens. -->
+        <div class="card" id="point-form-card" style="display: none; flex-direction: column; gap: 12px;">
+          <div class="card-title-bar">
+            <h3 id="point-form-title">Add Position</h3>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="hidePointForm()" style="padding: 4px 8px;">✕</button>
+          </div>
+
+          <form id="point-form" style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="point-form-error-banner" id="point-form-error-banner" style="display: none;"></div>
+
+            <!-- Manual-only fields -->
+            <div id="manual-only-fields">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Sample Date</label>
+                  <input type="date" class="form-control" id="point-sample-date" style="padding: 6px 8px; font-size: 12px;" />
+                </div>
+                <div class="form-group">
+                  <label>Notes</label>
+                  <input type="text" class="form-control" id="point-notes" style="padding: 6px 8px; font-size: 12px;" />
+                </div>
+              </div>
+
+              <div>
+                <label class="checklist-label">Readings to Add</label>
+                <div class="checklist-row" id="add-params-selection"></div>
+                <div class="param-rows" id="form-params-container"></div>
+              </div>
+            </div>
+
+            <!-- Reading-linked fields -->
+            <div id="notes-only-field" style="display:none;">
+              <div class="form-group">
+                <label>Notes</label>
+                <input type="text" class="form-control" id="point-notes-linked" style="padding: 6px 8px; font-size: 12px;" />
+              </div>
+              <div>
+                <label class="checklist-label">Values from this reading</label>
+                <div id="linked-params-preview"></div>
+              </div>
+              <label id="multi-add-row" style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-secondary); margin-top:8px; cursor:pointer;">
+                <input type="checkbox" id="multi-add-toggle" />
+                Keep adding — draw another boundary for this reading right after Save
+              </label>
+              <div id="multi-add-count" style="display:none; font-size:11px; color:var(--accent); font-weight:600; margin-top:4px;"></div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+              <button type="button" class="btn btn-secondary btn-sm" id="cancel-point-btn">Cancel</button>
+              <button type="submit" class="btn btn-primary btn-sm">Save</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- All Readings search card -->
+        <div class="card" id="readings-section" style="display: flex; flex-direction: column; min-height: 380px; max-height: 560px;">
+          <div class="card-title-bar">
+            <h3>All Readings</h3>
+          </div>
+          <div class="search-row">
+            <input type="text" class="form-control" id="readings-search-input" placeholder="Search by crop, area, or reading #..." />
+          </div>
+          <div class="list-container" id="readings-list" style="flex-grow: 1; max-height: 440px;"></div>
+          <div class="pager-row" id="readings-pager"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-container">
+      <div id="map"></div>
+
+      <div class="draw-hint" id="draw-hint" style="display:none;">
+        Draw a boundary on the map for this point — click to place each corner, double-click (or click the first point) to finish.
+      </div>
+
+      <div class="legend-panel" id="legend-panel" style="display: none;">
+        <div class="legend-title" id="legend-title">Soil pH</div>
+        <div class="legend-bar" id="legend-bar"></div>
+        <div class="legend-labels">
+          <span id="legend-min">0.0</span>
+          <span id="legend-max">14.0</span>
+        </div>
+        <div class="legend-method" id="legend-method">IDW Interpolation</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.SOIL_VIZ_DEVICE_ID = {{ devise.pk }};
+    window.SOIL_VIZ_URLS = {
+      readings: "{% url 'soil-visualizer-readings' devise.pk %}",
+      allPoints: "{% url 'soil-visualizer-all-points' devise.pk %}",
+      plots: "{% url 'soil-visualizer-plots' devise.pk %}",
+      plotDetail: function (plotId) { return `/soil-visualizer/{{ devise.pk }}/plots/${plotId}/`; },
+      points: function (plotId) { return `/soil-visualizer/{{ devise.pk }}/plots/${plotId}/points/`; },
+      raster: function (plotId) { return `/soil-visualizer/{{ devise.pk }}/plots/${plotId}/raster/`; },
+      pointDetail: function (pointId) { return `/soil-visualizer/{{ devise.pk }}/points/${pointId}/`; },
+    };
+  </script>
+  <script src="{% static 'soil_visualizer/js/dashboard.js' %}"></script>
+</body>
+</html>

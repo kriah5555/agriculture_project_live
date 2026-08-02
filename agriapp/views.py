@@ -698,7 +698,7 @@ def api_overview(request, **kwargs):
         all_dynamic_fields = UserFunctions.get_all_dynamic_fields()
         dynamic_field_data = {field.field_name : (UserFunctions.get_all_dynamic_field_value(api, field).field_value if UserFunctions.get_all_dynamic_field_value(api, field) else 0.0) for field in all_dynamic_fields}
         crops_data         = FertilizerCalculation.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
-        fields             = [f.name for f in DeviseApis._meta.get_fields() if f.name not in ['columndata', 'id', 'device', 'serial_no', 'created_at', 'crop_type', 'area_name', 'devise_id']]
+        fields             = [f.name for f in DeviseApis._meta.get_fields() if f.name not in ['columndata', 'soil_map_point', 'id', 'device', 'serial_no', 'created_at', 'crop_type', 'area_name', 'devise_id']]
         fields_data        = [getattr(api, i) for i in fields]
         import random
 

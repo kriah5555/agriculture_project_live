@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'razorpay_app',
     'soilmap',
     'leaflenz',
+    'soil_visualizer',
 ]
 
 MIDDLEWARE = [

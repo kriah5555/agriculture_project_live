@@ -497,3 +497,68 @@ class PaymentAttachment(models.Model):
 
     def __str__(self):
         return f"Attachment for payment {self.payment_id}"
+
+
+# ── Soil Visualizer (soil_visualizer app: plot boundary + soil-sample points) ──
+
+class Plot(models.Model):
+    devise     = models.ForeignKey(Devise, on_delete=models.CASCADE, related_name='soil_map_plots')
+    name       = models.CharField(max_length=255)
+    geometry   = models.JSONField(help_text="GeoJSON Polygon of the land parcel")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.devise.name})"
+
+
+class Point(models.Model):
+    """
+    A soil-sample point placed on the map within a Plot boundary. Either
+    linked to an existing reading (parameters pulled live from it — "Add
+    position" flow, and a single reading can have more than one point) or
+    fully manual (parameters entered by hand — "Add manual point" flow, for
+    ground-truth samples the device never took).
+    """
+    devise      = models.ForeignKey(Devise, on_delete=models.CASCADE, related_name='soil_map_points')
+    plot        = models.ForeignKey(Plot, on_delete=models.CASCADE, null=True, blank=True, related_name='points')
+    reading     = models.ForeignKey(DeviseApis, on_delete=models.CASCADE, null=True, blank=True, related_name='soil_map_points')
+    coordinates = models.JSONField(null=True, blank=True, help_text="{'lat': <float>, 'lon': <float>} — auto-filled from the plot's polygon centroid when not given")
+    parameters  = models.JSONField(default=dict, blank=True, help_text="Manual parameter readings — only used when not linked to a reading")
+    sample_date = models.DateField()
+    notes       = models.TextField(null=True, blank=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
+    updated_at  = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-sample_date']
+
+    def save(self, *args, **kwargs):
+        # Auto-fill coordinates from the plot's polygon centroid when not given —
+        # the normal path now, since a point is created by drawing a boundary
+        # rather than picking a lat/long directly.
+        if (not self.coordinates or self.coordinates.get('lat') is None or self.coordinates.get('lon') is None) and self.plot_id and self.plot.geometry:
+            from shapely.geometry import shape
+            try:
+                centroid = shape(self.plot.geometry).centroid
+                self.coordinates = {'lat': centroid.y, 'lon': centroid.x}
+            except Exception:
+                pass
+        super().save(*args, **kwargs)
+
+    def get_parameters(self):
+        """Live parameter dict — from the linked reading if present, else the manual JSON."""
+        if self.reading_id:
+            r = self.reading
+            return {
+                'ph': r.ph, 'ec': r.ec, 'n': r.nitrogen, 'p': r.phosphorous, 'k': r.potassium,
+                'organic_carbon': r.oc, 's': r.sulphur, 'fe': r.iron, 'zn': r.zinc,
+                'cu': r.copper, 'b': r.boron, 'mn': r.manganese,
+            }
+        return self.parameters or {}
+
+    def __str__(self):
+        return f"Point {self.id} @ {self.devise.name}"

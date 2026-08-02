@@ -34,6 +34,15 @@
   .fert-param-label      { font-weight:600; color:#333; }
   .fert-dose             { color:#555; }
   .fert-chart-card canvas { max-height:220px; }
+
+  /* Mobile: 6 tabs would otherwise wrap into a cramped 2-3 row block —
+     scroll horizontally instead so each tab stays on one line. */
+  @media (max-width: 767.98px) {
+    #apiOverviewTabs { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    #apiOverviewTabs::-webkit-scrollbar { display:none; }
+    #apiOverviewTabs .nav-item { flex-shrink:0; }
+    #apiOverviewTabs .nav-link { white-space:nowrap; font-size:13px; padding:8px 12px; }
+  }
 </style>
 
 <div style="padding:8px 4px 24px;">

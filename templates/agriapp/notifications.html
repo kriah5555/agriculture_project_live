@@ -41,6 +41,14 @@
   .tab-btn.active { background:#2046ad;color:#fff; }
   .empty-state { text-align:center;padding:40px 20px;color:#9ca3af; }
   .empty-state i { font-size:36px;margin-bottom:10px;display:block; }
+
+  /* Mobile: list + detail stack vertically, so the inline 78vh heights on
+     both panels would force ~150vh of scrolling for one screen. Shrink the
+     list and let the detail panel size to its content instead. */
+  @media (max-width: 767.98px) {
+    .notif-card { height:55vh !important; }
+    .detail-panel { height:auto !important; min-height:220px; padding:20px; }
+  }
 </style>
 
 <div class="header">
@@ -256,9 +264,16 @@
     });
   }
 
+  function scrollToDetailOnMobile() {
+    if (window.innerWidth < 768) {
+      document.querySelector('.detail-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   function showRequest(id, username, email, phone, typeName, message, date, status, resolveUrl, requestType, deviceUrl, userUrl) {
     document.querySelectorAll('.notif-item').forEach(el => el.classList.remove('selected'));
     event.currentTarget.classList.add('selected');
+    scrollToDetailOnMobile();
 
     const isPending   = status === 'pending';
     const isPasswordType = requestType === 'forgot_password' || requestType === 'change_password';
@@ -344,6 +359,7 @@
   function showContact(pk, name, phone, mail, message, isUnread, markUrl) {
     document.querySelectorAll('.notif-item').forEach(el => el.classList.remove('selected'));
     event.currentTarget.classList.add('selected');
+    scrollToDetailOnMobile();
 
     document.getElementById('detailContent').innerHTML = `
       <div style="text-align:left;">
