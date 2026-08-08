@@ -6,6 +6,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   #btn-prev:disabled, #btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
   .user-row:hover { background-color: #f0f4ff; cursor: pointer; }
+  [data-theme="dark"] .user-row:hover { background-color: rgba(13, 110, 253, 0.12); }
   .user-avatar {
     width: 34px; height: 34px; border-radius: 50%;
     background: #2046ad; color: #fff;
@@ -49,7 +50,7 @@
 
   <!-- Search + Table card -->
   <div style="padding: 0 16px;">
-    <div style="background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden;">
+    <div style="background:var(--tc-surface); border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden;">
 
       <!-- Search bar -->
       <div class="d-flex flex-wrap gap-2 p-3 border-bottom bg-light">
@@ -71,21 +72,21 @@
       <!-- Table -->
       <div style="overflow-x:auto;">
         <table id="userTable" class="table table-hover mb-0" style="font-size:14px;">
-          <thead style="background:#f5f7fa; position:sticky; top:0; z-index:1;">
+          <thead style="background:var(--tc-surface-alt); position:sticky; top:0; z-index:1;">
             <tr>
-              <th style="padding:12px 16px; font-weight:600; color:#444;">#</th>
-              <th style="padding:12px 16px; font-weight:600; color:#444;">Name</th>
-              <th style="padding:12px 16px; font-weight:600; color:#444;">Username</th>
-              <th style="padding:12px 16px; font-weight:600; color:#444;">Email</th>
-              <th style="padding:12px 16px; font-weight:600; color:#444;">User Type</th>
-              <th style="padding:12px 16px; font-weight:600; color:#444;">Devices</th>
-              <th style="padding:12px 16px; font-weight:600; color:#444; text-align:center;">Action</th>
+              <th style="padding:12px 16px; font-weight:600; color:var(--tc-text);">#</th>
+              <th style="padding:12px 16px; font-weight:600; color:var(--tc-text);">Name</th>
+              <th style="padding:12px 16px; font-weight:600; color:var(--tc-text);">Username</th>
+              <th style="padding:12px 16px; font-weight:600; color:var(--tc-text);">Email</th>
+              <th style="padding:12px 16px; font-weight:600; color:var(--tc-text);">User Type</th>
+              <th style="padding:12px 16px; font-weight:600; color:var(--tc-text);">Devices</th>
+              <th style="padding:12px 16px; font-weight:600; color:var(--tc-text); text-align:center;">Action</th>
             </tr>
           </thead>
           <tbody>
             {% for user in users %}
             <tr class="user-row" data-usertype="{{ user.user_type_display|lower }}" onclick="window.location.href='/user-details/{{ user.username }}/'">
-              <td style="padding:12px 16px; color:#888;">{{ forloop.counter }}</td>
+              <td style="padding:12px 16px; color:var(--tc-text-muted);">{{ forloop.counter }}</td>
               <td style="padding:12px 16px;">
                 <span class="user-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
                 {{ user.first_name }} {{ user.last_name }}
@@ -93,7 +94,7 @@
               <td style="padding:12px 16px;">
                 <span class="badge bg-secondary" style="font-size:12px; font-weight:500;">{{ user.username }}</span>
               </td>
-              <td style="padding:12px 16px; color:#555;">{{ user.email }}</td>
+              <td style="padding:12px 16px; color:var(--tc-text-muted);">{{ user.email }}</td>
               <td style="padding:12px 16px;">
                 {% if user.user_type_display == 'Soil Partner' %}
                   <span class="badge" style="background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;font-size:11px;">

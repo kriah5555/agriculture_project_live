@@ -98,7 +98,7 @@
             <input type="text" id="location-search-input" class="form-control"
                    placeholder="Search village, town, district..." autocomplete="off" />
             <div id="location-suggestions" style="display:none;position:absolute;z-index:20;left:0;right:0;
-                 background:#fff;border:1px solid #dee2e6;border-radius:6px;max-height:220px;overflow-y:auto;
+                 background:var(--tc-surface);border:1px solid var(--tc-border);border-radius:6px;max-height:220px;overflow-y:auto;
                  box-shadow:0 4px 10px rgba(0,0,0,.08);"></div>
           </div>
           <div class="col-md-4 field-group">
@@ -185,7 +185,7 @@
         hint.style.display = 'block';
         if (d.exists) {
           hint.innerHTML = `
-            <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 14px;font-size:13px;">
+            <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 14px;font-size:13px;color:#7a5900;">
               <strong><i class="fas fa-exclamation-triangle text-warning me-1"></i>Already registered:</strong>
               <strong>${d.name}</strong> (${d.village}) —
               <span class="badge bg-secondary" style="font-size:11px;">${d.status_display}</span><br>

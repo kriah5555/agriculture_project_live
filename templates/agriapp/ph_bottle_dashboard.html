@@ -6,6 +6,8 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .device-item.selected { background-color: #dbeafe !important; font-weight: 600; }
   .device-item:hover:not(.selected) { background-color: #f0f4ff; }
+  [data-theme="dark"] .device-item.selected { background-color: rgba(13, 110, 253, 0.25) !important; }
+  [data-theme="dark"] .device-item:hover:not(.selected) { background-color: rgba(13, 110, 253, 0.12); }
   #btn-prev:disabled, #btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
 </style>
 
@@ -21,7 +23,7 @@
 <div style="display:flex; gap:16px; padding:16px; height:calc(100vh - 100px); overflow:hidden;">
 
   <!-- Left: Device List -->
-  <div style="width:30%; background:#fff; padding:14px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); display:flex; flex-direction:column;">
+  <div style="width:30%; background:var(--tc-surface); padding:14px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); display:flex; flex-direction:column;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
       <h5 style="margin:0;">Devices <span class="badge bg-secondary">{{ devices|length }}</span></h5>
     </div>
@@ -29,27 +31,27 @@
 
     <div style="overflow-y:auto; flex:1;">
       <table style="width:100%; border-collapse:collapse; font-size:13px;">
-        <thead style="position:sticky; top:0; background:#f5f5f5; z-index:1;">
+        <thead style="position:sticky; top:0; background:var(--tc-surface-alt); z-index:1;">
           <tr>
-            <th style="padding:7px 8px; border-bottom:1px solid #ddd;">#</th>
-            <th style="padding:7px 8px; border-bottom:1px solid #ddd;">Name</th>
-            <th style="padding:7px 8px; border-bottom:1px solid #ddd;">Device ID</th>
-            <th style="padding:7px 8px; border-bottom:1px solid #ddd; text-align:center;">APIs</th>
-            <th style="padding:7px 8px; border-bottom:1px solid #ddd;">User</th>
+            <th style="padding:7px 8px; border-bottom:1px solid var(--tc-border);">#</th>
+            <th style="padding:7px 8px; border-bottom:1px solid var(--tc-border);">Name</th>
+            <th style="padding:7px 8px; border-bottom:1px solid var(--tc-border);">Device ID</th>
+            <th style="padding:7px 8px; border-bottom:1px solid var(--tc-border); text-align:center;">APIs</th>
+            <th style="padding:7px 8px; border-bottom:1px solid var(--tc-border);">User</th>
           </tr>
         </thead>
         <tbody id="device-list">
           {% for device in devices %}
           <tr class="device-item" data-device-id="{{ device.id }}" data-device-name="{{ device.name }}" style="cursor:pointer; transition:background 0.15s;">
-            <td style="padding:7px 8px; border-bottom:1px solid #eee;">{{ forloop.counter }}</td>
-            <td style="padding:7px 8px; border-bottom:1px solid #eee;">{{ device.name }}</td>
-            <td style="padding:7px 8px; border-bottom:1px solid #eee;">{{ device.devise_id }}</td>
-            <td style="padding:7px 8px; border-bottom:1px solid #eee; text-align:center;">{{ device.api_count }}</td>
-            <td style="padding:7px 8px; border-bottom:1px solid #eee;">{{ device.user }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid var(--tc-border);">{{ forloop.counter }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid var(--tc-border);">{{ device.name }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid var(--tc-border);">{{ device.devise_id }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid var(--tc-border); text-align:center;">{{ device.api_count }}</td>
+            <td style="padding:7px 8px; border-bottom:1px solid var(--tc-border);">{{ device.user }}</td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="5" style="text-align:center; padding:24px; color:gray;">No devices found</td>
+            <td colspan="5" style="text-align:center; padding:24px; color:var(--tc-text-muted);">No devices found</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -58,18 +60,18 @@
   </div>
 
   <!-- Right: API Table -->
-  <div style="width:70%; background:#fff; padding:14px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); display:flex; flex-direction:column;">
+  <div style="width:70%; background:var(--tc-surface); padding:14px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); display:flex; flex-direction:column;">
 
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
       <h5 style="margin:0;">
         API Calls
-        <span id="selected-device-name" style="font-size:13px; color:#6c757d; font-weight:normal; margin-left:6px;"></span>
+        <span id="selected-device-name" style="font-size:13px; color:var(--tc-text-muted); font-weight:normal; margin-left:6px;"></span>
       </h5>
       <input type="text" id="api-search" placeholder="Search…" class="form-control form-control-sm" style="width:200px;">
     </div>
 
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; min-height:28px;">
-      <span id="total-records" style="color:#6c757d; font-size:12px;"></span>
+      <span id="total-records" style="color:var(--tc-text-muted); font-size:12px;"></span>
       <div style="display:flex; align-items:center; gap:8px;">
         <button id="btn-prev" class="btn btn-sm btn-outline-success" disabled>&#8249; Prev</button>
         <span id="page-info" style="font-size:13px; white-space:nowrap;"></span>
@@ -88,7 +90,7 @@
         </thead>
         <tbody id="api-details">
           <tr>
-            <td colspan="{{ api_headers|length }}" style="text-align:center; color:#6c757d; padding:30px;">
+            <td colspan="{{ api_headers|length }}" style="text-align:center; color:var(--tc-text-muted); padding:30px;">
               Select a device on the left to view its API calls
             </td>
           </tr>
@@ -153,8 +155,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     apiContainer.innerHTML = `
       <tr>
-        <td colspan="${colCount}" style="text-align:center;color:#6c757d;padding:24px;">
-          <div style="display:inline-block;width:18px;height:18px;border:3px solid #ccc;border-top-color:#28a745;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;"></div>
+        <td colspan="${colCount}" style="text-align:center;color:var(--tc-text-muted);padding:24px;">
+          <div style="display:inline-block;width:18px;height:18px;border:3px solid var(--tc-border);border-top-color:#28a745;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;"></div>
           <span style="margin-left:8px;">Loading…</span>
         </td>
       </tr>`;
@@ -176,7 +178,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const apiData = data.data || [];
       if (apiData.length === 0) {
-        apiContainer.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:#6c757d;padding:24px;">No API data found for this device</td></tr>`;
+        apiContainer.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:var(--tc-text-muted);padding:24px;">No API data found for this device</td></tr>`;
       } else {
         apiContainer.innerHTML = apiData.map(buildRow).join('');
       }

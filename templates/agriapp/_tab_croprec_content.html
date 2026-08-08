@@ -91,9 +91,9 @@
   {% endif %}
   <div class="collapse" id="croprec-detail-{{ c.rank }}">
     <div class="row g-0">
-      <div class="col-md-6" style="border-right:1px solid #f0f2f5;">
+      <div class="col-md-6" style="border-right:1px solid var(--tc-border);">
         <div class="p-3">
-          <strong style="font-size:12px;color:#5a6472;">Crop Guide</strong>
+          <strong style="font-size:12px;color:var(--tc-text-muted);">Crop Guide</strong>
           {% if c.additional_info %}
           <div class="info-row"><span class="info-label">Duration</span><span class="info-value">{{ c.additional_info.crop_duration }}</span></div>
           <div class="info-row"><span class="info-label">Sowing Season</span><span class="info-value">{{ c.additional_info.best_sowing_season }}</span></div>
@@ -108,7 +108,7 @@
       </div>
       <div class="col-md-6">
         <div class="p-3">
-          <strong style="font-size:12px;color:#5a6472;">Deficiencies vs. Ideal Range</strong>
+          <strong style="font-size:12px;color:var(--tc-text-muted);">Deficiencies vs. Ideal Range</strong>
           {% if c.nutrient_deficiencies %}
           <ul class="mb-0" style="font-size:13px;padding-left:18px;">
             {% for d in c.nutrient_deficiencies %}<li>{{ d }}</li>{% endfor %}

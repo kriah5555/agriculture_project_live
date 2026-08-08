@@ -8,7 +8,7 @@
 <style>
   /* ── shared card style ── */
   .ud-card {
-    background: #fff;
+    background: var(--tc-surface);
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.07);
     overflow: hidden;
@@ -56,7 +56,7 @@
     display: flex;
     align-items: center;
     padding: 10px 16px;
-    border-bottom: 1px solid #f0f2f5;
+    border-bottom: 1px solid var(--tc-border);
     cursor: pointer;
     transition: background .15s;
     gap: 10px;
@@ -64,15 +64,17 @@
   .device-list-item:last-child { border-bottom: none; }
   .device-list-item:hover { background: #f5f7ff; }
   .device-list-item.active { background: #dbeafe; }
+  [data-theme="dark"] .device-list-item:hover { background: rgba(13, 110, 253, 0.12); }
+  [data-theme="dark"] .device-list-item.active { background: rgba(13, 110, 253, 0.25) !important; }
 
   .device-type-dot {
     width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
   }
-  .device-item-name { font-size: 13px; font-weight: 600; color: #222; flex: 1; }
-  .device-item-type { font-size: 11px; color: #888; }
+  .device-item-name { font-size: 13px; font-weight: 600; color:var(--tc-text); flex: 1; }
+  .device-item-type { font-size: 11px; color:var(--tc-text-muted); }
 
   .device-item-actions a {
-    color: #aaa;
+    color:var(--tc-text-muted);
     padding: 0 4px;
     font-size: 13px;
     transition: color .15s;
@@ -83,18 +85,18 @@
   .info-row {
     display: flex;
     padding: 9px 18px;
-    border-bottom: 1px solid #f0f2f5;
+    border-bottom: 1px solid var(--tc-border);
     font-size: 13px;
   }
   .info-row:last-child { border-bottom: none; }
-  .info-label { width: 40%; font-weight: 600; color: #666; flex-shrink: 0; }
-  .info-value { color: #222; }
+  .info-label { width: 40%; font-weight: 600; color:var(--tc-text-muted); flex-shrink: 0; }
+  .info-value { color:var(--tc-text); }
 
   /* ── API table ── */
   @keyframes spin { to { transform: rotate(360deg); } }
   #api-btn-prev:disabled, #api-btn-next:disabled { opacity: .4; cursor: not-allowed; }
   .table-container { max-height: 520px; overflow-y: auto; overflow-x: auto; }
-  .sticky-header { position: sticky; top: 0; background: #fff; z-index: 5; }
+  .sticky-header { position: sticky; top: 0; background: var(--tc-surface); z-index: 5; }
   /* Secondary (detail) columns hidden by default; revealed by toggle */
   .col-secondary { display: none; }
   .show-all-cols .col-secondary { display: table-cell; }
@@ -105,7 +107,7 @@
   .empty-state {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    padding: 48px 24px; color: #aaa;
+    padding: 48px 24px; color:var(--tc-text-muted);
   }
   .empty-state i { font-size: 40px; margin-bottom: 12px; }
   .empty-state p { font-size: 14px; }
@@ -292,8 +294,8 @@
         {% endif %}
 
         <!-- Device type coverage — linked=solid, unlinked=dashed "Add/Link" -->
-        <div style="padding:10px 14px; border-top:1px solid #f0f2f5;">
-          <div style="font-size:10px;color:#6c757d;font-weight:700;letter-spacing:.5px;margin-bottom:6px;">DEVICE TYPES</div>
+        <div style="padding:10px 14px; border-top:1px solid var(--tc-border);">
+          <div style="font-size:10px;color:var(--tc-text-muted);font-weight:700;letter-spacing:.5px;margin-bottom:6px;">DEVICE TYPES</div>
           <div class="d-flex flex-wrap gap-1">
             {% for type_key, type_name in device_names.items %}
               {% if type_key in linked_types %}
@@ -407,14 +409,14 @@
             </div>
           </div>
           {% if payments %}
-          <div class="d-flex gap-4 px-3 py-2 flex-wrap" style="border-bottom:1px solid #f0f2f5;background:#fafbfd;">
+          <div class="d-flex gap-4 px-3 py-2 flex-wrap" style="border-bottom:1px solid var(--tc-border);background:var(--tc-surface-alt);">
             <span style="font-size:12px;color:#2e7d32;font-weight:600;">
               <i class="fas fa-check-circle me-1"></i>Paid: ₹{{ payment_totals.paid_amount|default:"0"|floatformat:0 }}
-              <span style="font-weight:400;color:#999;">({{ payment_totals.paid_count|default:0 }})</span>
+              <span style="font-weight:400;color:var(--tc-text-muted);">({{ payment_totals.paid_count|default:0 }})</span>
             </span>
             <span style="font-size:12px;color:#e65100;font-weight:600;">
               <i class="fas fa-clock me-1"></i>Pending: ₹{{ payment_totals.pending_amount|default:"0"|floatformat:0 }}
-              <span style="font-weight:400;color:#999;">({{ payment_totals.pending_count|default:0 }})</span>
+              <span style="font-weight:400;color:var(--tc-text-muted);">({{ payment_totals.pending_count|default:0 }})</span>
             </span>
           </div>
           {% endif %}
@@ -423,13 +425,13 @@
             <div style="overflow-x:auto;">
             <table class="table table-sm mb-0" style="font-size:12px;">
               <thead><tr>
-                <th style="font-size:11px;color:#6c757d;">Date</th>
-                <th style="font-size:11px;color:#6c757d;">Amount</th>
-                <th style="font-size:11px;color:#6c757d;">Status</th>
-                <th style="font-size:11px;color:#6c757d;">Paid On</th>
-                <th style="font-size:11px;color:#6c757d;">Farmer</th>
-                <th style="font-size:11px;color:#6c757d;">Note</th>
-                <th style="font-size:11px;color:#6c757d;">Files</th>
+                <th style="font-size:11px;color:var(--tc-text-muted);">Date</th>
+                <th style="font-size:11px;color:var(--tc-text-muted);">Amount</th>
+                <th style="font-size:11px;color:var(--tc-text-muted);">Status</th>
+                <th style="font-size:11px;color:var(--tc-text-muted);">Paid On</th>
+                <th style="font-size:11px;color:var(--tc-text-muted);">Farmer</th>
+                <th style="font-size:11px;color:var(--tc-text-muted);">Note</th>
+                <th style="font-size:11px;color:var(--tc-text-muted);">Files</th>
                 <th></th>
               </tr></thead>
               <tbody id="paymentTableBody">
@@ -448,7 +450,7 @@
                   {% if p.paid_at %}{{ p.paid_at|date:"d M Y" }}{% else %}<span class="text-muted">—</span>{% endif %}
                 </td>
                 <td>{{ p.farmer.farmer_name|default:"—" }}</td>
-                <td style="color:#555;max-width:120px;">{{ p.description|default:"—" }}</td>
+                <td style="color:var(--tc-text-muted);max-width:120px;">{{ p.description|default:"—" }}</td>
                 <td>
                   {% for att in p.attachments.all %}
                     <a href="{{ att.file.url }}" target="_blank" style="font-size:11px;color:#1a73e8;margin-right:4px;"><i class="fas fa-paperclip"></i>{{ forloop.counter }}</a>
@@ -500,7 +502,7 @@
             </div>
           </div>
           {% if farmers %}
-          <div style="display:flex;gap:0;border-bottom:1px solid #f0f2f5;">
+          <div style="display:flex;gap:0;border-bottom:1px solid var(--tc-border);">
             {% regroup farmers by status as status_groups %}
             {% for group in status_groups %}
             <div style="flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:600;
@@ -509,7 +511,7 @@
               {% elif group.grouper == 'testing_done' %}color:#e65100;border-bottom:2px solid #e65100;
               {% else %}color:#2e7d32;border-bottom:2px solid #2e7d32;{% endif %}">
               {{ group.list|length }}
-              <div style="font-weight:400;font-size:10px;color:#aaa;margin-top:2px;">
+              <div style="font-weight:400;font-size:10px;color:var(--tc-text-muted);margin-top:2px;">
                 {% if group.grouper == 'registered' %}Registered
                 {% elif group.grouper == 'sample_collected' %}Sampled
                 {% elif group.grouper == 'testing_done' %}Tested
@@ -539,7 +541,7 @@
             {% endfor %}
           </div>
           {% else %}
-          <div style="padding:32px;text-align:center;color:#bbb;">
+          <div style="padding:32px;text-align:center;color:var(--tc-text-muted);">
             <i class="fas fa-tractor" style="font-size:32px;display:block;margin-bottom:10px;"></i>
             <div style="font-size:13px;margin-bottom:12px;">No farmers registered yet.</div>
             <a href="{% url 'create-farmer' %}" class="btn btn-sm btn-primary">
@@ -575,9 +577,9 @@
         </button>
       </div>
     </div>
-    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="background:#f8f9fa;flex-wrap:wrap;gap:8px;">
+    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="background:var(--tc-surface);flex-wrap:wrap;gap:8px;">
       <div class="d-flex align-items-center gap-2">
-        <span id="api-total-records" style="color:#6c757d; font-size:13px;"></span>
+        <span id="api-total-records" style="color:var(--tc-text-muted); font-size:13px;"></span>
         {% if farmers %}
         <select id="farmerFilter" class="form-select form-select-sm" style="width:auto;font-size:12px;" onchange="udFarmerFilterChanged()">
           <option value="">All Farmers</option>
@@ -596,7 +598,7 @@
     <div class="p-0">
       <div class="table-container">
         <table class="table table-hover mb-0" style="font-size:13px; width:100%;">
-          <thead class="sticky-header" style="background:#f5f7fa;">
+          <thead class="sticky-header" style="background:var(--tc-surface-alt);">
             <tr id="api-details-headers"></tr>
           </thead>
           <tbody id="api-details-table"></tbody>
@@ -761,7 +763,7 @@
           <div style="display:inline-block;width:18px;height:18px;border:3px solid #ccc;
                       border-top-color:#1a73e8;border-radius:50%;animation:spin 1s linear infinite;
                       vertical-align:middle;"></div>
-          <span style="margin-left:8px;color:#888;font-size:13px;">Loading…</span>
+          <span style="margin-left:8px;color:var(--tc-text-muted);font-size:13px;">Loading…</span>
         </td>
       </tr>`;
     setApiPagination(page, 1, 0);
@@ -787,21 +789,21 @@
         for (const [key, label] of Object.entries(deviseData.headers || {})) {
           const th = document.createElement('th');
           th.textContent = label;
-          th.style.cssText = 'padding:10px 12px;font-weight:600;color:#444;white-space:nowrap;';
+          th.style.cssText = 'padding:10px 12px;font-weight:600;color:var(--tc-text);white-space:nowrap;';
           if (summarySet.size > 0 && !summarySet.has(key)) th.classList.add('col-secondary');
           headerRow.appendChild(th);
         }
         if (selected_devise.devise_type === 'soilsaathi') {
           const th = document.createElement('th');
           th.textContent = 'Recommendation';
-          th.style.cssText = 'padding:10px 12px;font-weight:600;color:#444;';
+          th.style.cssText = 'padding:10px 12px;font-weight:600;color:var(--tc-text);';
           headerRow.appendChild(th);
         }
       }
 
       const apiData = deviseData.data || [];
       if (apiData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="20" style="text-align:center;color:#6c757d;padding:32px;">No records found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="20" style="text-align:center;color:var(--tc-text-muted);padding:32px;">No records found.</td></tr>`;
       } else {
         const fragment = document.createDocumentFragment();
         apiData.forEach(api => {
@@ -996,16 +998,16 @@
   .close { position:absolute; right:15px; top:10px; font-size:24px; cursor:pointer; }
   .ue-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:3000; align-items:center; justify-content:center; }
   .ue-overlay.open { display:flex; }
-  .ue-modal { background:#fff; border-radius:16px; width:min(600px,95vw); max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.25); }
-  .ue-panel { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.25); }
-  .ue-header { padding:18px 24px; border-bottom:1px solid #f0f2f5; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#fff; z-index:1; }
+  .ue-modal { background:var(--tc-surface); border-radius:16px; width:min(600px,95vw); max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.25); }
+  .ue-panel { background:var(--tc-surface); border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.25); }
+  .ue-header { padding:18px 24px; border-bottom:1px solid var(--tc-border); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:var(--tc-surface-alt); z-index:1; }
   .ue-body { padding:20px 24px; }
   .ue-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   .ue-full { grid-column:1/-1; }
-  .ue-label { font-size:12px; font-weight:600; color:#666; margin-bottom:4px; display:block; }
-  .ue-input { width:100%; border:1px solid #e5e7eb; border-radius:8px; padding:9px 12px; font-size:13px; outline:none; transition:border-color .15s; }
+  .ue-label { font-size:12px; font-weight:600; color:var(--tc-text-muted); margin-bottom:4px; display:block; }
+  .ue-input { width:100%; border:1px solid var(--tc-border); border-radius:8px; padding:9px 12px; font-size:13px; outline:none; transition:border-color .15s; }
   .ue-input:focus { border-color:#1a2f6b; }
-  .ue-footer { padding:16px 24px; border-top:1px solid #f0f2f5; display:flex; justify-content:flex-end; gap:10px; position:sticky; bottom:0; background:#fff; }
+  .ue-footer { padding:16px 24px; border-top:1px solid var(--tc-border); display:flex; justify-content:flex-end; gap:10px; position:sticky; bottom:0; background:var(--tc-surface-alt); }
   .ue-msg { font-size:13px; padding:6px 0; min-height:20px; }
 </style>
 
@@ -1100,7 +1102,7 @@
     const form = document.getElementById('addPayForm');
     const msg  = document.getElementById('addPayMsg');
     const fd   = new FormData(form);
-    msg.textContent = 'Saving…'; msg.style.color = '#888';
+    msg.textContent = 'Saving…'; msg.style.color = 'var(--tc-text-muted)';
     fetch('/add-payment/{{ user.username }}/', {
       method : 'POST',
       headers: { 'X-CSRFToken': getCsrfToken() },
@@ -1119,7 +1121,7 @@
           <td style="white-space:nowrap;">Today</td>
           <td><strong style="color:#2e7d32;">₹${parseFloat(d.amount).toFixed(2)}</strong></td>
           <td>${d.farmer_name || '—'}</td>
-          <td style="color:#555;max-width:160px;">${d.description || '—'}</td>
+          <td style="color:var(--tc-text-muted);max-width:160px;">${d.description || '—'}</td>
           <td></td>
           <td><button class="btn btn-sm btn-outline-danger py-0 px-1" style="font-size:11px;" onclick="deleteUdPayment(${d.payment_id})"><i class="fas fa-trash"></i></button></td>
         </tr>`;
@@ -1171,7 +1173,7 @@
     const form = document.getElementById('userEditForm');
     const msg  = document.getElementById('userEditMsg');
     const fd   = new FormData(form);
-    msg.textContent = 'Saving…'; msg.style.color = '#888';
+    msg.textContent = 'Saving…'; msg.style.color = 'var(--tc-text-muted)';
     fetch('/update-user-profile/{{ user.username }}/', {
       method : 'POST',
       headers: { 'X-CSRFToken': getCsrfToken() },
@@ -1241,9 +1243,9 @@
 {% if request.user.is_superuser %}
 <div id="udEditPayOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:4000;align-items:center;justify-content:center;"
      onclick="if(event.target===this)closeUdEditPayment()">
-  <div style="background:#fff;border-radius:16px;width:min(480px,95vw);box-shadow:0 20px 60px rgba(0,0,0,0.25);overflow:hidden;"
+  <div style="background:var(--tc-surface);border-radius:16px;width:min(480px,95vw);box-shadow:0 20px 60px rgba(0,0,0,0.25);overflow:hidden;"
        onclick="event.stopPropagation()">
-    <div style="padding:16px 20px;border-bottom:1px solid #f0f2f5;display:flex;align-items:center;justify-content:space-between;">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--tc-border);display:flex;align-items:center;justify-content:space-between;">
       <h6 class="mb-0 fw-bold">Edit Payment</h6>
       <button class="btn-close btn-sm" onclick="closeUdEditPayment()"></button>
     </div>
@@ -1251,22 +1253,22 @@
       <form id="udEditPayForm" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-3">
-          <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Amount (₹)</label>
+          <label style="font-size:12px;font-weight:600;color:var(--tc-text-muted);display:block;margin-bottom:4px;">Amount (₹)</label>
           <input id="udep_amount" type="number" step="0.01" name="amount" class="form-control form-control-sm" required>
         </div>
         <div class="mb-3">
-          <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Description</label>
+          <label style="font-size:12px;font-weight:600;color:var(--tc-text-muted);display:block;margin-bottom:4px;">Description</label>
           <textarea id="udep_desc" name="description" class="form-control form-control-sm" rows="2"></textarea>
         </div>
         <div class="mb-3">
-          <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Status</label>
+          <label style="font-size:12px;font-weight:600;color:var(--tc-text-muted);display:block;margin-bottom:4px;">Status</label>
           <select id="udep_status" name="status" class="form-select form-select-sm">
             <option value="pending">Pending</option>
             <option value="paid">Paid</option>
           </select>
         </div>
         <div class="mb-2">
-          <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Add Attachments</label>
+          <label style="font-size:12px;font-weight:600;color:var(--tc-text-muted);display:block;margin-bottom:4px;">Add Attachments</label>
           <input type="file" name="attachments" multiple class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
         </div>
         <div id="udep_msg" style="font-size:12px;min-height:16px;"></div>
@@ -1300,7 +1302,7 @@
     if (!_udEditPk) return;
     const form = document.getElementById('udEditPayForm');
     const msg  = document.getElementById('udep_msg');
-    msg.textContent = 'Saving…'; msg.style.color = '#888';
+    msg.textContent = 'Saving…'; msg.style.color = 'var(--tc-text-muted)';
     fetch(`/edit-payment/${_udEditPk}/`, {
       method: 'POST',
       headers: {'X-CSRFToken': getCsrfToken()},

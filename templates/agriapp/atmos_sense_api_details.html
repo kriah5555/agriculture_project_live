@@ -4,7 +4,7 @@
 {% include "agriapp/form_popup.html" %}
     <div>
 
-        <div style="display: flex; flex-direction: row; gap: 2rem; margin-bottom: 2rem; justify-content: space-between; align-items: center; background-color: #fff; padding: 1rem; border-radius: 8px;">
+        <div style="display: flex; flex-direction: row; gap: 2rem; margin-bottom: 2rem; justify-content: space-between; align-items: center; background-color: var(--tc-surface); padding: 1rem; border-radius: 8px;">
             <!-- API Overview Text in the middle -->
             <div style="flex: 1; text-align: center;">
                 <span style="font-size: 18px;">API Overview</span> <!-- Add your API Overview text here -->
@@ -28,8 +28,8 @@
         <div style="display: flex; flex-direction: row; gap: 2rem;">
             
             <!-- Left Side: Field Values -->
-            <div style="flex: 0 0 65%; border-right: 1px solid #ddd; padding-right: 2rem; background-color: #f9f9f9; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 24px; color: #333; margin-bottom: 1rem;">
+            <div style="flex: 0 0 65%; border-right: 1px solid var(--tc-border); padding-right: 2rem; background-color: var(--tc-surface-alt); padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 24px; color: var(--tc-text); margin-bottom: 1rem;">
                     <div>
                         Device: {{ device.name }}
                     </div>
@@ -42,7 +42,7 @@
                 <div class="row">
                     <!-- Temperature Card -->
                     <div class="col-md-3">
-                        <div class="card text-center h-70" style="border-radius: 15px; background-color: #ffa07a;">
+                        <div class="card text-center h-70" style="border-radius: 15px; background-color: #ffa07a; color: #212529;">
                             <div class="card-body">
                                 <h5 class="card-title">Soil and Atmospheric Tmp</h5>
                                 <div class="d-flex justify-content-center align-items-center mt-2">
@@ -54,7 +54,7 @@
                     </div>
                     <!-- Humidity Card -->
                     <div class="col-md-3">
-                        <div class="card text-center h-100" style="border-radius: 15px; background-color: #87ceeb;">
+                        <div class="card text-center h-100" style="border-radius: 15px; background-color: #87ceeb; color: #212529;">
                             <div class="card-body">
                                 <h5 class="card-title">Soil Moisture</h5>
                                 <div class="d-flex justify-content-center align-items-center mt-2">
@@ -66,7 +66,7 @@
                     </div>
                     <!-- Occupancy Card -->
                     <div class="col-md-3">
-                        <div class="card text-center h-100" style="border-radius: 15px; background-color: #f4a460;">
+                        <div class="card text-center h-100" style="border-radius: 15px; background-color: #f4a460; color: #212529;">
                             <div class="card-body">
                                 <h5 class="card-title">Atmospheric Humidity</h5>
                                 <div class="d-flex justify-content-center align-items-center mt-2">
@@ -78,7 +78,7 @@
                     </div>
                     <!-- Light Intensity Card -->
                     <div class="col-md-3">
-                        <div class="card text-center h-100" style="border-radius: 15px; background-color: #fffacd;">
+                        <div class="card text-center h-100" style="border-radius: 15px; background-color: #fffacd; color: #212529;">
                             <div class="card-body">
                                 <h5 class="card-title">Light Intensity</h5>
                                 <div class="d-flex justify-content-center align-items-center mt-2">
@@ -106,7 +106,7 @@
                                 {% endif %}
                             </div>
                             {% else %}
-                            <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height:200px; background:#f8f9fa;">
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height:200px; background:var(--tc-surface-alt);">
                                 <i class="fas fa-image fa-3x text-muted mb-3"></i>
                                 <p class="text-muted mb-3">No image uploaded</p>
                                 {% if request.user.is_superuser %}
@@ -133,7 +133,7 @@
             </div>
             
             <!-- Right Side: Circular Chart -->
-            <div style="flex: 1; padding-left: 2rem; background-color: #f9f9f9; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="flex: 1; padding-left: 2rem; background-color: var(--tc-surface-alt); padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; justify-content: space-between;">
                 <!-- <h3 style="font-size: 24px; color: #333; margin-bottom: 1rem;">Overview </h3> -->
                 <div style="flex-grow: 1; display: flex; justify-content: center; align-items: center; overflow: hidden;">
                     <canvas id="circleChart" style="max-width: 100%; max-height: 400px;"></canvas>
@@ -171,6 +171,8 @@
             });
 
             const ctx = document.getElementById('circleChart').getContext('2d');
+            const isDark  = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textCol = isDark ? '#e7e9ee' : '#495057';
             const circleChart = new Chart(ctx, {
                 type: 'pie',
                 data: {
@@ -188,6 +190,7 @@
                         legend: {
                             position: 'bottom',
                             labels: {
+                                color: textCol,
                                 font: {
                                     size: 14,
                                     weight: 'bold'

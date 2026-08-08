@@ -5,7 +5,7 @@
 <div>
 
   <!-- Top bar -->
-  <div style="display:flex; flex-direction:row; gap:2rem; margin-bottom:2rem; justify-content:space-between; align-items:center; background-color:#fff; padding:1rem; border-radius:8px;">
+  <div style="display:flex; flex-direction:row; gap:2rem; margin-bottom:2rem; justify-content:space-between; align-items:center; background-color:var(--tc-surface); padding:1rem; border-radius:8px;">
     <div style="flex:1; text-align:center;">
       <span style="font-size:18px; font-weight:600; color:#2c5e1a;">LeafLenz — Scan Details</span>
     </div>
@@ -19,15 +19,15 @@
   <div style="display:flex; flex-direction:row; gap:2rem; flex-wrap:wrap;">
 
     <!-- Left: scanned image -->
-    <div style="flex:0 0 40%; min-width:280px; background-color:#f9f9f9; padding:1.5rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+    <div style="flex:0 0 40%; min-width:280px; background-color:var(--tc-surface-alt); padding:1.5rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
         <div><strong>Device:</strong> {{ device.name }}</div>
-        <div style="color:#6c757d; font-size:13px;">{{ reading.created_at }}</div>
+        <div style="color:var(--tc-text-muted); font-size:13px;">{{ reading.created_at }}</div>
       </div>
       {% if reading.image_path %}
         <img src="{{ reading.image_path }}" alt="Scanned leaf" style="width:100%; border-radius:10px; object-fit:cover; max-height:340px;">
       {% else %}
-        <div style="padding:60px 0; text-align:center; color:#6c757d;">
+        <div style="padding:60px 0; text-align:center; color:var(--tc-text-muted);">
           <i class="fas fa-image" style="font-size:2.5rem; display:block; margin-bottom:10px;"></i>
           No image saved for this scan.
         </div>
@@ -39,7 +39,7 @@
     </div>
 
     <!-- Right: prediction + disease info -->
-    <div style="flex:1; min-width:300px; background-color:#f9f9f9; padding:1.5rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+    <div style="flex:1; min-width:300px; background-color:var(--tc-surface-alt); padding:1.5rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
         <span style="background:#2c5e1a; color:#fff; border-radius:20px; padding:4px 14px; font-size:13px; font-weight:600;">{{ plant_name }}</span>
         <span style="background:{% if is_healthy %}#198754{% else %}#7b1fa2{% endif %}; color:#fff; border-radius:20px; padding:4px 14px; font-size:13px; font-weight:600;">
@@ -49,13 +49,13 @@
       </div>
 
       <h6 style="color:#2c5e1a;"><i class="fas fa-circle-info"></i> About the Condition</h6>
-      <p style="color:#444; margin-bottom:16px;">{{ description }}</p>
+      <p style="color:var(--tc-text-muted); margin-bottom:16px;">{{ description }}</p>
 
       <h6 style="color:#2c5e1a;"><i class="fas fa-list-check"></i> Symptoms</h6>
-      <p style="color:#444; margin-bottom:16px;">{{ symptoms }}</p>
+      <p style="color:var(--tc-text-muted); margin-bottom:16px;">{{ symptoms }}</p>
 
       <h6 style="color:#2c5e1a;"><i class="fas fa-hand-holding-medical"></i> Treatment &amp; Prevention</h6>
-      <p style="color:#444;">{{ treatment }}</p>
+      <p style="color:var(--tc-text-muted);">{{ treatment }}</p>
     </div>
 
   </div>

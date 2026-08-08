@@ -30,7 +30,7 @@
 
   /* ── Section cards ── */
   .doc-card {
-    background: #fff;
+    background: var(--tc-surface);
     border-radius: 14px;
     box-shadow: 0 2px 12px rgba(0,0,0,.07);
     padding: 28px 28px 22px;
@@ -66,13 +66,13 @@
   .icon-pink   { background: linear-gradient(135deg,#ad1457,#e91e63); }
 
   .doc-card h5 { font-weight: 700; margin-bottom: 6px; font-size: 1.1rem; }
-  .doc-card .sub { color: #6c757d; font-size: 13px; margin-bottom: 14px; }
+  .doc-card .sub { color: var(--tc-text-muted); font-size: 13px; margin-bottom: 14px; }
 
   /* ── Feature list ── */
   .feature-list { list-style: none; padding: 0; margin: 0; }
   .feature-list li {
     display: flex; align-items: flex-start; gap: 10px;
-    padding: 6px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px;
+    padding: 6px 0; border-bottom: 1px solid var(--tc-border); font-size: 14px;
   }
   .feature-list li:last-child { border-bottom: none; }
   .feature-list .fi { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
@@ -118,8 +118,8 @@
   /* ── Quick nav box ── */
   .device-badge {
     display: flex; align-items: center; gap: 12px;
-    background: #f8f9fa; border-radius: 10px; padding: 12px 16px;
-    margin-bottom: 10px; border: 1px solid #e9ecef;
+    background: var(--tc-surface); border-radius: 10px; padding: 12px 16px;
+    margin-bottom: 10px; border: 1px solid var(--tc-border);
   }
   .device-badge-icon { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; }
 
@@ -149,10 +149,10 @@
 
   /* ── Mobile endpoint table ── */
   .endpoint-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .endpoint-table th { background: #f1f3f5; padding: 8px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #dee2e6; }
-  .endpoint-table td { padding: 7px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+  .endpoint-table th { background: var(--tc-surface-alt); padding: 8px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--tc-border); }
+  .endpoint-table td { padding: 7px 12px; border-bottom: 1px solid var(--tc-border); vertical-align: top; }
   .endpoint-table tr:last-child td { border-bottom: none; }
-  .endpoint-table code { background: #f1f3f5; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .endpoint-table code { background: var(--tc-surface-alt); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
 
   @media(max-width:768px) {
     .docs-hero { padding: 28px 18px; }
@@ -214,7 +214,7 @@
         <div class="sub">Understanding the sidebar and how to get around</div>
       </div>
     </div>
-    <p style="font-size:14px; color:#444;">The collapsible sidebar on the left is your main navigation hub. Click <kbd><i class="fas fa-bars"></i></kbd> to expand or collapse it. Each icon links to a key section:</p>
+    <p style="font-size:14px; color:var(--tc-text);">The collapsible sidebar on the left is your main navigation hub. Click <kbd><i class="fas fa-bars"></i></kbd> to expand or collapse it. Each icon links to a key section:</p>
     <div class="mt-2">
       <div class="device-badge">
         <div class="device-badge-icon" style="background:linear-gradient(135deg,#2046ad,#0d7cf5);"><i class="fas fa-house"></i></div>
@@ -344,7 +344,7 @@
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="grid-2">
       <div>
-        <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Adding a Device</p>
+        <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Adding a Device</p>
         <ol class="step-list">
           <li>Go to <strong>Users</strong> → select a user</li>
           <li>Click <strong>Add Device</strong></li>
@@ -354,7 +354,7 @@
         </ol>
       </div>
       <div>
-        <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Device Types</p>
+        <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Device Types</p>
         <ul class="feature-list">
           <li><div class="fi" style="background:#28a745;"><i class="fas fa-seedling"></i></div><strong>SoiLENZ (Soil Saathi)</strong> — NPK / pH sensors</li>
           <li><div class="fi" style="background:#17a2b8;"><i class="fas fa-cloud"></i></div><strong>SoilSparsh (AtmoSense)</strong> — atmospheric sensors</li>
@@ -368,7 +368,7 @@
       </div>
     </div>
     <hr style="margin:18px 0;">
-    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">API Data (Readings)</p>
+    <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">API Data (Readings)</p>
     <ul class="feature-list">
       <li><div class="fi" style="background:#fd7e14;"><i class="fas fa-table"></i></div><span>Each device stores a list of <strong>API records</strong> — each record is one sensor reading with all its fields.</span></li>
       <li><div class="fi" style="background:#fd7e14;"><i class="fas fa-trash"></i></div><span>Admin can <strong>delete individual API call records</strong> from the User Details page (trash icon next to each row).</span></li>
@@ -401,7 +401,7 @@
         </ul>
       </div>
       <div>
-        <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Exports</p>
+        <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Exports</p>
         <ul class="feature-list">
           <li><div class="fi" style="background:#6f42c1;"><i class="fas fa-file-csv"></i></div><span>Export all users → <kbd>CSV</kbd></span></li>
           <li><div class="fi" style="background:#6f42c1;"><i class="fas fa-file-csv"></i></div><span>Export users + all their devices → <kbd>CSV</kbd></span></li>
@@ -425,8 +425,8 @@
     </div>
 
     <!-- Auth -->
-    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Authentication</p>
-    <p style="font-size:13px;color:#444;margin-bottom:10px;">All mobile endpoints except registration and forgot-password require a <strong>JWT Bearer token</strong> in the <code>Authorization</code> header. Obtain tokens via login, refresh with the refresh endpoint.</p>
+    <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Authentication</p>
+    <p style="font-size:13px;color:var(--tc-text);margin-bottom:10px;">All mobile endpoints except registration and forgot-password require a <strong>JWT Bearer token</strong> in the <code>Authorization</code> header. Obtain tokens via login, refresh with the refresh endpoint.</p>
     <table class="endpoint-table mb-3">
       <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
       <tbody>
@@ -439,7 +439,7 @@
     </table>
 
     <!-- Device types -->
-    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Device Types</p>
+    <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Device Types</p>
     <table class="endpoint-table mb-3">
       <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
       <tbody>
@@ -449,7 +449,7 @@
     </table>
 
     <!-- Devices -->
-    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Devices</p>
+    <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Devices</p>
     <table class="endpoint-table mb-3">
       <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
       <tbody>
@@ -460,7 +460,7 @@
     </table>
 
     <!-- API Calls (generic) -->
-    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Generic API Calls <span style="font-weight:400;color:#888;">(routes internally by device type)</span></p>
+    <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Generic API Calls <span style="font-weight:400;color:var(--tc-text-muted);">(routes internally by device type)</span></p>
     <table class="endpoint-table mb-3">
       <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
       <tbody>
@@ -471,7 +471,7 @@
     </table>
 
     <!-- Device-specific endpoints -->
-    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Device-specific Endpoints</p>
+    <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Device-specific Endpoints</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;" class="grid-2">
       <div style="background:#e8f5e9;border-radius:8px;padding:12px;border-left:3px solid #28a745;">
         <strong style="font-size:13px;"><i class="fas fa-temperature-low me-1" style="color:#28a745;"></i> SoiLENZ</strong>
@@ -508,10 +508,10 @@
         </div>
       </div>
     </div>
-    <p style="font-size:12px;color:#666;">All device-specific URLs are prefixed with <code>/api/mobile/devices/&lt;id&gt;</code>. <code>&lt;id&gt;</code> is the integer primary key of the device.</p>
+    <p style="font-size:12px;color:var(--tc-text-muted);">All device-specific URLs are prefixed with <code>/api/mobile/devices/&lt;id&gt;</code>. <code>&lt;id&gt;</code> is the integer primary key of the device.</p>
 
     <!-- Account -->
-    <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Account</p>
+    <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Account</p>
     <table class="endpoint-table mb-3">
       <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
       <tbody>
@@ -540,7 +540,7 @@
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="grid-2">
       <div>
-        <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Managing Versions</p>
+        <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Managing Versions</p>
         <ol class="step-list">
           <li>Open <strong>Versions</strong> from the sidebar</li>
           <li>Click <strong>Add Version</strong></li>
@@ -556,7 +556,7 @@
         </div>
       </div>
       <div>
-        <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">OTA Update Flow</p>
+        <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">OTA Update Flow</p>
         <ul class="feature-list">
           <li><div class="fi" style="background:#fd7e14;"><span>1</span></div><span>Device calls <code>GET /versions/api/check-active-version/?version=vX.Y.Z</code></span></li>
           <li><div class="fi" style="background:#fd7e14;"><span>2</span></div><span>If <code>update=1</code> is returned, device fetches file from <code>/versions/api/download-version/</code></span></li>
@@ -584,14 +584,14 @@
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="grid-2">
       <div>
-        <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">PDF Export</p>
+        <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">PDF Export</p>
         <ul class="feature-list">
           <li><div class="fi" style="background:#dc3545;"><i class="fas fa-file-pdf"></i></div><span>Download all API readings for a device as a formatted PDF report</span></li>
           <li><div class="fi" style="background:#dc3545;"><i class="fas fa-file-pdf"></i></div><span>Found on the <strong>API Overview</strong> page → <strong>Download PDF</strong> button</span></li>
         </ul>
       </div>
       <div>
-        <p style="font-size:13px;font-weight:600;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">CSV Export</p>
+        <p style="font-size:13px;font-weight:600;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">CSV Export</p>
         <ul class="feature-list">
           <li><div class="fi" style="background:#28a745;"><i class="fas fa-file-csv"></i></div><span>All API readings for a device → CSV</span></li>
           <li><div class="fi" style="background:#28a745;"><i class="fas fa-users"></i></div><span>All users list → CSV</span></li>

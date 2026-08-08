@@ -80,6 +80,26 @@
     letter-spacing: .5px;
     margin-bottom: 8px;
   }
+  [data-theme="dark"] .npk-filter-card label.npk-filter-title { color: #7aa2ff; }
+
+  /* Choices.js (multi-select) — library ships light-only CSS, override for dark mode */
+  [data-theme="dark"] .choices__list--dropdown,
+  [data-theme="dark"] .choices__list[aria-expanded] {
+    background: var(--tc-surface);
+    border-color: var(--tc-border);
+    color: var(--tc-text);
+  }
+  [data-theme="dark"] .choices__list--dropdown .choices__item,
+  [data-theme="dark"] .choices__list--dropdown .choices__group {
+    color: var(--tc-text);
+  }
+  [data-theme="dark"] .choices__list--dropdown .choices__item--selectable.is-highlighted {
+    background: var(--tc-surface-alt);
+  }
+  [data-theme="dark"] .choices__input {
+    background: var(--tc-surface);
+    color: var(--tc-text);
+  }
   #nutrientCheckboxes {
     max-height: 160px;
     overflow-y: auto;
@@ -338,7 +358,10 @@
             tension        : 0.3
         }));
 
-        const ctx = document.getElementById("npkComparisonChart").getContext("2d");
+        const ctx      = document.getElementById("npkComparisonChart").getContext("2d");
+        const isDark   = document.documentElement.getAttribute('data-theme') === 'dark';
+        const textCol  = isDark ? '#e7e9ee' : '#666';
+        const gridCol  = isDark ? 'rgba(255,255,255,0.08)' : '#f0f2f5';
         if (npkBarChartInstance) npkBarChartInstance.destroy();
 
         npkBarChartInstance = new Chart(ctx, {
@@ -347,18 +370,20 @@
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: "bottom" },
+                    legend: { position: "bottom", labels: { color: textCol } },
                     tooltip: { mode: "index", intersect: false }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: "#f0f2f5" },
-                        title: { display: true, text: "Nutrient Value", color: "#666", font: { size: 11 } }
+                        grid: { color: gridCol },
+                        ticks: { color: textCol },
+                        title: { display: true, text: "Nutrient Value", color: textCol, font: { size: 11 } }
                     },
                     x: {
-                        grid: { color: "#f0f2f5" },
-                        title: { display: true, text: "Month & Sample", color: "#666", font: { size: 11 } }
+                        grid: { color: gridCol },
+                        ticks: { color: textCol },
+                        title: { display: true, text: "Month & Sample", color: textCol, font: { size: 11 } }
                     }
                 }
             }

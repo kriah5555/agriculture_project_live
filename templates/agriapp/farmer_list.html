@@ -16,7 +16,7 @@
   .kpi-strip { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
   .kpi-card {
     flex:1; min-width:140px;
-    background:#fff; border-radius:12px;
+    background:var(--tc-surface); border-radius:12px;
     padding:14px 18px;
     box-shadow:0 2px 8px rgba(0,0,0,0.07);
     border-left:4px solid var(--accent);
@@ -27,17 +27,17 @@
   .kpi-card.testing       { border-color: var(--test); }
   .kpi-card.delivered     { border-color: var(--rep); }
   .kpi-num  { font-size:28px; font-weight:800; line-height:1; }
-  .kpi-label{ font-size:12px; font-weight:500; color:#777; }
-  .kpi-sub  { font-size:11px; color:#aaa; margin-top:2px; }
+  .kpi-label{ font-size:12px; font-weight:500; color:var(--tc-text-muted); }
+  .kpi-sub  { font-size:11px; color:var(--tc-text-muted); margin-top:2px; }
 
   /* ── Activity strip ──────────────────────────────────────────── */
   .activity-strip {
-    background:#fff; border-radius:12px;
+    background:var(--tc-surface); border-radius:12px;
     padding:14px 20px; margin-bottom:20px;
     box-shadow:0 2px 8px rgba(0,0,0,0.07);
     display:flex; flex-wrap:wrap; align-items:center; gap:20px;
   }
-  .act-title { font-size:13px; font-weight:700; color:#444; flex-shrink:0; }
+  .act-title { font-size:13px; font-weight:700; color:var(--tc-text); flex-shrink:0; }
   .act-badge {
     display:inline-flex; align-items:center; gap:6px;
     padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600;
@@ -45,22 +45,22 @@
   .act-today   { background:#e8f5e9; color:#2e7d32; }
   .act-month   { background:#e3f2fd; color:#1565c0; }
   .act-pending { background:#fff3e0; color:#e65100; }
-  .act-divider { width:1px; height:24px; background:#e5e7eb; flex-shrink:0; }
+  .act-divider { width:1px; height:24px; background:var(--tc-border); flex-shrink:0; }
   .act-tab {
     padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600;
-    cursor:pointer; border:1px solid #e5e7eb; color:#666; transition:all .15s;
+    cursor:pointer; border:1px solid var(--tc-border); color:var(--tc-text-muted); transition:all .15s;
   }
   .act-tab.active, .act-tab:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
 
   /* ── Filter bar ──────────────────────────────────────────────── */
   .filter-bar {
-    background:#fff; border-radius:12px;
+    background:var(--tc-surface); border-radius:12px;
     padding:12px 16px; margin-bottom:20px;
     box-shadow:0 2px 8px rgba(0,0,0,0.07);
     display:flex; flex-wrap:wrap; gap:10px; align-items:center;
   }
   .filter-bar input, .filter-bar select {
-    border:1px solid #e5e7eb; border-radius:8px;
+    border:1px solid var(--tc-border); border-radius:8px;
     padding:7px 12px; font-size:13px; outline:none;
     transition:border-color .15s;
   }
@@ -79,7 +79,7 @@
   .status-chip.rep-chip { background:var(--rep-bg); color:var(--rep); }
   .status-chip.active   { border-color:currentColor !important; }
 
-  .result-count { margin-left:auto; font-size:12px; color:#888; font-weight:500; }
+  .result-count { margin-left:auto; font-size:12px; color:var(--tc-text-muted); font-weight:500; }
 
   /* ── Farmer grid ─────────────────────────────────────────────── */
   .farmer-grid {
@@ -89,7 +89,7 @@
   }
 
   .farmer-card {
-    background:#fff; border-radius:14px;
+    background:var(--tc-surface); border-radius:14px;
     box-shadow:0 2px 10px rgba(0,0,0,0.07);
     overflow:hidden; cursor:pointer;
     transition:transform .15s, box-shadow .15s;
@@ -118,8 +118,8 @@
     display:flex; align-items:center; justify-content:center;
     font-size:16px; font-weight:700; color:#fff; flex-shrink:0;
   }
-  .fc-name { font-size:15px; font-weight:700; color:#1a1a2e; line-height:1.2; }
-  .fc-loc  { font-size:12px; color:#888; margin-top:2px; }
+  .fc-name { font-size:15px; font-weight:700; color:var(--tc-text); line-height:1.2; }
+  .fc-loc  { font-size:12px; color:var(--tc-text-muted); margin-top:2px; }
 
   .fc-tags { display:flex; flex-wrap:wrap; gap:5px; }
   .fc-tag  {
@@ -142,9 +142,9 @@
   .ds-pill.zero { opacity:.35; }
 
   .fc-footer {
-    padding:10px 16px; border-top:1px solid #f0f2f5;
+    padding:10px 16px; border-top:1px solid var(--tc-border);
     display:flex; align-items:center; justify-content:space-between;
-    background:#fafbfd;
+    background:var(--tc-surface-alt);
   }
   .status-badge {
     display:inline-flex; align-items:center; gap:4px;
@@ -156,11 +156,11 @@
   .st-sample_collected { background:var(--samp-bg);  color:var(--samp); }
   .st-testing_done     { background:var(--test-bg);  color:var(--test); }
   .st-report_delivered { background:var(--rep-bg);   color:var(--rep); }
-  .fc-date { font-size:11px; color:#aaa; font-family:monospace; }
+  .fc-date { font-size:11px; color:var(--tc-text-muted); font-family:monospace; }
 
   /* ── Empty state ─────────────────────────────────────────────── */
   .empty-state {
-    text-align:center; padding:60px 20px; color:#aaa;
+    text-align:center; padding:60px 20px; color:var(--tc-text-muted);
     grid-column:1/-1;
   }
   .empty-state i { font-size:48px; margin-bottom:12px; display:block; }
@@ -171,14 +171,14 @@
   /* ── Pagination ──────────────────────────────────────────────── */
   .pg-bar { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:20px; flex-wrap:wrap; }
   .pg-btn {
-    min-width:36px; height:36px; border-radius:8px; border:1px solid #e5e7eb;
+    min-width:36px; height:36px; border-radius:8px; border:1px solid var(--tc-border);
     background:#fff; color:#444; font-size:13px; font-weight:600; cursor:pointer;
     display:flex; align-items:center; justify-content:center; transition:all .15s;
   }
   .pg-btn:hover:not(:disabled) { background:var(--accent); color:#fff; border-color:var(--accent); }
   .pg-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
   .pg-btn:disabled { opacity:.4; cursor:default; }
-  .pg-info { font-size:12px; color:#888; margin:0 6px; }
+  .pg-info { font-size:12px; color:var(--tc-text-muted); margin:0 6px; }
 </style>
 
 <div style="padding:0 0 32px 0;">
@@ -249,7 +249,7 @@
       <span id="act-delivered-num">{{ kpi.today_delivered }}</span> Delivered
     </span>
 
-    <span class="ms-auto" style="font-size:12px; color:#aaa;">
+    <span class="ms-auto" style="font-size:12px; color:var(--tc-text-muted);">
       <i class="fas fa-calendar-day me-1"></i>{{ today|date:"d M Y" }}
     </span>
   </div>
@@ -326,7 +326,7 @@
         </div>
 
         <!-- Aadhaar -->
-        <div style="font-size:11px;color:#888;font-family:monospace;padding-top:2px;">
+        <div style="font-size:11px;color:var(--tc-text-muted);font-family:monospace;padding-top:2px;">
           <i class="fas fa-id-card" style="font-size:10px;margin-right:4px;"></i>
           ****&nbsp;****&nbsp;{{ f.aadhaar_number|slice:"-4:" }}
         </div>

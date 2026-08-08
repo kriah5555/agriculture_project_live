@@ -29,7 +29,7 @@
                     <div class="card-body">
                         <b>Basic Information</b>
                         <div class="row">
-                            <div class="col-6 mb-3">
+                            <div class="col-lg-6 mb-3">
                                 <label class="form-label">Name of individual or organization <b>*</b></label>
                                 <input type="text" class="form-control" name="name" required value="{{ devise.name }}">
                                 {% if field_errors.name %}
@@ -37,7 +37,7 @@
                                 {% endif %}
                             </div>
 
-                            <div class="col-6 mb-3">
+                            <div class="col-lg-6 mb-3">
                                 <label class="form-label">Device type <b>*</b></label>
                                 {% if is_edit %}
                                 <!-- Locked in edit mode: show as disabled select + hidden input -->

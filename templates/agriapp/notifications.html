@@ -6,12 +6,14 @@
   .notif-card { border-radius:12px; border:none; box-shadow:0 2px 12px rgba(0,0,0,.07); }
   .notif-item {
     display:flex; align-items:flex-start; gap:12px;
-    padding:14px 16px; border-bottom:1px solid #f3f4f6;
+    padding:14px 16px; border-bottom:1px solid var(--tc-border);
     cursor:pointer; transition:background .15s;
   }
   .notif-item:last-child { border-bottom:none; }
   .notif-item:hover { background:#f8f9ff; }
   .notif-item.selected { background:#eff3ff; }
+  [data-theme="dark"] .notif-item:hover { background-color: rgba(13, 110, 253, 0.12); }
+  [data-theme="dark"] .notif-item.selected { background-color: rgba(13, 110, 253, 0.25); }
   .notif-dot { width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px; }
   .dot-unread  { background:#dc3545; }
   .dot-read    { background:#adb5bd; }
@@ -29,17 +31,17 @@
   .badge-critical { background:#f8d7da;color:#842029; }
   .dot-warning  { background:#fd7e14; }
   .dot-critical { background:#dc3545; }
-  .detail-panel { background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.07);padding:28px; }
-  .detail-label { font-size:12px;color:#6c757d;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px; }
-  .detail-value { font-size:15px;color:#111;margin-bottom:16px; }
+  .detail-panel { background:var(--tc-surface);border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.07);padding:28px; }
+  .detail-label { font-size:12px;color:var(--tc-text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px; }
+  .detail-value { font-size:15px;color:var(--tc-text);margin-bottom:16px; }
   .section-pill {
     display:inline-flex;align-items:center;gap:6px;
     background:#f0f3ff;color:#2046ad;border-radius:20px;
     padding:4px 14px;font-size:12px;font-weight:600;margin-bottom:12px;
   }
-  .tab-btn { cursor:pointer;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;border:none;background:none;color:#6c757d; }
+  .tab-btn { cursor:pointer;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;border:none;background:none;color:var(--tc-text-muted); }
   .tab-btn.active { background:#2046ad;color:#fff; }
-  .empty-state { text-align:center;padding:40px 20px;color:#9ca3af; }
+  .empty-state { text-align:center;padding:40px 20px;color:var(--tc-text-muted); }
   .empty-state i { font-size:36px;margin-bottom:10px;display:block; }
 
   /* Mobile: list + detail stack vertically, so the inline 78vh heights on
@@ -117,7 +119,7 @@
                           <span class="badge-type badge-change">Change PW</span>
                         {% endif %}
                       </div>
-                      <div style="font-size:12px;color:#6c757d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      <div style="font-size:12px;color:var(--tc-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                         {{ req.email }} &nbsp;·&nbsp; {{ req.created_at|date:"d M, H:i" }}
                       </div>
                     </div>
@@ -136,7 +138,7 @@
                     <span class="notif-dot dot-resolved"></span>
                     <div style="flex:1;min-width:0;">
                       <div class="d-flex align-items-center gap-2 mb-1">
-                        <strong style="font-size:14px;color:#6c757d;">{{ req.username }}</strong>
+                        <strong style="font-size:14px;color:var(--tc-text-muted);">{{ req.username }}</strong>
                         {% if req.request_type == 'forgot_password' %}
                           <span class="badge-type badge-forgot">Forgot PW</span>
                         {% elif req.request_type == 'soil_partner_interest' %}
@@ -149,7 +151,7 @@
                           <span class="badge-type badge-change">Change PW</span>
                         {% endif %}
                       </div>
-                      <div style="font-size:12px;color:#adb5bd;">
+                      <div style="font-size:12px;color:var(--tc-text-muted);">
                         {{ req.email }} &nbsp;·&nbsp; {{ req.created_at|date:"d M, H:i" }}
                       </div>
                     </div>
@@ -178,7 +180,7 @@
                       <strong style="font-size:14px;">{{ notif.name }}</strong>
                       <span class="badge-type badge-contact">Contact</span>
                     </div>
-                    <div style="font-size:12px;color:#6c757d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    <div style="font-size:12px;color:var(--tc-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                       {{ notif.mail }} &nbsp;·&nbsp; {{ notif.phone }}
                     </div>
                   </div>
@@ -197,10 +199,10 @@
                   <span class="notif-dot dot-read"></span>
                   <div style="flex:1;min-width:0;">
                     <div class="d-flex align-items-center gap-2 mb-1">
-                      <strong style="font-size:14px;color:#6c757d;">{{ notif.name }}</strong>
+                      <strong style="font-size:14px;color:var(--tc-text-muted);">{{ notif.name }}</strong>
                       <span class="badge-type badge-contact">Contact</span>
                     </div>
-                    <div style="font-size:12px;color:#adb5bd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    <div style="font-size:12px;color:var(--tc-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                       {{ notif.mail }}
                     </div>
                   </div>
@@ -221,7 +223,7 @@
     <div class="col-md-7">
       <div class="detail-panel" style="height:78vh;overflow-y:auto;">
         <div id="detailContent" class="text-center" style="padding-top:60px;">
-          <i class="fas fa-hand-pointer" style="font-size:40px;color:#d1d5db;margin-bottom:14px;display:block;"></i>
+          <i class="fas fa-hand-pointer" style="font-size:40px;color:var(--tc-text-muted);margin-bottom:14px;display:block;"></i>
           <p class="text-muted">Select a notification to view details.</p>
         </div>
       </div>
