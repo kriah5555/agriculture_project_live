@@ -62,7 +62,17 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-### 8. Place ML Model Files
+### 8. Create the `deviseowner` Group
+
+The `/users/` admin page looks up a group named `deviseowner`. On a fresh
+database this group doesn't exist yet, which causes a `Group.DoesNotExist`
+error when opening that page. Create it once with:
+
+```bash
+python manage.py shell -c "from django.contrib.auth.models import Group; Group.objects.get_or_create(name='deviseowner')"
+```
+
+### 9. Place ML Model Files
 
 All `.pkl` files are gitignored. Copy them manually after cloning.
 
@@ -96,7 +106,7 @@ cp /path/to/models/classifier.pkl  agri_ai/crop/models/
 
 > If models are missing the app still runs. Only AI crop prediction and ML-enriched PDF reports are affected.
 
-### 9. Start the Development Server
+### 10. Start the Development Server
 
 ```bash
 python manage.py runserver
