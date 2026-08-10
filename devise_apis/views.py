@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .serializers import DeviseApiSerializer, DeviseFieldsApiSerializer
-from agriapp.models import DeviseApis, Devise, DeviseLocation, ColumnData, DeviseApisFields, APICountThreshold
+from agriapp.models import DeviseApis, Devise, DeviseLocation, ColumnData, DeviseApisFields, APICountThreshold, ChannelData
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,8 +8,11 @@ from rest_framework.decorators import api_view
 from agriapp import UserFunctions, FertilizerCalculation as f
 from .encryption_utils import encrypt_device_id, decrypt_device_id
 from django.contrib import auth
+from django.utils import timezone
+from datetime import timedelta
 import base64
 import copy
+import re
 from django.core.files.storage import FileSystemStorage
 from django.core.files.base import ContentFile
 
@@ -277,7 +280,22 @@ def add_soil_data_open(request):
         modified_data = copy.deepcopy(request.GET)
         modified_data['device'] = devise.pk
 
-        
+        # channel_data[<key>]=value params carry raw sensor channel readings
+        # (spectral bands, etc.) that don't map to DeviseApis fields — pull
+        # them out so they never reach the serializer, and store them
+        # separately as a single JSON object.
+        channel_payload = {}
+        for key in list(modified_data.keys()):
+            match = re.match(r'^channel_data\[(.+)\]$', key)
+            if match:
+                channel_payload[match.group(1)] = modified_data.pop(key)[0]
+
+        if channel_payload:
+            ChannelData.objects.create(device=devise, data=channel_payload)
+            ChannelData.objects.filter(
+                created_at__lt=timezone.now() - timedelta(days=ChannelData.RETENTION_DAYS)
+            ).delete()
+
         serializer = DeviseApiSerializer(data=modified_data)
 
         if serializer.is_valid():

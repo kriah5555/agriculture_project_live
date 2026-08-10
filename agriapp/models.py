@@ -237,6 +237,24 @@ class DeviseApis(models.Model):
                 f" — pH:{self.ph} EC:{self.ec} OC:{self.oc}"
                 f"{farmer_str} | #{self.pk} {date_str}")
 
+class ChannelData(models.Model):
+    """
+    Raw JSON snapshot of each add_data API call, kept alongside DeviseApis.
+    Rows older than RETENTION_DAYS are purged automatically — this table is
+    short-term only, not a permanent record.
+    """
+    RETENTION_DAYS = 180
+
+    device     = models.ForeignKey(to='Devise', on_delete=models.CASCADE, null=True, blank=True)
+    data       = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"ChannelData #{self.pk} ({self.created_at})"
+
 class DeviseApisFields(models.Model):
     device     = models.ForeignKey(to='Devise', on_delete=models.CASCADE)
     farmer     = models.ForeignKey('Farmer', on_delete=models.SET_NULL, null=True, blank=True, related_name='sensor_readings')
