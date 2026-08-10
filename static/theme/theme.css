@@ -88,19 +88,21 @@
 }
 
 [data-theme="dark"] .table {
-  color: var(--tc-text);
+  color: var(--tc-text) !important;
   border-color: var(--tc-border);
 }
 [data-theme="dark"] .table > :not(caption) > * > * {
   background-color: var(--tc-surface);
-  color: var(--tc-text);
+  color: var(--tc-text) !important;
   border-color: var(--tc-border);
 }
 [data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
   background-color: var(--tc-surface-alt);
+  color: var(--tc-text) !important;
 }
 [data-theme="dark"] .table-hover > tbody > tr:hover > * {
   background-color: var(--tc-surface-alt);
+  color: var(--tc-text) !important;
 }
 
 [data-theme="dark"] .form-control,

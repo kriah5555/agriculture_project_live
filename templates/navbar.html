@@ -413,6 +413,12 @@
             <span class="nav-text">Payments</span>
           </a>
         </li>
+        <li class="nav-item {% if active_page == 'channel-data' %}active{% endif %}">
+          <a href="{% url 'channel-data-devices' %}" class="nav-link" title="Channel Data (temporary)">
+            <i class="fas fa-satellite-dish"></i>
+            <span class="nav-text">Channel Data</span>
+          </a>
+        </li>
         <li class="nav-item {% if active_page == 'versions' %}active{% endif %}">
           <a href="{% url 'version_list' %}" class="nav-link" title="App Versions" target="_blank">
             <i class="fas fa-code-branch"></i>

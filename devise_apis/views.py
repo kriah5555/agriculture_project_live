@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .serializers import DeviseApiSerializer, DeviseFieldsApiSerializer
-from agriapp.models import DeviseApis, Devise, DeviseLocation, ColumnData, DeviseApisFields, APICountThreshold, ChannelData
+from agriapp.models import DeviseApis, Devise, DeviseLocation, ColumnData, DeviseApisFields, APICountThreshold, ChannelData, CHANNEL_FIELD_MAP
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework import status
@@ -282,19 +282,17 @@ def add_soil_data_open(request):
 
         # channel_data[<key>]=value params carry raw sensor channel readings
         # (spectral bands, etc.) that don't map to DeviseApis fields — pull
-        # them out so they never reach the serializer, and store them
-        # separately as a single JSON object.
-        channel_payload = {}
+        # them out so they never reach the serializer, and store each one in
+        # its own ChannelData column (see CHANNEL_FIELD_MAP) rather than JSON.
+        channel_fields = {}
         for key in list(modified_data.keys()):
             match = re.match(r'^channel_data\[(.+)\]$', key)
             if match:
-                channel_payload[match.group(1)] = modified_data.pop(key)[0]
-
-        if channel_payload:
-            ChannelData.objects.create(device=devise, data=channel_payload)
-            ChannelData.objects.filter(
-                created_at__lt=timezone.now() - timedelta(days=ChannelData.RETENTION_DAYS)
-            ).delete()
+                raw_key = match.group(1)
+                value   = modified_data.pop(key)[0]
+                field_name = CHANNEL_FIELD_MAP.get(raw_key)
+                if field_name:
+                    channel_fields[field_name] = value
 
         serializer = DeviseApiSerializer(data=modified_data)
 
@@ -313,6 +311,13 @@ def add_soil_data_open(request):
                         )
 
             api        = DeviseApis.objects.get(pk=api_id)
+
+            if channel_fields:
+                ChannelData.objects.create(device=devise, api=api, **channel_fields)
+                ChannelData.objects.filter(
+                    created_at__lt=timezone.now() - timedelta(days=ChannelData.RETENTION_DAYS)
+                ).delete()
+
             crops_data = f.get_crop_urea_dap_mop_dose(api.nitrogen, api.phosphorous, api.potassium, api.ph, api.ec, api.oc, api.crop_type)
             return Response({'message': 'Soil data added successfully', 'data':crops_data }, status=status.HTTP_200_OK)
         else:

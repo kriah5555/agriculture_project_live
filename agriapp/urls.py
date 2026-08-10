@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from django.views.generic import TemplateView
 from . import views as v
 from . import PDF as pdf
@@ -118,4 +118,7 @@ urlpatterns = [
     # ── Map ──────────────────────────────────────────────────────────────────────
     path('map/',                                    v.map_view,                                 name='map'),
     path('map-devise/<int:pk>',                     v.map_view,                                 name='map-devise'),
+
+    # ── Channel Data (TEMPORARY — see agriapp/channel_data_views.py docstring) ───
+    path('channel-data/',                           include('agriapp.channel_data_urls')),
 ]

@@ -1,0 +1,61 @@
+{% extends "navbar.html" %}
+{% load static %}
+
+{% block content %}
+<div class="table-wrapper">
+    <div class="table-title">
+        <div class="row">
+            <div class="col-sm-6">
+                <h2>Channel Data <b>({{ devices|length }} device{{ devices|length|pluralize }})</b></h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered table-sm align-middle">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Device</th>
+                        <th>Device ID</th>
+                        <th>Readings</th>
+                        <th>Latest Reading</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for device in devices %}
+                    <tr class="clickable-row" onclick="window.location='{% url "channel-data-list" device.pk %}'">
+                        <td class="py-2">{{ device.name }}</td>
+                        <td class="py-2">{{ device.devise_id }}</td>
+                        <td class="py-2">{{ device.channel_count }}</td>
+                        <td class="py-2">{{ device.latest_reading|date:"d M Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted py-4">No channel data recorded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-wrapper {
+        background: var(--tc-surface);
+        padding: 20px 25px;
+        border-radius: 3px;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+    }
+    .table-title {
+        padding: 16px 30px;
+        margin: -20px -25px 10px;
+        border-radius: 3px 3px 0 0;
+        background-color: #007bff;
+        color: #fff;
+    }
+    .table-title h2 { margin: 5px 0 0; font-size: 24px; }
+    .table-body { padding: 10px; background-color: var(--tc-surface); border-radius: 0 0 3px 3px; }
+    table.table tr th, table.table tr td { border-color: var(--tc-border); padding: 12px 15px; vertical-align: middle; }
+    .clickable-row:hover { background-color: var(--tc-surface-alt); cursor: pointer; }
+</style>
+{% endblock %}

@@ -237,17 +237,139 @@ class DeviseApis(models.Model):
                 f" — pH:{self.ph} EC:{self.ec} OC:{self.oc}"
                 f"{farmer_str} | #{self.pk} {date_str}")
 
+# CHANNEL_FIELD_MAP: incoming `channel_data[<key>]` request param -> ChannelData field name.
+# Kept next to the model (rather than in the view) since both the API parser and any
+# future list/export code need this same mapping.
+CHANNEL_FIELD_MAP = {
+    'a_val'      : 'ch_a',
+    'b_val'      : 'ch_b',
+    'c_val'      : 'ch_c',
+    'd_val'      : 'ch_d',
+    'e_val'      : 'ch_e',
+    'f_val'      : 'ch_f',
+    'g_val'      : 'ch_g',
+    'h_val'      : 'ch_h',
+    'r_val'      : 'ch_r',
+    'i_val'      : 'ch_i',
+    's_val'      : 'ch_s',
+    'j_val'      : 'ch_j',
+    't_val'      : 'ch_t',
+    'u_val'      : 'ch_u',
+    'v_val'      : 'ch_v',
+    'w_val'      : 'ch_w',
+    'k_val'      : 'ch_k',
+    'l_val'      : 'ch_l',
+    'u2_val'     : 'ch_u2',
+    'v2_val'     : 'ch_v2',
+    'w2_val'     : 'ch_w2',
+    'ph_val'     : 'ph',
+    'ec_val'     : 'ec',
+    'oc_val'     : 'oc_percent',
+    'ca_val'     : 'ca_meq',
+    'mg_val'     : 'mg_meq',
+    'n_val'      : 'n_kg_ha',
+    'p2o5_val'   : 'p2o5',
+    'k2o_val'    : 'k2o',
+    'so4_val'    : 'so4',
+    'fe_val'     : 'fe_ppm',
+    'mn_val'     : 'mn_ppm',
+    'cu_val'     : 'cu_ppm',
+    'zn_val'     : 'zn_ppm',
+    'boron_val'  : 'boron_ppm',
+}
+
+# CHANNEL_EXPORT_COLUMNS: (field_name, display header) in a fixed order, used by both
+# the admin list/detail view and the xlsx export so the column order stays in sync.
+CHANNEL_EXPORT_COLUMNS = [
+    ('ch_a',       'A 410nm'),
+    ('ch_b',       'B 435nm'),
+    ('ch_c',       'C 460nm'),
+    ('ch_d',       'D 485nm'),
+    ('ch_e',       'E 510nm'),
+    ('ch_f',       'F 535nm'),
+    ('ch_g',       'G 560nm'),
+    ('ch_h',       'H 585nm'),
+    ('ch_r',       'R 610nm'),
+    ('ch_i',       'I 645nm'),
+    ('ch_s',       'S 680nm'),
+    ('ch_j',       'J 705nm'),
+    ('ch_t',       'T 730nm'),
+    ('ch_u',       'U 760nm'),
+    ('ch_v',       'V 810nm'),
+    ('ch_w',       'W 860nm'),
+    ('ch_k',       'K 900nm'),
+    ('ch_l',       'L 940nm'),
+    ('ch_u2',      'U 320nm'),
+    ('ch_v2',      'V 280nm'),
+    ('ch_w2',      'W 200nm'),
+    ('ph',         'PH'),
+    ('ec',         'EC'),
+    ('oc_percent', 'OC%'),
+    ('ca_meq',     'Ca (meq)'),
+    ('mg_meq',     'Mg (meq)'),
+    ('n_kg_ha',    'N Kg/ha'),
+    ('p2o5',       'P2O5'),
+    ('k2o',        'K2O'),
+    ('so4',        'SO4'),
+    ('fe_ppm',     'Fe (ppm)'),
+    ('mn_ppm',     'Mn (ppm)'),
+    ('cu_ppm',     'Cu (ppm)'),
+    ('zn_ppm',     'Zn (ppm)'),
+    ('boron_ppm',  'B (ppm)'),
+]
+
 class ChannelData(models.Model):
     """
-    Raw JSON snapshot of each add_data API call, kept alongside DeviseApis.
+    Per-channel sensor snapshot of each add_data API call, kept alongside DeviseApis.
+    One field per spectral channel / derived soil parameter (rather than a JSON blob)
+    so rows are directly listable, filterable, and exportable as columns.
     Rows older than RETENTION_DAYS are purged automatically — this table is
     short-term only, not a permanent record.
     """
     RETENTION_DAYS = 180
 
-    device     = models.ForeignKey(to='Devise', on_delete=models.CASCADE, null=True, blank=True)
-    data       = models.JSONField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    device       = models.ForeignKey(to='Devise', on_delete=models.CASCADE, null=True, blank=True)
+    api          = models.ForeignKey(to='DeviseApis', on_delete=models.CASCADE, null=True, blank=True,
+                                      help_text='The specific add_data API call this channel data came from')
+
+    ch_a         = models.FloatField(null=True, blank=True, help_text='A 410nm')
+    ch_b         = models.FloatField(null=True, blank=True, help_text='B 435nm')
+    ch_c         = models.FloatField(null=True, blank=True, help_text='C 460nm')
+    ch_d         = models.FloatField(null=True, blank=True, help_text='D 485nm')
+    ch_e         = models.FloatField(null=True, blank=True, help_text='E 510nm')
+    ch_f         = models.FloatField(null=True, blank=True, help_text='F 535nm')
+    ch_g         = models.FloatField(null=True, blank=True, help_text='G 560nm')
+    ch_h         = models.FloatField(null=True, blank=True, help_text='H 585nm')
+    ch_r         = models.FloatField(null=True, blank=True, help_text='R 610nm')
+    ch_i         = models.FloatField(null=True, blank=True, help_text='I 645nm')
+    ch_s         = models.FloatField(null=True, blank=True, help_text='S 680nm')
+    ch_j         = models.FloatField(null=True, blank=True, help_text='J 705nm')
+    ch_t         = models.FloatField(null=True, blank=True, help_text='T 730nm')
+    ch_u         = models.FloatField(null=True, blank=True, help_text='U 760nm')
+    ch_v         = models.FloatField(null=True, blank=True, help_text='V 810nm')
+    ch_w         = models.FloatField(null=True, blank=True, help_text='W 860nm')
+    ch_k         = models.FloatField(null=True, blank=True, help_text='K 900nm')
+    ch_l         = models.FloatField(null=True, blank=True, help_text='L 940nm')
+    ch_u2        = models.FloatField(null=True, blank=True, help_text='U 320nm')
+    ch_v2        = models.FloatField(null=True, blank=True, help_text='V 280nm')
+    ch_w2        = models.FloatField(null=True, blank=True, help_text='W 200nm')
+
+    ph           = models.FloatField(null=True, blank=True)
+    ec           = models.FloatField(null=True, blank=True)
+    oc_percent   = models.FloatField(null=True, blank=True, help_text='OC %')
+    ca_meq       = models.FloatField(null=True, blank=True, help_text='Ca (meq)')
+    mg_meq       = models.FloatField(null=True, blank=True, help_text='Mg (meq)')
+    n_kg_ha      = models.FloatField(null=True, blank=True, help_text='N Kg/ha')
+    p2o5         = models.FloatField(null=True, blank=True)
+    k2o          = models.FloatField(null=True, blank=True)
+    so4          = models.FloatField(null=True, blank=True)
+    fe_ppm       = models.FloatField(null=True, blank=True, help_text='Fe (ppm)')
+    mn_ppm       = models.FloatField(null=True, blank=True, help_text='Mn (ppm)')
+    cu_ppm       = models.FloatField(null=True, blank=True, help_text='Cu (ppm)')
+    zn_ppm       = models.FloatField(null=True, blank=True, help_text='Zn (ppm)')
+    boron_ppm    = models.FloatField(null=True, blank=True, help_text='B (ppm)')
+
+    created_at   = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
