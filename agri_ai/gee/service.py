@@ -31,24 +31,22 @@ _GEE_INITIALIZED  = False
 _GEE_INIT_SIG     = ""   # "project|sa_key" used in the last successful/failed init
 _GEE_PROJECT      = ""
 _SA_KEY_PATH      = ""
-_RF_ASSET_ID      = ""
 
 
-def _read_env() -> tuple[str, str, str]:
+def _read_env() -> tuple[str, str]:
     """Read GEE config directly from .env file every time — no os.environ caching."""
     env = dotenv_values(_ENV_FILE)
     return (
-        env.get("GEE_PROJECT", "")              or "",
-        env.get("SAR_GEE_SA_KEY", "")           or "",
-        env.get("GEE_RF_CLASSIFIER_ASSET", "")  or "",
+        env.get("GEE_PROJECT", "")    or "",
+        env.get("SAR_GEE_SA_KEY", "") or "",
     )
 
 
 def _try_init_gee() -> bool:
     global _GEE_AVAILABLE, _GEE_INITIALIZED, _GEE_INIT_SIG
-    global _GEE_PROJECT, _SA_KEY_PATH, _RF_ASSET_ID
+    global _GEE_PROJECT, _SA_KEY_PATH
 
-    project, sa_key, rf_asset = _read_env()
+    project, sa_key = _read_env()
     sig = f"{project}|{sa_key}"
 
     # Return cached result only if we already tried with these exact values
@@ -59,7 +57,6 @@ def _try_init_gee() -> bool:
     _GEE_INIT_SIG    = sig
     _GEE_PROJECT     = project
     _SA_KEY_PATH     = sa_key
-    _RF_ASSET_ID     = rf_asset
 
     try:
         if sa_key and os.path.isfile(sa_key):
@@ -190,18 +187,6 @@ def _apply_rule_based_classifier(features):
     ).rename("crop_class").uint8()
 
 
-def _apply_rf_classifier(features, roi):
-    if not _RF_ASSET_ID:
-        return None, False
-    try:
-        classifier = ee.Classifier.load(_RF_ASSET_ID)
-        class_img  = features.classify(classifier).rename("crop_class").uint8()
-        return class_img, True
-    except Exception as exc:
-        logger.warning(f"RF classifier failed ({exc}); using rule-based fallback.")
-        return None, False
-
-
 def _compute_class_areas(class_img, roi, scale: int = 30):
     try:
         hist  = class_img.reduceRegion(
@@ -235,12 +220,8 @@ def get_crop_map(lat: float, lon: float, radius_km: int = 10, season: str = "kha
         start_str, end_str = _season_dates(season)
         roi = ee.Geometry.Point([lon, lat]).buffer(radius_km * 1000)
         feature_stack, _ = _build_s1_feature_stack(roi, start_str, end_str)
-        class_img, used_rf = _apply_rf_classifier(feature_stack, roi)
-        if class_img is None:
-            class_img        = _apply_rule_based_classifier(feature_stack)
-            classifier_used  = "rule_based"
-        else:
-            classifier_used  = "rf"
+        class_img       = _apply_rule_based_classifier(feature_stack)
+        classifier_used = "rule_based"
         fractions      = _compute_class_areas(class_img, roi, scale=30)
         composite_tile = _get_tile_url(class_img, {"min": 0, "max": 8, "palette": CLASS_PALETTE})
         crop_layers = []

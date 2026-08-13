@@ -1178,7 +1178,6 @@ async function checkGee() {
             ${row('API probe', probeOk ? 'OK' : (d.probe_error||'Failed'), probeOk)}
             ${row('GEE_PROJECT', cfg.GEE_PROJECT, cfg.project_set)}
             ${row('SA key file', cfg.sa_key_exists ? 'Found' : (cfg.sa_key_set ? 'Set but file missing' : 'Not set'), cfg.sa_key_exists ? true : cfg.sa_key_set ? false : null)}
-            ${row('RF classifier asset', cfg.rf_asset_set ? cfg.GEE_RF_CLASSIFIER_ASSET : 'Not set (uses rule-based)', cfg.rf_asset_set ? true : null)}
             <div style="color:#8aaa8a;font-size:8px;margin-top:6px;text-align:right">${d.elapsed_ms} ms</div>
           </div>`;
     } catch(err) {
@@ -1369,7 +1368,7 @@ function hiwBlock(tab) {
             rows: [
                 ['📡', '<b>Sentinel-1 SAR feature stack</b> — VH/VV mean, variance, min, max, slope-over-time, and VH/VV ratio are computed over the selected months in GEE.'],
                 ['🌿', '<b>Sentinel-2 NDVI</b> — Median composite for the period added as a vegetation feature.'],
-                ['🤖', '<b>Classifier</b> — If a <b>Random Forest asset</b> is set in GEE_RF_CLASSIFIER_ASSET, it classifies each pixel. Otherwise a rule-based threshold classifier runs on the SAR features.'],
+                ['🤖', '<b>Classifier</b> — A rule-based threshold classifier runs on the SAR features to classify each pixel.'],
                 ['🗺', '<b>Tile URL</b> — GEE renders a coloured pixel mask directly and returns a tile URL that Leaflet loads as a map overlay.'],
                 ['📐', '<b>Area</b> — Pixel count × pixel area (10m²) sums the crop area in hectares within the radius buffer.'],
             ]

@@ -766,16 +766,13 @@ def gee_health(request):
 
     project  = env.get("GEE_PROJECT", "")   or ""
     sa_key   = env.get("SAR_GEE_SA_KEY", "") or ""
-    rf_asset = env.get("GEE_RF_CLASSIFIER_ASSET", "") or ""
 
     config = {
-        'GEE_PROJECT':             project  or '(not set)',
-        'SAR_GEE_SA_KEY':          sa_key   or '(not set)',
-        'GEE_RF_CLASSIFIER_ASSET': rf_asset or '(not set)',
-        'project_set':   bool(project),
-        'sa_key_set':    bool(sa_key),
-        'sa_key_exists': bool(sa_key and os.path.isfile(sa_key)),
-        'rf_asset_set':  bool(rf_asset),
+        'GEE_PROJECT':    project or '(not set)',
+        'SAR_GEE_SA_KEY': sa_key  or '(not set)',
+        'project_set':    bool(project),
+        'sa_key_set':     bool(sa_key),
+        'sa_key_exists':  bool(sa_key and os.path.isfile(sa_key)),
     }
 
     ok = False
@@ -799,7 +796,6 @@ def gee_health(request):
         # Update module cache so the rest of the app uses the now-working credentials
         _svc._GEE_PROJECT     = project
         _svc._SA_KEY_PATH     = sa_key
-        _svc._RF_ASSET_ID     = rf_asset
         _svc._GEE_AVAILABLE   = True
         _svc._GEE_INITIALIZED = True
 
