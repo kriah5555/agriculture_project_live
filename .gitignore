@@ -17,3 +17,6 @@ agri_ai/soil/models/*.pkl
 agri_ai/soil/models/*.png
 agri_ai/soil/*.zip
 # agri_ai/crop/models/*.pkl
+
+# Google Earth Engine service-account keys — never commit secrets
+agri_ai/gee/credentials/
