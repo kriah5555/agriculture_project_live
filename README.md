@@ -106,7 +106,31 @@ cp /path/to/models/classifier.pkl  agri_ai/crop/models/
 
 > If models are missing the app still runs. Only AI crop prediction and ML-enriched PDF reports are affected.
 
-### 10. Start the Development Server
+### 10. Configure Google Earth Engine (optional)
+
+Powers the SAR crop map, NDVI, and elevation lookups. The app runs fine
+without it — those features just degrade gracefully (default values,
+"GEE unavailable" status) instead of crashing.
+
+1. Get a GCP service-account JSON key with Earth Engine API access enabled
+   for your project.
+2. Place it at `agri_ai/gee/credentials/<your-key-filename>.json` (create the
+   folder if it doesn't exist yet). This path is gitignored — the key is a
+   secret and must never be committed, so each machine (dev, staging,
+   production) needs its own copy placed here manually, same as the ML
+   `.pkl` files above.
+3. Set these in `.env`, with the **full absolute path** to the file from
+   step 2 (see `.env.example`):
+   ```
+   GEE_PROJECT=your-gcp-project-id
+   SAR_GEE_SA_KEY=/absolute/path/to/agriculture_project_live/agri_ai/gee/credentials/your-key-filename.json
+   ```
+4. Restart the server, then verify it's working — log in as a superuser and
+   hit `/api/soil-map/gee-health/`, or open the Soil Map page's GEE
+   Connectivity panel. `"gee_initialized": true, "probe_ok": true` means
+   it's live.
+
+### 11. Start the Development Server
 
 ```bash
 python manage.py runserver
