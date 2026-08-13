@@ -856,6 +856,7 @@
         .yield-tool .crop-empty { padding: 0.7rem 0.9rem; color: var(--yt-gray-400); font-size: 0.85rem; font-style: italic; }
         .yield-tool .gee-warn { padding: 0.9rem 1.2rem; border-radius: 10px; font-size: 0.85rem; font-weight: 500; display: flex; align-items: flex-start; gap: 0.6rem; line-height: 1.5; }
         .yield-tool .gee-warn.error { background: var(--yt-red-50); color: var(--yt-red-600); border-left: 4px solid var(--yt-red-500); }
+        .yield-tool .gee-warn.warn { background: var(--yt-amber-50); color: var(--yt-amber-600); border-left: 4px solid var(--yt-amber-500); }
         .yield-tool .gee-warn.ok { background: var(--yt-green-50); color: var(--yt-green-700); border-left: 4px solid var(--yt-green-500); }
         .yield-tool .gee-warn .icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
         .yield-tool .gee-warn code { background: rgba(0,0,0,0.06); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.78rem; }
@@ -1103,10 +1104,24 @@
       async function checkGeeStatus() {
         var card = document.getElementById('yt-geeCard');
         var msg = document.getElementById('yt-geeMessage');
-        if (PREFILL.lat && PREFILL.lon) {
-          msg.innerHTML = '<div class="gee-warn ok"><span class="icon">&#127757;</span><div><strong>Location ready.</strong> NDVI will be fetched live from MODIS satellites using this reading\'s own GPS coordinates.</div></div>';
-        } else {
+
+        if (!PREFILL.lat || !PREFILL.lon) {
           msg.innerHTML = '<div class="gee-warn error"><span class="icon">&#9888;</span><div><strong>No GPS location on this reading.</strong> NDVI satellite data will not be available. Predictions will use a default value (0.7) instead of real satellite data.</div></div>';
+          card.style.display = 'block';
+          return;
+        }
+
+        // GPS alone doesn't mean NDVI will actually work — confirm GEE itself is reachable too.
+        try {
+          var res = await fetch('/api/soil-map/gee-health/');
+          var health = await res.json();
+          if (health.gee_initialized && health.probe_ok) {
+            msg.innerHTML = '<div class="gee-warn ok"><span class="icon">&#127757;</span><div><strong>Location ready.</strong> NDVI will be fetched live from MODIS satellites using this reading\'s own GPS coordinates.</div></div>';
+          } else {
+            msg.innerHTML = '<div class="gee-warn warn"><span class="icon">&#9888;</span><div><strong>GPS available, but Earth Engine isn\'t connected.</strong> NDVI will use a default value (0.7) instead of live satellite data until GEE is configured on the server.</div></div>';
+          }
+        } catch (e) {
+          msg.innerHTML = '<div class="gee-warn warn"><span class="icon">&#9888;</span><div><strong>GPS available, but Earth Engine status couldn\'t be checked.</strong> NDVI may fall back to a default value (0.7).</div></div>';
         }
         card.style.display = 'block';
       }
