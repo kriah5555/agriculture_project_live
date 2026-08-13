@@ -21,6 +21,12 @@
                         <th>Readings</th>
                         <th>Latest Reading</th>
                     </tr>
+                    <tr>
+                        <th><input type="text" class="form-control form-control-sm column-filter" placeholder="Search device" data-column="0"></th>
+                        <th><input type="text" class="form-control form-control-sm column-filter" placeholder="Search ID" data-column="1"></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
                 </thead>
                 <tbody>
                     {% for device in devices %}
@@ -38,6 +44,28 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.querySelectorAll('.column-filter').forEach(input => {
+        input.addEventListener('input', function () {
+            const filters = document.querySelectorAll('.column-filter');
+            const rows = document.querySelectorAll('.table-body table tbody tr');
+
+            rows.forEach(row => {
+                let visible = true;
+                filters.forEach((filter, index) => {
+                    const value = filter.value.toLowerCase();
+                    const cell = row.querySelectorAll('td')[index];
+                    const cellText = cell?.textContent.toLowerCase() || '';
+                    if (value && !cellText.includes(value)) {
+                        visible = false;
+                    }
+                });
+                row.style.display = visible ? '' : 'none';
+            });
+        });
+    });
+</script>
 
 <style>
     .table-wrapper {
