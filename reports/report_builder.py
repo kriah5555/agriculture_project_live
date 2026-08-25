@@ -9,9 +9,64 @@ from agriapp.reports.soilenz_pdf import (
     _ph_info, _ec_info, _oc_info, _n_info, _p_info, _k_info,
     _ca_info, _mg_info, _s_info, _fe_info, _mn_info, _cu_info,
     _zn_info, _b_info,
-    PARAMS_14, _categorize_nutrients, _soil_health_score, _fertility_label,
+    PARAMS_14, _categorize_nutrients,
 )
 from agriapp.models import DeviseApis
+
+# ── Soil Health Score (page 1) ──────────────────────────────────────────────
+# 14-parameter weighted-points formula: each parameter classified Low/Medium/
+# High against the handwritten 3-tier reference thresholds (pH uses the
+# existing _ph_info classifier instead), converted to points, weighted, and
+# normalised to 0-100.
+_SCORE_THRESHOLDS = {          # key: (low_max, high_min) — Medium is between
+    'organic_carbon': (0.5, 0.75),
+    'n':  (280, 560),
+    'p':  (22.9, 56.3),
+    'k':  (144, 336),
+    's':  (10, 20),
+    'ca': (1.5, 5.0),
+    'mg': (1, 3),
+    'fe': (4.5, 10),
+    'mn': (2, 4),
+    'cu': (0.2, 0.4),
+    'zn': (0.6, 1.2),
+    'b':  (0.5, 1),
+    'ec': (0.1, 4.0),
+}
+_SCORE_WEIGHTS = {
+    'n': 15, 'organic_carbon': 12, 'p': 10, 'ph': 10, 'k': 8, 'ec': 8,
+    's': 7, 'ca': 5, 'mg': 5, 'fe': 5, 'mn': 5, 'b': 4, 'cu': 3, 'zn': 3,
+}
+_PH_POINTS = {'Alkaline': 55, 'Acidic': 35, 'Normal': 100}
+
+
+def _soil_health_score_14param(preds):
+    total_weight = sum(_SCORE_WEIGHTS.values())
+
+    ph_status, *_ = _ph_info(preds.get('ph'))
+    total_earned = _PH_POINTS.get(ph_status, 50) * _SCORE_WEIGHTS['ph']
+
+    for key, (low, high) in _SCORE_THRESHOLDS.items():
+        value = preds.get(key)
+        if value is None:
+            points = 50
+        elif value < low:
+            points = 0
+        elif value > high:
+            points = 100
+        else:
+            points = 50
+        total_earned += points * _SCORE_WEIGHTS[key]
+
+    max_possible = 100 * total_weight
+    return int(total_earned / max_possible * 100 + 0.5)  # round-half-up
+
+
+def _soil_health_badge_14param(score):
+    if score >= 70: return 'GOOD', 'green'
+    if score >= 45: return 'MODERATE', 'orange'
+    return 'LOW', 'red'
+
 
 # ── Parameter definitions (name, unit, key, info_fn, display decimals) ────────
 _PARAM_INFO = {
@@ -119,8 +174,12 @@ def build_report_context(api_id):
         'b':              _v(api_data.boron),
     }
 
-    lat = api_data.latitude  or 0.0
-    lon = api_data.longitude or 0.0
+    farmer = api_data.farmer
+
+    # Prefer this specific reading's own GPS fix; fall back to the farmer's
+    # recorded location if the reading itself doesn't have one.
+    lat = api_data.latitude or (farmer.latitude if farmer else 0.0) or 0.0
+    lon = api_data.longitude or (farmer.longitude if farmer else 0.0) or 0.0
 
     # ML enrichment (optional; falls back to defaults)
     env = {'ndvi': 0.55, 'temperature_c': 28.0, 'rainfall_mm': 950.0, 'elevation_m': 200.0}
@@ -139,8 +198,16 @@ def build_report_context(api_id):
     except Exception:
         pass
 
-    farmer = api_data.farmer
     crop   = (farmer.crop if farmer and farmer.crop else (api_data.crop_type or ''))
+
+    agro_zone = '–'
+    try:
+        from agri_ai.zone.classifier import classify_zone
+        if lat and lon:
+            zone_name, _zone_meta, _climate, _location = classify_zone(lat, lon)
+            agro_zone = zone_name or '–'
+    except Exception:
+        pass
 
     farmer_image_url = ''
     try:
@@ -160,7 +227,7 @@ def build_report_context(api_id):
         'lon':                lon,
         'field_area':         (f"{farmer.land_area} acres" if farmer and farmer.land_area else '–'),
         'crop':               crop,
-        'agro_zone':          '–',
+        'agro_zone':          agro_zone,
         'analysis_date':      api_data.created_at.strftime('%d %b %Y')          if api_data.created_at else '',
         'analysis_date_long': api_data.created_at.strftime('%d %B %Y')          if api_data.created_at else '',
         'report_time':        api_data.created_at.strftime('%d/%m/%Y %I:%M %p') if api_data.created_at else '',
@@ -198,13 +265,9 @@ def build_report_context(api_id):
     # Nutrient categories
     low_i, med_i, high_i, suff_i, adeq_i = _categorize_nutrients(preds)
 
-    # Soil health score & gauge
-    score = _soil_health_score(preds, env)
-    slabel, _ = _fertility_label(score)
-    if score >= 75:   s_css = 'green'
-    elif score >= 55: s_css = 'yellow'
-    elif score >= 35: s_css = 'orange'
-    else:             s_css = 'red'
+    # Soil health score & gauge (14-parameter weighted-points formula)
+    score = _soil_health_score_14param(preds)
+    slabel, s_css = _soil_health_badge_14param(score)
 
     # Carbon credit
     oc = preds.get('organic_carbon') or 0.3

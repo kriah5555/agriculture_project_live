@@ -20,10 +20,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;background:#d0d0d0;c
   page-break-after:always;break-after:page;
   position:relative;overflow:hidden;box-sizing:border-box;
   display:flex;flex-direction:column;
+  padding:19px 48px;
 }
 .pg-body{
   flex:1;display:flex;flex-direction:column;
-  padding:8px 12px;padding-bottom:32px;
+  padding:8px 0;padding-bottom:32px;
   gap:6px;overflow:hidden;
 }
 
@@ -46,14 +47,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;background:#d0d0d0;c
 
 /* ── Shared header band ───────────────────────────────────── */
 .pg-header{
-  background:#1a3c14;color:#fff;height:34px;
+  background:#0B5E2E;color:#fff;height:70px;border-radius:4px;
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 14px;font-size:9px;font-style:italic;
+  padding:0 16px;font-size:9px;font-weight:600;margin-bottom:4px;
 }
 .pg-num{
-  width:22px;height:22px;border-radius:50%;background:#fff;
-  color:#1a3c14;font-weight:700;font-size:11px;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  color:#a5d6a7;font-weight:600;font-size:11px;
 }
 
 /* ── Colour helpers ───────────────────────────────────────── */
@@ -136,18 +135,18 @@ tr:nth-child(even) td{background:#f9fafb;}
 
 /* ── Footer note ──────────────────────────────────────────── */
 .pg-footer{
-  position:absolute;bottom:0;left:0;right:0;
-  background:#1a3c14;color:#fff;
-  padding:5px 14px;font-size:8.5px;font-style:italic;
-  display:flex;justify-content:space-between;
+  position:absolute;bottom:0;left:0;right:0;height:31px;border-radius:4px;
+  background:#0B5E2E;color:#fff;
+  padding:6px 14px;font-size:8.5px;
+  display:flex;justify-content:center;align-items:center;
 }
 
 /* ── Section title ────────────────────────────────────────── */
-.sec-title{font-size:40px;font-weight:800;color:#1a3c14;line-height:1.1;}
+.sec-title{font-size:25px;font-weight:800;color:#0B5E2E;line-height:1.15;letter-spacing:-.2px;}
 .sec-sub{font-size:8.5px;color:#555;margin-top:2px;}
 
 /* ── Pill ─────────────────────────────────────────────────── */
-.pill{display:inline-block;background:#1a3c14;color:#fff;border-radius:20px;padding:2px 10px;font-size:15px;font-weight:700;}
+.pill{display:inline-block;background:#0B5E2E;color:#fff;text-shadow:none;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600;}
 
 /* ── Timeline phases ──────────────────────────────────────── */
 .phase-box{background:#e8f5e9;border-radius:6px;padding:10px 12px;flex:1;}
@@ -191,118 +190,90 @@ tr:nth-child(even) td{background:#f9fafb;}
 
   <!-- header -->
   <div class="pg-header">
-    <span><i class="fas fa-leaf" style="margin-right:6px;"></i>ARKASHINE INNOVATIONS &nbsp;|&nbsp; SoiLENZ Advisory Report</span>
-    <div class="pg-num">1</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="background:#fff;border-radius:5px;padding:3px 8px;display:flex;align-items:center;">
+        <img src="{% static 'logo.PNG' %}" style="height:18px;display:block;">
+      </div>
+      <span>| Soil ENZ Advisory Report</span>
+    </div>
+    <div style="text-align:right;line-height:1.25;">
+      <div style="font-size:7px;letter-spacing:.3px;opacity:.85;">Powered by</div>
+      <div style="font-size:12px;font-weight:800;color:#a5d6a7;">SoilENZ</div>
+      <div style="font-size:7px;opacity:.9;">Advanced Soil Intelligence from Arkashine Innovations</div>
+    </div>
   </div>
 
   <div class="pg-body" style="gap:10px;">
 
     <!-- title row -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-      <div>
-        <div class="sec-title">SOIL HEALTH INTELLIGENCE REPORT</div>
-        <div class="pill mt2">Powered by SoiLENZ</div>
-      </div>
-      <div style="text-align:right;font-size:9px;color:#555;">
-        <div style="font-size:16px;font-weight:800;color:#1a3c14;">SoiLENZ</div>
-        <div>Advanced Soil Intelligence</div>
-        <div>from Arkashine Labs</div>
-      </div>
-    </div>
-
-    <!-- farmer info + report details -->
-    <div style="display:flex;gap:8px;margin-bottom:8px;">
-
-      <!-- farmer info -->
-      <div class="card" style="flex:1;border:1px solid #e0e0e0;">
-        <div class="card-hdr"><i class="fas fa-user-circle" style="margin-right:5px;"></i>FARMER INFORMATION</div>
-        <div style="display:flex;align-items:flex-start;padding:6px 8px;gap:8px;">
-          <div style="flex:1;">
-            <div class="info-row" style="font-size:10.5px;padding:4px 8px;"><span class="info-lbl">Name</span><span class="info-val">{{ meta.farmer_name }}</span></div>
-            <div class="info-row" style="font-size:10.5px;padding:4px 8px;"><span class="info-lbl">Mobile</span><span class="info-val">{{ meta.farmer_mobile|default:"–" }}</span></div>
-            <div class="info-row" style="font-size:10.5px;padding:4px 8px;"><span class="info-lbl">Land Location (Lat/Lon)</span><span class="info-val">{% if meta.lat %}{{ meta.lat|floatformat:4 }} / {{ meta.lon|floatformat:4 }}{% else %}–{% endif %}</span></div>
-            <div class="info-row" style="border:none;font-size:10.5px;padding:4px 8px;"><span class="info-lbl">Crop</span><span class="info-val">{{ meta.crop|default:"–" }}</span></div>
-          </div>
-          <div>
-            {% if meta.farmer_image_url %}
-              <img src="{{ meta.farmer_image_url }}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #e0e0e0;">
-            {% else %}
-              <div style="width:44px;height:44px;border-radius:50%;background:#e8f5e9;display:flex;align-items:center;justify-content:center;border:2px solid #2e7d32;font-size:16px;font-weight:700;color:#1a3c14;">
-                {{ meta.farmer_name|first|upper }}
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-
-      <!-- report details -->
-      <div class="card" style="flex:1;border:1px solid #e0e0e0;">
-        <div class="card-hdr"><i class="fas fa-file-alt" style="margin-right:5px;"></i>REPORT DETAILS</div>
-        <div style="padding:6px 8px;">
-          <div class="info-row" style="font-size:10.5px;padding:4px 8px;"><span class="info-lbl"><i class="fas fa-calendar-alt c-dk" style="width:14px;"></i> Date of Analysis</span><span class="info-val">{{ meta.analysis_date }}</span></div>
-          <div class="info-row" style="font-size:10.5px;padding:4px 8px;"><span class="info-lbl"><i class="fas fa-flask c-dk" style="width:14px;"></i> Lab Name</span><span class="info-val">{{ meta.lab_name }}</span></div>
-          <div class="info-row" style="border:none;font-size:10.5px;padding:4px 8px;"><span class="info-lbl"><i class="fas fa-clock c-dk" style="width:14px;"></i> Report Time</span><span class="info-val">{{ meta.report_time }}</span></div>
-        </div>
-      </div>
+    <div style="margin-bottom:8px;">
+      <div class="sec-title">SOIL HEALTH INTELLIGENCE REPORT</div>
+      <div class="pill mt2">Powered by SoiLENZ</div>
     </div>
 
     <!-- main 3-column body -->
     <div style="display:flex;gap:8px;margin-bottom:8px;">
 
-      <!-- LEFT: field info icons -->
-      <div style="width:100px;flex-shrink:0;min-width:0;">
-        {% for icon,lbl,val in field_items|default:"" %}{% endfor %}
-        <div style="display:flex;flex-direction:column;gap:6px;font-size:10.5px;">
-          <div style="display:flex;align-items:center;gap:5px;"><span style="color:#2e7d32;"><i class="fas fa-map-marker-alt"></i></span><div><div style="color:#888;">Location</div><div class="bold">{% if meta.lat %}{{ meta.lat|floatformat:4 }}{% else %}–{% endif %}</div></div></div>
-          <div style="display:flex;align-items:center;gap:5px;"><span style="color:#2e7d32;"><i class="fas fa-border-all"></i></span><div><div style="color:#888;">Field Area</div><div class="bold">{{ meta.field_area }}</div></div></div>
-          <div style="display:flex;align-items:center;gap:5px;"><span style="color:#2e7d32;"><i class="fas fa-seedling"></i></span><div><div style="color:#888;">Crop (Current)</div><div class="bold">{{ meta.crop|default:"–" }}</div></div></div>
-          <div style="display:flex;align-items:center;gap:5px;"><span style="color:#2e7d32;"><i class="fas fa-map"></i></span><div><div style="color:#888;">Agro Climatic Zone</div><div class="bold">{{ meta.agro_zone }}</div></div></div>
-          <div style="display:flex;align-items:center;gap:5px;"><span style="color:#2e7d32;"><i class="fas fa-mountain"></i></span><div><div style="color:#888;">Elevation</div><div class="bold">{% if env.elevation_m %}{{ env.elevation_m|floatformat:0 }} m{% else %}–{% endif %}</div></div></div>
-          <div style="display:flex;align-items:center;gap:5px;"><span style="color:#2e7d32;"><i class="fas fa-cloud-rain"></i></span><div><div style="color:#888;">Rainfall</div><div class="bold">{% if env.rainfall_mm %}{{ env.rainfall_mm|floatformat:0 }} mm{% else %}–{% endif %}</div></div></div>
-          <div style="display:flex;align-items:center;gap:5px;"><span style="color:#2e7d32;"><i class="fas fa-thermometer-half"></i></span><div><div style="color:#888;">Temperature</div><div class="bold">{% if env.temperature_c %}{{ env.temperature_c|floatformat:1 }} °C{% else %}–{% endif %}</div></div></div>
-          <div style="display:flex;align-items:center;gap:5px;"><span style="color:#2e7d32;"><i class="fas fa-chart-line"></i></span><div><div style="color:#888;">NDVI</div><div class="bold">{% if env.ndvi %}{{ env.ndvi|floatformat:2 }}{% else %}–{% endif %}</div></div></div>
+      <!-- LEFT: full farmer + report + field info list -->
+      <div style="width:130px;flex-shrink:0;min-width:0;">
+        <div style="display:flex;flex-direction:column;gap:14px;font-size:9.5px;">
+          <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:16px;">👤</span><div><div class="bold" style="color:#222;">Name</div><div style="color:#444;">{{ meta.farmer_name|default:"–" }}</div></div></div>
+          <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:16px;">📱</span><div><div class="bold" style="color:#222;">Mobile</div><div style="color:#444;">{{ meta.farmer_mobile|default:"–" }}</div></div></div>
+          <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:16px;">🏢</span><div><div class="bold" style="color:#222;">Lab</div><div style="color:#444;">{{ meta.lab_name|default:"–" }}</div></div></div>
+          <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:16px;">⏱️</span><div><div class="bold" style="color:#222;">Time</div><div style="color:#444;">{{ meta.report_time|default:"–" }}</div></div></div>
+          <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:16px;">📍</span><div><div class="bold" style="color:#222;">Location</div><div style="color:#444;">{% if meta.lat %}{{ meta.lat|floatformat:4 }}/{{ meta.lon|floatformat:4 }}{% else %}–{% endif %}</div></div></div>
+          <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:16px;">📅</span><div><div class="bold" style="color:#222;">Date of Analysis</div><div style="color:#444;">{{ meta.analysis_date|default:"–" }}</div></div></div>
+          <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:16px;">🌱</span><div><div class="bold" style="color:#222;">Field Area</div><div style="color:#444;">{{ meta.field_area }}</div></div></div>
+          <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:16px;">🌾</span><div><div class="bold" style="color:#222;">Crop (Current)</div><div style="color:#444;">{{ meta.crop|default:"–" }}</div></div></div>
+          <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:16px;">🍃</span><div><div class="bold" style="color:#222;">Agro Climatic Zone</div><div style="color:#444;">{{ meta.agro_zone }}</div></div></div>
+          <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:16px;">⛰️</span><div><div class="bold" style="color:#222;">Elevation</div><div style="color:#444;">{% if env.elevation_m %}{{ env.elevation_m|floatformat:0 }} m{% else %}–{% endif %}</div></div></div>
+          <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:16px;">🌧️</span><div><div class="bold" style="color:#222;">Rainfall</div><div style="color:#444;">{% if env.rainfall_mm %}{{ env.rainfall_mm|floatformat:0 }} mm{% else %}–{% endif %}</div></div></div>
+          <div style="display:flex;align-items:center;gap:7px;"><span style="font-size:16px;">🌡️</span><div><div class="bold" style="color:#222;">Temperature</div><div style="color:#444;">{% if env.temperature_c %}{{ env.temperature_c|floatformat:1 }} °C{% else %}–{% endif %}</div></div></div>
         </div>
       </div>
 
       <!-- CENTER: crop oval + fertility -->
-      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;">
-        <div style="width:155px;height:218px;border-radius:50% / 45%;overflow:hidden;border:3px solid #2e7d32;margin:0 auto;">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Wheat-Spike-Rossija.jpg/220px-Wheat-Spike-Rossija.jpg"
-               style="width:100%;height:100%;object-fit:cover;"
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;">
+        <div style="width:280px;height:330px;margin:0 auto;">
+          <img src="{% static 'reports/img/plant_anatomy_diagram.png' %}"
+               style="width:100%;height:100%;object-fit:contain;"
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-          <div style="display:none;width:100%;height:100%;background:linear-gradient(to bottom,#c8e6c9 55%,#6d4c41 55%);flex-direction:column;align-items:center;justify-content:center;">
+          <div style="display:none;width:100%;height:100%;border-radius:50% / 45%;overflow:hidden;background:linear-gradient(to bottom,#c8e6c9 55%,#6d4c41 55%);flex-direction:column;align-items:center;justify-content:center;">
             <span style="font-size:40px;">🌾</span>
           </div>
         </div>
-        <div style="width:130px;background:#1a3c14;border-radius:8px;padding:8px 6px 6px;text-align:center;margin-top:8px;">
-          <div style="color:#a5d6a7;font-size:9.5px;font-weight:700;letter-spacing:.8px;margin-bottom:2px;">OVERALL SOIL FERTILITY</div>
-          <div style="font-size:16px;font-weight:800;margin-bottom:1px;
-            {% if fertility == 'High' %}color:#66bb6a;
-            {% elif fertility == 'Low' %}color:#ef5350;
-            {% else %}color:#ffa726;{% endif %}">
-            {{ fertility|upper }}
-          </div>
-          <svg class="analog-gauge" data-pct="{% if fertility == 'High' %}83{% elif fertility == 'Medium' %}50{% else %}17{% endif %}" viewBox="0 0 100 65" style="width:86px;height:55px;display:block;margin:0 auto;">
+        <div style="width:100%;max-width:220px;background:#0B5E2E;border-radius:8px;padding:12px 10px 10px;text-align:center;margin-top:14px;">
+          <div style="color:#a5d6a7;font-size:10px;font-weight:700;letter-spacing:.8px;white-space:nowrap;margin-bottom:6px;">OVERALL SOIL FERTILITY</div>
+          <svg class="analog-gauge" data-pct="{{ soil_score }}" viewBox="0 0 100 65" style="width:96px;height:62px;display:block;margin:0 auto;">
             <path d="M 10,55 A 40,40 0 0,1 17.64,31.49 L 27.35,38.54 A 28,28 0 0,0 22,55 Z" fill="#e53935"/>
             <path d="M 17.64,31.49 A 40,40 0 0,1 37.64,16.96 L 41.35,28.37 A 28,28 0 0,0 27.35,38.54 Z" fill="#ff7043"/>
             <path d="M 37.64,16.96 A 40,40 0 0,1 62.36,16.96 L 58.65,28.37 A 28,28 0 0,0 41.35,28.37 Z" fill="#fdd835"/>
             <path d="M 62.36,16.96 A 40,40 0 0,1 82.36,31.49 L 72.65,38.54 A 28,28 0 0,0 58.65,28.37 Z" fill="#8bc34a"/>
             <path d="M 82.36,31.49 A 40,40 0 0,1 90,55 L 78,55 A 28,28 0 0,0 72.65,38.54 Z" fill="#2e7d32"/>
-            <circle cx="50" cy="55" r="26" fill="#1a3c14"/>
-            <rect x="0" y="55" width="100" height="15" fill="#1a3c14"/>
-            <line class="gauge-needle" x1="50" y1="55" x2="50" y2="23" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="50" cy="55" r="26" fill="#0B5E2E"/>
+            <rect x="0" y="55" width="100" height="15" fill="#0B5E2E"/>
+            <line class="gauge-needle" x1="50" y1="55" x2="50" y2="23"
+              stroke="{% if score_css == 'green' %}#66bb6a{% elif score_css == 'red' %}#ef5350{% else %}#ffa726{% endif %}"
+              stroke-width="2.5" stroke-linecap="round"/>
             <circle cx="50" cy="55" r="4" fill="#aaaaaa"/>
           </svg>
+          <div style="font-size:20px;font-weight:800;margin-top:2px;
+            {% if score_css == 'green' %}color:#66bb6a;
+            {% elif score_css == 'red' %}color:#ef5350;
+            {% else %}color:#ffa726;{% endif %}">
+            {{ score_label }}
+          </div>
+          <div style="color:#cfe8d6;font-size:10px;margin-top:2px;">{{ soil_score }}/100</div>
         </div>
       </div>
 
       <!-- RIGHT: score + indicators + OC -->
-      <div style="width:195px;flex-shrink:0;min-width:0;display:flex;flex-direction:column;gap:5px;">
+      <div style="width:210px;flex-shrink:0;min-width:0;display:flex;flex-direction:column;gap:10px;">
 
         <!-- Soil Health Score — analog meter -->
-        <div class="card" style="border:1px solid #e0e0e0;padding:6px 4px 4px;">
-          <div style="font-size:9px;font-weight:700;text-align:center;color:#1a3c14;margin-bottom:2px;">SOIL HEALTH SCORE</div>
-          <svg class="analog-gauge" data-pct="{{ soil_score }}" viewBox="0 0 100 65" style="width:96px;height:62px;display:block;margin:0 auto;">
+        <div class="card" style="border:1px solid #e0e0e0;padding:10px 8px 10px;">
+          <div style="font-size:10px;font-weight:700;text-align:center;color:#0B5E2E;margin-bottom:4px;">SOIL HEALTH SCORE</div>
+          <svg class="analog-gauge" data-pct="{{ soil_score }}" viewBox="0 0 100 65" style="width:104px;height:67px;display:block;margin:0 auto;">
             <path d="M 10,55 A 40,40 0 0,1 17.64,31.49 L 27.35,38.54 A 28,28 0 0,0 22,55 Z" fill="#e53935"/>
             <path d="M 17.64,31.49 A 40,40 0 0,1 37.64,16.96 L 41.35,28.37 A 28,28 0 0,0 27.35,38.54 Z" fill="#ff7043"/>
             <path d="M 37.64,16.96 A 40,40 0 0,1 62.36,16.96 L 58.65,28.37 A 28,28 0 0,0 41.35,28.37 Z" fill="#fdd835"/>
@@ -310,25 +281,26 @@ tr:nth-child(even) td{background:#f9fafb;}
             <path d="M 82.36,31.49 A 40,40 0 0,1 90,55 L 78,55 A 28,28 0 0,0 72.65,38.54 Z" fill="#2e7d32"/>
             <circle cx="50" cy="55" r="26" fill="white"/>
             <rect x="0" y="55" width="100" height="15" fill="white"/>
-            <line class="gauge-needle" x1="50" y1="55" x2="50" y2="23" stroke="#111" stroke-width="2.5" stroke-linecap="round"/>
+            <line class="gauge-needle" x1="50" y1="55" x2="50" y2="23"
+              stroke="{% if score_css == 'green' %}#2e7d32{% elif score_css == 'red' %}#e53935{% else %}#fb8c00{% endif %}"
+              stroke-width="2.5" stroke-linecap="round"/>
             <circle cx="50" cy="55" r="4" fill="#444"/>
           </svg>
-          <div style="text-align:center;font-size:20px;font-weight:800;color:#222;line-height:1;margin-top:-4px;">{{ soil_score }}<span style="font-size:9px;color:#888;"> /100</span></div>
-          <div style="text-align:center;font-weight:700;font-size:10px;margin-top:2px;
-            {% if score_css == 'green' %}color:#2e7d32;{% elif score_css == 'yellow' %}color:#f9a825;{% else %}color:#e65100;{% endif %}">
-            {{ score_label }}
+          <div style="text-align:center;font-size:24px;font-weight:800;color:#222;line-height:1;margin-top:2px;">{{ soil_score }}</div>
+          <div style="text-align:center;font-weight:700;font-size:9px;letter-spacing:.3px;margin-top:3px;color:#888;text-transform:uppercase;">
+            {{ score_label }} / 100
           </div>
         </div>
 
-        <!-- Soil Health Indicators — 5 mini analog meters -->
-        <div class="card" style="border:1px solid #e0e0e0;padding:5px 3px 4px;">
-          <div style="font-size:9px;font-weight:700;text-align:center;color:#1a3c14;margin-bottom:3px;">SOIL HEALTH INDICATORS</div>
-          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;">
+        <!-- Soil Health Indicators — 2-col grid of bordered mini-cards -->
+        <div class="card" style="border:1px solid #e0e0e0;padding:8px;">
+          <div style="font-size:10px;font-weight:700;text-align:center;color:#0B5E2E;margin-bottom:6px;">SOIL HEALTH INDICATORS</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
             {% for pd in params_display %}
             {% if pd.key == 'ph' or pd.key == 'ec' or pd.key == 'n' or pd.key == 'p' or pd.key == 'k' %}
-            <div style="text-align:center;">
-              <div style="font-size:7px;color:#555;font-weight:700;margin-bottom:1px;">{% if pd.key == 'ph' %}pH{% elif pd.key == 'ec' %}EC{% elif pd.key == 'n' %}N{% elif pd.key == 'p' %}P{% else %}K{% endif %}</div>
-              <svg class="analog-gauge" data-param="{{ pd.key }}" data-value="{{ pd.value }}" viewBox="0 0 100 65" style="width:100%;height:auto;display:block;">
+            <div style="text-align:center;border:1px solid #e8e8e8;border-radius:6px;padding:6px 3px 5px;">
+              <div style="font-size:8px;color:#555;font-weight:700;margin-bottom:2px;">{% if pd.key == 'ph' %}pH{% elif pd.key == 'ec' %}EC{% elif pd.key == 'n' %}N{% elif pd.key == 'p' %}P{% else %}K{% endif %}</div>
+              <svg class="analog-gauge" data-param="{{ pd.key }}" data-value="{{ pd.value }}" viewBox="0 0 100 65" style="width:70%;height:auto;display:block;margin:0 auto;">
                 <path d="M 10,55 A 40,40 0 0,1 17.64,31.49 L 27.35,38.54 A 28,28 0 0,0 22,55 Z" fill="#e53935"/>
                 <path d="M 17.64,31.49 A 40,40 0 0,1 37.64,16.96 L 41.35,28.37 A 28,28 0 0,0 27.35,38.54 Z" fill="#ff7043"/>
                 <path d="M 37.64,16.96 A 40,40 0 0,1 62.36,16.96 L 58.65,28.37 A 28,28 0 0,0 41.35,28.37 Z" fill="#fdd835"/>
@@ -336,12 +308,14 @@ tr:nth-child(even) td{background:#f9fafb;}
                 <path d="M 82.36,31.49 A 40,40 0 0,1 90,55 L 78,55 A 28,28 0 0,0 72.65,38.54 Z" fill="#2e7d32"/>
                 <circle cx="50" cy="55" r="26" fill="white"/>
                 <rect x="0" y="55" width="100" height="15" fill="white"/>
-                <line class="gauge-needle" x1="50" y1="55" x2="50" y2="23" stroke="#111" stroke-width="3.5" stroke-linecap="round"/>
+                <line class="gauge-needle" x1="50" y1="55" x2="50" y2="23"
+                  stroke="{% if pd.css == 'green' %}#2e7d32{% elif pd.css == 'red' %}#e53935{% elif pd.css == 'orange' %}#fb8c00{% elif pd.css == 'yellow' %}#f9a825{% else %}#999{% endif %}"
+                  stroke-width="3.5" stroke-linecap="round"/>
                 <circle cx="50" cy="55" r="5" fill="#444"/>
               </svg>
-              <div style="font-size:6.5px;font-weight:700;margin-top:-1px;" class="c-{{ pd.css }}">{{ pd.value }}</div>
-              <div style="font-size:5.5px;color:#888;">{% if pd.key == 'ph' %}(pH){% elif pd.key == 'ec' %}(dS/m){% else %}(kg/ha){% endif %}</div>
-              <div><span class="badge {{ pd.css }}" style="font-size:5.5px;padding:1px 2px;">{{ pd.status }}</span></div>
+              <div style="font-size:8.5px;font-weight:700;margin-top:2px;" class="c-{{ pd.css }}">{{ pd.value }}</div>
+              <div style="font-size:6px;color:#888;">{% if pd.key == 'ph' %}(pH){% elif pd.key == 'ec' %}(dS/m){% else %}(kg/ha){% endif %}</div>
+              <div style="font-size:7px;font-weight:600;margin-top:2px;" class="c-{{ pd.css }}">{{ pd.status }}</div>
             </div>
             {% endif %}
             {% endfor %}
@@ -349,10 +323,10 @@ tr:nth-child(even) td{background:#f9fafb;}
         </div>
 
         <!-- Organic Carbon — analog meter -->
-        <div class="card" style="border:1px solid #e0e0e0;padding:5px 4px 3px;text-align:center;">
-          <div style="font-size:9px;font-weight:700;color:#1a3c14;margin-bottom:2px;">ORGANIC CARBON (OC)</div>
+        <div class="card" style="border:1px solid #e0e0e0;padding:10px 8px 8px;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:#0B5E2E;margin-bottom:4px;">ORGANIC CARBON (OC)</div>
           {% for pd in params_display %}{% if pd.key == 'organic_carbon' %}
-          <svg class="analog-gauge" data-param="organic_carbon" data-value="{{ pd.value }}" viewBox="0 0 100 65" style="width:84px;height:55px;display:block;margin:0 auto;">
+          <svg class="analog-gauge" data-param="organic_carbon" data-value="{{ pd.value }}" viewBox="0 0 100 65" style="width:96px;height:62px;display:block;margin:0 auto;">
             <path d="M 10,55 A 40,40 0 0,1 17.64,31.49 L 27.35,38.54 A 28,28 0 0,0 22,55 Z" fill="#e53935"/>
             <path d="M 17.64,31.49 A 40,40 0 0,1 37.64,16.96 L 41.35,28.37 A 28,28 0 0,0 27.35,38.54 Z" fill="#ff7043"/>
             <path d="M 37.64,16.96 A 40,40 0 0,1 62.36,16.96 L 58.65,28.37 A 28,28 0 0,0 41.35,28.37 Z" fill="#fdd835"/>
@@ -360,86 +334,22 @@ tr:nth-child(even) td{background:#f9fafb;}
             <path d="M 82.36,31.49 A 40,40 0 0,1 90,55 L 78,55 A 28,28 0 0,0 72.65,38.54 Z" fill="#2e7d32"/>
             <circle cx="50" cy="55" r="26" fill="white"/>
             <rect x="0" y="55" width="100" height="15" fill="white"/>
-            <line class="gauge-needle" x1="50" y1="55" x2="50" y2="23" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+            <line class="gauge-needle" x1="50" y1="55" x2="50" y2="23"
+              stroke="{% if pd.css == 'green' %}#2e7d32{% elif pd.css == 'red' %}#e53935{% elif pd.css == 'orange' %}#fb8c00{% elif pd.css == 'yellow' %}#f9a825{% else %}#999{% endif %}"
+              stroke-width="3" stroke-linecap="round"/>
             <circle cx="50" cy="55" r="4.5" fill="#444"/>
           </svg>
-          <div style="font-size:17px;font-weight:800;margin-top:-3px;" class="c-{{ pd.css }}">{{ pd.value }}%</div>
-          <div class="mt2"><span class="badge {{ pd.css }}">{{ pd.status }}</span></div>
+          <div style="font-size:20px;font-weight:800;margin-top:2px;" class="c-{{ pd.css }}">{{ pd.value }}%</div>
+          <div style="font-size:9px;font-weight:600;margin-top:2px;" class="c-{{ pd.css }}">{{ pd.status }}</div>
           {% endif %}{% endfor %}
         </div>
 
       </div><!-- /right -->
     </div><!-- /3-col -->
 
-    <!-- pH / EC row -->
-    <div style="border-top:2px solid #2e7d32;border-bottom:2px solid #2e7d32;padding:7px 0;display:flex;justify-content:space-around;background:#f1f8e9;margin-bottom:8px;">
-      {% for pd in params_display %}
-      {% if pd.key == 'ph' %}<span style="font-size:12px;font-weight:700;color:#1a3c14;">pH (0-14) : <span class="c-{{ pd.css }}">{{ pd.value }}</span> ({{ pd.status }})</span>{% endif %}
-      {% if pd.key == 'ec' %}<span style="font-size:12px;font-weight:700;color:#1a3c14;">EC (0.1-30 dS/m) : <span class="c-{{ pd.css }}">{{ pd.value }}</span> ({{ pd.status }})</span>{% endif %}
-      {% endfor %}
-    </div>
-
-    <!-- Recommendation + Key Nutrient Concerns -->
-    <div style="display:flex;gap:8px;margin-bottom:8px;">
-
-      <!-- Recommendation -->
-      <div class="card" style="flex:1;border:1px solid #e0e0e0;">
-        <div class="card-hdr" style="font-size:10px;padding:6px 10px;"><i class="fas fa-leaf" style="margin-right:4px;"></i>RECOMMENDATION</div>
-        <div style="padding:8px 10px;">
-          {% for b in rec_bullets %}
-          <div class="dot-row" style="font-size:10px;margin-bottom:5px;"><div class="dot green"></div><span>{{ b }}</span></div>
-          {% endfor %}
-        </div>
-      </div>
-
-      <!-- Key Nutrient Concerns -->
-      <div class="card" style="flex:1;border:1px solid #e0e0e0;">
-        <div class="card-hdr" style="font-size:10px;padding:6px 10px;"><i class="fas fa-exclamation-triangle" style="margin-right:4px;"></i>KEY NUTRIENT CONCERNS</div>
-        <div style="padding:8px 10px;">
-          {% if low_list  %}<div class="dot-row" style="font-size:10px;margin-bottom:5px;"><div class="dot red"></div>    <span><strong>Low</strong> : {{ low_list }}</span></div>{% endif %}
-          {% if med_list  %}<div class="dot-row" style="font-size:10px;margin-bottom:5px;"><div class="dot orange"></div> <span><strong>Medium</strong> : {{ med_list }}</span></div>{% endif %}
-          {% if high_list %}<div class="dot-row" style="font-size:10px;margin-bottom:5px;"><div class="dot green"></div>  <span><strong>High</strong> : {{ high_list }}</span></div>{% endif %}
-          {% if suff_list %}<div class="dot-row" style="font-size:10px;margin-bottom:5px;"><div class="dot blue"></div>   <span><strong>Sufficient</strong> : {{ suff_list }}</span></div>{% endif %}
-          {% if adeq_list %}<div class="dot-row" style="font-size:10px;margin-bottom:5px;"><div class="dot gray"></div>   <span><strong>Adequate</strong> : {{ adeq_list }}</span></div>{% endif %}
-        </div>
-      </div>
-    </div>
-
-    <!-- Soil Summary + Conditions stacked full-width -->
-    <div style="display:flex;flex-direction:column;gap:5px;flex:1;">
-      <div>
-        <div style="font-size:10px;font-weight:700;color:#1a3c14;margin-bottom:3px;">SOIL SUMMARY (From Soil Test)</div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;">
-          {% for pd in params_display %}
-          <div style="display:flex;justify-content:space-between;padding:4px 10px;border-bottom:1px solid #f0f0f0;{% if forloop.counter|divisibleby:2 %}background:#f9fafb;{% endif %}font-size:10px;">
-            <span style="color:#666;">{{ pd.name|truncatechars:20 }}</span>
-            <span style="font-weight:700;margin:0 6px;" class="c-{{ pd.css }}">{{ pd.value }}</span>
-            <span style="color:#888;">{{ pd.status }}</span>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      <div>
-        <div style="font-size:10px;font-weight:700;color:#1a3c14;margin-bottom:3px;">SOIL CONDITIONS (From Soil Test)</div>
-        <div style="border:1px solid #e0e0e0;border-radius:4px;padding:8px 14px;font-size:10.5px;background:#f9fafb;display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;">
-          <div>
-            {% for pd in params_display %}
-            {% if pd.key == 'ph' %}<div style="margin-bottom:5px;"><strong>pH (0-14) : </strong><span class="c-{{ pd.css }}">{{ pd.value }} ({{ pd.status }})</span></div>{% endif %}
-            {% if pd.key == 'ec' %}<div style="margin-bottom:5px;"><strong>EC (0.1-30 dS/m) : </strong><span class="c-{{ pd.css }}">{{ pd.value }} ({{ pd.status }})</span></div>{% endif %}
-            {% endfor %}
-          </div>
-          <div style="flex:1;font-size:9.5px;color:#555;border-left:2px solid #e0e0e0;padding-left:14px;">
-            Alkaline soil may cause fixation of P, Zn, Fe &amp; Mn. Use organic matter, balanced fertilizers and micronutrients for better availability.
-            <div style="font-size:9px;color:#888;margin-top:4px;"><em>Analysis Method: Spectroscopy + AI Interpretation</em></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div><!-- /padding -->
   <div class="pg-footer">
-    <span>Note: Ideal ranges may vary slightly with soil type and crop.</span>
-    <span>Analysis Method: Spectroscopy • AI Interpretation</span>
+    <div class="pg-num">1</div>
   </div>
 </div>
 
@@ -449,8 +359,16 @@ tr:nth-child(even) td{background:#f9fafb;}
 ════════════════════════════════════════════════════════ -->
 <div class="page" style="padding-bottom:30px;">
   <div class="pg-header">
-    <span><i class="fas fa-leaf" style="margin-right:6px;"></i>ARKASHINE INNOVATIONS &nbsp;|&nbsp; SoiLENZ Advisory Report</span>
-    <div class="pg-num">2</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="background:#fff;border-radius:5px;padding:3px 8px;display:flex;align-items:center;">
+        <img src="{% static 'logo.PNG' %}" style="height:18px;display:block;">
+      </div>
+      <span>| Soil ENZ Advisory Report</span>
+    </div>
+    <div style="text-align:right;line-height:1.25;">
+      <div style="font-size:12px;font-weight:800;color:#a5d6a7;">SoilENZ</div>
+      <div style="font-size:7px;opacity:.9;">Advanced Soil Intelligence from Arkashine Innovations</div>
+    </div>
   </div>
   <div class="pg-body">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
@@ -520,8 +438,7 @@ tr:nth-child(even) td{background:#f9fafb;}
     </table>
   </div>
   <div class="pg-footer">
-    <span>Note: Ideal ranges may vary slightly with soil type and crop.</span>
-    <span>Analysis Method: Spectroscopy + AI Interpretation</span>
+    <div class="pg-num">2</div>
   </div>
 </div>
 
@@ -531,8 +448,16 @@ tr:nth-child(even) td{background:#f9fafb;}
 ════════════════════════════════════════════════════════ -->
 <div class="page" style="padding-bottom:30px;">
   <div class="pg-header">
-    <span><i class="fas fa-leaf" style="margin-right:6px;"></i>ARKASHINE INNOVATIONS &nbsp;|&nbsp; SoiLENZ Advisory Report</span>
-    <div class="pg-num">3</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="background:#fff;border-radius:5px;padding:3px 8px;display:flex;align-items:center;">
+        <img src="{% static 'logo.PNG' %}" style="height:18px;display:block;">
+      </div>
+      <span>| Soil ENZ Advisory Report</span>
+    </div>
+    <div style="text-align:right;line-height:1.25;">
+      <div style="font-size:12px;font-weight:800;color:#a5d6a7;">SoilENZ</div>
+      <div style="font-size:7px;opacity:.9;">Advanced Soil Intelligence from Arkashine Innovations</div>
+    </div>
   </div>
   <div class="pg-body">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
@@ -580,8 +505,7 @@ tr:nth-child(even) td{background:#f9fafb;}
     </div>
   </div>
   <div class="pg-footer">
-    <span>Note: Ideal ranges may vary slightly with soil type and crop.</span>
-    <span>Analysis Method: Spectroscopy + AI Interpretation</span>
+    <div class="pg-num">3</div>
   </div>
 </div>
 
@@ -591,8 +515,16 @@ tr:nth-child(even) td{background:#f9fafb;}
 ════════════════════════════════════════════════════════ -->
 <div class="page" style="padding-bottom:30px;">
   <div class="pg-header">
-    <span><i class="fas fa-leaf" style="margin-right:6px;"></i>ARKASHINE INNOVATIONS &nbsp;|&nbsp; SoiLENZ Advisory Report</span>
-    <div class="pg-num">4</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="background:#fff;border-radius:5px;padding:3px 8px;display:flex;align-items:center;">
+        <img src="{% static 'logo.PNG' %}" style="height:18px;display:block;">
+      </div>
+      <span>| Soil ENZ Advisory Report</span>
+    </div>
+    <div style="text-align:right;line-height:1.25;">
+      <div style="font-size:12px;font-weight:800;color:#a5d6a7;">SoilENZ</div>
+      <div style="font-size:7px;opacity:.9;">Advanced Soil Intelligence from Arkashine Innovations</div>
+    </div>
   </div>
   <div class="pg-body">
     <div class="sec-title">CROP SUITABILITY ANALYSIS</div>
@@ -680,8 +612,7 @@ tr:nth-child(even) td{background:#f9fafb;}
 
   </div>
   <div class="pg-footer">
-    <span>Note: Ideal ranges may vary slightly with soil type and crop.</span>
-    <span>Analysis Method: Spectroscopy + AI Interpretation</span>
+    <div class="pg-num">4</div>
   </div>
 </div>
 
@@ -691,8 +622,16 @@ tr:nth-child(even) td{background:#f9fafb;}
 ════════════════════════════════════════════════════════ -->
 <div class="page" style="padding-bottom:30px;">
   <div class="pg-header">
-    <span><i class="fas fa-leaf" style="margin-right:6px;"></i>ARKASHINE INNOVATIONS &nbsp;|&nbsp; SoiLENZ Advisory Report</span>
-    <div class="pg-num">5</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="background:#fff;border-radius:5px;padding:3px 8px;display:flex;align-items:center;">
+        <img src="{% static 'logo.PNG' %}" style="height:18px;display:block;">
+      </div>
+      <span>| Soil ENZ Advisory Report</span>
+    </div>
+    <div style="text-align:right;line-height:1.25;">
+      <div style="font-size:12px;font-weight:800;color:#a5d6a7;">SoilENZ</div>
+      <div style="font-size:7px;opacity:.9;">Advanced Soil Intelligence from Arkashine Innovations</div>
+    </div>
   </div>
   <div class="pg-body">
     <div class="sec-title">SOIL AMENDMENT &amp; ACTION PLAN</div>
@@ -787,8 +726,7 @@ tr:nth-child(even) td{background:#f9fafb;}
 
   </div>
   <div class="pg-footer">
-    <span>Note: Ideal ranges may vary slightly with soil type and crop.</span>
-    <span>Analysis Method: Spectroscopy + AI Interpretation</span>
+    <div class="pg-num">5</div>
   </div>
 </div>
 
@@ -798,8 +736,16 @@ tr:nth-child(even) td{background:#f9fafb;}
 ════════════════════════════════════════════════════════ -->
 <div class="page" style="padding-bottom:30px;">
   <div class="pg-header">
-    <span><i class="fas fa-leaf" style="margin-right:6px;"></i>ARKASHINE INNOVATIONS &nbsp;|&nbsp; SoiLENZ Advisory Report</span>
-    <div class="pg-num">6</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="background:#fff;border-radius:5px;padding:3px 8px;display:flex;align-items:center;">
+        <img src="{% static 'logo.PNG' %}" style="height:18px;display:block;">
+      </div>
+      <span>| Soil ENZ Advisory Report</span>
+    </div>
+    <div style="text-align:right;line-height:1.25;">
+      <div style="font-size:12px;font-weight:800;color:#a5d6a7;">SoilENZ</div>
+      <div style="font-size:7px;opacity:.9;">Advanced Soil Intelligence from Arkashine Innovations</div>
+    </div>
   </div>
   <div class="pg-body">
     <div class="sec-title">CARBON CREDIT IMPACT DASHBOARD</div>
@@ -926,8 +872,7 @@ tr:nth-child(even) td{background:#f9fafb;}
 
   </div>
   <div class="pg-footer">
-    <span>Note: Carbon sequestration potential varies with management, climate, soil type &amp; crop.</span>
-    <span>Analysis Method: Spectroscopy + AI Interpretation</span>
+    <div class="pg-num">6</div>
   </div>
 </div>
 
