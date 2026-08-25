@@ -535,86 +535,54 @@ tr:nth-child(even) td{background:#f9fafb;}
     </div>
   </div>
   <div class="pg-body">
-    <div class="sec-title">CROP SUITABILITY ANALYSIS</div>
-    <div class="sec-sub" style="font-size:10px;">Crop suitability based on soil (pH, EC, N, P, K, OC, S, Micro) &amp; local climate</div>
+    <div class="sec-title" style="font-size:16px;">CROP SUITABILITY ANALYSIS</div>
+    <div class="sec-sub" style="font-size:10px;">Crop suitability based on soil parameters (pH, OC, N, P, K, S, Micronutrients, EC) &amp; agro-climatic intelligence</div>
 
-    <!-- info strip -->
-    <div style="display:flex;gap:6px;margin:8px 0;">
-      <div style="flex:1;background:#e8f5e9;border-radius:5px;text-align:center;padding:6px 6px;"><div style="font-size:9px;color:#666;">Field Area</div><div style="font-weight:700;font-size:11px;color:#1a3c14;">{{ meta.field_area }}</div></div>
-      <div style="flex:1;background:#e8f5e9;border-radius:5px;text-align:center;padding:6px 6px;"><div style="font-size:9px;color:#666;">Grid Size</div><div style="font-weight:700;font-size:11px;color:#1a3c14;">30 m × 30 m</div></div>
-      <div style="flex:1;background:#e8f5e9;border-radius:5px;text-align:center;padding:6px 6px;"><div style="font-size:9px;color:#666;">Total Grids</div><div style="font-weight:700;font-size:11px;color:#1a3c14;">16</div></div>
-      <div style="flex:1;background:#e8f5e9;border-radius:5px;text-align:center;padding:6px 6px;"><div style="font-size:9px;color:#666;">Analysis Date</div><div style="font-weight:700;font-size:11px;color:#1a3c14;">{{ meta.analysis_date }}</div></div>
-    </div>
-
-    {% if meta.ai_crop %}
-    <div style="background:#e8f5e9;border-left:4px solid #2e7d32;border-radius:4px;padding:5px 10px;font-size:9.5px;">
-      <i class="fas fa-robot" style="color:#2e7d32;margin-right:5px;"></i>
-      <strong style="color:#1a3c14;">AI Recommended:</strong> {{ meta.ai_crop|title }} crop is best suited to this soil profile.
-    </div>
-    {% endif %}
-    {% if fertilizer_recs %}
-    <div style="background:#fff8e1;border-left:4px solid #f9a825;border-radius:4px;padding:5px 10px;margin-bottom:6px;">
-      <div style="font-size:9px;font-weight:700;color:#e65100;margin-bottom:3px;"><i class="fas fa-flask" style="margin-right:4px;"></i>FERTILIZER RECOMMENDATIONS (From Soil Test)</div>
-      {% for rec in fertilizer_recs %}{% if rec %}<div style="font-size:8.5px;color:#444;margin-bottom:1px;">• {{ rec }}</div>{% endif %}{% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- Suitability bar chart + table side by side -->
-    <div style="display:flex;gap:10px;">
-
-      <!-- Left: bars -->
-      <div style="flex:1;">
-        <div style="font-size:9px;color:#888;margin-bottom:4px;display:flex;justify-content:space-between;"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span></div>
-        <div style="border-top:1px solid #e0e0e0;margin-bottom:5px;"></div>
+    <!-- Suitability table: crop | score bar | score | status | notes -->
+    <table style="table-layout:fixed;margin-top:10px;">
+      <colgroup>
+        <col style="width:16%;"><col style="width:32%;"><col style="width:8%;"><col style="width:18%;"><col>
+      </colgroup>
+      <thead>
+        <tr>
+          <th style="background:#fff;color:#222;border-bottom:2px solid #0B5E2E;">Crop</th>
+          <th style="background:#fff;color:#222;border-bottom:2px solid #0B5E2E;">
+            Suitability Score (0-10)
+            <div style="display:flex;justify-content:space-between;font-weight:400;color:#888;font-size:8px;margin-top:2px;"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span></div>
+          </th>
+          <th style="background:#fff;color:#222;border-bottom:2px solid #0B5E2E;">Score</th>
+          <th style="background:#fff;color:#222;border-bottom:2px solid #0B5E2E;">Status</th>
+          <th style="background:#fff;color:#222;border-bottom:2px solid #0B5E2E;">Key Notes</th>
+        </tr>
+      </thead>
+      <tbody>
         {% for crop in crops_scored %}
-        <div class="bar-row">
-          <div style="width:105px;font-size:10px;font-weight:600;color:#333;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">{{ crop.icon }} {{ crop.name }}</div>
-          <div class="bar-track">
-            <div class="bar-fill" style="width:{{ crop.bar_pct }}%;background:{% if crop.scss == 'green' or crop.scss == 'lt-green' %}#2e7d32{% elif crop.scss == 'orange' %}#e65100{% else %}#c62828{% endif %};"></div>
-          </div>
-          <div style="width:26px;font-size:10px;font-weight:700;text-align:right;{% if crop.scss == 'green' or crop.scss == 'lt-green' %}color:#2e7d32;{% elif crop.scss == 'orange' %}color:#e65100;{% else %}color:#c62828;{% endif %}">{{ crop.score }}</div>
-        </div>
+        <tr>
+          <td style="background:#fff;font-weight:600;color:#222;">{{ crop.icon }} {{ crop.name }}</td>
+          <td style="background:#fff;">
+            <div class="bar-track" style="height:14px;">
+              <div class="bar-fill" style="width:{{ crop.bar_pct }}%;background:{% if crop.scss == 'green' or crop.scss == 'lt-green' %}#2e7d32{% elif crop.scss == 'orange' %}#e65100{% else %}#c62828{% endif %};"></div>
+            </div>
+          </td>
+          <td style="background:#fff;font-weight:700;" class="{% if crop.scss == 'green' or crop.scss == 'lt-green' %}c-green{% elif crop.scss == 'orange' %}c-orange{% else %}c-red{% endif %}">{{ crop.score }}</td>
+          <td style="background:#fff;font-weight:600;{% if crop.scss == 'green' or crop.scss == 'lt-green' %}color:#2e7d32;{% elif crop.scss == 'orange' %}color:#e65100;{% else %}color:#c62828;{% endif %}">
+            {% if crop.scss == 'green' or crop.scss == 'lt-green' %}✓{% elif crop.scss == 'orange' %}▲{% else %}✕{% endif %} {{ crop.status }}
+          </td>
+          <td style="background:#fff;font-size:9px;color:#555;">{{ crop.notes }}</td>
+        </tr>
         {% endfor %}
-      </div>
+      </tbody>
+    </table>
 
-      <!-- Right: table -->
-      <div style="flex:1;overflow:hidden;">
-        <table style="font-size:10px;">
-          <thead><tr>
-            <th>Crop</th><th style="width:34px;">Score</th><th style="width:90px;">Status</th><th>Key Notes</th>
-          </tr></thead>
-          <tbody>
-            {% for crop in crops_scored %}
-            <tr>
-              <td style="font-weight:600;">{{ crop.icon }} {{ crop.name }}</td>
-              <td style="font-weight:700;" class="{% if crop.scss == 'green' or crop.scss == 'lt-green' %}c-green{% elif crop.scss == 'orange' %}c-orange{% else %}c-red{% endif %}">{{ crop.score }}</td>
-              <td><span class="badge {{ crop.scss }}" style="font-size:8.5px;">{{ crop.status }}</span></td>
-              <td style="font-size:9px;color:#555;">{{ crop.notes }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    <!-- Crop Recommendation Summary -->
+    <div style="background:#f1f8e9;border:1px solid #a5d6a7;border-radius:6px;padding:12px;margin-top:10px;">
+      <div style="font-size:10.5px;font-weight:700;color:#0B5E2E;margin-bottom:6px;">
+        ☀️ Crop Recommendation Summary
       </div>
-    </div>
-
-    <!-- bottom boxes -->
-    <div style="display:flex;gap:8px;margin-top:10px;">
-      <div style="flex:1;background:#f1f8e9;border:1px solid #a5d6a7;border-radius:6px;padding:10px;">
-        <div style="font-size:10.5px;font-weight:700;color:#1a3c14;margin-bottom:6px;">
-          <i class="fas fa-lightbulb" style="color:#f9a825;margin-right:4px;"></i>TOP RECOMMENDED CROPS:
-        </div>
-        <div style="font-size:11px;font-weight:600;color:#2e7d32;margin-bottom:6px;">{{ top_crops|join:", " }}</div>
-        <div style="font-size:10px;color:#555;">
-          <strong>FOCUS:</strong> Improve Mg, Fe, Mn, S and B deficiencies through balanced micronutrient application.
-          Avoid excess potash fertilizer as K is already very high. Add organic matter and split nitrogen doses for better crop response.
-        </div>
-      </div>
-      <div style="flex:1;background:#f9fafb;border:1px solid #e0e0e0;border-radius:6px;padding:10px;">
-        <div style="font-size:10.5px;font-weight:700;color:#1a3c14;margin-bottom:6px;">KEY NUTRIENT CONCERNS:</div>
-        {% if low_list  %}<div class="dot-row"><div class="dot red"></div>    <span><strong>Low:</strong> {{ low_list }}</span></div>{% endif %}
-        {% if med_list  %}<div class="dot-row"><div class="dot orange"></div> <span><strong>Medium:</strong> {{ med_list }}</span></div>{% endif %}
-        {% if high_list %}<div class="dot-row"><div class="dot green"></div>  <span><strong>High:</strong> {{ high_list }}</span></div>{% endif %}
-        {% if suff_list %}<div class="dot-row"><div class="dot blue"></div>   <span><strong>Sufficient:</strong> {{ suff_list }}</span></div>{% endif %}
+      <div style="font-size:10px;color:#444;line-height:1.5;">
+        {% if top_crops %}<strong>{{ top_crops|join:", " }}</strong> show the highest suitability scores based on this field's soil profile.{% endif %}
+        {% if low_list %}Crops sensitive to <strong>{{ low_list }}</strong> deficiency may need extra care.{% endif %}
+        {% if high_list %}Elevated <strong>{{ high_list }}</strong> should be factored into fertilizer planning.{% endif %}
       </div>
     </div>
 
