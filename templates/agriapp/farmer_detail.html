@@ -204,6 +204,7 @@
         <div class="info-row"><span class="info-label">State</span>    <span class="info-value">{{ farmer.state }}</span></div>
         <div class="info-row"><span class="info-label">District</span> <span class="info-value">{{ farmer.district }}</span></div>
         <div class="info-row"><span class="info-label">Village</span>  <span class="info-value">{{ farmer.village }}</span></div>
+        <div class="info-row"><span class="info-label">Address</span>  <span class="info-value">{{ farmer.address|default:"—" }}</span></div>
         {% if farmer.latitude and farmer.longitude %}
         <div class="info-row">
           <span class="info-label">Lat / Lng</span>
@@ -391,6 +392,10 @@
           <div>
             <label class="edit-label">Village</label>
             <input class="edit-input" name="village" value="{{ farmer.village }}">
+          </div>
+          <div>
+            <label class="edit-label">Address</label>
+            <input class="edit-input" name="address" value="{{ farmer.address }}">
           </div>
           <div>
             <label class="edit-label">Latitude</label>

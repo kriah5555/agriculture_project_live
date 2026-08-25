@@ -567,6 +567,7 @@ class Farmer(models.Model):
     state          = models.CharField(max_length=100)
     district       = models.CharField(max_length=100)
     village        = models.CharField(max_length=100)
+    address        = models.CharField(max_length=255, blank=True, default='')
     latitude       = models.FloatField(null=True, blank=True)
     longitude      = models.FloatField(null=True, blank=True)
     land_area      = models.FloatField(default=0.0)

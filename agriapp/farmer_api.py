@@ -61,7 +61,7 @@ class FarmerListSerializer(serializers.ModelSerializer):
         model  = Farmer
         fields = [
             'id', 'farmer_name', 'phone', 'mobile', 'email', 'aadhaar_number',
-            'farmer_image', 'state', 'district', 'village',
+            'farmer_image', 'state', 'district', 'village', 'address',
             'latitude', 'longitude', 'land_area', 'survey_number', 'plot_number',
             'crop', 'season', 'season_display',
             'status', 'status_display', 'created_at',
@@ -96,6 +96,7 @@ class FarmerCreateSerializer(serializers.Serializer):
     state          = serializers.CharField()
     district       = serializers.CharField()
     village        = serializers.CharField()
+    address        = serializers.CharField(required=False, help_text='House/street address')
     land_area      = serializers.FloatField(help_text='Land area in acres')
     survey_number  = serializers.CharField(required=False, help_text='Land survey number')
     plot_number    = serializers.CharField(required=False, help_text='Land plot number')
@@ -118,6 +119,7 @@ class FarmerUpdateSerializer(serializers.Serializer):
     state          = serializers.CharField(required=False)
     district       = serializers.CharField(required=False)
     village        = serializers.CharField(required=False)
+    address        = serializers.CharField(required=False)
     latitude       = serializers.FloatField(required=False, allow_null=True)
     longitude      = serializers.FloatField(required=False, allow_null=True)
     land_area      = serializers.FloatField(required=False)
@@ -350,6 +352,7 @@ def farmer_create(request):
         state          = data.get('state', '').strip(),
         district       = data.get('district', '').strip(),
         village        = data.get('village', '').strip(),
+        address        = data.get('address', '').strip(),
         latitude       = data.get('latitude') or None,
         longitude      = data.get('longitude') or None,
         land_area      = data.get('land_area', 0),
@@ -410,7 +413,7 @@ def farmer_update(request, pk):
     data             = request.data
     updatable_fields = [
         'farmer_name', 'phone', 'mobile', 'email', 'aadhaar_number',
-        'state', 'district', 'village', 'latitude', 'longitude',
+        'state', 'district', 'village', 'address', 'latitude', 'longitude',
         'land_area', 'survey_number', 'plot_number', 'crop', 'season',
     ]
     for field in updatable_fields:
