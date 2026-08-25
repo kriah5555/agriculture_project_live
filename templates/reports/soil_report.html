@@ -199,7 +199,7 @@ tr:nth-child(even) td{background:#f9fafb;}
     <div style="text-align:right;line-height:1.25;">
       <div style="font-size:7px;letter-spacing:.3px;opacity:.85;">Powered by</div>
       <div style="font-size:12px;font-weight:800;color:#a5d6a7;">SoilENZ</div>
-      <div style="font-size:7px;opacity:.9;">Advanced Soil Intelligence from Arkashine Innovations</div>
+      <div style="font-size:7px;font-weight:400;opacity:.9;">Advanced Soil Intelligence<br>from Arkashine Innovations</div>
     </div>
   </div>
 
@@ -367,73 +367,81 @@ tr:nth-child(even) td{background:#f9fafb;}
     </div>
     <div style="text-align:right;line-height:1.25;">
       <div style="font-size:12px;font-weight:800;color:#a5d6a7;">SoilENZ</div>
-      <div style="font-size:7px;opacity:.9;">Advanced Soil Intelligence from Arkashine Innovations</div>
+      <div style="font-size:7px;font-weight:400;opacity:.9;">Advanced Soil Intelligence<br>from Arkashine Innovations</div>
     </div>
   </div>
   <div class="pg-body">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
       <div>
-        <div class="sec-title">ARKASHINE SOILENZ RESULTS –<br>DETAILED 14 PARAMETER TEST</div>
-        <div style="margin-top:5px;font-size:9px;color:#555;">Powered by <strong style="color:#1a3c14;">SoiLENZ</strong> &nbsp;·&nbsp; Advanced Soil Intelligence from Arkashine Labs</div>
+        <div class="sec-title" style="font-size:16px;">ARKASHINE SOILENZ RESULTS –<br>DETAILED 14 PARAMETER TEST</div>
+        <div style="margin-top:6px;">
+          <div style="font-size:8px;color:#888;">Powered by</div>
+          <div style="font-size:20px;font-weight:800;line-height:1.2;"><span style="color:#4CAF50;font-weight:600;">Soil</span><span style="color:#4CAF50;">ENZ</span></div>
+          <div style="font-size:8px;color:#888;line-height:1.3;">Advanced Soil Intelligence<br>from Arkashine Innovations</div>
+        </div>
       </div>
-      <div class="prec-box" style="width:200px;">
-        <div class="ptitle">SOILENZ MEANS PRECISION</div>
-        <div class="prec-item"><i class="fas fa-check-circle"></i> Scientific 14-parameter soil test</div>
-        <div class="prec-item"><i class="fas fa-check-circle"></i> Lab-grade accuracy in 60 sec</div>
-        <div class="prec-item"><i class="fas fa-check-circle"></i> Smart recommendations for higher yield</div>
-        <div class="prec-item"><i class="fas fa-check-circle"></i> Enables data-driven decision farming</div>
-        <div class="prec-item"><i class="fas fa-check-circle"></i> Improves soil health &amp; lowers input cost</div>
+      <div class="prec-box" style="width:335px;background:#0B5E2E;">
+        <div class="ptitle" style="color:#a5d6a7;">SOILENZ MEANS PRECISION</div>
+        <div class="prec-item"><i class="fas fa-check" style="color:#a5d6a7;margin-right:5px;"></i> Scientific 14 parameter soil test</div>
+        <div class="prec-item"><i class="fas fa-check" style="color:#a5d6a7;margin-right:5px;"></i> Lab-grade accuracy in 60 sec</div>
+        <div class="prec-item"><i class="fas fa-check" style="color:#a5d6a7;margin-right:5px;"></i> Smart recommendations for higher yield</div>
+        <div class="prec-item"><i class="fas fa-check" style="color:#a5d6a7;margin-right:5px;"></i> Enables data-driven decision farming</div>
+        <div class="prec-item"><i class="fas fa-check" style="color:#a5d6a7;margin-right:5px;"></i> Improves soil health &amp; lowers input cost</div>
       </div>
     </div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-      <div style="font-size:12px;font-weight:700;color:#1a3c14;">DETAILED 14 PARAMETER RESULTS</div>
-      <div style="font-size:10px;color:#555;">Analysis Date: {{ meta.analysis_date }}</div>
+      <div style="font-size:12px;font-weight:700;color:#0B5E2E;">DETAILED 14 PARAMETER RESULTS</div>
+      <div style="font-size:10px;font-weight:700;color:#0B5E2E;">Analysis Date : {{ meta.analysis_date }}</div>
     </div>
 
-    <table>
+    <table style="table-layout:fixed;">
+      <colgroup>
+        <col style="width:3.5%;"><col style="width:15%;"><col style="width:7%;"><col style="width:6%;">
+        <col style="width:9%;"><col style="width:10%;"><col style="width:10.5%;"><col>
+      </colgroup>
       <thead>
         <tr>
-          <th style="width:22px;">#</th>
-          <th>Parameter</th>
-          <th style="width:60px;">Value</th>
-          <th style="width:50px;">Unit</th>
-          <th style="width:90px;">Status</th>
-          <th style="width:80px;">Ideal Range</th>
-          <th>Interpretation</th>
+          <th style="background:#0B5E2E;text-transform:uppercase;">#</th>
+          <th style="background:#0B5E2E;text-transform:uppercase;">Parameter</th>
+          <th style="background:#0B5E2E;text-transform:uppercase;">Value</th>
+          <th style="background:#0B5E2E;text-transform:uppercase;">Unit</th>
+          <th style="background:#0B5E2E;text-transform:uppercase;">Status</th>
+          <th style="background:#0B5E2E;text-transform:uppercase;">Ideal Range</th>
+          <th style="background:#0B5E2E;text-transform:uppercase;">Indicator</th>
+          <th style="background:#0B5E2E;text-transform:uppercase;">Interpretation</th>
         </tr>
       </thead>
       <tbody>
         {% for pd in params_display %}
         <tr>
-          <td style="color:#888;">{{ forloop.counter }}</td>
-          <td style="font-weight:600;">{{ pd.name }}</td>
-          <td style="font-weight:700;" class="c-{{ pd.css }}">{{ pd.value }}</td>
-          <td style="color:#666;">{{ pd.unit }}</td>
-          <td><span class="badge {{ pd.css }}">{{ pd.status }}</span></td>
-          <td style="font-size:10px;color:#555;">{{ pd.ideal }}</td>
-          <td style="font-size:10px;color:#444;">{{ pd.interp }}</td>
+          <td style="background:#fff;color:#888;">{{ forloop.counter }}</td>
+          <td style="background:#fff;font-weight:600;" class="c-{{ pd.css }}">{{ pd.name }}</td>
+          <td style="background:#fff;font-weight:700;" class="c-{{ pd.css }}">{{ pd.value }}</td>
+          <td style="background:#fff;color:#666;">{{ pd.unit }}</td>
+          <td style="background:#fff;text-align:center;">
+            {% if pd.css == 'gray' %}<span class="badge gray">{{ pd.status }}</span>
+            {% else %}<span style="font-weight:700;" class="c-{{ pd.css }}">{{ pd.status }}</span>{% endif %}
+          </td>
+          <td style="background:#fff;font-size:10px;color:#555;">{{ pd.ideal }}</td>
+          <td style="background:#fff;text-align:center;">
+            <svg class="analog-gauge" data-param="{{ pd.key }}" data-value="{{ pd.value }}" viewBox="0 0 100 65" style="width:34px;height:22px;display:inline-block;">
+              <path d="M 10,55 A 40,40 0 0,1 17.64,31.49 L 27.35,38.54 A 28,28 0 0,0 22,55 Z" fill="#e53935"/>
+              <path d="M 17.64,31.49 A 40,40 0 0,1 37.64,16.96 L 41.35,28.37 A 28,28 0 0,0 27.35,38.54 Z" fill="#ff7043"/>
+              <path d="M 37.64,16.96 A 40,40 0 0,1 62.36,16.96 L 58.65,28.37 A 28,28 0 0,0 41.35,28.37 Z" fill="#fdd835"/>
+              <path d="M 62.36,16.96 A 40,40 0 0,1 82.36,31.49 L 72.65,38.54 A 28,28 0 0,0 58.65,28.37 Z" fill="#8bc34a"/>
+              <path d="M 82.36,31.49 A 40,40 0 0,1 90,55 L 78,55 A 28,28 0 0,0 72.65,38.54 Z" fill="#2e7d32"/>
+              <circle cx="50" cy="55" r="26" fill="white"/>
+              <rect x="0" y="55" width="100" height="15" fill="white"/>
+              <line class="gauge-needle" x1="50" y1="55" x2="50" y2="23"
+                stroke="{% if pd.css == 'green' %}#2e7d32{% elif pd.css == 'red' %}#e53935{% elif pd.css == 'orange' %}#fb8c00{% elif pd.css == 'yellow' %}#f9a825{% else %}#999{% endif %}"
+                stroke-width="4" stroke-linecap="round"/>
+              <circle cx="50" cy="55" r="5.5" fill="#444"/>
+            </svg>
+          </td>
+          <td style="background:#fff;font-size:10px;color:#444;">{{ pd.interp }}</td>
         </tr>
         {% endfor %}
-        <!-- Urea / DAP recommended rows -->
-        <tr style="background:#f1f8e9;">
-          <td style="color:#888;">–</td>
-          <td style="font-weight:600;color:#1a3c14;">Urea (Recommended)</td>
-          <td style="font-weight:700;color:#1a3c14;">–</td>
-          <td style="color:#666;">kg/ha</td>
-          <td><span class="badge green">As per crop</span></td>
-          <td style="font-size:8.5px;">–</td>
-          <td style="font-size:8.5px;color:#444;">Apply as per crop requirement</td>
-        </tr>
-        <tr style="background:#f1f8e9;">
-          <td style="color:#888;">–</td>
-          <td style="font-weight:600;color:#1a3c14;">DAP (Recommended)</td>
-          <td style="font-weight:700;color:#1a3c14;">–</td>
-          <td style="color:#666;">kg/ha</td>
-          <td><span class="badge green">As per crop</span></td>
-          <td style="font-size:8.5px;">–</td>
-          <td style="font-size:8.5px;color:#444;">Apply as per crop requirement</td>
-        </tr>
       </tbody>
     </table>
   </div>
@@ -456,7 +464,7 @@ tr:nth-child(even) td{background:#f9fafb;}
     </div>
     <div style="text-align:right;line-height:1.25;">
       <div style="font-size:12px;font-weight:800;color:#a5d6a7;">SoilENZ</div>
-      <div style="font-size:7px;opacity:.9;">Advanced Soil Intelligence from Arkashine Innovations</div>
+      <div style="font-size:7px;font-weight:400;opacity:.9;">Advanced Soil Intelligence<br>from Arkashine Innovations</div>
     </div>
   </div>
   <div class="pg-body">
@@ -523,7 +531,7 @@ tr:nth-child(even) td{background:#f9fafb;}
     </div>
     <div style="text-align:right;line-height:1.25;">
       <div style="font-size:12px;font-weight:800;color:#a5d6a7;">SoilENZ</div>
-      <div style="font-size:7px;opacity:.9;">Advanced Soil Intelligence from Arkashine Innovations</div>
+      <div style="font-size:7px;font-weight:400;opacity:.9;">Advanced Soil Intelligence<br>from Arkashine Innovations</div>
     </div>
   </div>
   <div class="pg-body">
@@ -630,7 +638,7 @@ tr:nth-child(even) td{background:#f9fafb;}
     </div>
     <div style="text-align:right;line-height:1.25;">
       <div style="font-size:12px;font-weight:800;color:#a5d6a7;">SoilENZ</div>
-      <div style="font-size:7px;opacity:.9;">Advanced Soil Intelligence from Arkashine Innovations</div>
+      <div style="font-size:7px;font-weight:400;opacity:.9;">Advanced Soil Intelligence<br>from Arkashine Innovations</div>
     </div>
   </div>
   <div class="pg-body">
@@ -744,7 +752,7 @@ tr:nth-child(even) td{background:#f9fafb;}
     </div>
     <div style="text-align:right;line-height:1.25;">
       <div style="font-size:12px;font-weight:800;color:#a5d6a7;">SoilENZ</div>
-      <div style="font-size:7px;opacity:.9;">Advanced Soil Intelligence from Arkashine Innovations</div>
+      <div style="font-size:7px;font-weight:400;opacity:.9;">Advanced Soil Intelligence<br>from Arkashine Innovations</div>
     </div>
   </div>
   <div class="pg-body">
@@ -879,7 +887,8 @@ tr:nth-child(even) td{background:#f9fafb;}
 {% endwith %}
 <script>
 (function(){
-  var R={ph:[0,14],ec:[0,4],n:[0,560],p:[0,112],k:[0,1120],organic_carbon:[0,2]};
+  var R={ph:[0,14],ec:[0,4],n:[0,560],p:[0,112],k:[0,1120],organic_carbon:[0,2],
+         ca:[0,30],mg:[0,15],s:[0,60],fe:[0,30],mn:[0,15],cu:[0,3],zn:[0,6],b:[0,3]};
   function draw(svg){
     var pct,p=svg.dataset.pct;
     if(p!==undefined&&p!==''){pct=parseFloat(p);}
