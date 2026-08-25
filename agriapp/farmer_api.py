@@ -62,7 +62,8 @@ class FarmerListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'farmer_name', 'phone', 'mobile', 'email', 'aadhaar_number',
             'farmer_image', 'state', 'district', 'village',
-            'latitude', 'longitude', 'land_area', 'crop', 'season', 'season_display',
+            'latitude', 'longitude', 'land_area', 'survey_number', 'plot_number',
+            'crop', 'season', 'season_display',
             'status', 'status_display', 'created_at',
         ]
 
@@ -96,6 +97,8 @@ class FarmerCreateSerializer(serializers.Serializer):
     district       = serializers.CharField()
     village        = serializers.CharField()
     land_area      = serializers.FloatField(help_text='Land area in acres')
+    survey_number  = serializers.CharField(required=False, help_text='Land survey number')
+    plot_number    = serializers.CharField(required=False, help_text='Land plot number')
     crop           = serializers.CharField(help_text='Primary crop grown')
     season         = serializers.ChoiceField(choices=SEASON_CHOICES)
     mobile         = serializers.CharField(required=False, help_text='Secondary mobile number')
@@ -118,6 +121,8 @@ class FarmerUpdateSerializer(serializers.Serializer):
     latitude       = serializers.FloatField(required=False, allow_null=True)
     longitude      = serializers.FloatField(required=False, allow_null=True)
     land_area      = serializers.FloatField(required=False)
+    survey_number  = serializers.CharField(required=False)
+    plot_number    = serializers.CharField(required=False)
     crop           = serializers.CharField(required=False)
     season         = serializers.ChoiceField(choices=SEASON_CHOICES, required=False)
     farmer_image   = serializers.ImageField(required=False)
@@ -348,6 +353,8 @@ def farmer_create(request):
         latitude       = data.get('latitude') or None,
         longitude      = data.get('longitude') or None,
         land_area      = data.get('land_area', 0),
+        survey_number  = data.get('survey_number', '').strip(),
+        plot_number    = data.get('plot_number', '').strip(),
         crop           = data.get('crop', '').strip(),
         season         = data.get('season', ''),
     )
@@ -404,7 +411,7 @@ def farmer_update(request, pk):
     updatable_fields = [
         'farmer_name', 'phone', 'mobile', 'email', 'aadhaar_number',
         'state', 'district', 'village', 'latitude', 'longitude',
-        'land_area', 'crop', 'season',
+        'land_area', 'survey_number', 'plot_number', 'crop', 'season',
     ]
     for field in updatable_fields:
         if field in data:

@@ -216,6 +216,8 @@
       <div class="fd-card">
         <div class="fd-card-header"><i class="fas fa-seedling"></i><h6>Agriculture Details</h6></div>
         <div class="info-row"><span class="info-label">Land Area</span> <span class="info-value">{{ farmer.land_area }} acres</span></div>
+        <div class="info-row"><span class="info-label">Survey Number</span> <span class="info-value">{{ farmer.survey_number|default:"—" }}</span></div>
+        <div class="info-row"><span class="info-label">Plot Number</span> <span class="info-value">{{ farmer.plot_number|default:"—" }}</span></div>
         <div class="info-row"><span class="info-label">Crop</span>      <span class="info-value">{{ farmer.crop }}</span></div>
         <div class="info-row"><span class="info-label">Season</span>    <span class="info-value">{{ farmer.get_season_display }}</span></div>
       </div>
@@ -401,6 +403,14 @@
           <div>
             <label class="edit-label">Land Area (acres)</label>
             <input class="edit-input" type="number" step="0.01" name="land_area" value="{{ farmer.land_area }}">
+          </div>
+          <div>
+            <label class="edit-label">Survey Number</label>
+            <input class="edit-input" name="survey_number" value="{{ farmer.survey_number }}">
+          </div>
+          <div>
+            <label class="edit-label">Plot Number</label>
+            <input class="edit-input" name="plot_number" value="{{ farmer.plot_number }}">
           </div>
           <div>
             <label class="edit-label">Crop</label>

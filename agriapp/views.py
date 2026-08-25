@@ -1872,6 +1872,8 @@ def create_farmer(request):
             latitude       = data.get('latitude') or None,
             longitude      = data.get('longitude') or None,
             land_area      = data.get('land_area') or 0.0,
+            survey_number  = data.get('survey_number', '').strip(),
+            plot_number    = data.get('plot_number', '').strip(),
             crop           = data.get('crop', '').strip(),
             season         = data.get('season', ''),
         )
@@ -1949,7 +1951,8 @@ def update_farmer(request, pk):
         return JsonResponse({'error': 'Permission denied.'}, status=403)
     data   = request.POST
     fields = ['farmer_name', 'phone', 'mobile', 'email', 'aadhaar_number',
-              'state', 'district', 'village', 'land_area', 'crop', 'season']
+              'state', 'district', 'village', 'land_area', 'survey_number',
+              'plot_number', 'crop', 'season']
     for f in fields:
         if f in data:
             setattr(farmer, f, data[f])

@@ -570,6 +570,8 @@ class Farmer(models.Model):
     latitude       = models.FloatField(null=True, blank=True)
     longitude      = models.FloatField(null=True, blank=True)
     land_area      = models.FloatField(default=0.0)
+    survey_number  = models.CharField(max_length=50, blank=True, default='')
+    plot_number    = models.CharField(max_length=50, blank=True, default='')
     crop           = models.CharField(max_length=255)
     season         = models.CharField(max_length=10, choices=SEASON_CHOICES)
     status         = models.CharField(max_length=20, choices=FARMER_STATUS_CHOICES, default='registered')
