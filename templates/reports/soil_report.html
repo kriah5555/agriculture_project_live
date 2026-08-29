@@ -610,95 +610,123 @@ tr:nth-child(even) td{background:#f9fafb;}
     </div>
   </div>
   <div class="pg-body">
-    <div class="sec-title">SOIL AMENDMENT &amp; ACTION PLAN</div>
-    <div class="sec-sub mb4" style="font-size:10px;">Balanced soil nutrition is the key to sustainable high yield and health.</div>
+    <div class="sec-title" style="font-size:16px;">FERTILIZER RECOMMENDATION <span style="font-size:11px;color:#666;font-weight:600;">– LMH APPROACH</span></div>
 
+    <!-- Package of Practice -->
+    <div style="font-size:10px;font-weight:700;color:#0B5E2E;margin:10px 0 6px;border-left:3px solid #0B5E2E;padding-left:6px;">PACKAGE OF PRACTICE (POP) – KG/HA</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <div style="flex:1;border:1px solid #e0e0e0;border-radius:6px;padding:8px 10px;">
+        <div style="font-size:8px;color:#666;">N – NITROGEN (KG/HA)</div>
+        <div style="font-size:18px;font-weight:800;color:#0B5E2E;">{{ lmh.n_rdf|default:"–" }}</div>
+      </div>
+      <div style="flex:1;border:1px solid #e0e0e0;border-radius:6px;padding:8px 10px;">
+        <div style="font-size:8px;color:#666;">P2O5 – PHOSPHORUS (KG/HA)</div>
+        <div style="font-size:18px;font-weight:800;color:#0B5E2E;">{{ lmh.p_rdf|default:"–" }}</div>
+      </div>
+      <div style="flex:1;border:1px solid #e0e0e0;border-radius:6px;padding:8px 10px;">
+        <div style="font-size:8px;color:#666;">K2O – POTASH (KG/HA)</div>
+        <div style="font-size:18px;font-weight:800;color:#0B5E2E;">{{ lmh.k_rdf|default:"–" }}</div>
+      </div>
+    </div>
+
+    {% if lmh.error %}
+    <div style="background:#fff3e0;border-left:4px solid #f9a825;border-radius:4px;padding:8px 10px;font-size:9.5px;color:#555;margin-bottom:10px;">
+      RDF reference data isn't available for this farmer's state/crop combination yet, so the POP/LMH figures above can't be calculated — the soil test values and amendment table below are still shown from the actual reading.
+    </div>
+    {% endif %}
+
+    <!-- Soil Test Values -->
+    <div style="font-size:10px;font-weight:700;color:#0B5E2E;margin-bottom:6px;border-left:3px solid #0B5E2E;padding-left:6px;">SOIL TEST VALUES (AUTO-FILLED)</div>
     <table style="margin-bottom:10px;">
       <thead><tr>
-        <th>Input / Amendment</th><th style="width:90px;">Dose (Per Acre)</th>
-        <th>Purpose</th><th style="width:70px;">Timing</th><th style="width:65px;">Priority</th>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Nutrient</th>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Value</th>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Unit</th>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Status (LMH)</th>
       </tr></thead>
       <tbody>
-        {% for a in amendments %}
+        {% with p=lmh.param_lookup.nitrogen %}<tr><td style="background:#fff;font-weight:600;">N</td><td style="background:#fff;font-weight:700;{% if p.short_status == 'Low' %}color:#c62828;{% elif p.short_status == 'High' %}color:#2e7d32;{% else %}color:#e65100;{% endif %}">{{ p.value|default:"–" }}</td><td style="background:#fff;color:#666;">kg/ha</td><td style="background:#fff;"><span class="badge {% if p.short_status == 'Low' %}red{% elif p.short_status == 'High' %}green{% else %}orange{% endif %}">{{ p.short_status|default:"–" }}</span></td></tr>{% endwith %}
+        {% with p=lmh.param_lookup.phosphorus %}<tr><td style="background:#fff;font-weight:600;">P</td><td style="background:#fff;font-weight:700;">{{ p.value|default:"–" }}</td><td style="background:#fff;color:#666;">kg/ha</td><td style="background:#fff;"><span class="badge {% if p.short_status == 'Low' %}red{% elif p.short_status == 'High' %}green{% else %}orange{% endif %}">{{ p.short_status|default:"–" }}</span></td></tr>{% endwith %}
+        {% with p=lmh.param_lookup.potassium %}<tr><td style="background:#fff;font-weight:600;">K</td><td style="background:#fff;font-weight:700;">{{ p.value|default:"–" }}</td><td style="background:#fff;color:#666;">kg/ha</td><td style="background:#fff;"><span class="badge {% if p.short_status == 'Low' %}red{% elif p.short_status == 'High' %}green{% else %}orange{% endif %}">{{ p.short_status|default:"–" }}</span></td></tr>{% endwith %}
+        {% with p=lmh.param_lookup.magnesium %}<tr><td style="background:#fff;font-weight:600;">Mg</td><td style="background:#fff;font-weight:700;">{{ p.value|default:"–" }}</td><td style="background:#fff;color:#666;">meq/100g</td><td style="background:#fff;"><span class="badge {% if p.short_status == 'Low' %}red{% elif p.short_status == 'High' %}green{% else %}orange{% endif %}">{{ p.short_status|default:"–" }}</span></td></tr>{% endwith %}
+        {% with p=lmh.param_lookup.boron %}<tr><td style="background:#fff;font-weight:600;">B</td><td style="background:#fff;font-weight:700;">{{ p.value|default:"–" }}</td><td style="background:#fff;color:#666;">ppm</td><td style="background:#fff;"><span class="badge {% if p.short_status == 'Low' %}red{% elif p.short_status == 'High' %}green{% else %}orange{% endif %}">{{ p.short_status|default:"–" }}</span></td></tr>{% endwith %}
+      </tbody>
+    </table>
+
+    <!-- Farm area + fertilizer composition strip -->
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <div style="flex:1;border:1px solid #e0e0e0;border-radius:6px;text-align:center;padding:6px;"><div style="font-size:8px;color:#666;">FARM AREA</div><div style="font-weight:700;font-size:11px;color:#0B5E2E;">{{ meta.field_area }}</div></div>
+      <div style="flex:1;border:1px solid #e0e0e0;border-radius:6px;text-align:center;padding:6px;"><div style="font-size:8px;color:#666;">UREA (% N)</div><div style="font-weight:700;font-size:11px;color:#0B5E2E;">46%</div></div>
+      <div style="flex:1;border:1px solid #e0e0e0;border-radius:6px;text-align:center;padding:6px;"><div style="font-size:8px;color:#666;">DAP (% N)</div><div style="font-weight:700;font-size:11px;color:#0B5E2E;">18%</div></div>
+      <div style="flex:1;border:1px solid #e0e0e0;border-radius:6px;text-align:center;padding:6px;"><div style="font-size:8px;color:#666;">DAP (% P2O5)</div><div style="font-weight:700;font-size:11px;color:#0B5E2E;">46%</div></div>
+      <div style="flex:1;border:1px solid #e0e0e0;border-radius:6px;text-align:center;padding:6px;"><div style="font-size:8px;color:#666;">MOP (% K2O)</div><div style="font-weight:700;font-size:11px;color:#0B5E2E;">60%</div></div>
+    </div>
+
+    <!-- Step 2 -->
+    <div style="font-size:10px;font-weight:700;color:#0B5E2E;margin-bottom:6px;border-left:3px solid #0B5E2E;padding-left:6px;">STEP 2 — LMH ADJUSTED NUTRIENT DOSE</div>
+    <table style="margin-bottom:10px;">
+      <thead><tr>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Nutrient</th>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">RDF (kg/ha)</th>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Soil Status</th>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Adjustment</th>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Final (kg/ha)</th>
+      </tr></thead>
+      <tbody>
+        {% for row in lmh.step2_rows %}
         <tr>
-          <td style="font-weight:600;">{{ a.name }}</td>
-          <td>{{ a.dose }}</td>
-          <td style="font-size:10px;color:#444;">{{ a.purpose }}</td>
-          <td style="font-size:10px;color:#555;">{{ a.timing }}</td>
-          <td><span class="badge {{ a.pcss }}" style="font-size:9px;">● {{ a.pri }}</span></td>
+          <td style="background:#fff;font-weight:600;">{{ row.label }}</td>
+          <td style="background:#fff;">{{ row.rdf }}</td>
+          <td style="background:#fff;font-weight:600;{% if row.status == 'Low' %}color:#c62828;{% elif row.status == 'High' %}color:#2e7d32;{% else %}color:#e65100;{% endif %}">{{ row.status|default:"–" }}</td>
+          <td style="background:#fff;font-size:9.5px;color:#555;">{{ row.note }}</td>
+          <td style="background:#fff;font-weight:800;color:#0B5E2E;">{{ row.final }}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
 
-    <!-- Action Plan Timeline -->
-    <div style="font-size:11px;font-weight:700;color:#1a3c14;margin-bottom:8px;">
-      <i class="fas fa-calendar-check" style="margin-right:5px;"></i>ACTION PLAN TIMELINE
-    </div>
-    <div style="display:flex;gap:4px;align-items:stretch;margin-bottom:8px;">
-      <div class="phase-box">
-        <div class="phase-title">Pre Sowing</div>
-        <div class="phase-sub">(0 – 7 Days)</div>
-        <div class="phase-item">• Apply FYM / Compost</div>
-        <div class="phase-item">• Apply Gypsum / Dolomite</div>
-        <div class="phase-item">• Prepare fine tilth</div>
-        <div class="phase-item">• Improve drainage if needed</div>
+    <!-- Step 3 -->
+    <div style="font-size:10px;font-weight:700;color:#0B5E2E;margin-bottom:6px;border-left:3px solid #0B5E2E;padding-left:6px;">STEP 3 — FERTILIZER TO APPLY</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <div style="flex:1;border:2px solid #0B5E2E;border-radius:6px;padding:8px 10px;text-align:center;">
+        <div style="font-size:8px;color:#666;">DAP (P + N SOURCE)</div>
+        <div style="font-size:20px;font-weight:800;color:#0B5E2E;">{{ lmh.dap|default:"–" }}<span style="font-size:9px;color:#888;"> kg/ha</span></div>
+        {% if lmh.dap_total %}<div style="font-size:8px;color:#888;">{{ lmh.dap_total }} kg total ({{ lmh.farm_ha }} ha)</div>{% endif %}
       </div>
-      <div class="flow-arrow">→</div>
-      <div class="phase-box">
-        <div class="phase-title">Basal Dose</div>
-        <div class="phase-sub">(At Sowing)</div>
-        <div class="phase-item">• Apply DAP</div>
-        <div class="phase-item">• Apply MgSO4</div>
-        <div class="phase-item">• Apply FeSO4</div>
-        <div class="phase-item">• Apply MnSO4 &amp; Boron</div>
-        <div class="phase-item">• Apply 1/3 Urea</div>
+      <div style="flex:1;border:1px solid #e0e0e0;border-radius:6px;padding:8px 10px;text-align:center;">
+        <div style="font-size:8px;color:#666;">UREA (REMAINING N)</div>
+        <div style="font-size:20px;font-weight:800;color:#2e7d32;">{{ lmh.urea|default:"–" }}<span style="font-size:9px;color:#888;"> kg/ha</span></div>
+        {% if lmh.urea_total %}<div style="font-size:8px;color:#888;">{{ lmh.urea_total }} kg total ({{ lmh.farm_ha }} ha)</div>{% endif %}
       </div>
-      <div class="flow-arrow">→</div>
-      <div class="phase-box">
-        <div class="phase-title">During Crop Growth</div>
-        <div class="phase-sub">(20 – 45 DAS)</div>
-        <div class="phase-item">• Apply remaining urea (split)</div>
-        <div class="phase-item">• Fine micronutrient spray</div>
-        <div class="phase-item">• Monitor nutrient deficiency</div>
-        <div class="phase-item">• Irrigation as required</div>
-        <div class="phase-item">• Weed management</div>
-      </div>
-      <div class="flow-arrow">→</div>
-      <div class="phase-box">
-        <div class="phase-title">Pre Harvest</div>
-        <div class="phase-sub">(90 – 103 DAS)</div>
-        <div class="phase-item">• Balanced irrigation</div>
-        <div class="phase-item">• Avoid excess nitrogen</div>
-        <div class="phase-item">• Harvest at maturity</div>
+      <div style="flex:1;border:1px solid #e0e0e0;border-radius:6px;padding:8px 10px;text-align:center;">
+        <div style="font-size:8px;color:#666;">MOP (K SOURCE)</div>
+        <div style="font-size:20px;font-weight:800;color:#e65100;">{{ lmh.mop|default:"–" }}<span style="font-size:9px;color:#888;"> kg/ha</span></div>
+        {% if lmh.mop_total %}<div style="font-size:8px;color:#888;">{{ lmh.mop_total }} kg total ({{ lmh.farm_ha }} ha)</div>{% endif %}
       </div>
     </div>
 
-    <!-- Bottom boxes -->
-    <div style="display:flex;gap:8px;">
-      <div style="flex:1;background:#f9fafb;border:1px solid #e0e0e0;border-radius:6px;padding:10px;">
-        <div style="font-size:10.5px;font-weight:700;color:#1a3c14;margin-bottom:6px;">
-          <i class="fas fa-info-circle" style="margin-right:4px;"></i>IMPORTANT CORRECTIONS FROM SOIL TEST:
-        </div>
-        {% for c in corrections %}
-        <div class="dot-row"><div class="dot green"></div><span style="font-size:10px;">{{ c }}</span></div>
+    <!-- Soil Amendment Recommendations -->
+    <div style="font-size:10px;font-weight:700;color:#0B5E2E;margin-bottom:6px;border-left:3px solid #0B5E2E;padding-left:6px;">SOIL AMENDMENT RECOMMENDATIONS</div>
+    <table>
+      <thead><tr>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Amendment</th>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Dose</th>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Purpose</th>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Timing</th>
+        <th style="background:#fff;color:#888;font-weight:700;border-bottom:2px solid #0B5E2E;text-transform:uppercase;">Priority</th>
+      </tr></thead>
+      <tbody>
+        {% for a in amendments %}
+        <tr>
+          <td style="background:#fff;font-weight:600;">{{ a.name }}</td>
+          <td style="background:#fff;">{{ a.dose }}</td>
+          <td style="background:#fff;font-size:10px;color:#444;">{{ a.purpose }}</td>
+          <td style="background:#fff;font-size:10px;color:#555;">{{ a.timing }}</td>
+          <td style="background:#fff;font-weight:700;{% if a.pcss == 'red' %}color:#c62828;{% elif a.pcss == 'orange' %}color:#e65100;{% else %}color:#2e7d32;{% endif %}">{{ a.pri }}</td>
+        </tr>
         {% endfor %}
-        <div class="mt4" style="font-size:10px;color:#555;border-top:1px solid #e0e0e0;padding-top:6px;">
-          {% for pd in params_display %}{% if pd.key == 'ph' %}• pH: {{ pd.value }} ({{ pd.status }}){% endif %}{% if pd.key == 'ec' %} &nbsp;• EC: {{ pd.value }} dS/m ({{ pd.status }}){% endif %}{% endfor %}
-        </div>
-      </div>
-      <div style="flex:1;background:#f9fafb;border:1px solid #e0e0e0;border-radius:6px;padding:10px;">
-        <div style="font-size:10.5px;font-weight:700;color:#1a3c14;margin-bottom:6px;">KEY SOIL TEST SUMMARY ({{ meta.farmer_name }}):</div>
-        {% if low_list  %}<div class="dot-row"><div class="dot red"></div>    <span style="font-size:10px;"><strong>Low:</strong> {{ low_list }}</span></div>{% endif %}
-        {% if med_list  %}<div class="dot-row"><div class="dot orange"></div> <span style="font-size:10px;"><strong>Medium:</strong> {{ med_list }}</span></div>{% endif %}
-        {% if high_list %}<div class="dot-row"><div class="dot green"></div>  <span style="font-size:10px;"><strong>High:</strong> {{ high_list }}</span></div>{% endif %}
-        {% if suff_list %}<div class="dot-row"><div class="dot blue"></div>   <span style="font-size:10px;"><strong>Sufficient:</strong> {{ suff_list }}</span></div>{% endif %}
-        <div style="border-top:1px solid #e0e0e0;padding-top:6px;margin-top:6px;font-size:10px;color:#555;">
-          {% for pd in params_display %}{% if pd.key == 'ph' %}• pH: {{ pd.value }} ({{ pd.status }})  {% endif %}{% endfor %}
-          {% for pd in params_display %}{% if pd.key == 'ec' %}• EC: {{ pd.value }} dS/m ({{ pd.status }}){% endif %}{% endfor %}
-        </div>
-      </div>
-    </div>
+      </tbody>
+    </table>
 
   </div>
   <div class="pg-footer">

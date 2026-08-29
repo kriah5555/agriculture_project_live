@@ -12,6 +12,7 @@ from agriapp.reports.soilenz_pdf import (
     PARAMS_14, _categorize_nutrients,
 )
 from agriapp.models import DeviseApis
+from agri_ai.fertilizer import recommend_fertilizer
 
 # ── Soil Health Score (page 1) ──────────────────────────────────────────────
 # 14-parameter weighted-points formula: each parameter classified Low/Medium/
@@ -346,6 +347,49 @@ def build_report_context(api_id):
     except Exception:
         pass
 
+    # LMH fertilizer recommendation (agri_ai.fertilizer engine — page 5)
+    lmh_state = (farmer.state if farmer else '') or ''
+    lmh_crop  = crop or ''
+    lmh_soil_values = {
+        'ph': preds.get('ph') or 0, 'ec': preds.get('ec') or 0,
+        'organic_carbon': preds.get('organic_carbon') or 0,
+        'nitrogen': preds.get('n') or 0, 'phosphorus': preds.get('p') or 0,
+        'potassium': preds.get('k') or 0, 'sulphur': preds.get('s') or 0,
+        'calcium': preds.get('ca') or 0, 'magnesium': preds.get('mg') or 0,
+        'zinc': preds.get('zn') or 0, 'iron': preds.get('fe') or 0,
+        'manganese': preds.get('mn') or 0, 'copper': preds.get('cu') or 0,
+        'boron': preds.get('b') or 0,
+    }
+    lmh = recommend_fertilizer(lmh_state, lmh_crop, lmh_soil_values)
+    if 'param_results' in lmh:
+        for p in lmh['param_results']:
+            p['short_status'] = p['status'].split(' (')[0]
+        lmh['param_lookup'] = {p['key']: p for p in lmh['param_results']}
+
+        def _step2_row(label, rdf, adj, status):
+            status = (status or '').strip()
+            if status == 'Low':
+                note = 'Low soil → +25%'
+            elif status == 'High':
+                note = 'High soil → -25%'
+            else:
+                note = f'{status or "Medium"} — no change'
+            return {'label': label, 'rdf': rdf, 'status': status, 'note': note, 'final': round(adj, 1)}
+
+        lmh['step2_rows'] = [
+            _step2_row('N',    lmh['n_rdf'], lmh['n_adj'], lmh['param_lookup'].get('nitrogen', {}).get('short_status')),
+            _step2_row('P2O5', lmh['p_rdf'], lmh['p_adj'], lmh['param_lookup'].get('phosphorus', {}).get('short_status')),
+            _step2_row('K2O',  lmh['k_rdf'], lmh['k_adj'], lmh['param_lookup'].get('potassium', {}).get('short_status')),
+        ]
+        farm_ha = round((farmer.land_area or 0) * 0.4047, 2) if farmer and farmer.land_area else 0
+        lmh['farm_ha'] = farm_ha or ''
+        lmh['urea_total'] = round(lmh['urea'] * farm_ha, 1) if farm_ha else ''
+        lmh['dap_total']  = round(lmh['dap']  * farm_ha, 1) if farm_ha else ''
+        lmh['mop_total']  = round(lmh['mop']  * farm_ha, 1) if farm_ha else ''
+    else:
+        lmh['param_lookup'] = {}
+        lmh['step2_rows'] = []
+
     # Recommendation bullets
     rec_bullets = []
     if (preds.get('organic_carbon') or 0) < 0.5:
@@ -431,6 +475,7 @@ def build_report_context(api_id):
         'rec_bullets':      rec_bullets,
         'fertilizer_recs':  fertilizer_recs,
         'hm_data':          hm_data,
+        'lmh':              lmh,
         # Carbon
         'total_co2':        total_co2,
         'oc_seq':           int(oc_seq),
