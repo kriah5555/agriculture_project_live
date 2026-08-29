@@ -752,49 +752,51 @@ tr:nth-child(even) td{background:#f9fafb;}
     </div>
   </div>
   <div class="pg-body">
-    <div class="sec-title">CARBON CREDIT IMPACT DASHBOARD</div>
-    <div class="sec-sub mb6" style="font-size:10px;">Your soil health action leads to environment and income.</div>
+    <div class="sec-title" style="font-size:16px;">CARBON CREDIT IMPACT DASHBOARD</div>
+    <div class="sec-sub mb6" style="font-size:10px;">Your soil health action leads to environment and income generation.</div>
 
     <!-- Flow diagram -->
-    <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;">
-      <div class="flow-item" style="font-size:10px;padding:8px 6px;"><i class="fas fa-seedling" style="display:block;font-size:18px;margin-bottom:4px;"></i>Sustainable<br>Practices</div>
-      <div class="flow-arrow" style="font-size:16px;">→</div>
-      <div class="flow-item" style="font-size:10px;padding:8px 6px;"><i class="fas fa-leaf" style="display:block;font-size:18px;margin-bottom:4px;"></i>Improved Soil<br>Health</div>
-      <div class="flow-arrow" style="font-size:16px;">→</div>
-      <div class="flow-item" style="font-size:10px;padding:8px 6px;"><i class="fas fa-wheat-awn" style="display:block;font-size:18px;margin-bottom:4px;"></i>Higher Yield<br>&amp; Biomass</div>
-      <div class="flow-arrow" style="font-size:16px;">→</div>
-      <div class="flow-item" style="font-size:10px;padding:8px 6px;"><i class="fas fa-cloud" style="display:block;font-size:18px;margin-bottom:4px;"></i>CO₂<br>Sequestration</div>
-      <div class="flow-arrow" style="font-size:16px;">→</div>
-      <div class="flow-item" style="font-size:10px;padding:8px 6px;"><i class="fas fa-award" style="display:block;font-size:18px;margin-bottom:4px;"></i>Carbon Credit<br>Generation</div>
+    <div style="display:flex;gap:6px;align-items:center;margin:10px 0 14px;">
+      <div style="flex:1;text-align:center;font-size:9px;color:#444;font-weight:600;"><i class="fas fa-flask" style="display:block;font-size:20px;margin-bottom:4px;color:#78909c;"></i>Sustainable<br>Practices</div>
+      <div style="font-size:16px;color:#0B5E2E;">→</div>
+      <div style="flex:1;text-align:center;font-size:9px;color:#444;font-weight:600;"><i class="fas fa-seedling" style="display:block;font-size:20px;margin-bottom:4px;color:#2e7d32;"></i>Improved Soil<br>Health</div>
+      <div style="font-size:16px;color:#0B5E2E;">→</div>
+      <div style="flex:1;text-align:center;font-size:9px;color:#444;font-weight:600;"><i class="fas fa-wheat-awn" style="display:block;font-size:20px;margin-bottom:4px;color:#8bc34a;"></i>Higher Yield<br>&amp; Biomass</div>
+      <div style="font-size:16px;color:#0B5E2E;">→</div>
+      <div style="flex:1;text-align:center;font-size:9px;color:#444;font-weight:600;"><i class="fas fa-cloud" style="display:block;font-size:20px;margin-bottom:4px;color:#b0bec5;"></i>CO₂<br>Sequestration</div>
+      <div style="font-size:16px;color:#0B5E2E;">→</div>
+      <div style="flex:1;text-align:center;font-size:9px;color:#444;font-weight:600;"><i class="fas fa-recycle" style="display:block;font-size:20px;margin-bottom:4px;color:#2e7d32;"></i>Carbon Credit<br>Generation</div>
     </div>
 
-    <!-- Sequestration table + CO2 saved row -->
+    <!-- Sequestration table + CO2 saved boxes -->
     <div style="display:flex;gap:10px;margin-bottom:10px;">
       <!-- LEFT: sequestration table -->
       <div style="flex:1;">
-        <div style="font-size:10.5px;font-weight:700;color:#1a3c14;margin-bottom:6px;">ESTIMATED CARBON SEQUESTRATION (Per Acre)</div>
+        <div style="font-size:10.5px;font-weight:700;color:#0B5E2E;margin-bottom:6px;">ESTIMATED CARBON SEQUESTRATION (Per Acre)</div>
         <table style="margin-bottom:6px;">
           <thead><tr>
-            <th>Parameter</th><th style="width:75px;">Current Value</th>
-            <th style="width:90px;">After Improvement (1 Year)</th>
-            <th style="width:90px;">Annual Sequestration (kg CO₂/acre)</th>
+            <th style="background:#0B5E2E;text-transform:uppercase;">Parameter</th><th style="background:#0B5E2E;text-transform:uppercase;width:75px;">Current Value</th>
+            <th style="background:#0B5E2E;text-transform:uppercase;width:90px;">After Improvement (1 Year)</th>
+            <th style="background:#0B5E2E;text-transform:uppercase;width:90px;">Annual Sequestration (kg CO₂/acre)</th>
           </tr></thead>
           <tbody>
-            <tr><td>Organic Carbon (%)</td><td>{{ preds.organic_carbon|floatformat:2 }}</td><td>{{ oc_after }}</td><td style="font-weight:700;color:#2e7d32;">{{ oc_seq }}</td></tr>
-            <tr><td>Biomass (t/acre)</td><td>{{ bio_before }}</td><td>{{ bio_after }}</td><td style="font-weight:700;color:#2e7d32;">{{ bio_seq }}</td></tr>
-            <tr style="background:#e8f5e9;"><td style="font-weight:700;">Total</td><td>–</td><td>–</td><td style="font-weight:700;color:#1a3c14;font-size:13px;">{{ total_co2 }}</td></tr>
+            <tr><td style="background:#fff;">Organic Carbon (%)</td><td style="background:#fff;">{{ preds.organic_carbon|default_if_none:""|floatformat:2 }}</td><td style="background:#fff;">{{ oc_after }}</td><td style="background:#fff;font-weight:700;color:#2e7d32;">{{ oc_seq }}</td></tr>
+            <tr><td style="background:#fff;">Biomass (t/acre)</td><td style="background:#fff;">{{ bio_before }}</td><td style="background:#fff;">{{ bio_after }}</td><td style="background:#fff;font-weight:700;color:#2e7d32;">{{ bio_seq }}</td></tr>
+            <tr style="background:#e8f5e9;"><td style="font-weight:700;">Total</td><td>–</td><td>–</td><td style="font-weight:700;color:#0B5E2E;font-size:13px;">{{ total_co2 }}</td></tr>
           </tbody>
         </table>
         <div style="font-size:9px;color:#888;font-style:italic;">*Estimation based on IPCC &amp; Soil Organic Carbon (SOC) guidelines.</div>
       </div>
-      <!-- RIGHT: CO2 saved -->
-      <div style="width:210px;flex-shrink:0;">
-        <div style="background:#1a3c14;border-radius:8px;padding:14px 10px;text-align:center;color:#fff;">
-          <div style="font-size:10.5px;font-weight:700;margin-bottom:5px;">CO₂ SAVED (Per Year)</div>
-          <div style="font-size:36px;font-weight:800;color:#a5d6a7;">{{ total_co2 }}</div>
-          <div style="font-size:14px;font-weight:700;">kg CO₂</div>
-          <div style="font-size:10px;color:#c8e6c9;">(Per Acre)</div>
-          <div style="font-size:9px;color:#81c784;margin-top:6px;border-top:1px solid #2e7d32;padding-top:5px;">TOTAL CO₂ SAVED<br>{{ total_co2 }} kg CO₂ / Acre / Year</div>
+      <!-- RIGHT: CO2 saved, two separate boxes -->
+      <div style="width:210px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;">
+        <div style="border:1px solid #e0e0e0;border-radius:8px;padding:12px 10px;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:#0B5E2E;margin-bottom:5px;">CO₂ SAVED (PER YEAR)</div>
+          <div style="font-size:30px;font-weight:800;color:#222;">{{ total_co2 }}<span style="font-size:12px;font-weight:600;color:#888;"> kg CO₂</span></div>
+          <div style="font-size:9px;color:#888;">(Per Acre)</div>
+        </div>
+        <div style="border:1px solid #e0e0e0;border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:9.5px;font-weight:700;color:#0B5E2E;margin-bottom:3px;">TOTAL CO₂ SAVED</div>
+          <div style="font-size:13px;font-weight:800;color:#222;">{{ total_co2 }} kg CO₂ / Acre / Year</div>
         </div>
       </div>
     </div>
@@ -802,7 +804,7 @@ tr:nth-child(even) td{background:#f9fafb;}
     <!-- Carbon Health Score + Key Benefits — 50/50 row -->
     <div style="display:flex;gap:10px;margin-bottom:10px;align-items:stretch;">
       <!-- Carbon Health Score -->
-      <div style="flex:1;text-align:center;background:#fff;border:2px solid #e0e0e0;border-radius:10px;padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div style="flex:1;text-align:center;background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
         <div style="font-size:12px;font-weight:800;color:#222;letter-spacing:.3px;margin-bottom:4px;">CARBON HEALTH SCORE</div>
         <div style="position:relative;display:inline-block;">
           <svg class="analog-gauge" data-pct="{{ carbon_score }}" data-cx="70" data-cy="78" data-nr="50"
@@ -824,53 +826,14 @@ tr:nth-child(even) td{background:#f9fafb;}
           </div>
         </div>
         <div style="font-size:14px;font-weight:700;margin-top:2px;{% if carbon_score >= 70 %}color:#2e7d32;{% elif carbon_score >= 50 %}color:#f9a825;{% else %}color:#e65100;{% endif %}">{{ carbon_label }}</div>
-        <div style="font-size:9px;color:#1565c0;margin-top:5px;line-height:1.5;">Your soil is {{ carbon_label|lower }} in carbon health.<br>Consistent management and nutrient corrections<br>can improve it significantly.</div>
       </div>
-      <!-- Key Benefits & Soil Insights -->
-      <div style="flex:1;background:#f9fafb;border:1px solid #e0e0e0;border-radius:6px;padding:10px;">
-        <div style="font-size:10.5px;font-weight:700;color:#1a3c14;margin-bottom:6px;">KEY BENEFITS &amp; SOIL INSIGHTS</div>
-        <div class="dot-row"><div class="dot green"></div><span>₹700 – ₹1,200 extra income from carbon credits</span></div>
-        <div class="dot-row"><div class="dot blue"></div><span>Improves soil structure &amp; water holding capacity</span></div>
-        <div class="dot-row"><div class="dot green"></div><span>Enhances crop productivity and yield</span></div>
-        <div class="dot-row"><div class="dot green"></div><span>Supports sustainable &amp; climate smart farming</span></div>
-        {% if high_items %}<div class="dot-row"><div style="width:10px;height:10px;border-radius:50%;background:#1565c0;flex-shrink:0;margin-top:1px;font-size:7px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;">K</div><span>{{ high_items|join:", " }} already high – good for crop response</span></div>{% endif %}
-        {% if low_items %}<div class="dot-row"><div class="dot orange"></div><span>{{ low_items|slice:":3"|join:", " }} are low – correction needed</span></div>{% endif %}
-      </div>
-    </div>
-
-    <!-- Soil Interpretation + Bottom boxes -->
-    <div style="display:flex;gap:8px;">
-      <div style="flex:1;">
-        <div style="font-size:10.5px;font-weight:700;color:#1a3c14;margin-bottom:4px;">SOIL INTERPRETATION (From Soil Test)</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;">
-          {% for pd in params_display %}
-          <div style="display:flex;gap:4px;padding:4px 7px;border-bottom:1px solid #f0f0f0;{% if forloop.counter|divisibleby:2 %}background:#f9fafb;{% endif %}font-size:9.5px;align-items:center;">
-            <span style="flex:1;color:#444;">{{ pd.name|truncatechars:20 }} : <span class="c-{{ pd.css }}">{{ pd.value }} {{ pd.unit }}</span></span>
-            <span class="badge {{ pd.css }}" style="font-size:8px;padding:1px 4px;">{{ pd.status }}</span>
-          </div>
-          {% endfor %}
-        </div>
-        <div style="font-size:9.5px;color:#555;margin-top:6px;padding:7px;background:#fff8e1;border-radius:4px;border-left:3px solid #f9a825;">
-          Alkaline soil may cause fixation of P, Zn, Fe &amp; Mn. Use organic matter, balanced fertilizers and micronutrients for better availability.
-        </div>
-      </div>
-      <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
-        <div style="background:#f9fafb;border:1px solid #e0e0e0;border-radius:6px;padding:10px;">
-          <div style="font-size:10.5px;font-weight:700;color:#1a3c14;margin-bottom:5px;">IMPORTANT CORRECTIONS FROM SOIL TEST:</div>
-          {% for c in corrections %}
-          <div class="dot-row"><div class="dot green"></div><span style="font-size:10px;">{{ c }}</span></div>
-          {% endfor %}
-        </div>
-        <div style="background:#f9fafb;border:1px solid #e0e0e0;border-radius:6px;padding:10px;">
-          <div style="font-size:10.5px;font-weight:700;color:#1a3c14;margin-bottom:5px;">KEY SOIL TEST SUMMARY ({{ meta.farmer_name }}):</div>
-          {% if low_list  %}<div class="dot-row"><div class="dot red"></div>    <span style="font-size:10px;"><strong>Low:</strong> {{ low_list }}</span></div>{% endif %}
-          {% if med_list  %}<div class="dot-row"><div class="dot orange"></div> <span style="font-size:10px;"><strong>Medium:</strong> {{ med_list }}</span></div>{% endif %}
-          {% if high_list %}<div class="dot-row"><div class="dot green"></div>  <span style="font-size:10px;"><strong>High:</strong> {{ high_list }}</span></div>{% endif %}
-          {% if suff_list %}<div class="dot-row"><div class="dot blue"></div>   <span style="font-size:10px;"><strong>Sufficient:</strong> {{ suff_list }}</span></div>{% endif %}
-          <div style="border-top:1px solid #e0e0e0;padding-top:5px;margin-top:5px;font-size:10px;color:#555;">
-            {% for pd in params_display %}{% if pd.key == 'ph' %}• pH: {{ pd.value }} ({{ pd.status }}){% endif %}{% if pd.key == 'ec' %} &nbsp;• EC: {{ pd.value }} dS/m ({{ pd.status }}){% endif %}{% endfor %}
-          </div>
-        </div>
+      <!-- Key Benefits -->
+      <div style="flex:1;background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:12px;">
+        <div style="font-size:10.5px;font-weight:700;color:#0B5E2E;margin-bottom:8px;text-align:center;">KEY BENEFITS</div>
+        <div class="dot-row" style="margin-bottom:8px;"><i class="fas fa-seedling" style="color:#2e7d32;width:16px;"></i><span>₹1,800 – ₹2,800 extra income possible from carbon credits</span></div>
+        <div class="dot-row" style="margin-bottom:8px;"><i class="fas fa-tint" style="color:#1565c0;width:16px;"></i><span>Improves soil structure &amp; water holding</span></div>
+        <div class="dot-row" style="margin-bottom:8px;"><i class="fas fa-leaf" style="color:#2e7d32;width:16px;"></i><span>Enhances crop productivity</span></div>
+        <div class="dot-row"><i class="fas fa-clipboard-check" style="color:#5d4037;width:16px;"></i><span>Supports sustainable &amp; climate smart farming</span></div>
       </div>
     </div>
 
