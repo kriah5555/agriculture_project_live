@@ -52,20 +52,40 @@ def get_crops_for_state(state):
     return crops
 
 
+def _crop_name_tokens(raw):
+    """Split 'Red Gram (Arhar/Pigeon Pea)' into ('red gram', {'arhar', 'pigeon pea'})
+    — the base name and its set of parenthetical aliases (aliases may be
+    slash-separated when a crop goes by several names), empty set if none."""
+    s = raw.strip().lower()
+    if '(' in s and s.endswith(')'):
+        base, alias_part = s.split('(', 1)
+        aliases = {a.strip() for a in alias_part[:-1].split('/') if a.strip()}
+        return base.strip(), aliases
+    return s, set()
+
+
 def _find_record(records, name):
     nl = name.strip().lower()
     for rec in records:
         if rec['crop'].lower().strip() == nl:
             return rec
-    base = nl.split('(')[0].strip()
-    if base:
-        for rec in records:
-            rc_base = rec['crop'].lower().strip().split('(')[0].strip()
-            if rc_base == base:
-                return rec
+
+    n_base, n_aliases = _crop_name_tokens(name)
+    for rec in records:
+        r_base, r_aliases = _crop_name_tokens(rec['crop'])
+        # Match base-to-base, or either side's alias(es) against the other's
+        # base/aliases — handles reversed/synonym naming like "Sorghum (Jowar)"
+        # vs "Jowar (Sorghom)", or "Pigeon Pea (Tur)" vs "Red Gram (Arhar/Pigeon Pea)".
+        if n_base and n_base == r_base:
+            return rec
+        if n_base in r_aliases or r_base in n_aliases:
+            return rec
+        if n_aliases & r_aliases:
+            return rec
+
     for rec in records:
         rc = rec['crop'].lower().strip()
-        if len(rc) >= 5 and rc in nl:
+        if len(rc) >= 5 and (rc in nl or nl in rc):
             return rec
     return None
 

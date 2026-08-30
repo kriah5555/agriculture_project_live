@@ -89,11 +89,13 @@ _PARAM_INFO = {
 
 # CSS color class names for status
 _STATUS_CSS = {
+    # Per the docx's colour rule: High and Low are both Red (excess or deficient,
+    # both need correction), Medium is Orange, Sufficient/Normal is Green.
     'Low': 'red', 'Very Low': 'red', 'Deficient': 'red',
-    'Acidic': 'orange', 'High EC': 'orange', 'Very High': 'red',
-    'Medium': 'yellow', 'Marginal': 'yellow', 'Moderate': 'yellow',
+    'Acidic': 'orange', 'High EC': 'red', 'Very High': 'red',
+    'Medium': 'orange', 'Marginal': 'orange', 'Moderate': 'orange',
     'Normal': 'green', 'Sufficient': 'green', 'Adequate': 'green',
-    'Alkaline': 'red', 'High': 'green',
+    'Alkaline': 'red', 'High': 'red',
     'N/A': 'gray',
 }
 
@@ -108,6 +110,31 @@ def _fmt(v, dec=2):
 
 
 # ── Crop profiles for suitability scoring ────────────────────────────────────
+# Organic & Natural Farming advisory table (page 7) — static reference content,
+# standard nationally per NITI Aayog Natural Farming guidelines / ICAR references.
+# (name, type, color, application method, dose/rate per acre, frequency, shelf life)
+ORGANIC_ADVISORY = [
+    ('Beejamrutham',       'Natural',        '#2e7d32', 'Seed dip/coat before sowing',                              'Seed-coating qty/acre',                     'Once, at sowing',        'Use fresh'),
+    ('Jeevamrutham',       'Natural',        '#2e7d32', 'Soil drench via irrigation',                               '200 L/acre',                                 'Every 15–20 days',       '7–10 days'),
+    ('Ghanajeevamrutham',  'Natural',        '#2e7d32', 'Broadcast & mix (basal)',                              '200 kg/acre',                                'Once, basal',            'Store dry'),
+    ('Panchagavya',        'Natural/Organic','#2e7d32', 'Foliar spray (3% dilution)',                               '20–25 L/acre',                               'Every 10–15 days',       '30–60 days'),
+    ('Compost / FYM',      'Organic',        '#2e7d32', 'Soil incorporation (basal)',                               '5–10 t/acre',                                'Once, basal',            'Use within season'),
+    ('Vermicompost',       'Organic/Bio',    '#2e7d32', 'Basal mix / top-dress',                                    '1–2 t/acre',                                 'Once, basal',            'Use within weeks'),
+    ('Green Manure',       'Organic',        '#2e7d32', 'Grow & plough-in',                                     '20–25 kg seed/acre',                         'Once / season',          'N/A'),
+    ('Neemastra',          'Natural (pest)', '#e65100', 'Foliar spray, filtered',                                   '200 L/acre',                                 'As needed',              '6 months'),
+    ('Agniastra',          'Natural (pest)', '#e65100', 'Foliar spray / root drench',                               '6–8 L in 200 L water/acre',                 'Infestation-based',      '3 months'),
+    ('Brahmastra',         'Natural (pest)', '#e65100', 'Foliar spray',                                             '6–8 L in 100–200 L water/acre',             'Infestation-based',      '6 months'),
+    ('Dashaparni Ark',     'Natural (pest)', '#e65100', 'Foliar spray, preventive',                                 '3 L in 100 L water/acre',                   'Preventive, regular',    'Several months'),
+    ('Rhizobium culture (legume crops)',        'Bio-Based', '#1565c0', 'Seed treatment w/ jaggery slurry, shade-dry, sow same day', '200–250 g/acre seed',                 'Once, at sowing',        '~6 months'),
+    ('Azotobacter / Azospirillum (cereals)',    'Bio-Based', '#1565c0', 'Seed treatment OR soil-mix with FYM at ploughing',          '200–250 g (seed) / 2 kg (soil) per acre', 'At sowing / basal',  'Check label'),
+    ('PSB (all crops)',                          'Bio-Based', '#1565c0', 'Seed treatment OR soil-mix with compost',                  '200–250 g (seed) / 2 kg (soil) per acre', 'At sowing / basal',  'Check label'),
+    ('Trichoderma viride/harzianum (soil fungal disease)', 'Bio-Based', '#1565c0', 'Seed treatment; soil-mix with FYM; or root dip', '4–10 g/kg seed; 2.5 kg/acre soil',   'At sowing, repeat if needed', '1–2 years'),
+    ('Pseudomonas fluorescens (bacterial wilt/blight)',    'Bio-Based', '#1565c0', 'Seed treatment, soil-mix, or foliar spray',       '10 g/kg seed; 2.5 kg/acre soil; 5 g/L foliar', 'At sowing + every 15 days', 'Check label'),
+    ('Beauveria bassiana (sucking pests, borers)',         'Bio-Based', '#1565c0', 'Foliar spray (evening) or soil drench',           '3–5 ml or g/L water; 1–2 L/acre soil', 'Every 10–15 days',   '1–2 years'),
+    ('Bacillus thuringiensis (Bt) (caterpillars)',         'Bio-Based', '#1565c0', 'Foliar spray, evening application',               '1–2 g/L water',                       'Every 7–10 days',        'Check label'),
+    ('NPV (Ha/SlNPV — bollworm, armyworm)',                'Bio-Based', '#1565c0', 'Foliar spray, evening, early larval stage',       '250–500 LE/acre in 200 L water',       'Early larvae, repeat 7–10 days', 'Refrigerate 2–8°C'),
+]
+
 CROP_PROFILES = [
     # (name, emoji, ph_ideal, oc_min, n_min, k_min, notes)
     ('Wheat',           '🌾', (6.0, 8.0), 0.4, 160, 100, 'Suitable; balanced fertility required'),
@@ -276,8 +303,15 @@ def build_report_context(api_id):
     oc_after   = round(min(oc + 0.42, 1.5), 2)
     bio_before = round(1.0 + ndvi * 3, 1)
     bio_after  = round(bio_before * 1.6, 1)
+    # OC sequestration: no verified formula (needs bulk density + sampling
+    # depth, not available from a single soil reading) — kept as a
+    # reasonable approximation, per the docx's own note that this figure
+    # couldn't be reverse-engineered to first principles.
     oc_seq     = round((oc_after - oc) / 0.1 * 50)
-    bio_seq    = round(bio_after * 120)
+    # Biomass sequestration: docx-verified formula — ΔBiomass(kg/acre) × carbon
+    # fraction (0.5) × CO2/C mass ratio (44/12).
+    delta_biomass_kg = (bio_after - bio_before) * 1000
+    bio_seq    = round(delta_biomass_kg * 0.5 * 44 / 12)
     total_co2  = int(oc_seq + bio_seq)
     c_score    = min(100, int(50 + ndvi * 30 + oc * 15))
     c_label    = 'Excellent' if c_score >= 80 else ('Good' if c_score >= 60 else 'Moderate')
@@ -312,8 +346,9 @@ def build_report_context(api_id):
     for cp in CROP_PROFILES:
         sc = _crop_score(cp, preds, env)
         if sc >= 8.0:   st, scss = 'Highly Recommended', 'green'
-        elif sc >= 7.0: st, scss = 'Recommended',        'lt-green'
-        elif sc >= 5.0: st, scss = 'Moderately Suitable','orange'
+        elif sc >= 6.0: st, scss = 'Recommended',        'lt-green'
+        elif sc >= 4.0: st, scss = 'Moderately Suitable','orange'
+        elif sc >= 2.0: st, scss = 'Low Recommended',    'red'
         else:           st, scss = 'Not Recommended',    'red'
         crops_scored.append({'name':cp[0],'icon':cp[1],'score':sc,'bar_pct':int(sc*10),'status':st,'scss':scss,'notes':cp[6]})
     crops_scored.sort(key=lambda x: -x['score'])
@@ -389,6 +424,25 @@ def build_report_context(api_id):
     else:
         lmh['param_lookup'] = {}
         lmh['step2_rows'] = []
+
+    # Fertilizer-by-crop (page 6): reuse the same LMH engine per top crop.
+    # Crop names here come from CROP_PROFILES, which don't always match the
+    # RDF dataset's naming for a given state, so any crop that can't be
+    # resolved is just skipped rather than shown with fabricated numbers.
+    crop_fert_rows = []
+    if lmh_state:
+        for c in crops_scored:  # try all, by descending score, until we have 5 that resolve
+            if len(crop_fert_rows) >= 5:
+                break
+            row = recommend_fertilizer(lmh_state, c['name'], lmh_soil_values)
+            if row.get('error'):
+                continue
+            crop_fert_rows.append({
+                'name': c['name'], 'icon': c['icon'],
+                'rdf_ratio': row['rdf_ratio'],
+                'adj_ratio': f"{row['n_adj']}-{row['p_adj']}-{row['k_adj']}",
+                'urea': row['urea'], 'dap': row['dap'], 'mop': row['mop'],
+            })
 
     # Recommendation bullets
     rec_bullets = []
@@ -476,6 +530,11 @@ def build_report_context(api_id):
         'fertilizer_recs':  fertilizer_recs,
         'hm_data':          hm_data,
         'lmh':              lmh,
+        'crop_fert_rows':   crop_fert_rows,
+        'organic_advisory': [
+            {'name': n, 'type': t, 'color': c, 'method': m, 'dose': d, 'freq': f, 'shelf': s}
+            for n, t, c, m, d, f, s in ORGANIC_ADVISORY
+        ],
         # Carbon
         'total_co2':        total_co2,
         'oc_seq':           int(oc_seq),

@@ -717,14 +717,25 @@ chart3.render().then(function() {
 
    var heat_map = L.map('heat-map').setView([20.5937, 78.9629], 5);
 
+  // navbar.html loads leaflet.js again in its footer, after this block runs,
+  // which redefines the global L. Pin the copy heat_map actually belongs to
+  // so layers created later (e.g. on dropdown change) stay compatible with it.
+  var Lref = L;
+
   // Add tile layer
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  Lref.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; OpenStreetMap contributors'
   }).addTo(heat_map);
 
-  var indiaGeoJsonUrl = 'https://raw.githubusercontent.com/geohacker/india/master/state/india_telengana.geojson';
+  var indiaGeoJsonUrl = 'https://raw.githubusercontent.com/udit-001/india-maps-data/main/geojson/india.geojson';
   var indiaLayer      = null;
-  var markers         = [];  
+  var markers         = [];
+
+  // Dedicated pane/renderer for the NPK squares, kept separate from the
+  // (much heavier) India outline layer so redrawing one never corrupts
+  // the other's SVG renderer state.
+  heat_map.createPane('npkPane').style.zIndex = 650;
+  var npkRenderer = Lref.svg({ pane: 'npkPane' });
 
   // var heatmapPoints = [
   //     {lat: 28.6139, lng: 77.2090, nitrogen: 10, phosphorous: 15, potassium: 5},
@@ -733,27 +744,37 @@ chart3.render().then(function() {
   //     {lat: 22.5726, lng: 88.3639, nitrogen: 5,  phosphorous: 20, potassium: 30}
   // ];
 
+  // Wait for map to fully initialize before calling renderHeatmap
+  heat_map.whenReady(function () {
+      renderHeatmap(document.getElementById('heat_map_select').value);
+  });
+
   fetch(indiaGeoJsonUrl)
     .then(res => res.json())
     .then(data => {
-        indiaLayer = L.geoJSON(data, {
+        indiaLayer = Lref.geoJSON(data, {
             style: {
                 color: 'green',
                 fillColor: 'green',
                 fillOpacity: 0.3
             }
         }).addTo(heat_map);
-
-        // Wait for map to fully initialize before calling renderHeatmap
-        heat_map.whenReady(function () {
-            renderHeatmap(document.getElementById('heat_map_select').value);
-        });
-    });
+        // Outline can finish loading after the NPK squares are drawn;
+        // keep it as a backdrop instead of covering the data.
+        indiaLayer.bringToBack();
+    })
+    .catch(err => console.error('Failed to load India outline layer', err));
 
   async function renderHeatmap(nutrient) 
   {
     // Remove previous markers/polygons
-    markers.forEach(m => heat_map.removeLayer(m));
+    markers.forEach(m => {
+      try {
+        heat_map.removeLayer(m);
+      } catch (err) {
+        console.error('Failed to remove old NPK marker', err);
+      }
+    });
     markers = [];
 
     try {
@@ -800,10 +821,11 @@ chart3.render().then(function() {
             [p.latitude + offset, p.longitude - offset]
         ];
 
-        var polygon = L.polygon(bounds, {
+        var polygon = Lref.polygon(bounds, {
             color: color,
             fillColor: color,
             fillOpacity: opacity,
+            renderer: npkRenderer,
         }).addTo(heat_map);
 
         // var circle = L.circle([p.lat, p.lng], {

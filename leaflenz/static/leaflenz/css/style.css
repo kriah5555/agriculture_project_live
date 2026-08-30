@@ -990,6 +990,7 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 20px;
+    align-items: start;
 }
 
 .encyco-card {
@@ -1001,6 +1002,7 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
+    height: fit-content;
 }
 
 .encyco-card:hover {
