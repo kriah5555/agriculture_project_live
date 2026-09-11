@@ -1,0 +1,10 @@
+<!-- Shared inline Soil Visualizer embed for reading-detail pages.
+     Context expected: device_pk, optional reading_pk (highlights which point on
+     the map corresponds to the reading this embed was opened from). -->
+<div style="display:flex; justify-content:flex-end; margin-bottom:6px;">
+  <a href="{% url 'soil-visualizer-dashboard' device_pk %}{% if reading_pk %}?highlight_reading={{ reading_pk }}{% endif %}" target="_blank" rel="noopener" style="font-size:12px; text-decoration:underline; color:var(--tc-text-muted);">
+    <i class="fas fa-up-right-from-square me-1"></i>Open in new tab
+  </a>
+</div>
+<iframe src="{% url 'soil-visualizer-dashboard' device_pk %}{% if reading_pk %}?highlight_reading={{ reading_pk }}{% endif %}" loading="lazy"
+        style="width:100%; height:75vh; min-height:560px; border:1px solid var(--tc-border); border-radius:10px; display:block;"></iframe>

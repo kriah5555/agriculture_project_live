@@ -1,4 +1,12 @@
+from django.conf import settings
+
 from .models import ContactDetails, UserRequest
+
+
+def app_version(request):
+    """Exposes APP_VERSION (settings.py) to every template, for the small
+    version label shown next to the app name in the sidebar."""
+    return {'app_version': getattr(settings, 'APP_VERSION', '')}
 
 
 def notifications_badge(request):

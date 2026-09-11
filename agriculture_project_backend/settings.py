@@ -25,6 +25,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', '')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
+# Displayed in the UI next to the app name (templates/navbar.html) via the
+# agriapp.context_processors.app_version context processor.
+APP_VERSION = '1.0.0'
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -72,6 +76,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'agriapp.context_processors.notifications_badge',
+                'agriapp.context_processors.app_version',
             ],
         },
     },

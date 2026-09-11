@@ -79,16 +79,32 @@
       font-size: 18px; color: #fff;
     }
 
-    .sidebar-brand .brand-name {
+    .sidebar-brand .brand-text {
       flex: 1;
-      font-size: 16px; font-weight: 700;
-      color: #fff; letter-spacing: 0.4px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1px;
       overflow: hidden;
       transition: opacity var(--transition), width var(--transition);
     }
 
-    #sidebar.collapsed .brand-icon  { display: none; }
-    #sidebar.collapsed .brand-name  { display: none; }
+    .sidebar-brand .brand-name {
+      font-size: 16px; font-weight: 700;
+      color: #fff; letter-spacing: 0.4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-brand .brand-version {
+      font-size: 10px; font-weight: 600;
+      color: rgba(255,255,255,0.55);
+      white-space: nowrap;
+    }
+
+    #sidebar.collapsed .brand-icon { display: none; }
+    #sidebar.collapsed .brand-text { display: none; }
     #sidebar.collapsed .sidebar-brand { justify-content: center; padding: 14px 0; }
 
     /* ── Toggle button ───────────────────────────────────────── */
@@ -306,7 +322,10 @@
       <!-- Brand -->
       <div class="sidebar-brand">
         <div class="brand-icon"><i class="fas fa-seedling"></i></div>
-        <span class="brand-name">ArkaShine</span>
+        <div class="brand-text">
+          <span class="brand-name">ArkaShine</span>
+          {% if app_version %}<span class="brand-version">v{{ app_version }}</span>{% endif %}
+        </div>
         <button id="sidebarToggle" title="Toggle sidebar">
           <i id="toggleIcon" class="fas fa-bars"></i>
         </button>

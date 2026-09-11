@@ -34,7 +34,7 @@ from .overview_dashboard import build_overview_context
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
-from django.http import JsonResponse, FileResponse
+from django.http import JsonResponse, FileResponse, HttpResponseBadRequest
 
 from django.urls import reverse_lazy
 from django import forms
@@ -624,11 +624,12 @@ def api_overview(request, **kwargs):
     context       = dict()
     if "soil-life-api-overview" in request.path:
         template_name   = 'agriapp/soil_life_api_details.html'
-        devise_data     = get_object_or_404(DeviseApisFields, pk=kwargs['pk'])
+        devise_data     = get_object_or_404(DeviseApisFields.objects.select_related('farmer'), pk=kwargs['pk'])
         fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
         devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
         fields.pop('device', None)
         fields.pop('created_at', None)
+        fields.pop('farmer', None)
         context         = {
             'device'          : devise_data.device,
             'api_pk'          : devise_data.pk,
@@ -641,11 +642,12 @@ def api_overview(request, **kwargs):
 
     elif "atmos-sense-api-overview" in request.path:
         template_name   = 'agriapp/atmos_sense_api_details.html'
-        devise_data     = get_object_or_404(DeviseApisFields, pk=kwargs['pk'])
+        devise_data     = get_object_or_404(DeviseApisFields.objects.select_related('farmer'), pk=kwargs['pk'])
         fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
         devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
         fields.pop('device', None)
         fields.pop('created_at', None)
+        fields.pop('farmer', None)
         context         = {
             'device'          : devise_data.device,
             'api_pk'          : devise_data.pk,
@@ -654,15 +656,21 @@ def api_overview(request, **kwargs):
             'fields'          : json.dumps(ATMO_SENSE_FIELDS),
             'latitude'        : devise_location.latitude if devise_location else '',
             'longitude'       : devise_location.longitude if devise_location else '',
+            'linked_farmer'   : devise_data.farmer,
+            'available_farmers': Farmer.objects.filter(soil_partner=devise_data.device.user) if devise_data.device.user_id else Farmer.objects.none(),
+            'farmer_link_kind': 'fields',
+            'farmer_link_pk'  : devise_data.pk,
+            'sp_user_pk'      : devise_data.device.user_id,
         }
 
     elif "ph-bottle-api-overview" in request.path:
         template_name   = 'agriapp/ph_bottle_api_details.html'
-        devise_data     = get_object_or_404(DeviseApisFields, pk=kwargs['pk'])
+        devise_data     = get_object_or_404(DeviseApisFields.objects.select_related('farmer'), pk=kwargs['pk'])
         fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
         devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
         fields.pop('device', None)
         fields.pop('created_at', None)
+        fields.pop('farmer', None)
         context         = {
             'device'          : devise_data.device,
             'api_pk'          : devise_data.pk,
@@ -671,6 +679,11 @@ def api_overview(request, **kwargs):
             'fields'          : json.dumps(PH_BOTTLE_FIELDS),
             'latitude'        : devise_location.latitude if devise_location else '',
             'longitude'       : devise_location.longitude if devise_location else '',
+            'linked_farmer'   : devise_data.farmer,
+            'available_farmers': Farmer.objects.filter(soil_partner=devise_data.device.user) if devise_data.device.user_id else Farmer.objects.none(),
+            'farmer_link_kind': 'fields',
+            'farmer_link_pk'  : devise_data.pk,
+            'sp_user_pk'      : devise_data.device.user_id,
         }
 
     elif "leaflenz-api-overview" in request.path:
@@ -724,6 +737,11 @@ def api_overview(request, **kwargs):
             'fertilizer_states'         : fertilizer_states,
             'fertilizer_state_crops_json': json.dumps({s: get_fertilizer_crops_for_state(s) for s in fertilizer_states}),
             'crop_rec_states'           : get_crop_rec_states(),
+            'linked_farmer'             : api.farmer,
+            'available_farmers'         : Farmer.objects.filter(soil_partner=api.device.user) if api.device.user_id else Farmer.objects.none(),
+            'farmer_link_kind'          : 'soilsaathi',
+            'farmer_link_pk'            : api.pk,
+            'sp_user_pk'                : api.device.user_id,
         }
 
     return render(request, template_name = template_name, context=context)
@@ -799,6 +817,23 @@ def api_yield_predict(request, pk):
 def api_yield_history(request, pk):
     # No historical per-year yield series is available yet for this data source.
     return JsonResponse({"years": {}})
+
+@admin_required
+def link_farmer_to_reading(request, kind, pk):
+    """Link an existing farmer to a single sensor reading (any device type).
+    `kind` is 'soilsaathi' for DeviseApis or 'fields' for DeviseApisFields
+    (shared by PHBottle/AtmosSense/SoilLIFE/LeafLenz). Only a farmer already
+    registered under the reading's own device owner (soil partner) can be
+    linked — scoped directly in the lookup below."""
+    if request.method != 'POST':
+        return HttpResponseBadRequest('Method not allowed.')
+    Model   = DeviseApis if kind == 'soilsaathi' else DeviseApisFields
+    reading = get_object_or_404(Model, pk=pk)
+    farmer  = get_object_or_404(Farmer, pk=request.POST.get('farmer_id'), soil_partner=reading.device.user)
+    reading.farmer = farmer
+    reading.save(update_fields=['farmer'])
+    messages.success(request, f'Linked to farmer "{farmer.farmer_name}".')
+    return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
 
 class UpdateApi(AdminRequiredMixin, UpdateView):
     model         = DeviseApis

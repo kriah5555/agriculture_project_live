@@ -544,7 +544,7 @@
           <div style="padding:32px;text-align:center;color:var(--tc-text-muted);">
             <i class="fas fa-tractor" style="font-size:32px;display:block;margin-bottom:10px;"></i>
             <div style="font-size:13px;margin-bottom:12px;">No farmers registered yet.</div>
-            <a href="{% url 'create-farmer' %}" class="btn btn-sm btn-primary">
+            <a href="{% url 'create-farmer' %}?sp={{ user.pk }}" class="btn btn-sm btn-primary">
               <i class="fas fa-user-plus me-1"></i> Add First Farmer
             </a>
           </div>

@@ -122,6 +122,11 @@
       </button>
     </li>
     <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-map-btn" data-bs-toggle="tab" data-bs-target="#tab-map" type="button" role="tab">
+        <i class="fas fa-map-marked-alt me-1"></i> Visualization Map
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
       <button class="nav-link" id="tab-recommendation-btn" data-bs-toggle="tab" data-bs-target="#tab-recommendation" type="button" role="tab">
         <i class="fas fa-seedling me-1"></i> Crop Recommendation
       </button>
@@ -247,33 +252,18 @@
   <!-- /tab-overview -->
 
   <div class="tab-pane fade" id="tab-farmer" role="tabpanel">
-    {% if api.farmer %}
     <div class="row g-3">
       <div class="col-lg-6">
-        <div class="detail-card">
-          <div class="card-header-grad">
-            <h6><i class="fas fa-user me-2"></i>Farmer</h6>
-            <a href="{% url 'farmer-detail' api.farmer.pk %}" style="color:#fff;font-size:12px;text-decoration:underline;">View Full Profile</a>
-          </div>
-          <div class="info-row"><span class="info-label">Name</span>     <span class="info-value">{{ api.farmer.farmer_name }}</span></div>
-          <div class="info-row"><span class="info-label">Phone</span>    <span class="info-value">{{ api.farmer.phone|default:"--" }}</span></div>
-          <div class="info-row"><span class="info-label">Village</span>  <span class="info-value">{{ api.farmer.village }}</span></div>
-          <div class="info-row"><span class="info-label">District</span> <span class="info-value">{{ api.farmer.district }}, {{ api.farmer.state }}</span></div>
-          <div class="info-row"><span class="info-label">Crop</span>     <span class="info-value">{{ api.farmer.crop }}</span></div>
-          <div class="info-row"><span class="info-label">Land Area</span><span class="info-value">{{ api.farmer.land_area }} acres</span></div>
-          <div class="info-row"><span class="info-label">Season</span>  <span class="info-value">{{ api.farmer.get_season_display }}</span></div>
-          <div class="info-row"><span class="info-label">Status</span>   <span class="info-value"><span class="badge bg-{{ api.farmer.badge_class }}">{{ api.farmer.get_status_display }}</span></span></div>
-        </div>
+        {% include "agriapp/_farmer_link_card.html" %}
       </div>
     </div>
-    {% else %}
-    <div class="text-center text-muted py-5">
-      <i class="fas fa-user-slash mb-2" style="font-size:32px;"></i>
-      <p>This reading isn't linked to any farmer.</p>
-    </div>
-    {% endif %}
   </div>
   <!-- /tab-farmer -->
+
+  <div class="tab-pane fade" id="tab-map" role="tabpanel">
+    {% include "agriapp/_visualizer_embed.html" with device_pk=api.device.pk reading_pk=api.pk %}
+  </div>
+  <!-- /tab-map -->
 
   <div class="tab-pane fade" id="tab-recommendation" role="tabpanel">
 
@@ -1424,7 +1414,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     var params  = new URLSearchParams(window.location.search);
-    var tabBtns = { farmer: 'tab-farmer-btn', recommendation: 'tab-recommendation-btn', fertilizer: 'tab-fertilizer-btn', croprec: 'tab-croprec-btn', yield: 'tab-yield-btn' };
+    var tabBtns = { farmer: 'tab-farmer-btn', map: 'tab-map-btn', recommendation: 'tab-recommendation-btn', fertilizer: 'tab-fertilizer-btn', croprec: 'tab-croprec-btn', yield: 'tab-yield-btn' };
     var btnId   = tabBtns[params.get('tab')];
     if (btnId) {
       var btn = document.getElementById(btnId);

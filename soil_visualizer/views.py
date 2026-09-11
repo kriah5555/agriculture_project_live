@@ -5,6 +5,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 
 from agriapp.models import Devise, DeviseApis, Plot, Point
 from agriapp.views import admin_required
@@ -30,7 +31,10 @@ def _point_json(point):
 
 
 @admin_required
+@xframe_options_sameorigin
 def dashboard_view(request, device_id):
+    # Allow same-origin framing — this page is now embedded inline (via iframe)
+    # on the SoiLENZ/PHBottle/AtmosSense reading-detail pages, not just linked to.
     devise = _get_soilenz_devise(device_id)
     return render(request, 'soil_visualizer/dashboard.html', {'devise': devise})
 

@@ -100,20 +100,5 @@
 <script src="{% static '/login1/js/popper.js' %}"></script>
 <script src="{% static '/login1/js/bootstrap.min.js' %}"></script>
 <script src="{% static '/login1/js/main.js' %}"></script>
-<script>
-  // Toggle password visibility
-  document.querySelectorAll('.toggle-password').forEach(function(el) {
-    el.addEventListener('click', function() {
-      var input = document.querySelector(this.getAttribute('toggle'));
-      if (input.type === 'password') {
-        input.type = 'text';
-        this.classList.replace('fa-eye', 'fa-eye-slash');
-      } else {
-        input.type = 'password';
-        this.classList.replace('fa-eye-slash', 'fa-eye');
-      }
-    });
-  });
-</script>
 </body>
 </html>

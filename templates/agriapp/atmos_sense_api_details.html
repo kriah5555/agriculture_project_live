@@ -2,47 +2,39 @@
 
 {% block content %}
 {% include "agriapp/form_popup.html" %}
-    <div>
+    <div class="container-fluid px-2 px-md-3">
 
-        <div style="display: flex; flex-direction: row; gap: 2rem; margin-bottom: 2rem; justify-content: space-between; align-items: center; background-color: var(--tc-surface); padding: 1rem; border-radius: 8px;">
-            <!-- API Overview Text in the middle -->
-            <div style="flex: 1; text-align: center;">
-                <span style="font-size: 18px;">API Overview</span> <!-- Add your API Overview text here -->
-            </div>
-        
-            <!-- Icons at the end (Edit and Back) -->
-            <div style="text-align: right;">
-                
-                <!-- Edit Icon -->
-                <a href="javascript:void(0)" onclick="showDynamicAPIForm('atmo_sense', '{{ device.pk }}', '{{ fields_api_data.id }}')" style="padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px;">
-                    <i class="fas fa-edit" style="font-size: 24px;"></i> <!-- Edit icon -->
-                </a>    
-                <!-- Back Icon -->
-                <a href="javascript:history.back()" style="padding: 0.75rem 1.5rem; ">
-                    <i class="fas fa-arrow-left" style="font-size: 24px;"></i> <!-- Back icon -->
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3" style="background-color: var(--tc-surface); padding: 1rem; border-radius: 8px;">
+            <span style="font-size: 18px;">API Overview</span>
+            <div>
+                <a href="javascript:void(0)" onclick="showDynamicAPIForm('atmo_sense', '{{ device.pk }}', '{{ fields_api_data.id }}')" style="padding: 0.5rem 0.75rem; text-decoration: none; border-radius: 8px;">
+                    <i class="fas fa-edit" style="font-size: 22px;"></i>
                 </a>
-                
+                <a href="javascript:history.back()" style="padding: 0.5rem 0.75rem;">
+                    <i class="fas fa-arrow-left" style="font-size: 22px;"></i>
+                </a>
             </div>
         </div>
-        
-        <div style="display: flex; flex-direction: row; gap: 2rem;">
-            
+
+        <div class="row g-3">
+
             <!-- Left Side: Field Values -->
-            <div style="flex: 0 0 65%; border-right: 1px solid var(--tc-border); padding-right: 2rem; background-color: var(--tc-surface-alt); padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 24px; color: var(--tc-text); margin-bottom: 1rem;">
+            <div class="col-lg-8">
+              <div style="background-color: var(--tc-surface-alt); padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3" style="font-size: 18px; color: var(--tc-text);">
                     <div>
-                        Device: {{ device.name }}
+                        <strong>Device:</strong> {{ device.name }}
                     </div>
-                    <div>
-                        <span style="margin-right: 1rem;">Device ID: {{ device.devise_id }}</span>
+                    <div style="font-size: 14px;">
+                        <span class="me-3">Device ID: {{ device.devise_id }}</span>
                         <span>Tag: {{ fields_api_data.tag }}</span>
                     </div>
                 </div>
-                       
-                <div class="row">
+
+                <div class="row g-3">
                     <!-- Temperature Card -->
-                    <div class="col-md-3">
-                        <div class="card text-center h-70" style="border-radius: 15px; background-color: #ffa07a; color: #212529;">
+                    <div class="col-6 col-md-3">
+                        <div class="card text-center h-100" style="border-radius: 15px; background-color: #ffa07a; color: #212529;">
                             <div class="card-body">
                                 <h5 class="card-title">Soil and Atmospheric Tmp</h5>
                                 <div class="d-flex justify-content-center align-items-center mt-2">
@@ -53,7 +45,7 @@
                         </div>
                     </div>
                     <!-- Humidity Card -->
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <div class="card text-center h-100" style="border-radius: 15px; background-color: #87ceeb; color: #212529;">
                             <div class="card-body">
                                 <h5 class="card-title">Soil Moisture</h5>
@@ -65,7 +57,7 @@
                         </div>
                     </div>
                     <!-- Occupancy Card -->
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <div class="card text-center h-100" style="border-radius: 15px; background-color: #f4a460; color: #212529;">
                             <div class="card-body">
                                 <h5 class="card-title">Atmospheric Humidity</h5>
@@ -77,7 +69,7 @@
                         </div>
                     </div>
                     <!-- Light Intensity Card -->
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <div class="card text-center h-100" style="border-radius: 15px; background-color: #fffacd; color: #212529;">
                             <div class="card-body">
                                 <h5 class="card-title">Light Intensity</h5>
@@ -89,15 +81,14 @@
                         </div>
                     </div>
                 </div>
-        
-                <!-- New row for Image and Map Cards -->
-                <div class="row mt-4">
-                    <!-- Image Card -->
+
+                <!-- Image and Map -->
+                <div class="row g-3 mt-1">
                     <div class="col-md-6">
                         <div class="card h-100">
                             {% if fields_api_data.image_path %}
                             <img class="card-img-top" src="{{ fields_api_data.image_path }}" alt="Device Image" id="deviseImage" style="height: 300px; object-fit: cover;">
-                            <div class="card-body d-flex align-items-center justify-content-between">
+                            <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-2">
                                 <p class="card-text mb-0">Device Image</p>
                                 {% if request.user.is_superuser %}
                                 <button class="btn btn-sm btn-outline-danger" onclick="deleteApiImage({{ api_pk }}, this)">
@@ -119,28 +110,35 @@
                             {% endif %}
                         </div>
                     </div>
-                    <!-- Map Card -->
                     <div class="col-md-6">
                         <div class="card h-100">
                             <div class="card-body" style="padding: 0;">
-                                <h5 class="card-title">Location Map</h5>
-                                <div id="map" style="height: 350px; width: 100%;"></div>
+                                <h5 class="card-title" style="padding:12px 16px 0;">Location Map</h5>
+                                <div id="map" style="height: 300px; width: 100%;"></div>
                             </div>
                         </div>
                     </div>
                 </div>
-        
+
+                <!-- Farmer -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        {% include "agriapp/_farmer_link_card.html" %}
+                    </div>
+                </div>
+
+              </div>
             </div>
-            
+
             <!-- Right Side: Circular Chart -->
-            <div style="flex: 1; padding-left: 2rem; background-color: var(--tc-surface-alt); padding: 2rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; justify-content: space-between;">
-                <!-- <h3 style="font-size: 24px; color: #333; margin-bottom: 1rem;">Overview </h3> -->
-                <div style="flex-grow: 1; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+            <div class="col-lg-4">
+              <div class="d-flex flex-column h-100" style="background-color: var(--tc-surface-alt); padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                <div style="flex-grow: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; min-height:260px;">
                     <canvas id="circleChart" style="max-width: 100%; max-height: 400px;"></canvas>
                 </div>
+              </div>
             </div>
         </div>
-        
 
     </div>
 
@@ -210,22 +208,13 @@
         });
 
         // Map script
-        mapInstance = L.map('map').setView([{{latitude}}, {{longitude}}], 5); // Center on the device's location
-
-        // Add a tile layer (OpenStreetMap)
+        var mapInstance = L.map('map').setView([{{latitude|default:"15.3173"}}, {{longitude|default:"75.7139"}}], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(mapInstance);
-
-        // Add a marker at the device's location
-        L.circleMarker([{{latitude}}, {{longitude}}], {
-            radius: 8,
-            fillColor: 'green',
-            color: 'green',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.6
-        }).addTo(mapInstance).bindPopup('{{device.name}}'); 
+        L.circleMarker([{{latitude|default:"15.3173"}}, {{longitude|default:"75.7139"}}], {
+            radius: 8, fillColor: 'green', color: 'green', weight: 2, opacity: 1, fillOpacity: 0.6
+        }).addTo(mapInstance).bindPopup('{{device.name}}');
     </script>
 
 <script>

@@ -10,18 +10,18 @@ function jsonHeaders() {
 }
 
 const colormaps = {
-  'ph': [{ max: 4.5, hex: '#D32F2F' }, { max: 5.5, hex: '#E67E22' }, { max: 6.5, hex: '#F1C40F' }, { max: 7.5, hex: '#27AE60' }, { max: 8.5, hex: '#2980B9' }, { max: Infinity, hex: '#17202A' }],
-  'ec': [{ max: 0.2, hex: '#0B2545' }, { max: 0.8, hex: '#134074' }, { max: 1.6, hex: '#8DA9C4' }, { max: 3.2, hex: '#EEB902' }, { max: 6.4, hex: '#D05A02' }, { max: Infinity, hex: '#4A0000' }],
-  'n': [{ max: 50, hex: '#E8F5E9' }, { max: 100, hex: '#A5D6A7' }, { max: 200, hex: '#4CAF50' }, { max: 300, hex: '#2E7D32' }, { max: 400, hex: '#1B5E20' }, { max: Infinity, hex: '#08250A' }],
-  'p': [{ max: 5, hex: '#FCE4EC' }, { max: 10, hex: '#F8BBD0' }, { max: 20, hex: '#EC407A' }, { max: 40, hex: '#C2185B' }, { max: 60, hex: '#880E4F' }, { max: Infinity, hex: '#4A0025' }],
-  'k': [{ max: 80, hex: '#FFF8E1' }, { max: 120, hex: '#FFE082' }, { max: 200, hex: '#FFB74D' }, { max: 300, hex: '#E65100' }, { max: 500, hex: '#9E2A2B' }, { max: Infinity, hex: '#3E0F05' }],
+  'ph'            : [{ max: 4.5, hex: '#D32F2F' }, { max: 5.5, hex: '#E67E22' }, { max: 6.5, hex: '#F1C40F' }, { max: 7.5, hex: '#27AE60' }, { max: 8.5, hex: '#2980B9' }, { max: Infinity, hex: '#17202A' }],
+  'ec'            : [{ max: 0.2, hex: '#0B2545' }, { max: 0.8, hex: '#134074' }, { max: 1.6, hex: '#8DA9C4' }, { max: 3.2, hex: '#EEB902' }, { max: 6.4, hex: '#D05A02' }, { max: Infinity, hex: '#4A0000' }],
+  'n'             : [{ max: 50, hex: '#E8F5E9' }, { max: 100, hex: '#A5D6A7' }, { max: 200, hex: '#4CAF50' }, { max: 300, hex: '#2E7D32' }, { max: 400, hex: '#1B5E20' }, { max: Infinity, hex: '#08250A' }],
+  'p'             : [{ max: 5, hex: '#FCE4EC' }, { max: 10, hex: '#F8BBD0' }, { max: 20, hex: '#EC407A' }, { max: 40, hex: '#C2185B' }, { max: 60, hex: '#880E4F' }, { max: Infinity, hex: '#4A0025' }],
+  'k'             : [{ max: 80, hex: '#FFF8E1' }, { max: 120, hex: '#FFE082' }, { max: 200, hex: '#FFB74D' }, { max: 300, hex: '#E65100' }, { max: 500, hex: '#9E2A2B' }, { max: Infinity, hex: '#3E0F05' }],
   'organic_carbon': [{ max: 0.25, hex: '#F5EBE6' }, { max: 0.5, hex: '#D7CCC8' }, { max: 0.75, hex: '#BCAAA4' }, { max: 1.5, hex: '#6D4C41' }, { max: 3.0, hex: '#3E2723' }, { max: Infinity, hex: '#1A0B05' }],
-  's': [{ max: 5, hex: '#FFFDE7' }, { max: 10, hex: '#FFF59D' }, { max: 20, hex: '#FBC02D' }, { max: 40, hex: '#F57F17' }, { max: 80, hex: '#827717' }, { max: Infinity, hex: '#333008' }],
-  'fe': [{ max: 2, hex: '#FFEBEE' }, { max: 4.5, hex: '#FF8A80' }, { max: 9, hex: '#D32F2F' }, { max: 20, hex: '#B71C1C' }, { max: 50, hex: '#7F0000' }, { max: Infinity, hex: '#3B0000' }],
-  'zn': [{ max: 0.5, hex: '#ECEFF1' }, { max: 1.0, hex: '#B0BEC5' }, { max: 2.0, hex: '#78909C' }, { max: 5.0, hex: '#455A64' }, { max: 10.0, hex: '#263238' }, { max: Infinity, hex: '#0D1417' }],
-  'cu': [{ max: 0.2, hex: '#E0F2F1' }, { max: 1.0, hex: '#80CBC4' }, { max: 2.5, hex: '#26A69A' }, { max: 5.0, hex: '#00695C' }, { max: 10.0, hex: '#004D40' }, { max: Infinity, hex: '#00251E' }],
-  'b': [{ max: 0.25, hex: '#E8EAF6' }, { max: 0.5, hex: '#9FA8DA' }, { max: 1.0, hex: '#5C6BC0' }, { max: 2.0, hex: '#3F51B5' }, { max: 4.0, hex: '#1A237E' }, { max: Infinity, hex: '#0B0C24' }],
-  'mn': [{ max: 2.0, hex: '#F5F5F5' }, { max: 5.0, hex: '#E0E0E0' }, { max: 10.0, hex: '#BDBDBD' }, { max: 25.0, hex: '#757575' }, { max: 50.0, hex: '#424242' }, { max: Infinity, hex: '#111111' }],
+  's'             : [{ max: 5, hex: '#FFFDE7' }, { max: 10, hex: '#FFF59D' }, { max: 20, hex: '#FBC02D' }, { max: 40, hex: '#F57F17' }, { max: 80, hex: '#827717' }, { max: Infinity, hex: '#333008' }],
+  'fe'            : [{ max: 2, hex: '#FFEBEE' }, { max: 4.5, hex: '#FF8A80' }, { max: 9, hex: '#D32F2F' }, { max: 20, hex: '#B71C1C' }, { max: 50, hex: '#7F0000' }, { max: Infinity, hex: '#3B0000' }],
+  'zn'            : [{ max: 0.5, hex: '#ECEFF1' }, { max: 1.0, hex: '#B0BEC5' }, { max: 2.0, hex: '#78909C' }, { max: 5.0, hex: '#455A64' }, { max: 10.0, hex: '#263238' }, { max: Infinity, hex: '#0D1417' }],
+  'cu'            : [{ max: 0.2, hex: '#E0F2F1' }, { max: 1.0, hex: '#80CBC4' }, { max: 2.5, hex: '#26A69A' }, { max: 5.0, hex: '#00695C' }, { max: 10.0, hex: '#004D40' }, { max: Infinity, hex: '#00251E' }],
+  'b'             : [{ max: 0.25, hex: '#E8EAF6' }, { max: 0.5, hex: '#9FA8DA' }, { max: 1.0, hex: '#5C6BC0' }, { max: 2.0, hex: '#3F51B5' }, { max: 4.0, hex: '#1A237E' }, { max: Infinity, hex: '#0B0C24' }],
+  'mn'            : [{ max: 2.0, hex: '#F5F5F5' }, { max: 5.0, hex: '#E0E0E0' }, { max: 10.0, hex: '#BDBDBD' }, { max: 25.0, hex: '#757575' }, { max: 50.0, hex: '#424242' }, { max: Infinity, hex: '#111111' }],
 };
 
 function makeGetColor(key) {
@@ -56,11 +56,11 @@ const getShortLabel = (p) => {
 // to be previewed (reading detail expand, point map popup, add-form preview).
 function buildParamGrid(parameters) {
   const order = Object.keys(PARAMETERS);
-  const keys = Object.keys(parameters).sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  const keys  = Object.keys(parameters).sort((a, b) => order.indexOf(a) - order.indexOf(b));
   const chips = keys.map(key => {
-    const config = PARAMETERS[key] || { label: key, unit: '' };
-    const val = parameters[key];
-    const color = (val !== undefined && val !== null && config.getColor) ? config.getColor(val) : '#9ca3af';
+    const config  = PARAMETERS[key] || { label: key, unit: '' };
+    const val     = parameters[key];
+    const color   = (val !== undefined && val !== null && config.getColor) ? config.getColor(val) : '#9ca3af';
     const display = (typeof val === 'number') ? (Number.isInteger(val) ? val : val.toFixed(2)) : val;
     return `
       <div class="param-chip">
@@ -72,57 +72,83 @@ function buildParamGrid(parameters) {
 }
 
 // ── Global App State ─────────────────────────────────────────────────────────
-let points = [];           // every point for this device (flat list)
-let plots = [];            // every plot (boundary) for this device
-let plotsById = {};
+let points          = [];    // every point for this device (flat list)
+let plots           = [];    // every plot (boundary) for this device
+let plotsById       = {};
 let activeParameter = 'ph';
-let rasterCache = {};
-let allRasters = {};
+let rasterCache     = {};
+let allRasters      = {};
 
 let readingsQuery = '';
 let readingsPage = 1;
 let readingsData = { results: [], num_pages: 1, count: 0 };
 
 // pendingAddMode: null | 'linking' | 'manual'
-let pendingAddMode = null;
-let pendingReading = null;
+let pendingAddMode  = null;
+let pendingReading  = null;
 let pendingGeometry = null;
-let multiAddCount = 0;
+let multiAddCount   = 0;
 
 // pointFormMode (for edit only now): 'editing-linked' | 'editing-manual'
 let pointFormMode = null;
 let pointFormContext = {};
 
-let mapInstance = null;
-const plotsLayerGroup = L.featureGroup();
+let   mapInstance      = null;
+const plotsLayerGroup  = L.featureGroup();
 const pointsLayerGroup = L.featureGroup();
 const rasterLayerGroup = L.featureGroup();
-let canvasRenderer = null;
-let hasLocated = false;
+let   canvasRenderer   = null;
+let   hasLocated       = false;
+let   pointMarkersById = {};
 
 let pointsListContainer, pointFormCard;
 let readingsListContainer, readingsSearchInput, readingsPager;
 let parameterTabsContainer, pointForm, pointFormErrorBanner;
 
-document.addEventListener('DOMContentLoaded', () => {
+// When embedded from a specific reading's detail page (?highlight_reading=<id>),
+// filter the readings list to it and point out its sample point on the map (or
+// prompt to add one) so it's obvious which point corresponds to "this" reading.
+const highlightReadingId = new URLSearchParams(window.location.search).get('highlight_reading');
+
+document.addEventListener('DOMContentLoaded', async () => {
   cacheDOM();
   initMap();
   initParameterTabs();
   bindGlobalEvents();
-  fetchPlots();
-  fetchPoints();
-  fetchReadings();
+  if (highlightReadingId) {
+    readingsQuery = highlightReadingId;
+    if (readingsSearchInput) readingsSearchInput.value = highlightReadingId;
+  }
+  await Promise.all([fetchPlots(), fetchPoints(), fetchReadings()]);
+  if (highlightReadingId) applyReadingHighlight();
 });
 
+function applyReadingHighlight() {
+  const rid    = parseInt(highlightReadingId, 10);
+  const point  = points.find(p => p.reading_id === rid);
+  const banner = document.createElement('div');
+  banner.style.cssText = 'background:var(--accent-soft, #e3f2fd);border:1px solid var(--accent, #90caf9);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;line-height:1.5;';
+  if (point && point.coordinates) {
+    banner.innerHTML = `<i class="fas fa-map-marker-alt me-1"></i> Showing the map for <strong>Reading #${rid}</strong> — its sample point is highlighted below.`;
+    flyToLocation(point.coordinates.lat, point.coordinates.lon);
+    const marker = pointMarkersById[point.id];
+    if (marker) setTimeout(() => marker.openPopup(), 400);
+  } else {
+    banner.innerHTML = `<i class="fas fa-info-circle me-1"></i> Showing the map for <strong>Reading #${rid}</strong> — it hasn't been added to this map yet. Find it in "All Readings" below and click "+ Add to Map".`;
+  }
+  const sidebarContent = document.querySelector('.sidebar-content');
+  if (sidebarContent) sidebarContent.insertBefore(banner, sidebarContent.firstChild);
+}
+
 function cacheDOM() {
-  pointsListContainer = document.getElementById('points-list');
-  readingsListContainer = document.getElementById('readings-list');
-  readingsSearchInput = document.getElementById('readings-search-input');
-  readingsPager = document.getElementById('readings-pager');
-  pointFormCard = document.getElementById('point-form-card');
+  pointsListContainer    = document.getElementById('points-list');
+  readingsListContainer  = document.getElementById('readings-list');
+  readingsSearchInput    = document.getElementById('readings-search-input');
+  readingsPager          = document.getElementById('readings-pager');
+  pointFormCard          = document.getElementById('point-form-card');
   parameterTabsContainer = document.getElementById('parameter-tabs');
-  pointForm = document.getElementById('point-form');
-  pointFormErrorBanner = document.getElementById('point-form-error-banner');
+  pointForm              = document.getElementById('point-form');
+  pointFormErrorBanner   = document.getElementById('point-form-error-banner');
 }
 
 function initMap() {
@@ -388,6 +414,7 @@ function renderPointsList() {
 
 function renderPointsOnMap() {
   pointsLayerGroup.clearLayers();
+  pointMarkersById = {};
   const paramConfig = PARAMETERS[activeParameter];
   if (!paramConfig) return;
 
@@ -415,6 +442,7 @@ function renderPointsOnMap() {
       </div>`, { maxWidth: 320, minWidth: 260 });
 
     pointsLayerGroup.addLayer(marker);
+    pointMarkersById[point.id] = marker;
   });
 }
 

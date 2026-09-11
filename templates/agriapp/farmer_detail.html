@@ -558,6 +558,9 @@
     document.getElementById('editOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
+  if (new URLSearchParams(window.location.search).get('edit') === '1') {
+    openEdit();
+  }
   function closeEdit() {
     document.getElementById('editOverlay').classList.remove('open');
     document.body.style.overflow = '';

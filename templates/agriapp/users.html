@@ -88,8 +88,10 @@
             <tr class="user-row" data-usertype="{{ user.user_type_display|lower }}" onclick="window.location.href='/user-details/{{ user.username }}/'">
               <td style="padding:12px 16px; color:var(--tc-text-muted);">{{ forloop.counter }}</td>
               <td style="padding:12px 16px;">
-                <span class="user-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
-                {{ user.first_name }} {{ user.last_name }}
+                <div style="display:flex; align-items:center; white-space:nowrap;">
+                  <span class="user-avatar" style="flex-shrink:0;">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
+                  <span>{{ user.first_name }} {{ user.last_name }}</span>
+                </div>
               </td>
               <td style="padding:12px 16px;">
                 <span class="badge bg-secondary" style="font-size:12px; font-weight:500;">{{ user.username }}</span>
@@ -121,17 +123,19 @@
                   <span class="text-muted" style="font-size:12px;"><i class="fas fa-minus"></i> None</span>
                 {% endif %}
               </td>
-              <td style="padding:12px 16px; text-align:center;">
-                <a href="/user-details/{{ user.username }}/" class="btn btn-sm btn-outline-primary me-1" onclick="event.stopPropagation()">
+              <td style="padding:12px 16px; text-align:center; white-space:nowrap;">
+                <div style="display:flex; justify-content:center; align-items:center; flex-wrap:nowrap; gap:2px;">
+                <a href="/user-details/{{ user.username }}/" class="btn btn-sm text-primary" style="border:none;background:transparent;" onclick="event.stopPropagation()">
                   <i class="fas fa-eye"></i>
                 </a>
                 {% if not user.device_types %}
-                <button class="btn btn-sm btn-outline-danger"
+                <button class="btn btn-sm text-danger" style="border:none;background:transparent;"
                         onclick="event.stopPropagation(); confirmDelete('{{ user.username }}', '{{ user.get_full_name|default:user.username }}')"
                         title="Delete user (no devices linked)">
                   <i class="fas fa-trash-alt"></i>
                 </button>
                 {% endif %}
+                </div>
               </td>
             </tr>
             {% empty %}

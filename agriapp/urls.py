@@ -27,6 +27,7 @@ urlpatterns = [
     path('api-overview/<int:pk>/yield-options/',    v.api_yield_options,                name="api-yield-options"),
     path('api-overview/<int:pk>/yield-predict/',    v.api_yield_predict,                name="api-yield-predict"),
     path('api-overview/<int:pk>/yield-history/',    v.api_yield_history,                name="api-yield-history"),
+    path('link-farmer/<str:kind>/<int:pk>/',        v.link_farmer_to_reading,           name="link-farmer-to-reading"),
     path('api-edit/<int:pk>/',                      UpdateApi.as_view(),                name="api-edit"),
     path('add-api/',                                CreateApi.as_view(),                name="add-api"),
     path('change-password/<str:uid>',               v.change_password,                  name="change-password"),

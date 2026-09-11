@@ -3,108 +3,111 @@
 {% block content %}
 {% include "agriapp/form_popup.html" %}
 
-<div>
+<div class="container-fluid px-2 px-md-3">
 
   <!-- Top bar -->
-  <div style="display:flex; flex-direction:row; gap:2rem; margin-bottom:2rem; justify-content:space-between; align-items:center; background-color:var(--tc-surface); padding:1rem; border-radius:8px;">
-    <div style="flex:1; text-align:center;">
-      <span style="font-size:18px; font-weight:600; color:#198754;">PHBottle — API Overview</span>
-    </div>
-    <div style="text-align:right;">
-      <a href="javascript:void(0)" onclick="showDynamicAPIForm('ph_bottle', '{{ device.pk }}', '{{ fields_api_data.id }}')" style="padding:0.75rem 1.5rem; text-decoration:none; border-radius:8px;">
-        <i class="fas fa-edit" style="font-size:24px;"></i>
+  <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3" style="background-color:var(--tc-surface); padding:1rem; border-radius:8px;">
+    <span style="font-size:18px; font-weight:600; color:#198754;">PHBottle — API Overview</span>
+    <div>
+      <a href="javascript:void(0)" onclick="showDynamicAPIForm('ph_bottle', '{{ device.pk }}', '{{ fields_api_data.id }}')" style="padding:0.5rem 0.75rem; text-decoration:none; border-radius:8px;">
+        <i class="fas fa-edit" style="font-size:22px;"></i>
       </a>
-      <a href="javascript:history.back()" style="padding:0.75rem 1.5rem;">
-        <i class="fas fa-arrow-left" style="font-size:24px;"></i>
+      <a href="javascript:history.back()" style="padding:0.5rem 0.75rem;">
+        <i class="fas fa-arrow-left" style="font-size:22px;"></i>
       </a>
     </div>
   </div>
 
-  <div style="display:flex; flex-direction:row; gap:2rem;">
+  <div class="row g-3">
 
-    <!-- Left: sensor cards + map -->
-    <div style="flex:0 0 65%; background-color:var(--tc-surface-alt); padding:2rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+    <!-- Left: sensor cards + farmer + map -->
+    <div class="col-lg-8">
+      <div style="background-color:var(--tc-surface-alt); padding:1.5rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
 
-      <!-- Device header -->
-      <div style="display:flex; justify-content:space-between; align-items:center; font-size:20px; color:var(--tc-text); margin-bottom:1.5rem;">
-        <div><strong>Device:</strong> {{ device.name }}</div>
-        <div>
-          <span style="margin-right:1rem;">Device ID: {{ device.devise_id }}</span>
-          <span>Tag: {{ fields_api_data.tag }}</span>
+        <!-- Device header -->
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3" style="font-size:18px; color:var(--tc-text);">
+          <div><strong>Device:</strong> {{ device.name }}</div>
+          <div style="font-size:14px;">
+            <span class="me-3">Device ID: {{ device.devise_id }}</span>
+            <span>Tag: {{ fields_api_data.tag }}</span>
+          </div>
         </div>
+
+        <!-- Sensor cards row -->
+        <div class="row g-3 mb-4">
+
+          <!-- pH Value -->
+          <div class="col-6 col-md-3">
+            <div class="card text-center h-100" style="border-radius:15px; background-color:#d4edda; border:none;">
+              <div class="card-body">
+                <h6 class="card-title text-success">pH Value</h6>
+                <i class="fas fa-flask" style="font-size:28px; color:#198754; margin:8px 0;"></i>
+                <p class="card-text fs-4 fw-bold" style="color:#198754;">{{ fields_api_data.field1 }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- pH Voltage -->
+          <div class="col-6 col-md-3">
+            <div class="card text-center h-100" style="border-radius:15px; background-color:#cce5ff; border:none;">
+              <div class="card-body">
+                <h6 class="card-title text-primary">pH Voltage</h6>
+                <i class="fas fa-bolt" style="font-size:28px; color:#0056b3; margin:8px 0;"></i>
+                <p class="card-text fs-4 fw-bold" style="color:#0056b3;">{{ fields_api_data.field2 }} <small style="font-size:13px;">mV</small></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- EC Value -->
+          <div class="col-6 col-md-3">
+            <div class="card text-center h-100" style="border-radius:15px; background-color:#fff3cd; border:none;">
+              <div class="card-body">
+                <h6 class="card-title" style="color:#856404;">EC Value</h6>
+                <i class="fas fa-water" style="font-size:28px; color:#856404; margin:8px 0;"></i>
+                <p class="card-text fs-4 fw-bold" style="color:#856404;">{{ fields_api_data.field3 }} <small style="font-size:13px;">mS/cm</small></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- EC Voltage -->
+          <div class="col-6 col-md-3">
+            <div class="card text-center h-100" style="border-radius:15px; background-color:#f8d7da; border:none;">
+              <div class="card-body">
+                <h6 class="card-title text-danger">EC Voltage</h6>
+                <i class="fas fa-bolt" style="font-size:28px; color:#842029; margin:8px 0;"></i>
+                <p class="card-text fs-4 fw-bold" style="color:#842029;">{{ fields_api_data.field4 }} <small style="font-size:13px;">mV</small></p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Farmer -->
+        <div class="mb-4">
+          {% include "agriapp/_farmer_link_card.html" %}
+        </div>
+
+        <!-- Map -->
+        <div class="card">
+          <div class="card-body" style="padding:0;">
+            <h5 class="card-title" style="padding:12px 16px 0;">Location Map</h5>
+            <div id="map" style="height:320px; width:100%;"></div>
+          </div>
+        </div>
+
       </div>
-
-      <!-- Sensor cards row -->
-      <div class="row g-3 mb-4">
-
-        <!-- pH Value -->
-        <div class="col-md-3">
-          <div class="card text-center h-100" style="border-radius:15px; background-color:#d4edda; border:none;">
-            <div class="card-body">
-              <h6 class="card-title text-success">pH Value</h6>
-              <i class="fas fa-flask" style="font-size:28px; color:#198754; margin:8px 0;"></i>
-              <p class="card-text fs-4 fw-bold" style="color:#198754;">{{ fields_api_data.field1 }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- pH Voltage -->
-        <div class="col-md-3">
-          <div class="card text-center h-100" style="border-radius:15px; background-color:#cce5ff; border:none;">
-            <div class="card-body">
-              <h6 class="card-title text-primary">pH Voltage</h6>
-              <i class="fas fa-bolt" style="font-size:28px; color:#0056b3; margin:8px 0;"></i>
-              <p class="card-text fs-4 fw-bold" style="color:#0056b3;">{{ fields_api_data.field2 }} <small style="font-size:13px;">mV</small></p>
-            </div>
-          </div>
-        </div>
-
-        <!-- EC Value -->
-        <div class="col-md-3">
-          <div class="card text-center h-100" style="border-radius:15px; background-color:#fff3cd; border:none;">
-            <div class="card-body">
-              <h6 class="card-title" style="color:#856404;">EC Value</h6>
-              <i class="fas fa-water" style="font-size:28px; color:#856404; margin:8px 0;"></i>
-              <p class="card-text fs-4 fw-bold" style="color:#856404;">{{ fields_api_data.field3 }} <small style="font-size:13px;">mS/cm</small></p>
-            </div>
-          </div>
-        </div>
-
-        <!-- EC Voltage -->
-        <div class="col-md-3">
-          <div class="card text-center h-100" style="border-radius:15px; background-color:#f8d7da; border:none;">
-            <div class="card-body">
-              <h6 class="card-title text-danger">EC Voltage</h6>
-              <i class="fas fa-bolt" style="font-size:28px; color:#842029; margin:8px 0;"></i>
-              <p class="card-text fs-4 fw-bold" style="color:#842029;">{{ fields_api_data.field4 }} <small style="font-size:13px;">mV</small></p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Map -->
-      <div class="row">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-body" style="padding:0;">
-              <h5 class="card-title" style="padding:12px 16px 0;">Location Map</h5>
-              <div id="map" style="height:320px; width:100%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <!-- Right: chart -->
-    <div style="flex:1; background-color:var(--tc-surface-alt); padding:2rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1); display:flex; flex-direction:column; justify-content:space-between;">
-      <h5 style="color:var(--tc-text);">Sensor Overview</h5>
-      <div style="flex-grow:1; display:flex; justify-content:center; align-items:center; overflow:hidden;">
-        <canvas id="circleChart" style="max-width:100%; max-height:400px;"></canvas>
-      </div>
-      <div style="margin-top:1rem; font-size:13px; color:var(--tc-text-muted); text-align:center;">
-        Reading recorded at: {{ fields_api_data.created_at }}
+    <div class="col-lg-4">
+      <div class="d-flex flex-column h-100" style="background-color:var(--tc-surface-alt); padding:1.5rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+        <h5 style="color:var(--tc-text);">Sensor Overview</h5>
+        <div style="flex-grow:1; display:flex; justify-content:center; align-items:center; overflow:hidden; min-height:220px;">
+          <canvas id="circleChart" style="max-width:100%; max-height:400px;"></canvas>
+        </div>
+        <div style="margin-top:1rem; font-size:13px; color:var(--tc-text-muted); text-align:center;">
+          Reading recorded at: {{ fields_api_data.created_at }}
+        </div>
       </div>
     </div>
 
