@@ -188,3 +188,62 @@ def fields_detail_view(request, device_id, call_id):
     device  = get_user_device(request, device_id)
     reading = get_object_or_404(DeviseApisFields, pk=call_id, device=device)
     return Response(FieldsReadingSerializer(reading, context={'request': request}).data)
+
+
+# ── SoiLENZ <-> PHBottle linking ──────────────────────────────────────────────
+#
+# A SoiLENZ reading (DeviseApis) and a PHBottle reading (DeviseApisFields, of
+# device type 'ph_bottle') may be linked in either order — whichever gets
+# built/used first, the other is linked to it later. Linking copies the
+# PHBottle's pH/EC into the SoiLENZ reading's ph/ec fields. Both direction's
+# views (soilsaathi.py, ph_bottle.py) call these two functions so the
+# validation + sync logic lives in exactly one place.
+
+def link_soil_lens_ph_bottle(request, soil_lens, ph_bottle_id, confirm):
+    """
+    Links `soil_lens` (a DeviseApis the caller already owns) to a PHBottle
+    reading owned by the same user. Returns a Response — either the updated
+    SoiLENZ reading (200) or an error/warning (400/403/404/409).
+    """
+    from devise_apis.mobile_serializers import SoilSaathiReadingSerializer
+
+    ph_bottle = DeviseApisFields.objects.filter(
+        pk=ph_bottle_id, device__user=request.user, device__devise_type='ph_bottle',
+    ).first()
+    if not ph_bottle:
+        return Response(
+            {'detail': 'PHBottle reading not found, not a PHBottle reading, or not owned by you.'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    already_linked_elsewhere = DeviseApis.objects.filter(ph_bottle_reading=ph_bottle).exclude(pk=soil_lens.pk).first()
+    if already_linked_elsewhere:
+        return Response(
+            {'detail': f'This PHBottle reading is already linked to SoiLENZ reading #{already_linked_elsewhere.pk}.'},
+            status=status.HTTP_409_CONFLICT,
+        )
+
+    overwriting = soil_lens.ph_bottle_reading_id and soil_lens.ph_bottle_reading_id != ph_bottle.pk
+    changing_values = soil_lens.ph != ph_bottle.field1 or soil_lens.ec != ph_bottle.field3
+    if (overwriting or changing_values) and not confirm:
+        return Response(
+            {
+                'warning' : 'Linking will overwrite this SoiLENZ reading\'s pH/EC values.',
+                'current' : {'ph': soil_lens.ph, 'ec': soil_lens.ec},
+                'incoming': {'ph': ph_bottle.field1, 'ec': ph_bottle.field3},
+                'detail'  : 'Resubmit with confirm=true to proceed.',
+            },
+            status=status.HTTP_409_CONFLICT,
+        )
+
+    soil_lens.link_ph_bottle(ph_bottle)
+    return Response(SoilSaathiReadingSerializer(soil_lens).data)
+
+
+def unlink_soil_lens_ph_bottle(soil_lens):
+    """Clears the link on `soil_lens`, leaving its last-synced ph/ec values as-is."""
+    from devise_apis.mobile_serializers import SoilSaathiReadingSerializer
+
+    soil_lens.ph_bottle_reading = None
+    soil_lens.save(update_fields=['ph_bottle_reading'])
+    return Response(SoilSaathiReadingSerializer(soil_lens).data)

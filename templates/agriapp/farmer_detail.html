@@ -288,6 +288,7 @@
             <div class="fd-device-row"
                  data-farmer="{{ farmer.pk }}"
                  data-device="{{ d.device__id }}"
+                 data-devtype="{{ dtype }}"
                  data-label="{{ info.label }} — {{ d.device__name|default:d.device__devise_id }}"
                  onclick="fdToggleDevice(this)"
                  style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--tc-surface);cursor:pointer;user-select:none;{% if not forloop.first %}border-top:1px solid var(--tc-border);{% endif %}">
@@ -451,8 +452,8 @@
   document.addEventListener('DOMContentLoaded', function () {
     const lat = {{ farmer.latitude }}, lng = {{ farmer.longitude }};
     const map = L.map('farmerMap').setView([lat, lng], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
     L.marker([lat, lng]).addTo(map).bindPopup('{{ farmer.farmer_name }}').openPopup();
   });
@@ -587,6 +588,14 @@
   // ── Expandable device readings ──────────────────────────────────────────────
   const _fdLoaded = new Set();
 
+  // Web page that shows the full detail view for one reading, keyed by device type.
+  const FD_OVERVIEW_URL_PREFIX = {
+    soilsaathi: '/api-overview/',
+    atmo_sense: '/atmos-sense-api-overview/',
+    soil_life : '/soil-life-api-overview/',
+    ph_bottle : '/ph-bottle-api-overview/',
+  };
+
   function fdToggleDevice(row) {
     const panel   = row.nextElementSibling;
     const chevron = row.querySelector('.fd-chevron');
@@ -605,13 +614,14 @@
 
     const farmerId = row.dataset.farmer;
     const deviceId = row.dataset.device;
+    const devType  = row.dataset.devtype;
     const label    = row.dataset.label;
     const body     = panel.querySelector('.fd-readings-body');
 
-    fdFetchPage(farmerId, deviceId, 1, body, label);
+    fdFetchPage(farmerId, deviceId, 1, body, label, devType);
   }
 
-  async function fdFetchPage(farmerId, deviceId, page, body, label) {
+  async function fdFetchPage(farmerId, deviceId, page, body, label, devType) {
     body.innerHTML = `<div style="text-align:center;padding:24px;color:var(--tc-text-muted);font-size:13px;">
       <div style="display:inline-block;width:16px;height:16px;border:3px solid #ddd;border-top-color:#1a73e8;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;"></div>
       <span style="margin-left:8px;">Loading…</span></div>`;
@@ -630,11 +640,13 @@
         return;
       }
 
-      const keys = Object.keys(headers);
+      const keys       = Object.keys(headers);
+      const urlPrefix  = FD_OVERVIEW_URL_PREFIX[devType];
       let html = `<div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead><tr style="background:var(--tc-surface-alt);">`;
       keys.forEach(k => { html += `<th style="padding:7px 10px;text-align:left;font-weight:600;color:var(--tc-text-muted);white-space:nowrap;border-bottom:1px solid var(--tc-border);">${headers[k]}</th>`; });
+      if (urlPrefix) html += `<th style="padding:7px 10px;text-align:left;font-weight:600;color:var(--tc-text-muted);white-space:nowrap;border-bottom:1px solid var(--tc-border);"></th>`;
       html += `</tr></thead><tbody>`;
 
       rows.forEach(r => {
@@ -643,6 +655,9 @@
           const v = r[k];
           html += `<td style="padding:6px 10px;color:var(--tc-text);">${v !== null && v !== undefined ? v : '—'}</td>`;
         });
+        if (urlPrefix) {
+          html += `<td style="padding:6px 10px;"><a class="reading-link" href="${urlPrefix}${r.id}/" target="_blank" rel="noopener">View</a></td>`;
+        }
         html += `</tr>`;
       });
       html += `</tbody></table></div>`;
@@ -652,10 +667,10 @@
           <span>${pg.total_records} records</span>
           <div style="display:flex;gap:6px;">`;
         if (pg.current_page > 1)
-          html += `<button onclick="fdFetchPage('${farmerId}','${deviceId}',${pg.current_page-1},this.closest('.fd-readings-body'),'${label}')" style="border:1px solid var(--tc-border);background:var(--tc-surface);border-radius:5px;padding:3px 10px;cursor:pointer;">‹ Prev</button>`;
+          html += `<button onclick="fdFetchPage('${farmerId}','${deviceId}',${pg.current_page-1},this.closest('.fd-readings-body'),'${label}','${devType}')" style="border:1px solid var(--tc-border);background:var(--tc-surface);border-radius:5px;padding:3px 10px;cursor:pointer;">‹ Prev</button>`;
         html += `<span style="padding:3px 10px;border:1px solid var(--tc-border);border-radius:5px;background:var(--tc-surface);">${pg.current_page} / ${pg.total_pages}</span>`;
         if (pg.current_page < pg.total_pages)
-          html += `<button onclick="fdFetchPage('${farmerId}','${deviceId}',${pg.current_page+1},this.closest('.fd-readings-body'),'${label}')" style="border:1px solid var(--tc-border);background:var(--tc-surface);border-radius:5px;padding:3px 10px;cursor:pointer;">Next ›</button>`;
+          html += `<button onclick="fdFetchPage('${farmerId}','${deviceId}',${pg.current_page+1},this.closest('.fd-readings-body'),'${label}','${devType}')" style="border:1px solid var(--tc-border);background:var(--tc-surface);border-radius:5px;padding:3px 10px;cursor:pointer;">Next ›</button>`;
         html += `</div></div>`;
       }
 

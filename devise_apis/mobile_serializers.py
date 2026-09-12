@@ -9,7 +9,7 @@ from agriapp.models import (
     Devise, DeviseApis, DeviseApisFields, DeviseLocation,
     APICountThreshold, DEVICE_NAMES,
     ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_MAP_FIELDS,
-    LEAFLENZ_FIELDS,
+    LEAFLENZ_FIELDS, Plot, Point,
 )
 from agri_ai.leaf import parse_class_label, get_disease_details
 
@@ -121,6 +121,8 @@ class DeviceDetailSerializer(DeviceListSerializer):
 # ── Soil Saathi (SoiLENZ) API call ───────────────────────────────────────────
 
 class SoilSaathiReadingSerializer(serializers.ModelSerializer):
+    linked_ph_bottle = serializers.SerializerMethodField()
+
     class Meta:
         model  = DeviseApis
         fields = [
@@ -130,8 +132,22 @@ class SoilSaathiReadingSerializer(serializers.ModelSerializer):
             'zinc', 'manganese', 'iron', 'copper', 'boron',
             'ph', 'ec', 'oc', 'electrical_conduction',
             'crop_type', 'latitude', 'longitude', 'created_at',
+            'linked_ph_bottle',
         ]
-        read_only_fields = ['id', 'farmer_id', 'created_at']
+        read_only_fields = ['id', 'farmer_id', 'created_at', 'linked_ph_bottle']
+
+    def get_linked_ph_bottle(self, obj):
+        bottle = obj.ph_bottle_reading
+        if not bottle:
+            return None
+        return {
+            'id'        : bottle.id,
+            'device_id' : bottle.device_id,
+            'ph'        : bottle.field1,
+            'ec'        : bottle.field3,
+            'tag'       : bottle.tag,
+            'created_at': bottle.created_at,
+        }
 
 
 class SoilSaathiReadingCreateSerializer(serializers.ModelSerializer):
@@ -146,6 +162,53 @@ class SoilSaathiReadingCreateSerializer(serializers.ModelSerializer):
             'ph', 'ec', 'oc', 'electrical_conduction',
             'crop_type', 'latitude', 'longitude',
         ]
+
+
+# ── Soil Visualizer (Plot / Point) ────────────────────────────────────────────
+
+def _plot_centroid(geometry):
+    """Centroid {'lat', 'lon'} of a GeoJSON Polygon, or None if it can't be parsed."""
+    from shapely.geometry import shape
+    try:
+        c = shape(geometry).centroid
+        return {'lat': c.y, 'lon': c.x}
+    except Exception:
+        return None
+
+
+class SoilVisualizerPointSerializer(serializers.ModelSerializer):
+    parameters = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = Point
+        fields = ['id', 'coordinates', 'parameters', 'sample_date', 'notes']
+
+    def get_parameters(self, obj):
+        return obj.get_parameters()
+
+
+class SoilVisualizerPlotSerializer(serializers.ModelSerializer):
+    """One plot's boundary + centroid + the sample points recorded inside it."""
+    centroid = serializers.SerializerMethodField()
+    points   = SoilVisualizerPointSerializer(many=True, read_only=True)
+
+    class Meta:
+        model  = Plot
+        fields = ['id', 'name', 'geometry', 'centroid', 'points', 'created_at']
+
+    def get_centroid(self, obj):
+        return _plot_centroid(obj.geometry)
+
+
+class SoilVisualizerPlotCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Plot
+        fields = ['name', 'geometry']
+
+    def validate_geometry(self, value):
+        if not isinstance(value, dict) or value.get('type') != 'Polygon' or 'coordinates' not in value:
+            raise serializers.ValidationError('geometry must be a GeoJSON Polygon.')
+        return value
 
 
 # ── AtmoSense / SoilLIFE / PHBottle (DeviseApisFields) API call ──────────────
@@ -164,8 +227,9 @@ FIELD_LABELS = {
 
 
 class FieldsReadingSerializer(serializers.ModelSerializer):
-    labeled_fields = serializers.SerializerMethodField()
-    image_path     = serializers.SerializerMethodField()
+    labeled_fields  = serializers.SerializerMethodField()
+    image_path      = serializers.SerializerMethodField()
+    linked_soil_lens = serializers.SerializerMethodField()
 
     class Meta:
         model  = DeviseApisFields
@@ -175,8 +239,9 @@ class FieldsReadingSerializer(serializers.ModelSerializer):
             'field1', 'field2', 'field3', 'field4', 'field5',
             'field6', 'field7', 'field8',
             'labeled_fields', 'created_at',
+            'linked_soil_lens',
         ]
-        read_only_fields = ['id', 'farmer_id', 'created_at', 'labeled_fields', 'image_path']
+        read_only_fields = ['id', 'farmer_id', 'created_at', 'labeled_fields', 'image_path', 'linked_soil_lens']
 
     def get_image_path(self, obj):
         if not obj.image_path:
@@ -189,6 +254,22 @@ class FieldsReadingSerializer(serializers.ModelSerializer):
     def get_labeled_fields(self, obj):
         labels = FIELD_LABELS.get(obj.device.devise_type, {})
         return {label: getattr(obj, key, 0) for key, label in labels.items()}
+
+    def get_linked_soil_lens(self, obj):
+        if obj.device.devise_type != 'ph_bottle':
+            return None
+        try:
+            soil_lens = obj.linked_soil_lens
+        except DeviseApis.DoesNotExist:
+            return None
+        return {
+            'id'        : soil_lens.id,
+            'device_id' : soil_lens.device_id,
+            'ph'        : soil_lens.ph,
+            'ec'        : soil_lens.ec,
+            'tag'       : soil_lens.tag,
+            'created_at': soil_lens.created_at,
+        }
 
 
 class FieldsReadingCreateSerializer(serializers.ModelSerializer):

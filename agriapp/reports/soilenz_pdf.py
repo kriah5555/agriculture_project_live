@@ -1176,7 +1176,7 @@ def _page4(c, preds, env, meta):
         if score >= 8:   st, sc = 'Highly Recommended', _MED_GREEN
         elif score >= 7: st, sc = 'Recommended',        _MED_GREEN
         elif score >= 5: st, sc = 'Mod. Suitable',      _ORANGE
-        else:            st, sc = 'Not Recommended',    _RED
+        else:            st, sc = 'Lightly Recommended', _RED
 
         row_vals = [crop, f'{score:.1f}', '', notes[:26] if len(notes) > 26 else notes]
         c.setFont('Helvetica', 7.5)

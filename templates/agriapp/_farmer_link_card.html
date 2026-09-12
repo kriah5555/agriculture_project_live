@@ -77,7 +77,7 @@
     </div>
     <form method="POST" action="{% url 'link-farmer-to-reading' farmer_link_kind farmer_link_pk %}">
       {% csrf_token %}
-      <input type="hidden" name="next" value="{{ request.path }}?tab=farmer">
+      <input type="hidden" name="next" value="{{ request.path }}">
       <div class="flc-modal-body">
         <label class="flc-modal-label">Farmer</label>
         <select name="farmer_id" class="form-select" required>

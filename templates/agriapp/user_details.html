@@ -682,8 +682,8 @@
     const lng = parseFloat(device.longitude);
     if (lat && lng) {
       mapInstance = L.map('leaflet-map').setView([lat, lng], 10);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(mapInstance);
       L.circleMarker([lat, lng], {
         radius: 8, fillColor: meta.color || 'green', color: meta.color || 'green',

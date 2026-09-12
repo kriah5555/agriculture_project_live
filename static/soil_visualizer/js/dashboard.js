@@ -9,6 +9,19 @@ function jsonHeaders() {
   return { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() };
 }
 
+// A non-2xx response isn't always JSON (e.g. Django's CSRF-failure or 500
+// pages are HTML) — parsing those with res.json() throws and used to get
+// mislabeled as "Network error" by the outer catch. This always resolves to
+// a usable message instead.
+async function errorMessageFromResponse(res) {
+  try {
+    const d = await res.json();
+    if (d && d.error) return d.error;
+  } catch (e) { /* not JSON — fall through */ }
+  if (res.status === 403) return 'Session expired or CSRF check failed — please refresh the page and try again.';
+  return `Request failed (HTTP ${res.status}).`;
+}
+
 const colormaps = {
   'ph'            : [{ max: 4.5, hex: '#D32F2F' }, { max: 5.5, hex: '#E67E22' }, { max: 6.5, hex: '#F1C40F' }, { max: 7.5, hex: '#27AE60' }, { max: 8.5, hex: '#2980B9' }, { max: Infinity, hex: '#17202A' }],
   'ec'            : [{ max: 0.2, hex: '#0B2545' }, { max: 0.8, hex: '#134074' }, { max: 1.6, hex: '#8DA9C4' }, { max: 3.2, hex: '#EEB902' }, { max: 6.4, hex: '#D05A02' }, { max: Infinity, hex: '#4A0000' }],

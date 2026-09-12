@@ -349,7 +349,7 @@ def build_report_context(api_id):
         elif sc >= 6.0: st, scss = 'Recommended',        'lt-green'
         elif sc >= 4.0: st, scss = 'Moderately Suitable','orange'
         elif sc >= 2.0: st, scss = 'Low Recommended',    'red'
-        else:           st, scss = 'Not Recommended',    'red'
+        else:           st, scss = 'Lightly Recommended','red'
         crops_scored.append({'name':cp[0],'icon':cp[1],'score':sc,'bar_pct':int(sc*10),'status':st,'scss':scss,'notes':cp[6]})
     crops_scored.sort(key=lambda x: -x['score'])
     top_crops = [c['name'] for c in crops_scored if c['score'] >= 6.0][:4]

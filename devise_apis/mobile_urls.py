@@ -41,6 +41,10 @@ SoiLENZ readings (soilsaathi)                      (devices/soilsaathi.py)
   GET   /api/mobile/devices/<id>/soilsaathi/yield-prediction/         District-level yield prediction (?call_id=&district=&crop=&soc=&pH=&N=&P=&K=)
   GET   /api/mobile/devices/<id>/soilsaathi/<cid>/pdf/             Soil parameters PDF (api-overview report)
   GET   /api/mobile/devices/<id>/soilsaathi/<cid>/recommendation-pdf/  Full 6-page SoiLENZ PDF report
+  GET   /api/mobile/devices/<id>/soilsaathi/<cid>/plots/           List every plot boundary saved for this reading
+  POST  /api/mobile/devices/<id>/soilsaathi/<cid>/plots/           Add a new plot boundary for this reading (a reading can have more than one)
+  POST   /api/mobile/devices/<id>/soilsaathi/<cid>/link-ph-bottle/   Link to a PHBottle reading (body: ph_bottle_id, confirm) — syncs ph/ec
+  DELETE /api/mobile/devices/<id>/soilsaathi/<cid>/link-ph-bottle/   Unlink from its PHBottle reading
 
 SoilSparsh readings (atmo_sense)                   (devices/atmo_sense.py)
   GET   /api/mobile/devices/<id>/atmo-sense/              List readings
@@ -56,6 +60,8 @@ PHBottle readings (ph_bottle)                      (devices/ph_bottle.py)
   GET   /api/mobile/devices/<id>/ph-bottle/               List readings
   POST  /api/mobile/devices/<id>/ph-bottle/create/        Create reading
   GET   /api/mobile/devices/<id>/ph-bottle/<cid>/         Single reading
+  POST   /api/mobile/devices/<id>/ph-bottle/<cid>/link-soil-lens/   Link to a SoiLENZ reading (body: soil_lens_id, confirm) — syncs ph/ec
+  DELETE /api/mobile/devices/<id>/ph-bottle/<cid>/link-soil-lens/   Unlink from its SoiLENZ reading
 
 LeafLenz readings (leaflenz)                       (devices/leaflenz.py)
   GET   /api/mobile/devices/<id>/leaflenz/                List scans
@@ -99,6 +105,7 @@ from django.urls import path
 from . import mobile_api as m
 from . import auth_api   as a
 from .devices import soilsaathi as ss
+from .devices import soil_visualizer as sv
 from .devices import atmo_sense as atmo
 from .devices import soil_life  as sl
 from .devices import ph_bottle  as pb
@@ -141,6 +148,8 @@ urlpatterns = [
     path('devices/<int:device_id>/soilsaathi/yield-prediction/',           ss.soilsaathi_yield_prediction,          name='mobile_ss_yield_prediction'),
     path('devices/<int:device_id>/soilsaathi/<int:call_id>/pdf/',                ss.soilsaathi_pdf,               name='mobile_ss_pdf'),
     path('devices/<int:device_id>/soilsaathi/<int:call_id>/recommendation-pdf/', ss.soilsaathi_recommendation_pdf, name='mobile_ss_recommendation_pdf'),
+    path('devices/<int:device_id>/soilsaathi/<int:call_id>/plots/',              sv.soilsaathi_plots,              name='mobile_ss_plots'),
+    path('devices/<int:device_id>/soilsaathi/<int:call_id>/link-ph-bottle/',     ss.soilsaathi_link_ph_bottle,     name='mobile_ss_link_ph_bottle'),
 
     # ── SoilSparsh (atmo_sense) device-specific routes ────────────────────────
     path('devices/<int:device_id>/atmo-sense/',                      atmo.atmo_sense_list,   name='mobile_atmo_list'),
@@ -156,6 +165,7 @@ urlpatterns = [
     path('devices/<int:device_id>/ph-bottle/',                       pb.ph_bottle_list,   name='mobile_pb_list'),
     path('devices/<int:device_id>/ph-bottle/create/',                pb.ph_bottle_create, name='mobile_pb_create'),
     path('devices/<int:device_id>/ph-bottle/<int:call_id>/',         pb.ph_bottle_detail, name='mobile_pb_detail'),
+    path('devices/<int:device_id>/ph-bottle/<int:call_id>/link-soil-lens/', pb.ph_bottle_link_soil_lens, name='mobile_pb_link_soil_lens'),
 
     # ── LeafLenz (leaflenz) device-specific routes ────────────────────────────
     path('devices/<int:device_id>/leaflenz/',                       ll.leaflenz_list,   name='mobile_ll_list'),

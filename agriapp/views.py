@@ -620,12 +620,13 @@ def user_details(request, **kwargs):
 
 @admin_required
 def api_overview(request, **kwargs):
+    from django.db.models import Q
     template_name = ''
     context       = dict()
     if "soil-life-api-overview" in request.path:
         template_name   = 'agriapp/soil_life_api_details.html'
         devise_data     = get_object_or_404(DeviseApisFields.objects.select_related('farmer'), pk=kwargs['pk'])
-        fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
+        fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields() if field.concrete}
         devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
         fields.pop('device', None)
         fields.pop('created_at', None)
@@ -643,7 +644,7 @@ def api_overview(request, **kwargs):
     elif "atmos-sense-api-overview" in request.path:
         template_name   = 'agriapp/atmos_sense_api_details.html'
         devise_data     = get_object_or_404(DeviseApisFields.objects.select_related('farmer'), pk=kwargs['pk'])
-        fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
+        fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields() if field.concrete}
         devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
         fields.pop('device', None)
         fields.pop('created_at', None)
@@ -666,11 +667,17 @@ def api_overview(request, **kwargs):
     elif "ph-bottle-api-overview" in request.path:
         template_name   = 'agriapp/ph_bottle_api_details.html'
         devise_data     = get_object_or_404(DeviseApisFields.objects.select_related('farmer'), pk=kwargs['pk'])
-        fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields()}
+        fields          = {field.name: getattr(devise_data, field.name) for field in DeviseApisFields._meta.get_fields() if field.concrete}
         devise_location = DeviseLocation.objects.filter(devise=devise_data.device).first()
         fields.pop('device', None)
         fields.pop('created_at', None)
         fields.pop('farmer', None)
+
+        try:
+            linked_soil_lens = devise_data.linked_soil_lens
+        except DeviseApis.DoesNotExist:
+            linked_soil_lens = None
+
         context         = {
             'device'          : devise_data.device,
             'api_pk'          : devise_data.pk,
@@ -684,6 +691,14 @@ def api_overview(request, **kwargs):
             'farmer_link_kind': 'fields',
             'farmer_link_pk'  : devise_data.pk,
             'sp_user_pk'      : devise_data.device.user_id,
+            'linked_soil_lens': linked_soil_lens,
+            'available_soil_lens_readings': (
+                DeviseApis.objects.filter(device__user=devise_data.device.user, device__devise_type='soilsaathi')
+                .filter(Q(ph_bottle_reading__isnull=True) | Q(pk=linked_soil_lens.pk if linked_soil_lens else 0))
+                if devise_data.device.user_id else DeviseApis.objects.none()
+            ),
+            'ph_bottle'       : devise_data,
+            'ph_bottle_pk'    : devise_data.pk,
         }
 
     elif "leaflenz-api-overview" in request.path:
@@ -742,6 +757,13 @@ def api_overview(request, **kwargs):
             'farmer_link_kind'          : 'soilsaathi',
             'farmer_link_pk'            : api.pk,
             'sp_user_pk'                : api.device.user_id,
+            'linked_ph_bottle'          : api.ph_bottle_reading,
+            'available_ph_bottles'      : (
+                DeviseApisFields.objects.filter(device__user=api.device.user, device__devise_type='ph_bottle')
+                .filter(Q(linked_soil_lens__isnull=True) | Q(pk=api.ph_bottle_reading_id))
+                if api.device.user_id else DeviseApisFields.objects.none()
+            ),
+            'soil_lens_pk'              : api.pk,
         }
 
     return render(request, template_name = template_name, context=context)
@@ -833,6 +855,76 @@ def link_farmer_to_reading(request, kind, pk):
     reading.farmer = farmer
     reading.save(update_fields=['farmer'])
     messages.success(request, f'Linked to farmer "{farmer.farmer_name}".')
+    return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
+
+@admin_required
+def link_ph_bottle_to_reading(request, pk):
+    """Links a SoiLENZ reading (DeviseApis) to a PHBottle reading
+    (DeviseApisFields, device type 'ph_bottle') owned by the same account,
+    copying pH/EC into the SoiLENZ reading. The one-to-one is stored on the
+    SoiLENZ side (DeviseApis.ph_bottle_reading); this view is also what the
+    PHBottle detail page's own "Link Soil Lens" card posts to, passing the
+    two ids the other way round — either side can initiate the link."""
+    if request.method != 'POST':
+        return HttpResponseBadRequest('Method not allowed.')
+    soil_lens = get_object_or_404(DeviseApis, pk=pk)
+    ph_bottle = get_object_or_404(
+        DeviseApisFields, pk=request.POST.get('ph_bottle_id'),
+        device__user=soil_lens.device.user, device__devise_type='ph_bottle',
+    )
+    already_linked_elsewhere = DeviseApis.objects.filter(ph_bottle_reading=ph_bottle).exclude(pk=soil_lens.pk).first()
+    if already_linked_elsewhere:
+        messages.error(request, f'That PHBottle reading is already linked to SoiLENZ reading #{already_linked_elsewhere.pk}.')
+        return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
+    soil_lens.link_ph_bottle(ph_bottle)
+    messages.success(request, f'Linked to PHBottle reading #{ph_bottle.pk} (pH {ph_bottle.field1}, EC {ph_bottle.field3}).')
+    return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
+
+@admin_required
+def unlink_ph_bottle_from_reading(request, pk):
+    """Clears the SoiLENZ<->PHBottle link. The SoiLENZ reading keeps its
+    last-synced pH/EC values."""
+    if request.method != 'POST':
+        return HttpResponseBadRequest('Method not allowed.')
+    soil_lens = get_object_or_404(DeviseApis, pk=pk)
+    soil_lens.ph_bottle_reading = None
+    soil_lens.save(update_fields=['ph_bottle_reading'])
+    messages.success(request, 'Unlinked from PHBottle reading.')
+    return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
+
+@admin_required
+def link_soil_lens_to_ph_bottle(request, pk):
+    """Same SoiLENZ<->PHBottle link as link_ph_bottle_to_reading, but
+    initiated from the PHBottle reading's own detail page: `pk` here is the
+    PHBottle reading (DeviseApisFields), and the SoiLENZ reading id comes
+    from POST as `soil_lens_id`."""
+    if request.method != 'POST':
+        return HttpResponseBadRequest('Method not allowed.')
+    ph_bottle = get_object_or_404(DeviseApisFields, pk=pk, device__devise_type='ph_bottle')
+    soil_lens = get_object_or_404(DeviseApis, pk=request.POST.get('soil_lens_id'), device__user=ph_bottle.device.user)
+    already_linked_elsewhere = DeviseApis.objects.filter(ph_bottle_reading=ph_bottle).exclude(pk=soil_lens.pk).first()
+    if already_linked_elsewhere:
+        messages.error(request, f'This PHBottle reading is already linked to SoiLENZ reading #{already_linked_elsewhere.pk}.')
+        return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
+    soil_lens.link_ph_bottle(ph_bottle)
+    messages.success(request, f'Linked to SoiLENZ reading #{soil_lens.pk} (pH {soil_lens.ph}, EC {soil_lens.ec}).')
+    return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
+
+@admin_required
+def unlink_soil_lens_from_ph_bottle(request, pk):
+    """Clears the link, initiated from the PHBottle reading's own detail
+    page. `pk` is the PHBottle reading."""
+    if request.method != 'POST':
+        return HttpResponseBadRequest('Method not allowed.')
+    ph_bottle = get_object_or_404(DeviseApisFields, pk=pk, device__devise_type='ph_bottle')
+    try:
+        soil_lens = ph_bottle.linked_soil_lens
+    except DeviseApis.DoesNotExist:
+        messages.error(request, 'This PHBottle reading is not linked to any SoiLENZ reading.')
+        return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
+    soil_lens.ph_bottle_reading = None
+    soil_lens.save(update_fields=['ph_bottle_reading'])
+    messages.success(request, 'Unlinked from SoiLENZ reading.')
     return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
 
 class UpdateApi(AdminRequiredMixin, UpdateView):

@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.clickjacking import xframe_options_sameorigin
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from agriapp.models import Devise, DeviseApis, Plot, Point
 from agriapp.views import admin_required
@@ -23,6 +24,7 @@ def _point_json(point):
         'plot': point.plot_id,
         'plot_name': point.plot.name if point.plot_id else None,
         'reading_id': point.reading_id,
+        'reading_tag': point.reading.tag if point.reading_id else None,
         'coordinates': point.coordinates,
         'parameters': point.get_parameters(),
         'sample_date': point.sample_date.isoformat(),
@@ -32,9 +34,13 @@ def _point_json(point):
 
 @admin_required
 @xframe_options_sameorigin
+@ensure_csrf_cookie
 def dashboard_view(request, device_id):
     # Allow same-origin framing — this page is now embedded inline (via iframe)
     # on the SoiLENZ/PHBottle/AtmosSense reading-detail pages, not just linked to.
+    # @ensure_csrf_cookie: the page has no <form>/{% csrf_token %}, so without
+    # this the csrftoken cookie is never set and every Add/Edit/Delete POST
+    # from dashboard.js fails with 403 "CSRF cookie not set".
     devise = _get_soilenz_devise(device_id)
     return render(request, 'soil_visualizer/dashboard.html', {'devise': devise})
 
@@ -51,7 +57,7 @@ def api_device_readings(request, device_id):
     q = request.GET.get('q', '').strip()
     if q:
         from django.db.models import Q
-        filters = Q(crop_type__icontains=q) | Q(area_name__icontains=q)
+        filters = Q(crop_type__icontains=q) | Q(area_name__icontains=q) | Q(tag__icontains=q)
         if q.isdigit():
             filters |= Q(pk=int(q))
         qs = qs.filter(filters)
@@ -70,6 +76,7 @@ def api_device_readings(request, device_id):
         'longitude': r.longitude,
         'crop_type': r.crop_type,
         'area_name': r.area_name,
+        'tag': r.tag,
         'created_at': r.created_at.isoformat(),
         'point_ids': linked_map.get(r.id, []),
         'parameters': {
@@ -106,6 +113,9 @@ def api_plots(request, device_id):
 
     if request.method == 'GET':
         plots = Plot.objects.filter(devise=devise)
+        reading_id = request.GET.get('reading_id')
+        if reading_id:
+            plots = plots.filter(points__reading_id=reading_id).distinct()
         data = [{
             'id': p.id, 'name': p.name, 'geometry': p.geometry,
             'points_count': p.points.count(),

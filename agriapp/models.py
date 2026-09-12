@@ -222,6 +222,12 @@ class DeviseApis(models.Model):
     latitude              = models.FloatField(default=0.0)
     longitude             = models.FloatField(default=0.0)
     created_at            = models.DateTimeField(auto_now_add=True)
+    ph_bottle_reading     = models.OneToOneField(
+        'DeviseApisFields', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='linked_soil_lens',
+        help_text='PHBottle reading linked to this SoiLENZ record. Its field1 (pH) and '
+                   'field3 (EC) are copied into ph/ec above when linked.',
+    )
 
     class Meta:
         ordering = ['-created_at']
@@ -236,6 +242,15 @@ class DeviseApis(models.Model):
         return (f"[{type_label}] {self.device.name} / {owner}"
                 f" — pH:{self.ph} EC:{self.ec} OC:{self.oc}"
                 f"{farmer_str} | #{self.pk} {date_str}")
+
+    def link_ph_bottle(self, ph_bottle):
+        """Links to a PHBottle reading (DeviseApisFields), copying its pH/EC
+        (field1/field3) into this record's ph/ec. Caller is responsible for
+        ownership + overwrite-confirmation checks before calling this."""
+        self.ph_bottle_reading = ph_bottle
+        self.ph = ph_bottle.field1
+        self.ec = ph_bottle.field3
+        self.save(update_fields=['ph_bottle_reading', 'ph', 'ec'])
 
 # CHANNEL_FIELD_MAP: incoming `channel_data[<key>]` request param -> ChannelData field name.
 # Kept next to the model (rather than in the view) since both the API parser and any

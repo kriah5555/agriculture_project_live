@@ -1,0 +1,184 @@
+<!-- Shared "PHBottle" card for a SoiLENZ reading-detail page.
+     Context expected: linked_ph_bottle, available_ph_bottles, soil_lens_pk, api (for api.ph/api.ec) -->
+<style>
+  .pbc-card    { background:var(--tc-surface); border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.07); overflow:hidden; }
+  .pbc-head    { background:linear-gradient(135deg,#004d40,#00897b); color:#fff; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+  .pbc-head h6 { margin:0; font-weight:600; font-size:13px; letter-spacing:.4px; text-transform:uppercase; opacity:.9; }
+  .pbc-head a, .pbc-head button.pbc-link-btn {
+    color:#fff; font-size:12px; text-decoration:underline; margin-left:12px; white-space:nowrap;
+    background:none; border:none; padding:0; cursor:pointer;
+  }
+  .pbc-row     { display:flex; padding:9px 20px; border-bottom:1px solid var(--tc-border); font-size:13px; }
+  .pbc-row:last-child { border-bottom:none; }
+  .pbc-label   { width:42%; font-weight:600; color:var(--tc-text-muted); flex-shrink:0; }
+  .pbc-value   { color:var(--tc-text); }
+  .pbc-empty   { padding:20px; text-align:center; }
+
+  .pbc-modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:2000;
+    align-items:center; justify-content:center;
+  }
+  .pbc-modal-overlay.open { display:flex; }
+  .pbc-modal {
+    background:var(--tc-surface); border-radius:16px; width:min(420px, 92vw);
+    box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  }
+  .pbc-modal-header {
+    padding:18px 24px; border-bottom:1px solid var(--tc-border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .pbc-modal-header h5 { margin:0; font-size:16px; font-weight:700; }
+  .pbc-modal-body { padding:20px 24px; }
+  .pbc-modal-label { font-size:12px; font-weight:600; color:var(--tc-text-muted); margin-bottom:6px; display:block; }
+  .pbc-modal-hint  { font-size:12px; color:var(--tc-text-muted); margin-top:8px; }
+  .pbc-modal-footer { padding:16px 24px; border-top:1px solid var(--tc-border); display:flex; justify-content:flex-end; gap:10px; }
+
+  .pbc-search-list  { max-height:260px; overflow-y:auto; border:1px solid var(--tc-border); border-radius:8px; margin-top:8px; }
+  .pbc-option       { padding:10px 14px; border-bottom:1px solid var(--tc-border); cursor:pointer; font-size:13px; }
+  .pbc-option:last-child { border-bottom:none; }
+  .pbc-option:hover { background:var(--tc-surface-alt, rgba(0,0,0,0.03)); }
+  .pbc-option.selected { background:rgba(0,137,123,0.12); box-shadow:inset 3px 0 0 #00897b; }
+  .pbc-option-title { font-weight:600; }
+  .pbc-option-meta  { color:var(--tc-text-muted); font-size:12px; margin-top:2px; }
+  .pbc-no-results   { padding:14px; text-align:center; color:var(--tc-text-muted); font-size:13px; }
+</style>
+
+<div class="pbc-card">
+  {% if linked_ph_bottle %}
+    <div class="pbc-head">
+      <h6><i class="fas fa-flask me-2"></i>PHBottle</h6>
+      <div>
+        <a href="{% url 'ph-bottle-api-overview' linked_ph_bottle.pk %}">View Full Reading</a>
+        {% if available_ph_bottles %}
+        <button type="button" class="pbc-link-btn" onclick="pbcOpenModal_{{ soil_lens_pk }}()">Change PHBottle</button>
+        {% endif %}
+        <form method="POST" action="{% url 'unlink-ph-bottle-from-reading' soil_lens_pk %}" style="display:inline;" onsubmit="return confirm('Unlink this PHBottle reading? The current pH/EC values will be kept as-is.');">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <button type="submit" class="pbc-link-btn">Unlink</button>
+        </form>
+      </div>
+    </div>
+    <div class="pbc-row"><span class="pbc-label">Reading ID</span> <span class="pbc-value">#{{ linked_ph_bottle.pk }}</span></div>
+    <div class="pbc-row"><span class="pbc-label">pH</span>         <span class="pbc-value">{{ linked_ph_bottle.field1 }}</span></div>
+    <div class="pbc-row"><span class="pbc-label">EC (mS/cm)</span> <span class="pbc-value">{{ linked_ph_bottle.field3 }}</span></div>
+    {% if linked_ph_bottle.tag %}
+    <div class="pbc-row"><span class="pbc-label">Tag</span>       <span class="pbc-value">{{ linked_ph_bottle.tag }}</span></div>
+    {% endif %}
+    <div class="pbc-row"><span class="pbc-label">Recorded At</span><span class="pbc-value">{{ linked_ph_bottle.created_at }}</span></div>
+  {% else %}
+    <div class="pbc-head">
+      <h6><i class="fas fa-flask me-2"></i>PHBottle</h6>
+    </div>
+    <div class="pbc-empty">
+      <i class="fas fa-flask mb-2" style="font-size:26px; color:var(--tc-text-muted);"></i>
+      <p class="text-muted mb-3" style="font-size:13px;">This reading isn't linked to any PHBottle reading.</p>
+      {% if available_ph_bottles %}
+      <button type="button" class="btn btn-sm btn-primary" onclick="pbcOpenModal_{{ soil_lens_pk }}()">
+        <i class="fas fa-link me-1"></i>Link PHBottle
+      </button>
+      {% else %}
+      <p class="text-muted" style="font-size:12px;">No unlinked PHBottle readings found for this account.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+{% if available_ph_bottles %}
+<div class="pbc-modal-overlay" id="pbcModal_{{ soil_lens_pk }}" onclick="if(event.target===this) pbcCloseModal_{{ soil_lens_pk }}()">
+  <div class="pbc-modal">
+    <div class="pbc-modal-header">
+      <h5>{% if linked_ph_bottle %}Change Linked PHBottle{% else %}Link a PHBottle Reading{% endif %}</h5>
+      <button type="button" class="btn-close" onclick="pbcCloseModal_{{ soil_lens_pk }}()"></button>
+    </div>
+    <form method="POST" action="{% url 'link-ph-bottle-to-reading' soil_lens_pk %}" id="pbcForm_{{ soil_lens_pk }}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <div class="pbc-modal-body">
+        <label class="pbc-modal-label">PHBottle Reading</label>
+        <input type="text" class="form-control form-control-sm" id="pbcSearch_{{ soil_lens_pk }}"
+               placeholder="Search by tag or crop…" autocomplete="off">
+        <input type="hidden" name="ph_bottle_id" id="pbcSelectedId_{{ soil_lens_pk }}"
+               value="{{ linked_ph_bottle.pk|default:'' }}" required>
+        <div class="pbc-search-list" id="pbcList_{{ soil_lens_pk }}">
+          {% for b in available_ph_bottles %}
+          <div class="pbc-option{% if linked_ph_bottle and b.pk == linked_ph_bottle.pk %} selected{% endif %}"
+               data-id="{{ b.pk }}" data-ph="{{ b.field1 }}" data-ec="{{ b.field3 }}"
+               data-search="{{ b.tag|default:'' }} {{ b.crop_type|default:'' }}">
+            <div class="pbc-option-title">#{{ b.pk }} — pH {{ b.field1 }}, EC {{ b.field3 }}</div>
+            <div class="pbc-option-meta">
+              {% if b.tag %}Tag: {{ b.tag }} · {% endif %}
+              {% if b.crop_type %}Crop: {{ b.crop_type }} · {% endif %}
+              {{ b.created_at|date:"d M Y H:i" }}
+            </div>
+          </div>
+          {% empty %}
+          <div class="pbc-no-results">No PHBottle readings available.</div>
+          {% endfor %}
+        </div>
+        <p class="pbc-modal-hint">Linking copies the PHBottle's pH/EC into this reading's pH/EC fields, overwriting the current values (pH {{ api.ph }}, EC {{ api.ec }}).</p>
+      </div>
+      <div class="pbc-modal-footer">
+        <button type="button" class="btn btn-outline-secondary" onclick="pbcCloseModal_{{ soil_lens_pk }}()">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-link me-1"></i>{% if linked_ph_bottle %}Change PHBottle{% else %}Link PHBottle{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  function pbcOpenModal_{{ soil_lens_pk }}() {
+    document.getElementById('pbcModal_{{ soil_lens_pk }}').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function pbcCloseModal_{{ soil_lens_pk }}() {
+    document.getElementById('pbcModal_{{ soil_lens_pk }}').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  (function () {
+    var list     = document.getElementById('pbcList_{{ soil_lens_pk }}');
+    var search   = document.getElementById('pbcSearch_{{ soil_lens_pk }}');
+    var selected = document.getElementById('pbcSelectedId_{{ soil_lens_pk }}');
+    var options  = list ? list.querySelectorAll('.pbc-option') : [];
+
+    options.forEach(function (opt) {
+      opt.addEventListener('click', function () {
+        options.forEach(function (o) { o.classList.remove('selected'); });
+        opt.classList.add('selected');
+        selected.value = opt.getAttribute('data-id');
+      });
+    });
+
+    if (search) {
+      search.addEventListener('input', function () {
+        var q = search.value.trim().toLowerCase();
+        options.forEach(function (opt) {
+          var hay = (opt.getAttribute('data-search') || '').toLowerCase();
+          opt.style.display = !q || hay.indexOf(q) !== -1 ? '' : 'none';
+        });
+      });
+    }
+  })();
+
+  document.getElementById('pbcForm_{{ soil_lens_pk }}').addEventListener('submit', function (e) {
+    var selected = document.getElementById('pbcSelectedId_{{ soil_lens_pk }}');
+    if (!selected.value) { e.preventDefault(); alert('Select a PHBottle reading first.'); return; }
+    var opt = document.querySelector('#pbcList_{{ soil_lens_pk }} .pbc-option[data-id="' + selected.value + '"]');
+    if (!opt) return;
+    var newPh = opt.getAttribute('data-ph');
+    var newEc = opt.getAttribute('data-ec');
+    var curPh = '{{ api.ph|stringformat:"s" }}';
+    var curEc = '{{ api.ec|stringformat:"s" }}';
+    if (newPh !== curPh || newEc !== curEc) {
+      var ok = confirm(
+        'This will overwrite this reading\'s pH/EC:\n\n' +
+        'pH: ' + curPh + ' → ' + newPh + '\n' +
+        'EC: ' + curEc + ' → ' + newEc + '\n\n' +
+        'Continue?'
+      );
+      if (!ok) { e.preventDefault(); }
+    }
+  });
+</script>
+{% endif %}

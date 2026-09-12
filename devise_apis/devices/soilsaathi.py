@@ -34,7 +34,10 @@ from devise_apis.mobile_serializers import (
     SoilSaathiReadingSerializer,
     SoilSaathiReadingCreateSerializer,
 )
-from ._common import check_threshold, DevicePagination, get_user_device, resolve_farmer
+from ._common import (
+    check_threshold, DevicePagination, get_user_device, resolve_farmer,
+    link_soil_lens_ph_bottle, unlink_soil_lens_ph_bottle,
+)
 
 
 # ── List readings ─────────────────────────────────────────────────────────────
@@ -124,6 +127,55 @@ def soilsaathi_detail(request, device_id, call_id):
     device  = get_user_device(request, device_id)
     reading = get_object_or_404(DeviseApis, pk=call_id, device=device)
     return Response(SoilSaathiReadingSerializer(reading).data)
+
+
+# ── Link / unlink to a PHBottle reading ───────────────────────────────────────
+
+@extend_schema(
+    tags=['SoiLENZ'],
+    summary='Link/unlink this SoiLENZ reading and a PHBottle reading',
+    description=(
+        '**POST** links this SoiLENZ reading to an existing PHBottle reading you own '
+        '(pass its id as `ph_bottle_id`), copying the bottle\'s `field1` (pH) and '
+        '`field3` (EC) into this reading\'s `ph`/`ec` fields. Works regardless of '
+        'which reading was created first — the same relationship can also be made '
+        'from the PHBottle side via its own link-soil-lens endpoint.\n\n'
+        'If this would overwrite different pH/EC values already on this reading '
+        '(or replace an existing link), POST returns **409** with a '
+        '`warning` describing the current vs incoming values instead of saving — '
+        'show that as a confirmation popup, then resubmit with `confirm: true`.\n\n'
+        '**DELETE** clears the link (this reading keeps its last-synced pH/EC values).'
+    ),
+    request={'application/json': {'type': 'object', 'properties': {
+        'ph_bottle_id': {'type': 'integer'}, 'confirm': {'type': 'boolean'},
+    }, 'required': ['ph_bottle_id']}},
+    responses={
+        200: SoilSaathiReadingSerializer,
+        400: OpenApiResponse(description='ph_bottle_id missing'),
+        404: OpenApiResponse(description='PHBottle reading not found or not owned by you'),
+        409: OpenApiResponse(description='Confirmation needed, or already linked elsewhere'),
+    },
+)
+@api_view(['POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def soilsaathi_link_ph_bottle(request, device_id, call_id):
+    device    = get_user_device(request, device_id)
+    soil_lens = get_object_or_404(DeviseApis, pk=call_id, device=device)
+
+    if request.method == 'DELETE':
+        if not soil_lens.ph_bottle_reading_id:
+            return Response(
+                {'detail': 'This SoiLENZ reading is not linked to any PHBottle reading.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        return unlink_soil_lens_ph_bottle(soil_lens)
+
+    ph_bottle_id = request.data.get('ph_bottle_id')
+    if not ph_bottle_id:
+        return Response({'detail': 'ph_bottle_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    confirm = str(request.data.get('confirm', False)).lower() in ('1', 'true', 'yes')
+    return link_soil_lens_ph_bottle(request, soil_lens, ph_bottle_id, confirm)
 
 
 # ── Recommendations ───────────────────────────────────────────────────────────

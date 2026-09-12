@@ -1,0 +1,190 @@
+<!-- Shared "Soil Lens" card for a PHBottle reading-detail page — the reverse
+     of _ph_bottle_link_card.html: lets this PHBottle reading link itself to
+     an existing SoiLENZ reading.
+     Context expected: linked_soil_lens, available_soil_lens_readings, ph_bottle_pk, ph_bottle (for field1/field3) -->
+<style>
+  .slc-card    { background:var(--tc-surface); border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.07); overflow:hidden; }
+  .slc-head    { background:linear-gradient(135deg,#1a2f6b,#3949ab); color:#fff; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+  .slc-head h6 { margin:0; font-weight:600; font-size:13px; letter-spacing:.4px; text-transform:uppercase; opacity:.9; }
+  .slc-head a, .slc-head button.slc-link-btn {
+    color:#fff; font-size:12px; text-decoration:underline; margin-left:12px; white-space:nowrap;
+    background:none; border:none; padding:0; cursor:pointer;
+  }
+  .slc-row     { display:flex; padding:9px 20px; border-bottom:1px solid var(--tc-border); font-size:13px; }
+  .slc-row:last-child { border-bottom:none; }
+  .slc-label   { width:42%; font-weight:600; color:var(--tc-text-muted); flex-shrink:0; }
+  .slc-value   { color:var(--tc-text); }
+  .slc-empty   { padding:20px; text-align:center; }
+
+  .slc-modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:2000;
+    align-items:center; justify-content:center;
+  }
+  .slc-modal-overlay.open { display:flex; }
+  .slc-modal {
+    background:var(--tc-surface); border-radius:16px; width:min(420px, 92vw);
+    box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  }
+  .slc-modal-header {
+    padding:18px 24px; border-bottom:1px solid var(--tc-border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .slc-modal-header h5 { margin:0; font-size:16px; font-weight:700; }
+  .slc-modal-body { padding:20px 24px; }
+  .slc-modal-label { font-size:12px; font-weight:600; color:var(--tc-text-muted); margin-bottom:6px; display:block; }
+  .slc-modal-hint  { font-size:12px; color:var(--tc-text-muted); margin-top:8px; }
+  .slc-modal-footer { padding:16px 24px; border-top:1px solid var(--tc-border); display:flex; justify-content:flex-end; gap:10px; }
+
+  .slc-search-list  { max-height:260px; overflow-y:auto; border:1px solid var(--tc-border); border-radius:8px; margin-top:8px; }
+  .slc-option       { padding:10px 14px; border-bottom:1px solid var(--tc-border); cursor:pointer; font-size:13px; }
+  .slc-option:last-child { border-bottom:none; }
+  .slc-option:hover { background:var(--tc-surface-alt, rgba(0,0,0,0.03)); }
+  .slc-option.selected { background:rgba(57,73,171,0.12); box-shadow:inset 3px 0 0 #3949ab; }
+  .slc-option-title { font-weight:600; }
+  .slc-option-meta  { color:var(--tc-text-muted); font-size:12px; margin-top:2px; }
+  .slc-no-results   { padding:14px; text-align:center; color:var(--tc-text-muted); font-size:13px; }
+</style>
+
+<div class="slc-card">
+  {% if linked_soil_lens %}
+    <div class="slc-head">
+      <h6><i class="fas fa-leaf me-2"></i>Soil Lens</h6>
+      <div>
+        <a href="{% url 'api-overview' linked_soil_lens.pk %}">View Full Reading</a>
+        {% if available_soil_lens_readings %}
+        <button type="button" class="slc-link-btn" onclick="slcOpenModal_{{ ph_bottle_pk }}()">Change</button>
+        {% endif %}
+        <form method="POST" action="{% url 'unlink-soil-lens-from-ph-bottle' ph_bottle_pk %}" style="display:inline;" onsubmit="return confirm('Unlink this SoiLENZ reading? Its current pH/EC values will be kept as-is.');">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <button type="submit" class="slc-link-btn">Unlink</button>
+        </form>
+      </div>
+    </div>
+    <div class="slc-row"><span class="slc-label">Reading ID</span> <span class="slc-value">#{{ linked_soil_lens.pk }}</span></div>
+    <div class="slc-row"><span class="slc-label">pH</span>         <span class="slc-value">{{ linked_soil_lens.ph }}</span></div>
+    <div class="slc-row"><span class="slc-label">EC</span>         <span class="slc-value">{{ linked_soil_lens.ec }}</span></div>
+    {% if linked_soil_lens.tag %}
+    <div class="slc-row"><span class="slc-label">Tag</span>        <span class="slc-value">{{ linked_soil_lens.tag }}</span></div>
+    {% endif %}
+    {% if linked_soil_lens.crop_type %}
+    <div class="slc-row"><span class="slc-label">Crop</span>       <span class="slc-value">{{ linked_soil_lens.crop_type }}</span></div>
+    {% endif %}
+    <div class="slc-row"><span class="slc-label">Recorded At</span><span class="slc-value">{{ linked_soil_lens.created_at }}</span></div>
+  {% else %}
+    <div class="slc-head">
+      <h6><i class="fas fa-leaf me-2"></i>Soil Lens</h6>
+    </div>
+    <div class="slc-empty">
+      <i class="fas fa-leaf mb-2" style="font-size:26px; color:var(--tc-text-muted);"></i>
+      <p class="text-muted mb-3" style="font-size:13px;">This reading isn't linked to any SoiLENZ reading.</p>
+      {% if available_soil_lens_readings %}
+      <button type="button" class="btn btn-sm btn-primary" onclick="slcOpenModal_{{ ph_bottle_pk }}()">
+        <i class="fas fa-link me-1"></i>Link Soil Lens
+      </button>
+      {% else %}
+      <p class="text-muted" style="font-size:12px;">No unlinked SoiLENZ readings found for this account.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+{% if available_soil_lens_readings %}
+<div class="slc-modal-overlay" id="slcModal_{{ ph_bottle_pk }}" onclick="if(event.target===this) slcCloseModal_{{ ph_bottle_pk }}()">
+  <div class="slc-modal">
+    <div class="slc-modal-header">
+      <h5>{% if linked_soil_lens %}Change Linked Soil Lens{% else %}Link a Soil Lens Reading{% endif %}</h5>
+      <button type="button" class="btn-close" onclick="slcCloseModal_{{ ph_bottle_pk }}()"></button>
+    </div>
+    <form method="POST" action="{% url 'link-soil-lens-to-ph-bottle' ph_bottle_pk %}" id="slcForm_{{ ph_bottle_pk }}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <div class="slc-modal-body">
+        <label class="slc-modal-label">Soil Lens Reading</label>
+        <input type="text" class="form-control form-control-sm" id="slcSearch_{{ ph_bottle_pk }}"
+               placeholder="Search by tag or crop…" autocomplete="off">
+        <input type="hidden" name="soil_lens_id" id="slcSelectedId_{{ ph_bottle_pk }}"
+               value="{{ linked_soil_lens.pk|default:'' }}" required>
+        <div class="slc-search-list" id="slcList_{{ ph_bottle_pk }}">
+          {% for r in available_soil_lens_readings %}
+          <div class="slc-option{% if linked_soil_lens and r.pk == linked_soil_lens.pk %} selected{% endif %}"
+               data-id="{{ r.pk }}" data-ph="{{ r.ph }}" data-ec="{{ r.ec }}"
+               data-search="{{ r.tag|default:'' }} {{ r.crop_type|default:'' }}">
+            <div class="slc-option-title">#{{ r.pk }} — pH {{ r.ph }}, EC {{ r.ec }}</div>
+            <div class="slc-option-meta">
+              {% if r.tag %}Tag: {{ r.tag }} · {% endif %}
+              {% if r.crop_type %}Crop: {{ r.crop_type }} · {% endif %}
+              {{ r.created_at|date:"d M Y H:i" }}
+            </div>
+          </div>
+          {% empty %}
+          <div class="slc-no-results">No SoiLENZ readings available.</div>
+          {% endfor %}
+        </div>
+        <p class="slc-modal-hint">Linking copies this PHBottle's pH ({{ ph_bottle.field1 }}) and EC ({{ ph_bottle.field3 }}) into the selected reading, overwriting its current values.</p>
+      </div>
+      <div class="slc-modal-footer">
+        <button type="button" class="btn btn-outline-secondary" onclick="slcCloseModal_{{ ph_bottle_pk }}()">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-link me-1"></i>{% if linked_soil_lens %}Change{% else %}Link{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  function slcOpenModal_{{ ph_bottle_pk }}() {
+    document.getElementById('slcModal_{{ ph_bottle_pk }}').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function slcCloseModal_{{ ph_bottle_pk }}() {
+    document.getElementById('slcModal_{{ ph_bottle_pk }}').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  (function () {
+    var list     = document.getElementById('slcList_{{ ph_bottle_pk }}');
+    var search   = document.getElementById('slcSearch_{{ ph_bottle_pk }}');
+    var selected = document.getElementById('slcSelectedId_{{ ph_bottle_pk }}');
+    var options  = list ? list.querySelectorAll('.slc-option') : [];
+
+    options.forEach(function (opt) {
+      opt.addEventListener('click', function () {
+        options.forEach(function (o) { o.classList.remove('selected'); });
+        opt.classList.add('selected');
+        selected.value = opt.getAttribute('data-id');
+      });
+    });
+
+    if (search) {
+      search.addEventListener('input', function () {
+        var q = search.value.trim().toLowerCase();
+        options.forEach(function (opt) {
+          var hay = (opt.getAttribute('data-search') || '').toLowerCase();
+          opt.style.display = !q || hay.indexOf(q) !== -1 ? '' : 'none';
+        });
+      });
+    }
+  })();
+
+  document.getElementById('slcForm_{{ ph_bottle_pk }}').addEventListener('submit', function (e) {
+    var selected = document.getElementById('slcSelectedId_{{ ph_bottle_pk }}');
+    if (!selected.value) { e.preventDefault(); alert('Select a SoiLENZ reading first.'); return; }
+    var opt = document.querySelector('#slcList_{{ ph_bottle_pk }} .slc-option[data-id="' + selected.value + '"]');
+    if (!opt) return;
+    var curPh = opt.getAttribute('data-ph');
+    var curEc = opt.getAttribute('data-ec');
+    var newPh = '{{ ph_bottle.field1|stringformat:"s" }}';
+    var newEc = '{{ ph_bottle.field3|stringformat:"s" }}';
+    if (newPh !== curPh || newEc !== curEc) {
+      var ok = confirm(
+        'This will overwrite reading #' + selected.value + '\'s pH/EC:\n\n' +
+        'pH: ' + curPh + ' → ' + newPh + '\n' +
+        'EC: ' + curEc + ' → ' + newEc + '\n\n' +
+        'Continue?'
+      );
+      if (!ok) { e.preventDefault(); }
+    }
+  });
+</script>
+{% endif %}

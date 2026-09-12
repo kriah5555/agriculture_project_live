@@ -117,16 +117,6 @@
       </button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-farmer-btn" data-bs-toggle="tab" data-bs-target="#tab-farmer" type="button" role="tab">
-        <i class="fas fa-user me-1"></i> Farmer
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="tab-map-btn" data-bs-toggle="tab" data-bs-target="#tab-map" type="button" role="tab">
-        <i class="fas fa-map-marked-alt me-1"></i> Visualization Map
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
       <button class="nav-link" id="tab-recommendation-btn" data-bs-toggle="tab" data-bs-target="#tab-recommendation" type="button" role="tab">
         <i class="fas fa-seedling me-1"></i> Crop Recommendation
       </button>
@@ -248,22 +238,19 @@
 
     </div>
   </div>
-  </div>
-  <!-- /tab-overview -->
 
-  <div class="tab-pane fade" id="tab-farmer" role="tabpanel">
-    <div class="row g-3">
-      <div class="col-lg-6">
-        {% include "agriapp/_farmer_link_card.html" %}
-      </div>
+  <!-- Farmer + PHBottle linking -->
+  <div class="row g-3 mt-1">
+    <div class="col-lg-6">
+      {% include "agriapp/_farmer_link_card.html" %}
+    </div>
+    <div class="col-lg-6">
+      {% include "agriapp/_ph_bottle_link_card.html" %}
     </div>
   </div>
-  <!-- /tab-farmer -->
 
-  <div class="tab-pane fade" id="tab-map" role="tabpanel">
-    {% include "agriapp/_visualizer_embed.html" with device_pk=api.device.pk reading_pk=api.pk %}
   </div>
-  <!-- /tab-map -->
+  <!-- /tab-overview -->
 
   <div class="tab-pane fade" id="tab-recommendation" role="tabpanel">
 
@@ -327,7 +314,13 @@
       <!-- Map Section -->
       <div class="col-lg-6">
         <div class="detail-card p-3">
-          <div class="header-title mb-2" style="font-size:1.5rem;font-weight:600;">Location Map</div>
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="header-title" style="font-size:1.5rem;font-weight:600;">Location Map</div>
+            <a href="{% url 'soil-visualizer-dashboard' api.device.pk %}?highlight_reading={{ api.pk }}" target="_blank" rel="noopener"
+               class="btn btn-outline-success btn-sm" style="white-space:nowrap;">
+              <i class="fas fa-draw-polygon me-1"></i> Add / Edit Plot
+            </a>
+          </div>
           <div id="rec-map" class="bg-light" style="height: 400px; border-radius: 8px;"></div>
         </div>
       </div>
@@ -415,40 +408,48 @@
       }
 
       document.addEventListener('DOMContentLoaded', function () {
-        var recMap = L.map('rec-map').setView([15.5, 78.5], 6);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(recMap);
+        var recMap = null;
 
-        // Mock district NPK overlay (illustrative regional layer, not tied to this reading)
-        var npkValues = { "Chittoor": 45, "Anantapur": 20, "Kadapa": 65, "Kurnool": 35 };
-        function getColor(value) {
-          return value > 60 ? '#d73027' :
-                 value > 40 ? '#fc8d59' :
-                 value > 20 ? '#fee08b' :
-                 value > 10 ? '#d9ef8b' :
-                              '#91cf60';
-        }
-        fetch('/static/mapdata/districts.geojson')
-          .then(function (res) { return res.json(); })
-          .then(function (data) {
-            L.geoJSON(data, {
-              style: function (feature) {
-                var district = feature.properties.DISTRICT || feature.properties.DIST_NAME;
-                var value    = npkValues[district] || 0;
-                return { fillColor: getColor(value), color: "#333", weight: 1, fillOpacity: 0.6 };
-              }
-            }).addTo(recMap);
-          })
-          .catch(function () {});
+        // Same Leaflet setup (CartoDB Positron basemap + circleMarker style) as
+        // the working device map on /welcome/ (templates/agriapp/admin_panel.html).
+        function initRecMap() {
+          if (recMap) return;
+          recMap = L.map('rec-map').setView([20.5937, 78.9629], 5);
 
-        {% if soil_nutrients.latitude and soil_nutrients.longitude %}
-          var recMarker = L.circleMarker([{{ soil_nutrients.latitude }}, {{ soil_nutrients.longitude }}], {
-            radius: 7, color: '#007bff', fillColor: '#007bff', fillOpacity: 0.9, weight: 1
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           }).addTo(recMap);
-          recMap.setView([{{ soil_nutrients.latitude }}, {{ soil_nutrients.longitude }}], 12);
-        {% endif %}
 
-        // The map/charts are initialized inside a hidden Bootstrap tab-pane, so
-        // they size/draw wrong until the pane is actually shown — fix up on switch.
+          {% if soil_nutrients.latitude and soil_nutrients.longitude %}
+            L.circleMarker([{{ soil_nutrients.latitude }}, {{ soil_nutrients.longitude }}], {
+              radius: 8, color: '#007bff', fillColor: '#007bff', weight: 2, opacity: 1, fillOpacity: 0.6
+            }).addTo(recMap).bindPopup('{{ devise_name|default:api.device.name|escapejs }}');
+            recMap.setView([{{ soil_nutrients.latitude }}, {{ soil_nutrients.longitude }}], 12);
+          {% endif %}
+
+          // Draw the plot boundary for THIS reading only (if one was drawn for
+          // it in the Visualizer) — just the GeoJSON polygon, not every plot
+          // linked to the device and not the full Visualizer dashboard.
+          fetch("{% url 'soil-visualizer-plots' api.device.pk %}?reading_id={{ api.pk }}")
+            .then(function (r) { return r.json(); })
+            .then(function (plots) {
+              if (!plots || !plots.length) return;
+              var boundaries = L.featureGroup();
+              plots.forEach(function (plot) {
+                L.geoJSON(plot.geometry, {
+                  style: { color: '#2d6a4f', weight: 1.5, fillColor: '#2d6a4f', fillOpacity: 0.05 }
+                }).addTo(boundaries);
+              });
+              boundaries.addTo(recMap);
+              recMap.fitBounds(boundaries.getBounds(), { maxZoom: 15 });
+            })
+            .catch(function () {});
+        }
+
+        // Leaflet can't size a map correctly inside a display:none tab-pane, so
+        // the map is only created once the tab is actually shown (same lazy
+        // pattern already used for the recommendation text below), instead of
+        // eagerly on DOMContentLoaded while hidden.
         var recTabBtn = document.getElementById('tab-recommendation-btn');
         var recTextLoaded = false;
         function loadRecommendationText() {
@@ -467,11 +468,15 @@
         }
         if (recTabBtn) {
           recTabBtn.addEventListener('shown.bs.tab', function () {
+            initRecMap();
             recMap.invalidateSize();
             maybeDrawNutrientGrid();
             loadRecommendationText();
           });
-          if (recTabBtn.classList.contains('active')) loadRecommendationText();
+          if (recTabBtn.classList.contains('active')) {
+            initRecMap();
+            loadRecommendationText();
+          }
         }
       });
     </script>
@@ -1414,7 +1419,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     var params  = new URLSearchParams(window.location.search);
-    var tabBtns = { farmer: 'tab-farmer-btn', map: 'tab-map-btn', recommendation: 'tab-recommendation-btn', fertilizer: 'tab-fertilizer-btn', croprec: 'tab-croprec-btn', yield: 'tab-yield-btn' };
+    var tabBtns = { recommendation: 'tab-recommendation-btn', fertilizer: 'tab-fertilizer-btn', croprec: 'tab-croprec-btn', yield: 'tab-yield-btn' };
     var btnId   = tabBtns[params.get('tab')];
     if (btnId) {
       var btn = document.getElementById(btnId);
