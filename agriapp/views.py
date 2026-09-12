@@ -211,8 +211,13 @@ class Users(AdminRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context        = super().get_context_data(**kwargs)
+        from django.db.models.functions import Lower
+
         group          = Group.objects.get(name='deviseowner')
-        users_in_group = User.objects.filter(groups=group).select_related('profile')
+        users_in_group = (
+            User.objects.filter(groups=group).select_related('profile')
+            .order_by(Lower('first_name'), Lower('last_name'))
+        )
 
         device_types_by_user = {}
         for devise in Devise.objects.filter(user__in=users_in_group).values('user_id', 'devise_type'):
