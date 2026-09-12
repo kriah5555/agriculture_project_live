@@ -7,7 +7,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from agriapp.models import (
     Devise, DeviseApis, DeviseApisFields, DeviseLocation,
-    APICountThreshold, DEVICE_NAMES,
+    APICountThreshold, DEVICE_NAMES, Farmer,
     ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_MAP_FIELDS,
     LEAFLENZ_FIELDS, Plot, Point,
 )
@@ -118,15 +118,34 @@ class DeviceDetailSerializer(DeviceListSerializer):
         return DeviceLocationSerializer(loc).data if loc else None
 
 
+# ── Farmer (nested, mini) ─────────────────────────────────────────────────────
+# Used by SoilSaathiReadingSerializer/FieldsReadingSerializer so the mobile
+# app's reading-detail screens (which read reading.farmer.<field>) get an
+# actual farmer object instead of only farmer_id.
+
+class FarmerMiniSerializer(serializers.ModelSerializer):
+    name   = serializers.CharField(source='farmer_name')
+    season = serializers.CharField(source='get_season_display')
+    status = serializers.CharField(source='get_status_display')
+
+    class Meta:
+        model  = Farmer
+        fields = [
+            'id', 'farmer_name', 'name', 'phone', 'village', 'district', 'state',
+            'crop', 'land_area', 'season', 'status',
+        ]
+
+
 # ── Soil Saathi (SoiLENZ) API call ───────────────────────────────────────────
 
 class SoilSaathiReadingSerializer(serializers.ModelSerializer):
     linked_ph_bottle = serializers.SerializerMethodField()
+    farmer = FarmerMiniSerializer(read_only=True)
 
     class Meta:
         model  = DeviseApis
         fields = [
-            'id', 'farmer_id', 'area_name', 'tag',
+            'id', 'farmer_id', 'farmer', 'area_name', 'tag',
             'nitrogen', 'phosphorous', 'potassium',
             'calcium', 'magnesium', 'sulphur',
             'zinc', 'manganese', 'iron', 'copper', 'boron',
@@ -134,7 +153,7 @@ class SoilSaathiReadingSerializer(serializers.ModelSerializer):
             'crop_type', 'latitude', 'longitude', 'created_at',
             'linked_ph_bottle',
         ]
-        read_only_fields = ['id', 'farmer_id', 'created_at', 'linked_ph_bottle']
+        read_only_fields = ['id', 'farmer_id', 'farmer', 'created_at', 'linked_ph_bottle']
 
     def get_linked_ph_bottle(self, obj):
         bottle = obj.ph_bottle_reading
@@ -230,18 +249,19 @@ class FieldsReadingSerializer(serializers.ModelSerializer):
     labeled_fields  = serializers.SerializerMethodField()
     image_path      = serializers.SerializerMethodField()
     linked_soil_lens = serializers.SerializerMethodField()
+    farmer          = FarmerMiniSerializer(read_only=True)
 
     class Meta:
         model  = DeviseApisFields
         fields = [
-            'id', 'farmer_id', 'tag', 'image_path', 'crop_type',
+            'id', 'farmer_id', 'farmer', 'tag', 'image_path', 'crop_type',
             'latitude', 'longitude',
             'field1', 'field2', 'field3', 'field4', 'field5',
             'field6', 'field7', 'field8',
             'labeled_fields', 'created_at',
             'linked_soil_lens',
         ]
-        read_only_fields = ['id', 'farmer_id', 'created_at', 'labeled_fields', 'image_path', 'linked_soil_lens']
+        read_only_fields = ['id', 'farmer_id', 'farmer', 'created_at', 'labeled_fields', 'image_path', 'linked_soil_lens']
 
     def get_image_path(self, obj):
         if not obj.image_path:
