@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 # Create your models here.
 
@@ -231,7 +232,7 @@ class DeviseApis(models.Model):
             return f"SoiLENZ reading #{self.pk or 'new'}"
         type_label  = DEVICE_NAMES.get(self.device.devise_type, self.device.devise_type)
         owner       = self.device.user.username if self.device.user_id else 'no-user'
-        date_str    = self.created_at.strftime('%d %b %Y %H:%M') if self.created_at else 'new'
+        date_str    = timezone.localtime(self.created_at).strftime('%d %b %Y %H:%M') if self.created_at else 'new'
         farmer_str  = f' | farmer:{self.farmer.farmer_name}' if self.farmer_id else ''
         return (f"[{type_label}] {self.device.name} / {owner}"
                 f" — pH:{self.ph} EC:{self.ec} OC:{self.oc}"
@@ -423,7 +424,7 @@ class DeviseApisFields(models.Model):
             return f"Sensor reading #{self.pk or 'new'}"
         type_label = DEVICE_NAMES.get(self.device.devise_type, self.device.devise_type)
         owner      = self.device.user.username if self.device.user_id else 'no-user'
-        date_str   = self.created_at.strftime('%d %b %Y %H:%M') if self.created_at else 'new'
+        date_str   = timezone.localtime(self.created_at).strftime('%d %b %Y %H:%M') if self.created_at else 'new'
         tag_str    = f' [{self.tag}]' if self.tag else ''
         farmer_str = f' | farmer:{self.farmer.farmer_name}' if self.farmer_id else ''
         return (f"[{type_label}] {self.device.name} / {owner}"
@@ -636,7 +637,7 @@ class PartnerPayment(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.user.username} — ₹{self.amount} [{self.status}] on {self.created_at:%d %b %Y}"
+        return f"{self.user.username} — ₹{self.amount} [{self.status}] on {timezone.localtime(self.created_at):%d %b %Y}"
 
     @property
     def is_paid(self):

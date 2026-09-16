@@ -8,6 +8,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, HttpResponse
+from django.utils import timezone
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -519,7 +520,7 @@ _SOIL_FIELDS = [
 
 def _record_to_dict(r):
     row = {'id': r.pk, 'tag': r.tag or '', 'lat': r.latitude, 'lon': r.longitude,
-           'created_at': r.created_at.strftime('%d %b %Y %H:%M') if r.created_at else ''}
+           'created_at': timezone.localtime(r.created_at).strftime('%d %b %Y %H:%M') if r.created_at else ''}
     for field_key, _ in _SOIL_FIELDS:
         row[field_key] = getattr(r, field_key, 0.0)
     return row
@@ -590,7 +591,7 @@ def export_soil_data_csv(request, device_id):
     writer.writerow(headers)
     for r in records:
         row = [r.pk, r.tag or '', r.latitude, r.longitude,
-               r.created_at.strftime('%d %b %Y %H:%M') if r.created_at else '']
+               timezone.localtime(r.created_at).strftime('%d %b %Y %H:%M') if r.created_at else '']
         row += [getattr(r, k, 0.0) for k, _ in _SOIL_FIELDS]
         writer.writerow(row)
 

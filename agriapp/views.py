@@ -1607,6 +1607,11 @@ class GetApiHeadersJsonData(View):
                 headers = []
         return JsonResponse({'headers': headers})
 
+class GetSoilSaathiFieldThresholdsJsonData(LoginRequiredMixin, View):
+
+    def get(self, *args, **kwargs):
+        return JsonResponse({'data': SOIL_SAATHI_FIELD_THRESHOLDS})
+
 class GetApiFieldsJsonData(LoginRequiredMixin, View):
 
     def get(self, *args, **kwargs):
@@ -2488,8 +2493,8 @@ def add_payment(request, uid):
         'amount'     : str(payment.amount),
         'description': payment.description,
         'status'     : payment.status,
-        'paid_at'    : payment.paid_at.strftime('%d %b %Y') if payment.paid_at else '',
-        'created_at' : payment.created_at.strftime('%d %b %Y, %H:%M'),
+        'paid_at'    : localtime(payment.paid_at).strftime('%d %b %Y') if payment.paid_at else '',
+        'created_at' : localtime(payment.created_at).strftime('%d %b %Y, %H:%M'),
         'farmer_name': farmer.farmer_name if farmer else '',
     })
 
@@ -2552,7 +2557,7 @@ def edit_payment(request, pk):
         'amount'     : str(payment.amount),
         'description': payment.description,
         'status'     : payment.status,
-        'paid_at'    : payment.paid_at.strftime('%d %b %Y, %H:%M') if payment.paid_at else '',
+        'paid_at'    : localtime(payment.paid_at).strftime('%d %b %Y, %H:%M') if payment.paid_at else '',
         'attachments': attachments,
     })
 
@@ -2592,7 +2597,7 @@ def toggle_payment_status(request, pk):
     return JsonResponse({
         'success': True,
         'status' : payment.status,
-        'paid_at': payment.paid_at.strftime('%d %b %Y, %H:%M') if payment.paid_at else '',
+        'paid_at': localtime(payment.paid_at).strftime('%d %b %Y, %H:%M') if payment.paid_at else '',
     })
 
 

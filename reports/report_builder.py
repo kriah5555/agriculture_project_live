@@ -11,6 +11,8 @@ from agriapp.reports.soilenz_pdf import (
     _zn_info, _b_info,
     PARAMS_14, _categorize_nutrients,
 )
+from django.utils import timezone
+
 from agriapp.models import DeviseApis
 from agri_ai.fertilizer import recommend_fertilizer
 
@@ -256,9 +258,9 @@ def build_report_context(api_id):
         'field_area':         (f"{farmer.land_area} acres" if farmer and farmer.land_area else '–'),
         'crop':               crop,
         'agro_zone':          agro_zone,
-        'analysis_date':      api_data.created_at.strftime('%d %b %Y')          if api_data.created_at else '',
-        'analysis_date_long': api_data.created_at.strftime('%d %B %Y')          if api_data.created_at else '',
-        'report_time':        api_data.created_at.strftime('%d/%m/%Y %I:%M %p') if api_data.created_at else '',
+        'analysis_date':      timezone.localtime(api_data.created_at).strftime('%d %b %Y')          if api_data.created_at else '',
+        'analysis_date_long': timezone.localtime(api_data.created_at).strftime('%d %B %Y')          if api_data.created_at else '',
+        'report_time':        timezone.localtime(api_data.created_at).strftime('%d/%m/%Y %I:%M %p') if api_data.created_at else '',
         'lab_name':           'Arkashine Labs',
         'ai_crop':            '',
     }

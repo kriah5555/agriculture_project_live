@@ -18,6 +18,7 @@ from openpyxl.styles import Font, PatternFill
 from django.db.models import Count, Max
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
 
 from .models import Devise, ChannelData, CHANNEL_EXPORT_COLUMNS
 from .views import admin_required
@@ -55,7 +56,7 @@ def channel_data_list(request, pk):
 def channel_data_detail(request, pk):
     reading = get_object_or_404(ChannelData, pk=pk)
     data = {label: getattr(reading, field) for field, label in CHANNEL_EXPORT_COLUMNS}
-    data['Recorded At'] = reading.created_at.strftime('%d %b %Y %H:%M')
+    data['Recorded At'] = timezone.localtime(reading.created_at).strftime('%d %b %Y %H:%M')
     return JsonResponse(data)
 
 
@@ -79,7 +80,7 @@ def channel_data_export(request, pk):
         cell.fill = fill_color
 
     for reading in readings:
-        row = [reading.created_at.replace(tzinfo=None)]
+        row = [timezone.localtime(reading.created_at).replace(tzinfo=None)]
         row += [getattr(reading, field) for field, _ in CHANNEL_EXPORT_COLUMNS]
         ws.append(row)
 

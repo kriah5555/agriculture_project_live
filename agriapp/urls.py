@@ -76,6 +76,7 @@ urlpatterns = [
     path('devise-api-calls/<int:id>/',              GetDeviseApiCallsJsonData.as_view(),        name="devise-api-calls"),
     path('devise-api-calls-chart/<int:id>/',        GetDeviseApiCallsJsonDataForChart.as_view(),name="devise-api-calls-chart"),
     path('get-api-fields/<str:devise_type>',        GetApiFieldsJsonData.as_view(),             name="get-api-fields"),
+    path('soilsaathi-field-thresholds/',            GetSoilSaathiFieldThresholdsJsonData.as_view(), name="soilsaathi-field-thresholds"),
     path('save-api-data/<int:devise_id>',           SaveApiFieldsJsonData.as_view(),            name="save-api-data"),
     path('update-api-data/<int:devise_id>/<int:api_id>', SaveApiFieldsJsonData.as_view(),       name="update-api-data"),
     path('get-api-data/<int:devise_id>/<int:api_id>',    GetApiDataJsonData.as_view(),          name="api-data"),

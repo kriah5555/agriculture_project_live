@@ -2,6 +2,7 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill
 from django.http import HttpResponse
 from django.views import View
+from django.utils import timezone
 from django.contrib.auth.models import User
 from openpyxl.styles import Font, PatternFill
 from django.contrib.auth.models import User, Group
@@ -136,7 +137,7 @@ class ExportUsersAndDevicesView(View):
                         device.time_of_sale.replace(tzinfo=None) if isinstance(device.time_of_sale, datetime) else device.time_of_sale,
                         device.warrenty.replace(tzinfo=None) if isinstance(device.warrenty, datetime) else device.warrenty,
                         device.amount_paid, device.balance_amount, device.land,
-                        device.created_at.replace(tzinfo=None) if isinstance(device.created_at, datetime) else device.created_at,
+                        timezone.localtime(device.created_at).replace(tzinfo=None) if isinstance(device.created_at, datetime) else device.created_at,
                         device.devise_type
                     ]
                     ws_devices.append(row_data)
@@ -174,7 +175,7 @@ class ExportUsersAndDevicesView(View):
                         device.time_of_sale.replace(tzinfo=None) if isinstance(device.time_of_sale, datetime) else device.time_of_sale,
                         device.warrenty.replace(tzinfo=None) if isinstance(device.warrenty, datetime) else device.warrenty,
                         device.amount_paid, device.balance_amount, device.land,
-                        device.created_at.replace(tzinfo=None) if isinstance(device.created_at, datetime) else device.created_at,
+                        timezone.localtime(device.created_at).replace(tzinfo=None) if isinstance(device.created_at, datetime) else device.created_at,
                         device.devise_type
                     ]
                     ws_user_devices.append(row_data)
@@ -250,9 +251,9 @@ class ExportDeviceApisView(View):
             for field in fields.keys():
                 value = getattr(api, field, "N/A")
 
-                # Ensure datetime fields are timezone-naïve
+                # Ensure datetime fields are timezone-naïve, converted to local time first
                 if isinstance(value, datetime):
-                    value = value.replace(tzinfo=None)
+                    value = timezone.localtime(value).replace(tzinfo=None)
 
                 row_data.append(value)
 
