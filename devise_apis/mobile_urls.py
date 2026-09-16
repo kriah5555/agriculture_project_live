@@ -15,7 +15,8 @@ Auth                                               (auth_api.py)
 
 Device types  (requires auth)                      (mobile_api.py)
   GET   /api/mobile/device-types/                        All types + lock status per user
-  GET   /api/mobile/device-types/<type_key>/field-schema/ Field label map for a device type
+  GET   /api/mobile/device-types/<type_key>/field-schema/     Field label map for a device type
+  GET   /api/mobile/device-types/<type_key>/field-thresholds/ Nutrient {min,max} thresholds (soilsaathi only; others empty)
 
 Devices       (requires auth)                      (mobile_api.py)
   GET   /api/mobile/devices/              List user devices (?type=soilsaathi|atmo_sense|soil_life|ph_bottle)
@@ -125,6 +126,7 @@ urlpatterns = [
     # ── Device types ──────────────────────────────────────────────────────────
     path('device-types/', m.device_types, name='mobile_device_types'),
     path('device-types/<str:type_key>/field-schema/', m.device_field_schema, name='mobile_device_field_schema'),
+    path('device-types/<str:type_key>/field-thresholds/', m.device_field_thresholds, name='mobile_device_field_thresholds'),
 
     # ── Devices ───────────────────────────────────────────────────────────────
     path('devices/',                             m.device_list,     name='mobile_device_list'),

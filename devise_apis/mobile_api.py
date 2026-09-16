@@ -27,6 +27,7 @@ from agriapp.models import (
     Devise, DeviseApis, DeviseApisFields, DeviseLocation,
     DEVICE_NAMES,
     SOIL_SAATHI_FIELDS, ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, LEAFLENZ_FIELDS,
+    SOIL_SAATHI_FIELD_THRESHOLDS,
 )
 from .devices._common import check_threshold, resolve_farmer
 from .mobile_serializers import (
@@ -192,6 +193,46 @@ def device_field_schema(request, type_key):
         )
     exclude = {'id', 'tag', 'image_path', 'created_at'}
     return Response({'schema': {k: v for k, v in schema.items() if k not in exclude}})
+
+
+# ── Device field thresholds ─────────────────────────────────────────────────────
+
+_FIELD_THRESHOLDS_MAP = {
+    'soilsaathi': SOIL_SAATHI_FIELD_THRESHOLDS,
+}
+
+@extend_schema(
+    tags=['Device Types'],
+    summary='Get nutrient min/max thresholds for a device type',
+    description=(
+        'Returns the {min, max} "normal" range per field, used to classify a reading as '
+        'Low / Medium / Sufficient (or Acidic/Normal/Alkaline for pH) and to render progress '
+        'bars — the same thresholds the web Overview page uses. '
+        '\n\n'
+        'Only `soilsaathi` currently has thresholds defined; other valid device types return '
+        'an empty `thresholds` object.'
+    ),
+    responses={
+        200: inline_serializer(
+            name='FieldThresholdsResponse',
+            fields={'thresholds': drf_serializers.DictField(
+                child=drf_serializers.DictField(child=drf_serializers.FloatField())
+            )},
+        ),
+        400: OpenApiResponse(description='Unknown device type key'),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def device_field_thresholds(request, type_key):
+    """Return the {min, max} threshold map for any device type (empty if none defined)."""
+    if type_key not in _FIELD_SCHEMA_MAP:
+        return Response(
+            {'detail': f'Unknown device type "{type_key}". '
+                       f'Valid types: {list(_FIELD_SCHEMA_MAP.keys())}'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    return Response({'thresholds': _FIELD_THRESHOLDS_MAP.get(type_key, {})})
 
 
 # ── Devices ───────────────────────────────────────────────────────────────────
