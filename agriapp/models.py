@@ -32,7 +32,6 @@ DEVICE_CHOICES = list(DEVICE_NAMES.items())
 SOIL_SAATHI_FIELDS = {
     'id'                   : 'ID',
     'tag'                  : 'Tag',
-    #'electrical_conduction': 'Electrical Conduction (dS/m)',
     'nitrogen'             : 'Nitrogen(kg/ha)',
     'phosphorous'          : 'P(kg/ha)',
     'potassium'            : 'K(kg/ha)',
@@ -47,7 +46,6 @@ SOIL_SAATHI_FIELDS = {
     # 'molybdenum'           : 'Molybdenum (ppm)',
     # 'chlorine'             : 'Chlorine (ppm)',
     # 'nickel'               : 'Nickel (ppm)',
-    # 'organic_carboa'       : 'Organic Carbon (%)',
     'ph'                   : 'Ph(pH)',
     'ec'                   : 'Ec(dS/m)',
     'oc'                   : 'Oc(%)',
@@ -69,10 +67,8 @@ SOIL_SAATHI_FIELD_THRESHOLDS = {
     'manganese'            : {'min': 5.0, 'max': 9.0},
     'copper'               : {'min': 0.6, 'max': 1.0},
     'iron'                 : {'min': 6.5, 'max': 10.5},
-    'organic_carboa'       : {'min': 0.5, 'max': 0.75},
     'oc'                   : {'min': 0.5, 'max': 0.75},
     'ph'                   : {'min': 6.5, 'max': 7.3},
-    'electrical_conduction': {'min': 1.0, 'max': 4.0},
     'ec'                   : {'min': 1.0, 'max': 4.0}
 }
 
@@ -198,7 +194,6 @@ class DeviseApis(models.Model):
     area_name             = models.CharField(max_length=255)
     devise_id             = models.CharField(max_length=255)
     serial_no             = models.CharField(max_length=255)
-    electrical_conduction = models.FloatField(default=0.0)
     nitrogen              = models.FloatField(default=0.0)
     phosphorous           = models.FloatField(default=0.0)
     potassium             = models.FloatField(default=0.0)
@@ -213,7 +208,6 @@ class DeviseApis(models.Model):
     molybdenum            = models.FloatField(default=0.0)
     chlorine              = models.FloatField(default=0.0)
     nickel                = models.FloatField(default=0.0)
-    organic_carboa        = models.FloatField(default=0.0)
     ph                    = models.FloatField(default=0.0)
     ec                    = models.FloatField(default=0.0)
     oc                    = models.FloatField(default=0.0)

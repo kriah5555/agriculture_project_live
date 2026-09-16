@@ -149,7 +149,7 @@ class SoilSaathiReadingSerializer(serializers.ModelSerializer):
             'nitrogen', 'phosphorous', 'potassium',
             'calcium', 'magnesium', 'sulphur',
             'zinc', 'manganese', 'iron', 'copper', 'boron',
-            'ph', 'ec', 'oc', 'electrical_conduction',
+            'ph', 'ec', 'oc',
             'crop_type', 'latitude', 'longitude', 'created_at',
             'linked_ph_bottle',
         ]
@@ -178,7 +178,7 @@ class SoilSaathiReadingCreateSerializer(serializers.ModelSerializer):
             'nitrogen', 'phosphorous', 'potassium',
             'calcium', 'magnesium', 'sulphur',
             'zinc', 'manganese', 'iron', 'copper', 'boron',
-            'ph', 'ec', 'oc', 'electrical_conduction',
+            'ph', 'ec', 'oc',
             'crop_type', 'latitude', 'longitude',
         ]
 

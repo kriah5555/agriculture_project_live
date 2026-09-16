@@ -187,8 +187,8 @@ def build_report_context(api_id):
 
     preds = {
         'ph':             _v(api_data.ph),
-        'ec':             _v(api_data.ec or api_data.electrical_conduction),
-        'organic_carbon': _v(api_data.oc or api_data.organic_carboa),
+        'ec':             _v(api_data.ec),
+        'organic_carbon': _v(api_data.oc),
         'n':              _v(api_data.nitrogen),
         'p':              _v(api_data.phosphorous),
         'k':              _v(api_data.potassium),
