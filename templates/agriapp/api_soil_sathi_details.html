@@ -169,27 +169,27 @@
         {% with fields=api %}
         <div class="nutrient-row">
           <div class="nutrient-label"><span>Nitrogen (N)</span><strong>{{ api.nitrogen }}</strong></div>
-          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.nitrogen 560 100 %}%; background:#2e7d32;"></div></div>
+          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.nitrogen field_thresholds.nitrogen.max 100 %}%; background:#2e7d32;"></div></div>
         </div>
         <div class="nutrient-row">
           <div class="nutrient-label"><span>Phosphorous (P)</span><strong>{{ api.phosphorous }}</strong></div>
-          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.phosphorous 56 100 %}%; background:#1565c0;"></div></div>
+          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.phosphorous field_thresholds.phosphorous.max 100 %}%; background:#1565c0;"></div></div>
         </div>
         <div class="nutrient-row">
           <div class="nutrient-label"><span>Potassium (K)</span><strong>{{ api.potassium }}</strong></div>
-          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.potassium 336 100 %}%; background:#e65100;"></div></div>
+          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.potassium field_thresholds.potassium.max 100 %}%; background:#e65100;"></div></div>
         </div>
         <div class="nutrient-row">
           <div class="nutrient-label"><span>pH</span><strong>{{ api.ph }}</strong></div>
-          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.ph 14 100 %}%; background:#6a1b9a;"></div></div>
+          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.ph field_thresholds.ph.max 100 %}%; background:#6a1b9a;"></div></div>
         </div>
         <div class="nutrient-row">
           <div class="nutrient-label"><span>EC (dS/m)</span><strong>{{ api.ec }}</strong></div>
-          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.ec 4 100 %}%; background:#0277bd;"></div></div>
+          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.ec field_thresholds.ec.max 100 %}%; background:#0277bd;"></div></div>
         </div>
         <div class="nutrient-row">
           <div class="nutrient-label"><span>OC (%)</span><strong>{{ api.oc }}</strong></div>
-          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.oc 2 100 %}%; background:#558b2f;"></div></div>
+          <div class="progress"><div class="progress-bar" style="width:{% widthratio api.oc field_thresholds.oc.max 100 %}%; background:#558b2f;"></div></div>
         </div>
         {% endwith %}
       </div>
@@ -204,16 +204,16 @@
         <div class="card-header-grad"><h6><i class="fas fa-vial me-2"></i>Secondary & Micro Nutrients</h6></div>
         <div class="row g-0">
           <div class="col-md-6">
-            <div class="nutrient-row"><div class="nutrient-label"><span>Calcium (meq/100g)</span><strong>{{ api.calcium }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.calcium 5 100 %}%;background:#00838f;"></div></div></div>
-            <div class="nutrient-row"><div class="nutrient-label"><span>Magnesium (meq/100g)</span><strong>{{ api.magnesium }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.magnesium 4 100 %}%;background:#2e7d32;"></div></div></div>
-            <div class="nutrient-row"><div class="nutrient-label"><span>Sulphur (ppm)</span><strong>{{ api.sulphur }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.sulphur 30 100 %}%;background:#f57f17;"></div></div></div>
-            <div class="nutrient-row"><div class="nutrient-label"><span>Zinc (ppm)</span><strong>{{ api.zinc }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.zinc 3 100 %}%;background:#6a1b9a;"></div></div></div>
-            <div class="nutrient-row"><div class="nutrient-label"><span>Boron (ppm)</span><strong>{{ api.boron }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.boron 3 100 %}%;background:#1565c0;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Calcium (meq/100g)</span><strong>{{ api.calcium }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.calcium field_thresholds.calcium.max 100 %}%;background:#00838f;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Magnesium (meq/100g)</span><strong>{{ api.magnesium }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.magnesium field_thresholds.magnesium.max 100 %}%;background:#2e7d32;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Sulphur (ppm)</span><strong>{{ api.sulphur }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.sulphur field_thresholds.sulphur.max 100 %}%;background:#f57f17;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Zinc (ppm)</span><strong>{{ api.zinc }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.zinc field_thresholds.zinc.max 100 %}%;background:#6a1b9a;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Boron (ppm)</span><strong>{{ api.boron }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.boron field_thresholds.boron.max 100 %}%;background:#1565c0;"></div></div></div>
           </div>
           <div class="col-md-6" style="border-left:1px solid #f0f2f5;">
-            <div class="nutrient-row"><div class="nutrient-label"><span>Manganese (ppm)</span><strong>{{ api.manganese }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.manganese 12 100 %}%;background:#bf360c;"></div></div></div>
-            <div class="nutrient-row"><div class="nutrient-label"><span>Iron (ppm)</span><strong>{{ api.iron }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.iron 15 100 %}%;background:#4e342e;"></div></div></div>
-            <div class="nutrient-row"><div class="nutrient-label"><span>Copper (ppm)</span><strong>{{ api.copper }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.copper 3 100 %}%;background:#e65100;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Manganese (ppm)</span><strong>{{ api.manganese }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.manganese field_thresholds.manganese.max 100 %}%;background:#bf360c;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Iron (ppm)</span><strong>{{ api.iron }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.iron field_thresholds.iron.max 100 %}%;background:#4e342e;"></div></div></div>
+            <div class="nutrient-row"><div class="nutrient-label"><span>Copper (ppm)</span><strong>{{ api.copper }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.copper field_thresholds.copper.max 100 %}%;background:#e65100;"></div></div></div>
             <div class="nutrient-row"><div class="nutrient-label"><span>Molybdenum (ppm)</span><strong>{{ api.molybdenum }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.molybdenum 1 100 %}%;background:#37474f;"></div></div></div>
             <div class="nutrient-row"><div class="nutrient-label"><span>Chlorine (ppm)</span><strong>{{ api.chlorine }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.chlorine 10 100 %}%;background:#00695c;"></div></div></div>
             <div class="nutrient-row"><div class="nutrient-label"><span>Nickel (ppm)</span><strong>{{ api.nickel }}</strong></div><div class="progress"><div class="progress-bar" style="width:{% widthratio api.nickel 1 100 %}%;background:#455a64;"></div></div></div>
@@ -359,17 +359,17 @@
       // Overview tab's progress bars (not the random/dummy split the old
       // standalone dashboard page used).
       var nutrientPct = {
-        N:  Math.min({% widthratio api.nitrogen 560 100 %}, 100),
-        P:  Math.min({% widthratio api.phosphorous 56 100 %}, 100),
-        K:  Math.min({% widthratio api.potassium 336 100 %}, 100),
-        Ca: Math.min({% widthratio api.calcium 5 100 %}, 100),
-        Mg: Math.min({% widthratio api.magnesium 4 100 %}, 100),
-        S:  Math.min({% widthratio api.sulphur 30 100 %}, 100),
-        Fe: Math.min({% widthratio api.iron 15 100 %}, 100),
-        Mn: Math.min({% widthratio api.manganese 12 100 %}, 100),
-        Zn: Math.min({% widthratio api.zinc 3 100 %}, 100),
-        Cu: Math.min({% widthratio api.copper 3 100 %}, 100),
-        B:  Math.min({% widthratio api.boron 3 100 %}, 100),
+        N:  Math.min({% widthratio api.nitrogen field_thresholds.nitrogen.max 100 %}, 100),
+        P:  Math.min({% widthratio api.phosphorous field_thresholds.phosphorous.max 100 %}, 100),
+        K:  Math.min({% widthratio api.potassium field_thresholds.potassium.max 100 %}, 100),
+        Ca: Math.min({% widthratio api.calcium field_thresholds.calcium.max 100 %}, 100),
+        Mg: Math.min({% widthratio api.magnesium field_thresholds.magnesium.max 100 %}, 100),
+        S:  Math.min({% widthratio api.sulphur field_thresholds.sulphur.max 100 %}, 100),
+        Fe: Math.min({% widthratio api.iron field_thresholds.iron.max 100 %}, 100),
+        Mn: Math.min({% widthratio api.manganese field_thresholds.manganese.max 100 %}, 100),
+        Zn: Math.min({% widthratio api.zinc field_thresholds.zinc.max 100 %}, 100),
+        Cu: Math.min({% widthratio api.copper field_thresholds.copper.max 100 %}, 100),
+        B:  Math.min({% widthratio api.boron field_thresholds.boron.max 100 %}, 100),
         Mo: Math.min({% widthratio api.molybdenum 1 100 %}, 100),
         Cl: Math.min({% widthratio api.chlorine 10 100 %}, 100),
         Ni: Math.min({% widthratio api.nickel 1 100 %}, 100)

@@ -58,19 +58,19 @@ SOIL_SAATHI_FIELDS = {
 
 SOIL_SAATHI_FIELD_THRESHOLDS = {
     'nitrogen'             : {'min': 280, 'max': 560},
-    'phosphorous'          : {'min': 22, 'max': 56},
-    'potassium'            : {'min': 141, 'max': 336},
+    'phosphorous'          : {'min': 22.9, 'max': 56.3},
+    'potassium'            : {'min': 144, 'max': 336},
     'sulphur'              : {'min': 10, 'max': 20},
-    'zinc'                 : {'min': 0.6, 'max': 0.6},
-    'boron'                : {'min': 0.5, 'max': 0.5},
-    'calcium'              : {'min': 1.5, 'max': 1.5},
-    'magnesium'            : {'min': 1.0, 'max': 1.0},
-    'manganese'            : {'min': 5.0, 'max': 9.0},
-    'copper'               : {'min': 0.6, 'max': 1.0},
-    'iron'                 : {'min': 6.5, 'max': 10.5},
+    'zinc'                 : {'min': 0.6, 'max': 1.2},
+    'boron'                : {'min': 0.5, 'max': 1},
+    'calcium'              : {'min': 1.5, 'max': 5.0},
+    'magnesium'            : {'min': 1.0, 'max': 3.0},
+    'manganese'            : {'min': 2.0, 'max': 4.0},
+    'copper'               : {'min': 0.2, 'max': 0.4},
+    'iron'                 : {'min': 4.5, 'max': 10},
     'oc'                   : {'min': 0.5, 'max': 0.75},
     'ph'                   : {'min': 6.5, 'max': 7.3},
-    'ec'                   : {'min': 1.0, 'max': 4.0}
+    'ec'                   : {'min': 0.8, 'max': 1.6}
 }
 
 ATMO_SENSE_FIELDS = {

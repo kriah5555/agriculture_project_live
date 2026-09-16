@@ -749,6 +749,7 @@ def api_overview(request, **kwargs):
             'devise_name'               : api.device.name,
             'dynamic_fields'            : dynamic_field_data,
             'crops_data'                : crops_data,
+            'field_thresholds'          : SOIL_SAATHI_FIELD_THRESHOLDS,
             'fields'                    : ','.join(fields),
             'fields_data'               : ','.join(map(str, fields_data)),
             'fields_data_colors'        : ','.join([f"rgba({random.randint(100,255)}, 0, 0, 0.5)" for i in fields_data]),
