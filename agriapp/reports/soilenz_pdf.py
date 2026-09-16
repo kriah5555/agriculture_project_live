@@ -18,6 +18,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
 from reportlab.lib import colors as rl_colors
 
+from agriapp.models import SOIL_SAATHI_FIELD_THRESHOLDS
+
 PAGE_W, PAGE_H = A4   # 595.28 x 841.89 pt
 
 # ─── Brand colours ────────────────────────────────────────────────────────────
@@ -36,88 +38,154 @@ _BLACK     = (0.0, 0.0, 0.0)
 
 
 # ─── Parameter info functions ────────────────────────────────────────────────
+# All cutoffs below come from agriapp.models.SOIL_SAATHI_FIELD_THRESHOLDS (the
+# same single source of truth used for the SoiLENZ Overview page's progress
+# bars), instead of separately hand-picked numbers, so a threshold update in
+# one place is reflected everywhere.
+
+def _range_info(v, key, mode, labels, notes, unit='', na_note='No data'):
+    """
+    mode: 'higher_better' (nutrients: below min = deficient, above max = still
+      good/no action needed), 'lower_better' (EC: below min = good, above max
+      = bad), or 'optimal_range' (pH: both tails are bad, only the band
+      between min/max is optimal).
+    labels/notes: (low, mid, high) tuples for the three bands.
+    """
+    th  = SOIL_SAATHI_FIELD_THRESHOLDS.get(key, {})
+    lo, hi = th.get('min'), th.get('max')
+    rng = f'{lo}-{hi} {unit}'.strip() if lo is not None and hi is not None else ''
+    if v is None:
+        return 'N/A', _GRAY, rng, na_note
+
+    below = lo is not None and v < lo
+    above = hi is not None and v > hi
+    low_lbl, mid_lbl, high_lbl = labels
+    low_note, mid_note, high_note = notes
+
+    if mode == 'higher_better':
+        if below: return low_lbl,  _RED,       rng, low_note
+        if above: return high_lbl, _MED_GREEN, rng, high_note
+        return mid_lbl, _YELLOW, rng, mid_note
+    if mode == 'lower_better':
+        if below: return low_lbl,  _MED_GREEN, rng, low_note
+        if above: return high_lbl, _RED,       rng, high_note
+        return mid_lbl, _YELLOW, rng, mid_note
+    # optimal_range
+    if below: return low_lbl,  _ORANGE, rng, low_note
+    if above: return high_lbl, _RED,    rng, high_note
+    return mid_lbl, _MED_GREEN, rng, mid_note
+
 
 def _ph_info(v):
-    if v is None: return 'N/A', _GRAY, '6.0-7.5', 'No data'
-    if v > 7.5:   return 'Alkaline', _RED,    '6.0-7.5', 'Alkaline soil; limits nutrient availability'
-    if v < 6.0:   return 'Acidic',   _ORANGE, '6.0-7.5', 'Acidic soil; apply lime to correct'
-    return 'Normal', _MED_GREEN, '6.0-7.5', 'Optimal pH for most crops'
+    return _range_info(v, 'ph', 'optimal_range',
+        ('Acidic', 'Normal', 'Alkaline'),
+        ('Acidic soil; apply lime to correct',
+         'Optimal pH for most crops',
+         'Alkaline soil; limits nutrient availability'))
 
 def _ec_info(v):
-    if v is None: return 'N/A', _GRAY, '< 4.0', 'No data'
-    if v >= 4.0:  return 'Very High', _RED,    '< 4.0', 'Severe salinity; strongly restricts growth'
-    if v >= 2.0:  return 'High',      _ORANGE, '< 4.0', 'Salinity stress; sensitive crops affected'
-    if v >= 1.0:  return 'Moderate',  _YELLOW, '< 4.0', 'Slight salinity; monitor tolerant crops'
-    return 'Normal', _MED_GREEN, '< 4.0', 'Good; no salinity stress'
+    return _range_info(v, 'ec', 'lower_better',
+        ('Normal', 'Moderate', 'High'),
+        ('Good; no salinity stress',
+         'Slight salinity; monitor tolerant crops',
+         'Salinity stress; may restrict crop growth'),
+        unit='dS/m')
 
 def _oc_info(v):
-    if v is None:  return 'N/A', _GRAY, '> 0.75', 'No data'
-    if v >= 0.75:  return 'Sufficient', _MED_GREEN, '> 0.75', 'Good organic matter level'
-    if v >= 0.50:  return 'Medium',     _YELLOW,    '> 0.75', 'Marginal; add organic amendments'
-    return 'Low', _RED, '> 0.75', 'Low organic matter; apply FYM/compost'
+    return _range_info(v, 'oc', 'higher_better',
+        ('Low', 'Medium', 'Sufficient'),
+        ('Low organic matter; apply FYM/compost',
+         'Marginal; add organic amendments',
+         'Good organic matter level'),
+        unit='%')
 
 def _n_info(v):
-    if v is None:  return 'N/A', _GRAY, '> 280', 'No data'
-    if v >= 280:   return 'Sufficient', _MED_GREEN, '> 280 kg/ha', 'Adequate nitrogen supply'
-    if v >= 140:   return 'Medium',     _YELLOW,    '> 280 kg/ha', 'Moderate; apply split-dose urea'
-    return 'Low', _RED, '> 280 kg/ha', 'Deficient; apply urea in split doses'
+    return _range_info(v, 'nitrogen', 'higher_better',
+        ('Low', 'Medium', 'Sufficient'),
+        ('Deficient; apply urea in split doses',
+         'Moderate; apply split-dose urea',
+         'Adequate nitrogen supply'),
+        unit='kg/ha')
 
 def _p_info(v):
-    if v is None: return 'N/A', _GRAY, '20-70', 'No data'
-    if 20 <= v <= 70: return 'Medium', _YELLOW, '20-70 kg/ha', 'Marginal; apply basal P (DAP)'
-    if v > 70:    return 'Sufficient', _MED_GREEN, '20-70 kg/ha', 'High phosphorus; no addition needed'
-    return 'Low', _RED, '20-70 kg/ha', 'Deficient; apply DAP at basal dose'
+    return _range_info(v, 'phosphorous', 'higher_better',
+        ('Low', 'Medium', 'Sufficient'),
+        ('Deficient; apply DAP at basal dose',
+         'Marginal; apply basal P (DAP)',
+         'High phosphorus; no addition needed'),
+        unit='kg/ha')
 
 def _k_info(v):
-    if v is None: return 'N/A', _GRAY, '> 120', 'No data'
-    if v >= 280:  return 'Sufficient', _MED_GREEN, '> 120 kg/ha', 'High potassium; sufficient for crop'
-    if v >= 120:  return 'Medium',     _YELLOW,    '> 120 kg/ha', 'Adequate; monitor crop response'
-    return 'Low', _RED, '> 120 kg/ha', 'Deficient; apply MOP at basal dose'
+    return _range_info(v, 'potassium', 'higher_better',
+        ('Low', 'Medium', 'Sufficient'),
+        ('Deficient; apply MOP at basal dose',
+         'Adequate; monitor crop response',
+         'High potassium; sufficient for crop'),
+        unit='kg/ha')
 
 def _ca_info(v):
-    if v is None: return 'N/A', _GRAY, '> 1.5', 'No data'
-    if v >= 2.0:  return 'Sufficient', _MED_GREEN, '> 1.5 meq/100g', 'Calcium sufficient for crop'
-    if v >= 1.5:  return 'Adequate',   _MED_GREEN, '> 1.5 meq/100g', 'Adequate; maintain with dolomite'
-    if v >= 1.0:  return 'Low',        _ORANGE,    '> 1.5 meq/100g', 'Marginal; apply gypsum or dolomite'
-    return 'Very Low', _RED, '> 1.5 meq/100g', 'Deficient; apply calcium carbonate'
+    return _range_info(v, 'calcium', 'higher_better',
+        ('Low', 'Medium', 'Sufficient'),
+        ('Deficient; apply calcium carbonate',
+         'Marginal; apply gypsum or dolomite',
+         'Calcium sufficient for crop'),
+        unit='meq/100g')
 
 def _mg_info(v):
-    if v is None: return 'N/A', _GRAY, '> 1.0', 'No data'
-    if v >= 1.0:  return 'Sufficient', _MED_GREEN, '> 1.0 meq/100g', 'Magnesium sufficient for crop'
-    if v >= 0.5:  return 'Low',        _ORANGE,    '> 1.0 meq/100g', 'Marginal; apply magnesium sulphate'
-    return 'Very Low', _RED, '> 1.0 meq/100g', 'Deficient; apply MgSO4 at 25 kg/acre'
+    return _range_info(v, 'magnesium', 'higher_better',
+        ('Low', 'Medium', 'Sufficient'),
+        ('Deficient; apply MgSO4 at 25 kg/acre',
+         'Marginal; apply magnesium sulphate',
+         'Magnesium sufficient for crop'),
+        unit='meq/100g')
 
 def _s_info(v):
-    if v is None: return 'N/A', _GRAY, '> 10', 'No data'
-    if v >= 20:   return 'Sufficient', _MED_GREEN, '> 10 ppm', 'Adequate sulfur'
-    if v >= 10:   return 'Medium',     _YELLOW,    '> 10 ppm', 'Borderline; apply gypsum if needed'
-    return 'Low', _RED, '> 10 ppm', 'Deficient; apply gypsum or sulfate fertilizer'
+    return _range_info(v, 'sulphur', 'higher_better',
+        ('Low', 'Medium', 'Sufficient'),
+        ('Deficient; apply gypsum or sulfate fertilizer',
+         'Borderline; apply gypsum if needed',
+         'Adequate sulfur'),
+        unit='ppm')
 
 def _fe_info(v):
-    if v is None: return 'N/A', _GRAY, '> 4.5', 'No data'
-    if v >= 4.5:  return 'Sufficient', _MED_GREEN, '> 4.5 ppm', 'Adequate iron content'
-    return 'Low', _RED, '> 4.5 ppm', 'Deficient; apply ferrous sulphate'
+    return _range_info(v, 'iron', 'higher_better',
+        ('Low', 'Medium', 'Sufficient'),
+        ('Deficient; apply ferrous sulphate',
+         'Marginal; monitor crop response',
+         'Adequate iron content'),
+        unit='ppm')
 
 def _mn_info(v):
-    if v is None: return 'N/A', _GRAY, '> 2.0', 'No data'
-    if v >= 2.0:  return 'Sufficient', _MED_GREEN, '> 2.0 ppm', 'Adequate manganese'
-    return 'Low', _RED, '> 2.0 ppm', 'Deficient; apply MnSO4'
+    return _range_info(v, 'manganese', 'higher_better',
+        ('Low', 'Medium', 'Sufficient'),
+        ('Deficient; apply MnSO4',
+         'Marginal; monitor crop response',
+         'Adequate manganese'),
+        unit='ppm')
 
 def _cu_info(v):
-    if v is None: return 'N/A', _GRAY, '> 0.6', 'No data'
-    if v >= 0.6:  return 'Sufficient', _MED_GREEN, '> 0.6 ppm', 'Adequate copper'
-    return 'Low', _RED, '> 0.6 ppm', 'Deficient; apply copper sulphate'
+    return _range_info(v, 'copper', 'higher_better',
+        ('Low', 'Medium', 'Sufficient'),
+        ('Deficient; apply copper sulphate',
+         'Marginal; monitor crop response',
+         'Adequate copper'),
+        unit='ppm')
 
 def _zn_info(v):
-    if v is None: return 'N/A', _GRAY, '> 0.6', 'No data'
-    if v >= 0.6:  return 'Sufficient', _MED_GREEN, '> 0.6 ppm', 'Adequate zinc'
-    if v >= 0.2:  return 'Medium',     _YELLOW,    '> 0.6 ppm', 'Marginal; apply zinc sulphate'
-    return 'Low', _RED, '> 0.6 ppm', 'Deficient; apply zinc sulphate at 25 kg/ha'
+    return _range_info(v, 'zinc', 'higher_better',
+        ('Low', 'Medium', 'Sufficient'),
+        ('Deficient; apply zinc sulphate at 25 kg/ha',
+         'Marginal; apply zinc sulphate',
+         'Adequate zinc'),
+        unit='ppm')
 
 def _b_info(v):
-    if v is None: return 'N/A', _GRAY, '> 0.5', 'No data'
-    if v >= 0.5:  return 'Sufficient', _MED_GREEN, '> 0.5 ppm', 'Adequate boron'
-    return 'Low', _RED, '> 0.5 ppm', 'Deficient; apply borax at 1 kg/ha'
+    return _range_info(v, 'boron', 'higher_better',
+        ('Low', 'Medium', 'Sufficient'),
+        ('Deficient; apply borax at 1 kg/ha',
+         'Marginal; apply borax if needed',
+         'Adequate boron'),
+        unit='ppm')
 
 
 PARAMS_14 = [
