@@ -9,6 +9,7 @@
 <script src="{% static 'api_details/js/recomended.js' %}"></script>
 
 <style>
+  .link-cards .flc-card, .link-cards .pbc-card { height:100%; }
   .detail-card      { background:var(--tc-surface); border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.07); overflow:hidden; margin-bottom:16px; }
   .card-header-grad { background:linear-gradient(135deg,#1a2f6b,#1a73e8); color:#fff; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
   .card-header-grad h6 { margin:0; font-weight:600; font-size:13px; letter-spacing:.4px; text-transform:uppercase; opacity:.9; }
@@ -234,16 +235,17 @@
       </div>
       {% endif %}
 
-    </div>
-  </div>
+      <!-- Farmer + PHBottle linking — sits under the secondary nutrients so the
+           right column fills the height of the Reading Info + Primary column -->
+      <div class="row g-3 link-cards">
+        <div class="col-md-6">
+          {% include "agriapp/_farmer_link_card.html" %}
+        </div>
+        <div class="col-md-6">
+          {% include "agriapp/_ph_bottle_link_card.html" %}
+        </div>
+      </div>
 
-  <!-- Farmer + PHBottle linking -->
-  <div class="row g-3 mt-1">
-    <div class="col-lg-6">
-      {% include "agriapp/_farmer_link_card.html" %}
-    </div>
-    <div class="col-lg-6">
-      {% include "agriapp/_ph_bottle_link_card.html" %}
     </div>
   </div>
 

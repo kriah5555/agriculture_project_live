@@ -17,7 +17,7 @@
   <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.20.0/dist/leaflet-geoman.js"></script>
 
   <script src="{% static 'theme/theme.js' %}"></script>
-  <link rel="stylesheet" href="{% static 'soil_visualizer/css/dashboard.css' %}" />
+  <link rel="stylesheet" href="{% static 'soil_visualizer/css/dashboard.css' %}?v=20260928" />
 </head>
 <body>
 
@@ -129,6 +129,14 @@
     <div class="map-container">
       <div id="map"></div>
 
+      <form class="coord-search" id="coord-search" autocomplete="off">
+        <input type="text" class="form-control" id="coord-search-input"
+               placeholder="Lat, Long  e.g. 16.1667, 74.6167" aria-label="Search by latitude and longitude" />
+        <button type="submit" class="btn btn-primary btn-sm">Go</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="coord-search-clear" title="Clear marker" style="display:none;">&times;</button>
+        <div class="coord-search-error" id="coord-search-error"></div>
+      </form>
+
       <div class="draw-hint" id="draw-hint" style="display:none;">
         Draw a boundary on the map for this point — click to place each corner, double-click (or click the first point) to finish.
       </div>
@@ -157,6 +165,6 @@
       pointDetail: function (pointId) { return `/soil-visualizer/{{ devise.pk }}/points/${pointId}/`; },
     };
   </script>
-  <script src="{% static 'soil_visualizer/js/dashboard.js' %}"></script>
+  <script src="{% static 'soil_visualizer/js/dashboard.js' %}?v=20260928"></script>
 </body>
 </html>

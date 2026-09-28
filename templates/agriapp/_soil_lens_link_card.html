@@ -41,6 +41,7 @@
   .slc-option:hover { background:var(--tc-surface-alt, rgba(0,0,0,0.03)); }
   .slc-option.selected { background:rgba(57,73,171,0.12); box-shadow:inset 3px 0 0 #3949ab; }
   .slc-option-title { font-weight:600; }
+  .slc-option-device { color:#5c6bc0; font-size:12px; font-weight:600; margin-top:2px; }
   .slc-option-meta  { color:var(--tc-text-muted); font-size:12px; margin-top:2px; }
   .slc-no-results   { padding:14px; text-align:center; color:var(--tc-text-muted); font-size:13px; }
 </style>
@@ -62,6 +63,9 @@
       </div>
     </div>
     <div class="slc-row"><span class="slc-label">Reading ID</span> <span class="slc-value">#{{ linked_soil_lens.pk }}</span></div>
+    <div class="slc-row"><span class="slc-label">Device Name</span><span class="slc-value"><a href="{% url 'device-details' linked_soil_lens.device.pk %}">{{ linked_soil_lens.device.name }}</a></span></div>
+    <div class="slc-row"><span class="slc-label">Device ID</span>  <span class="slc-value">{{ linked_soil_lens.device.devise_id|default:'—' }}</span></div>
+    <div class="slc-row"><span class="slc-label">Serial No</span>  <span class="slc-value">{{ linked_soil_lens.device.serial_no|default:'—' }}</span></div>
     <div class="slc-row"><span class="slc-label">pH</span>         <span class="slc-value">{{ linked_soil_lens.ph }}</span></div>
     <div class="slc-row"><span class="slc-label">EC</span>         <span class="slc-value">{{ linked_soil_lens.ec }}</span></div>
     {% if linked_soil_lens.tag %}
@@ -101,16 +105,20 @@
       <input type="hidden" name="next" value="{{ request.path }}">
       <div class="slc-modal-body">
         <label class="slc-modal-label">Soil Lens Reading</label>
+        <select class="form-select form-select-sm mb-2" id="slcDevice_{{ ph_bottle_pk }}" style="display:none;">
+          <option value="">All devices</option>
+        </select>
         <input type="text" class="form-control form-control-sm" id="slcSearch_{{ ph_bottle_pk }}"
-               placeholder="Search by tag or crop…" autocomplete="off">
+               placeholder="Search by device, tag or crop…" autocomplete="off">
         <input type="hidden" name="soil_lens_id" id="slcSelectedId_{{ ph_bottle_pk }}"
                value="{{ linked_soil_lens.pk|default:'' }}" required>
         <div class="slc-search-list" id="slcList_{{ ph_bottle_pk }}">
           {% for r in available_soil_lens_readings %}
           <div class="slc-option{% if linked_soil_lens and r.pk == linked_soil_lens.pk %} selected{% endif %}"
-               data-id="{{ r.pk }}" data-ph="{{ r.ph }}" data-ec="{{ r.ec }}"
-               data-search="{{ r.tag|default:'' }} {{ r.crop_type|default:'' }}">
+               data-id="{{ r.pk }}" data-device-id="{{ r.device.pk }}" data-device-label="{{ r.device.name }} ({{ r.device.devise_id|default:r.device.serial_no }})" data-ph="{{ r.ph }}" data-ec="{{ r.ec }}"
+               data-search="{{ r.device.name }} {{ r.device.devise_id|default:'' }} {{ r.device.serial_no|default:'' }} {{ r.tag|default:'' }} {{ r.crop_type|default:'' }}">
             <div class="slc-option-title">#{{ r.pk }} — pH {{ r.ph }}, EC {{ r.ec }}</div>
+            <div class="slc-option-device"><i class="fas fa-leaf me-1"></i>{{ r.device.name }} ({{ r.device.devise_id|default:r.device.serial_no }})</div>
             <div class="slc-option-meta">
               {% if r.tag %}Tag: {{ r.tag }} · {% endif %}
               {% if r.crop_type %}Crop: {{ r.crop_type }} · {% endif %}
@@ -156,15 +164,30 @@
       });
     });
 
-    if (search) {
-      search.addEventListener('input', function () {
-        var q = search.value.trim().toLowerCase();
-        options.forEach(function (opt) {
-          var hay = (opt.getAttribute('data-search') || '').toLowerCase();
-          opt.style.display = !q || hay.indexOf(q) !== -1 ? '' : 'none';
-        });
+    var device  = document.getElementById('slcDevice_{{ ph_bottle_pk }}');
+    var devices = {};
+    options.forEach(function (opt) { devices[opt.getAttribute('data-device-id')] = opt.getAttribute('data-device-label'); });
+    if (device && Object.keys(devices).length > 1) {
+      Object.keys(devices).forEach(function (id) {
+        var o = document.createElement('option');
+        o.value = id; o.textContent = devices[id];
+        device.appendChild(o);
+      });
+      device.style.display = '';
+    }
+
+    function applyFilter() {
+      var q   = search ? search.value.trim().toLowerCase() : '';
+      var dev = device ? device.value : '';
+      options.forEach(function (opt) {
+        var hay     = (opt.getAttribute('data-search') || '').toLowerCase();
+        var matchQ  = !q || hay.indexOf(q) !== -1;
+        var matchD  = !dev || opt.getAttribute('data-device-id') === dev;
+        opt.style.display = matchQ && matchD ? '' : 'none';
       });
     }
+    if (search) search.addEventListener('input', applyFilter);
+    if (device) device.addEventListener('change', applyFilter);
   })();
 
   document.getElementById('slcForm_{{ ph_bottle_pk }}').addEventListener('submit', function (e) {

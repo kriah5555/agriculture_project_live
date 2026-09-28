@@ -238,14 +238,40 @@ class DeviseApis(models.Model):
                 f" — pH:{self.ph} EC:{self.ec} OC:{self.oc}"
                 f"{farmer_str} | #{self.pk} {date_str}")
 
+    def owner_mismatch_with(self, ph_bottle):
+        """True unless this reading's device and `ph_bottle`'s device are both
+        assigned to the same user — a link must never cross accounts, and two
+        unassigned devices (user=None) don't count as the same owner."""
+        owner = self.device.user_id
+        return not owner or owner != ph_bottle.device.user_id
+
+    def farmer_conflicts_with(self, ph_bottle):
+        """True when this reading and `ph_bottle` are each assigned to a
+        different farmer — linking them would mix two farmers' soil samples."""
+        return bool(self.farmer_id and ph_bottle.farmer_id and self.farmer_id != ph_bottle.farmer_id)
+
     def link_ph_bottle(self, ph_bottle):
         """Links to a PHBottle reading (DeviseApisFields), copying its pH/EC
-        (field1/field3) into this record's ph/ec. Caller is responsible for
-        ownership + overwrite-confirmation checks before calling this."""
+        (field1/field3) into this record's ph/ec. Both readings are the same
+        soil sample, so for a soil partner whichever side has no farmer gets the other's — without
+        this a SoiLENZ reading linked to a farmer's PHBottle reading never shows
+        on that farmer's page. Caller is responsible for ownership, overwrite-
+        confirmation and farmer_conflicts_with() checks before calling this."""
         self.ph_bottle_reading = ph_bottle
         self.ph = ph_bottle.field1
         self.ec = ph_bottle.field3
-        self.save(update_fields=['ph_bottle_reading', 'ph', 'ec'])
+        fields = ['ph_bottle_reading', 'ph', 'ec']
+        # Farmers only exist for soil partner accounts, so only sync for a
+        # soil-partner owner and only a farmer registered under that owner.
+        owner = self.device.user
+        if getattr(getattr(owner, 'profile', None), 'user_type', None) == 'soil_partner':
+            if not self.farmer_id and ph_bottle.farmer_id and ph_bottle.farmer.soil_partner_id == owner.pk:
+                self.farmer_id = ph_bottle.farmer_id
+                fields.append('farmer')
+            elif self.farmer_id and not ph_bottle.farmer_id and self.farmer.soil_partner_id == owner.pk:
+                ph_bottle.farmer_id = self.farmer_id
+                ph_bottle.save(update_fields=['farmer'])
+        self.save(update_fields=fields)
 
 # CHANNEL_FIELD_MAP: incoming `channel_data[<key>]` request param -> ChannelData field name.
 # Kept next to the model (rather than in the view) since both the API parser and any
@@ -708,7 +734,7 @@ class Point(models.Model):
             r = self.reading
             return {
                 'ph': r.ph, 'ec': r.ec, 'n': r.nitrogen, 'p': r.phosphorous, 'k': r.potassium,
-                'organic_carbon': r.oc, 's': r.sulphur, 'fe': r.iron, 'zn': r.zinc,
+                'organic_carbon': r.oc, 's': r.sulphur, 'ca': r.calcium, 'mg': r.magnesium, 'fe': r.iron, 'zn': r.zinc,
                 'cu': r.copper, 'b': r.boron, 'mn': r.manganese,
             }
         return self.parameters or {}

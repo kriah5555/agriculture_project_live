@@ -5,17 +5,21 @@ Every device API that WRITES data must call `check_threshold(device)` before sav
 If the threshold is exceeded it returns a ready-made 403 Response — the caller
 should return it immediately.  If None is returned the write is allowed.
 """
+from collections import Counter
+
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
 
 from agriapp.models import (
-    DeviseApis, DeviseApisFields, APICountThreshold, Farmer, UserRequest,
+    Devise, DeviseApis, DeviseApisFields, APICountThreshold, Farmer, UserRequest,
 )
 from devise_apis.mobile_serializers import (
     FieldsReadingSerializer,
     FieldsReadingCreateSerializer,
+    device_mini,
 )
 
 
@@ -158,7 +162,9 @@ def get_user_device(request, device_id):
 def fields_list_view(request, device_id):
     """Paginated list of DeviseApisFields for a device."""
     device    = get_user_device(request, device_id)
-    qs        = DeviseApisFields.objects.filter(device=device).order_by('-created_at')
+    qs        = (DeviseApisFields.objects.filter(device=device)
+                 .select_related('device', 'farmer', 'linked_soil_lens__device')
+                 .order_by('-created_at'))
     paginator = DevicePagination()
     page      = paginator.paginate_queryset(qs, request)
     ctx = {'request': request}
@@ -223,6 +229,22 @@ def link_soil_lens_ph_bottle(request, soil_lens, ph_bottle_id, confirm):
             status=status.HTTP_409_CONFLICT,
         )
 
+    # The lookup above already scopes to request.user; this re-checks both
+    # devices' owners directly so a link can never cross accounts.
+    if soil_lens.owner_mismatch_with(ph_bottle):
+        return Response(
+            {'detail': 'The SoiLENZ and PHBottle devices must both belong to the same user.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if soil_lens.farmer_conflicts_with(ph_bottle):
+        return Response(
+            {'detail': (f'These readings belong to different farmers '
+                        f'("{soil_lens.farmer.farmer_name}" and "{ph_bottle.farmer.farmer_name}"). '
+                        f'Link readings from the same farmer.')},
+            status=status.HTTP_409_CONFLICT,
+        )
+
     overwriting = soil_lens.ph_bottle_reading_id and soil_lens.ph_bottle_reading_id != ph_bottle.pk
     changing_values = soil_lens.ph != ph_bottle.field1 or soil_lens.ec != ph_bottle.field3
     if (overwriting or changing_values) and not confirm:
@@ -238,6 +260,67 @@ def link_soil_lens_ph_bottle(request, soil_lens, ph_bottle_id, confirm):
 
     soil_lens.link_ph_bottle(ph_bottle)
     return Response(SoilSaathiReadingSerializer(soil_lens).data)
+
+
+def list_link_candidates(request, soil_lens=None, ph_bottle=None):
+    """
+    GET side of both link endpoints: the readings of the *other* type that the
+    caller could link to — i.e. unlinked ones plus the one currently linked
+    (flagged `is_current`). Pass exactly one of `soil_lens` / `ph_bottle`.
+
+    Spans every device of that type the caller owns, so the response also
+    carries a `devices` list (with per-device `available_count`) for a device
+    picker; `?device_id=<pk>` narrows `results` to one device. Paginated like
+    the reading lists.
+    """
+    if soil_lens is not None:
+        current_pk = soil_lens.ph_bottle_reading_id
+        device_type = 'ph_bottle'
+        qs = DeviseApisFields.objects.filter(
+            device__user=request.user, device__devise_type=device_type,
+        ).filter(Q(linked_soil_lens__isnull=True) | Q(pk=current_pk or 0))
+        row = lambda r: {'ph': r.field1, 'ec': r.field3}
+    else:
+        try:
+            current_pk = ph_bottle.linked_soil_lens.pk
+        except DeviseApis.DoesNotExist:
+            current_pk = None
+        device_type = 'soilsaathi'
+        qs = DeviseApis.objects.filter(
+            device__user=request.user, device__devise_type=device_type,
+        ).filter(Q(ph_bottle_reading__isnull=True) | Q(pk=current_pk or 0))
+        row = lambda r: {'ph': r.ph, 'ec': r.ec, 'area_name': r.area_name}
+
+    per_device = Counter(qs.values_list('device_id', flat=True))
+    devices = [
+        {**device_mini(d), 'available_count': per_device.get(d.pk, 0)}
+        for d in Devise.objects.filter(user=request.user, devise_type=device_type).order_by('pk')
+    ]
+
+    device_id = request.query_params.get('device_id')
+    if device_id:
+        if not device_id.isdigit():
+            return Response({'detail': 'device_id must be an integer.'}, status=status.HTTP_400_BAD_REQUEST)
+        qs = qs.filter(device_id=int(device_id))
+
+    qs        = qs.select_related('device').order_by('-created_at')
+    paginator = DevicePagination()
+    page      = paginator.paginate_queryset(qs, request)
+    results   = [
+        {
+            'id'        : r.pk,
+            'device'    : device_mini(r.device),
+            **row(r),
+            'tag'       : r.tag,
+            'crop_type' : r.crop_type,
+            'created_at': r.created_at,
+            'is_current': r.pk == current_pk,
+        }
+        for r in page
+    ]
+    response = paginator.get_paginated_response(results)
+    response.data['devices'] = devices
+    return response
 
 
 def unlink_soil_lens_ph_bottle(soil_lens):

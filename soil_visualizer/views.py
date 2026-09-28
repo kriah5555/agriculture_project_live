@@ -81,7 +81,7 @@ def api_device_readings(request, device_id):
         'point_ids': linked_map.get(r.id, []),
         'parameters': {
             'ph': r.ph, 'ec': r.ec, 'n': r.nitrogen, 'p': r.phosphorous, 'k': r.potassium,
-            'organic_carbon': r.oc, 's': r.sulphur, 'fe': r.iron, 'zn': r.zinc,
+            'organic_carbon': r.oc, 's': r.sulphur, 'ca': r.calcium, 'mg': r.magnesium, 'fe': r.iron, 'zn': r.zinc,
             'cu': r.copper, 'b': r.boron, 'mn': r.manganese,
         },
     } for r in page.object_list]

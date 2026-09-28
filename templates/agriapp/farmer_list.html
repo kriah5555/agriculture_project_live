@@ -284,6 +284,7 @@
     {% for f in farmers %}
     {% with total=f.soilsaathi_count|add:f.atmo_count|add:f.sl_count|add:f.pb_count|add:f.sm_count %}
     <div class="farmer-card"
+         data-id="{{ f.pk }}"
          data-name="{{ f.farmer_name|lower }}"
          data-phone="{{ f.phone }}"
          data-status="{{ f.status }}"
@@ -306,7 +307,7 @@
           </div>
           {% endif %}
           <div>
-            <div class="fc-name">{{ f.farmer_name }}</div>
+            <div class="fc-name">{{ f.farmer_name }} <span style="font-size:11px;font-weight:500;color:#888;font-family:monospace;">#{{ f.pk }}</span></div>
             <div class="fc-loc"><i class="fas fa-map-marker-alt" style="font-size:10px; color:#bbb;"></i>
               {{ f.village }}, {{ f.district }}</div>
           </div>
@@ -427,7 +428,7 @@
 
     let visible = 0;
     document.querySelectorAll('.farmer-card').forEach(card => {
-      const matchName   = !name   || card.dataset.name.includes(name) || card.dataset.phone.includes(name);
+      const matchName   = !name   || card.dataset.name.includes(name) || card.dataset.phone.includes(name) || card.dataset.id === name.replace('#', '');
       const matchStatus = !activeStatus || card.dataset.status === activeStatus;
       const matchCrop   = !crop   || card.dataset.crop === crop;
       const matchSeason = !season || card.dataset.season === season;
@@ -452,7 +453,7 @@
     const cards  = Array.from(document.querySelectorAll('.farmer-card'));
 
     const visible = cards.filter(card => {
-      const matchName   = !name   || card.dataset.name.includes(name) || card.dataset.phone.includes(name);
+      const matchName   = !name   || card.dataset.name.includes(name) || card.dataset.phone.includes(name) || card.dataset.id === name.replace('#', '');
       const matchStatus = !activeStatus || card.dataset.status === activeStatus;
       const matchCrop   = !crop   || card.dataset.crop === crop;
       const matchSeason = !season || card.dataset.season === season;

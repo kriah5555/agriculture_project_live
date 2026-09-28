@@ -698,7 +698,7 @@ def api_overview(request, **kwargs):
             'sp_user_pk'      : devise_data.device.user_id,
             'linked_soil_lens': linked_soil_lens,
             'available_soil_lens_readings': (
-                DeviseApis.objects.filter(device__user=devise_data.device.user, device__devise_type='soilsaathi')
+                DeviseApis.objects.filter(device__user=devise_data.device.user, device__devise_type='soilsaathi').select_related('device')
                 .filter(Q(ph_bottle_reading__isnull=True) | Q(pk=linked_soil_lens.pk if linked_soil_lens else 0))
                 if devise_data.device.user_id else DeviseApis.objects.none()
             ),
@@ -765,7 +765,7 @@ def api_overview(request, **kwargs):
             'sp_user_pk'                : api.device.user_id,
             'linked_ph_bottle'          : api.ph_bottle_reading,
             'available_ph_bottles'      : (
-                DeviseApisFields.objects.filter(device__user=api.device.user, device__devise_type='ph_bottle')
+                DeviseApisFields.objects.filter(device__user=api.device.user, device__devise_type='ph_bottle').select_related('device')
                 .filter(Q(linked_soil_lens__isnull=True) | Q(pk=api.ph_bottle_reading_id))
                 if api.device.user_id else DeviseApisFields.objects.none()
             ),
@@ -860,6 +860,15 @@ def link_farmer_to_reading(request, kind, pk):
     farmer  = get_object_or_404(Farmer, pk=request.POST.get('farmer_id'), soil_partner=reading.device.user)
     reading.farmer = farmer
     reading.save(update_fields=['farmer'])
+    # A linked SoiLENZ <-> PHBottle pair is one soil sample — keep its other
+    # half on the same farmer so both show on that farmer's page.
+    if kind == 'soilsaathi':
+        partner = reading.ph_bottle_reading
+    else:
+        partner = getattr(reading, 'linked_soil_lens', None) if reading.device.devise_type == 'ph_bottle' else None
+    if partner is not None and partner.farmer_id != farmer.pk:
+        partner.farmer = farmer
+        partner.save(update_fields=['farmer'])
     messages.success(request, f'Linked to farmer "{farmer.farmer_name}".')
     return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
 
@@ -881,6 +890,12 @@ def link_ph_bottle_to_reading(request, pk):
     already_linked_elsewhere = DeviseApis.objects.filter(ph_bottle_reading=ph_bottle).exclude(pk=soil_lens.pk).first()
     if already_linked_elsewhere:
         messages.error(request, f'That PHBottle reading is already linked to SoiLENZ reading #{already_linked_elsewhere.pk}.')
+        return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
+    if soil_lens.owner_mismatch_with(ph_bottle):
+        messages.error(request, 'The SoiLENZ and PHBottle devices must both belong to the same user.')
+        return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
+    if soil_lens.farmer_conflicts_with(ph_bottle):
+        messages.error(request, f'These readings belong to different farmers ("{soil_lens.farmer.farmer_name}" and "{ph_bottle.farmer.farmer_name}").')
         return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
     soil_lens.link_ph_bottle(ph_bottle)
     messages.success(request, f'Linked to PHBottle reading #{ph_bottle.pk} (pH {ph_bottle.field1}, EC {ph_bottle.field3}).')
@@ -911,6 +926,12 @@ def link_soil_lens_to_ph_bottle(request, pk):
     already_linked_elsewhere = DeviseApis.objects.filter(ph_bottle_reading=ph_bottle).exclude(pk=soil_lens.pk).first()
     if already_linked_elsewhere:
         messages.error(request, f'This PHBottle reading is already linked to SoiLENZ reading #{already_linked_elsewhere.pk}.')
+        return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
+    if soil_lens.owner_mismatch_with(ph_bottle):
+        messages.error(request, 'The SoiLENZ and PHBottle devices must both belong to the same user.')
+        return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
+    if soil_lens.farmer_conflicts_with(ph_bottle):
+        messages.error(request, f'These readings belong to different farmers ("{soil_lens.farmer.farmer_name}" and "{ph_bottle.farmer.farmer_name}").')
         return redirect(request.POST.get('next') or request.META.get('HTTP_REFERER') or '/')
     soil_lens.link_ph_bottle(ph_bottle)
     messages.success(request, f'Linked to SoiLENZ reading #{soil_lens.pk} (pH {soil_lens.ph}, EC {soil_lens.ec}).')

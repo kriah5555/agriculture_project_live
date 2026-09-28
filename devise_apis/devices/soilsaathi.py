@@ -36,7 +36,7 @@ from devise_apis.mobile_serializers import (
 )
 from ._common import (
     check_threshold, DevicePagination, get_user_device, resolve_farmer,
-    link_soil_lens_ph_bottle, unlink_soil_lens_ph_bottle,
+    link_soil_lens_ph_bottle, unlink_soil_lens_ph_bottle, list_link_candidates,
 )
 
 
@@ -56,7 +56,9 @@ from ._common import (
 def soilsaathi_list(request, device_id):
     """Paginated list of all SoiLENZ readings for a device."""
     device    = get_user_device(request, device_id)
-    qs        = DeviseApis.objects.filter(device=device).order_by('-created_at')
+    qs        = (DeviseApis.objects.filter(device=device)
+                 .select_related('farmer', 'ph_bottle_reading__device')
+                 .order_by('-created_at'))
     paginator = DevicePagination()
     page      = paginator.paginate_queryset(qs, request)
     return paginator.get_paginated_response(SoilSaathiReadingSerializer(page, many=True).data)
@@ -133,8 +135,14 @@ def soilsaathi_detail(request, device_id, call_id):
 
 @extend_schema(
     tags=['SoiLENZ'],
-    summary='Link/unlink this SoiLENZ reading and a PHBottle reading',
+    summary='List/link/unlink PHBottle readings for this SoiLENZ reading',
     description=(
+        '**GET** lists the PHBottle readings this reading can link to, across '
+        'every PHBottle device you own: unlinked readings plus the currently '
+        'linked one (`is_current: true`). Each result carries a `device` object '
+        '(`id`, `name`, `devise_id`, `serial_no`); the response also has a '
+        '`devices` list with `available_count` for a device picker. Pass '
+        '`?device_id=<id>` to show one device only. Paginated (`page`, `per_page`).\n\n'
         '**POST** links this SoiLENZ reading to an existing PHBottle reading you own '
         '(pass its id as `ph_bottle_id`), copying the bottle\'s `field1` (pH) and '
         '`field3` (EC) into this reading\'s `ph`/`ec` fields. Works regardless of '
@@ -146,21 +154,29 @@ def soilsaathi_detail(request, device_id, call_id):
         'show that as a confirmation popup, then resubmit with `confirm: true`.\n\n'
         '**DELETE** clears the link (this reading keeps its last-synced pH/EC values).'
     ),
+    parameters=[
+        OpenApiParameter('device_id', OpenApiTypes.INT, description='GET only: limit results to one PHBottle device'),
+        OpenApiParameter('page',      OpenApiTypes.INT, description='GET only: page number'),
+        OpenApiParameter('per_page',  OpenApiTypes.INT, description='GET only: records per page (max 200)'),
+    ],
     request={'application/json': {'type': 'object', 'properties': {
         'ph_bottle_id': {'type': 'integer'}, 'confirm': {'type': 'boolean'},
     }, 'required': ['ph_bottle_id']}},
     responses={
-        200: SoilSaathiReadingSerializer,
+        200: OpenApiResponse(description='GET: candidate list; POST/DELETE: the updated SoiLENZ reading'),
         400: OpenApiResponse(description='ph_bottle_id missing'),
         404: OpenApiResponse(description='PHBottle reading not found or not owned by you'),
         409: OpenApiResponse(description='Confirmation needed, or already linked elsewhere'),
     },
 )
-@api_view(['POST', 'DELETE'])
+@api_view(['GET', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def soilsaathi_link_ph_bottle(request, device_id, call_id):
     device    = get_user_device(request, device_id)
     soil_lens = get_object_or_404(DeviseApis, pk=call_id, device=device)
+
+    if request.method == 'GET':
+        return list_link_candidates(request, soil_lens=soil_lens)
 
     if request.method == 'DELETE':
         if not soil_lens.ph_bottle_reading_id:
@@ -556,8 +572,8 @@ def soilsaathi_pdf(request, device_id, call_id):
     device  = get_user_device(request, device_id)
     get_object_or_404(DeviseApis, pk=call_id, device=device)
 
-    from agriapp.views import _build_api_response_pdf
-    return _build_api_response_pdf(call_id)
+    from agriapp.PDF import download_api_response_pdf
+    return download_api_response_pdf(request, pk=call_id)
 
 
 # ── Full 6-page SoiLENZ PDF report (mirrors /crop-recommendation-pdf/) ────────

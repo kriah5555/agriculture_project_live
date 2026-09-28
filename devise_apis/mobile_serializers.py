@@ -136,6 +136,17 @@ class FarmerMiniSerializer(serializers.ModelSerializer):
         ]
 
 
+def device_mini(device):
+    """Compact device identity for a linked / linkable reading, so the app can
+    tell readings from a user's several SoiLENZ or PHBottle devices apart."""
+    return {
+        'id'       : device.id,
+        'name'     : device.name,
+        'devise_id': device.devise_id,
+        'serial_no': device.serial_no,
+    }
+
+
 # ── Soil Saathi (SoiLENZ) API call ───────────────────────────────────────────
 
 class SoilSaathiReadingSerializer(serializers.ModelSerializer):
@@ -162,6 +173,7 @@ class SoilSaathiReadingSerializer(serializers.ModelSerializer):
         return {
             'id'        : bottle.id,
             'device_id' : bottle.device_id,
+            'device'    : device_mini(bottle.device),
             'ph'        : bottle.field1,
             'ec'        : bottle.field3,
             'tag'       : bottle.tag,
@@ -285,6 +297,7 @@ class FieldsReadingSerializer(serializers.ModelSerializer):
         return {
             'id'        : soil_lens.id,
             'device_id' : soil_lens.device_id,
+            'device'    : device_mini(soil_lens.device),
             'ph'        : soil_lens.ph,
             'ec'        : soil_lens.ec,
             'tag'       : soil_lens.tag,

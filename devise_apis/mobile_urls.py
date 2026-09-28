@@ -44,6 +44,7 @@ SoiLENZ readings (soilsaathi)                      (devices/soilsaathi.py)
   GET   /api/mobile/devices/<id>/soilsaathi/<cid>/recommendation-pdf/  Full 6-page SoiLENZ PDF report
   GET   /api/mobile/devices/<id>/soilsaathi/<cid>/plots/           List every plot boundary saved for this reading
   POST  /api/mobile/devices/<id>/soilsaathi/<cid>/plots/           Add a new plot boundary for this reading (a reading can have more than one)
+  GET    /api/mobile/devices/<id>/soilsaathi/<cid>/link-ph-bottle/   PHBottle readings available to link, across all your PHBottle devices (?device_id=)
   POST   /api/mobile/devices/<id>/soilsaathi/<cid>/link-ph-bottle/   Link to a PHBottle reading (body: ph_bottle_id, confirm) — syncs ph/ec
   DELETE /api/mobile/devices/<id>/soilsaathi/<cid>/link-ph-bottle/   Unlink from its PHBottle reading
 

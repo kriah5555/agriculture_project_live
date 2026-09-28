@@ -15,7 +15,7 @@ from devise_apis.mobile_serializers import (
 )
 from ._common import (
     fields_list_view, fields_create_view, fields_detail_view, get_user_device,
-    link_soil_lens_ph_bottle, unlink_soil_lens_ph_bottle,
+    link_soil_lens_ph_bottle, unlink_soil_lens_ph_bottle, list_link_candidates,
 )
 
 
@@ -86,8 +86,14 @@ def ph_bottle_detail(request, device_id, call_id):
 
 @extend_schema(
     tags=['PHBottle'],
-    summary='Link/unlink this PHBottle reading and a SoiLENZ reading',
+    summary='List/link/unlink SoiLENZ readings for this PHBottle reading',
     description=(
+        '**GET** lists the SoiLENZ readings this reading can link to, across '
+        'every SoiLENZ device you own: unlinked readings plus the currently '
+        'linked one (`is_current: true`). Each result carries a `device` object '
+        '(`id`, `name`, `devise_id`, `serial_no`); the response also has a '
+        '`devices` list with `available_count` for a device picker. Pass '
+        '`?device_id=<id>` to show one device only. Paginated (`page`, `per_page`).\n\n'
         '**POST** links this PHBottle reading to an existing SoiLENZ reading you own '
         '(pass its id as `soil_lens_id`), copying `field1` (pH) and `field3` (EC) '
         'into the SoiLENZ reading\'s `ph`/`ec` fields. Works regardless of which '
@@ -99,21 +105,29 @@ def ph_bottle_detail(request, device_id, call_id):
         'show that as a confirmation popup, then resubmit with `confirm: true`.\n\n'
         '**DELETE** clears the link (the SoiLENZ reading keeps its last-synced pH/EC values).'
     ),
+    parameters=[
+        OpenApiParameter('device_id', OpenApiTypes.INT, description='GET only: limit results to one SoiLENZ device'),
+        OpenApiParameter('page',      OpenApiTypes.INT, description='GET only: page number'),
+        OpenApiParameter('per_page',  OpenApiTypes.INT, description='GET only: records per page (max 200)'),
+    ],
     request={'application/json': {'type': 'object', 'properties': {
         'soil_lens_id': {'type': 'integer'}, 'confirm': {'type': 'boolean'},
     }, 'required': ['soil_lens_id']}},
     responses={
-        200: SoilSaathiReadingSerializer,
+        200: OpenApiResponse(description='GET: candidate list; POST/DELETE: the updated SoiLENZ reading'),
         400: OpenApiResponse(description='soil_lens_id missing'),
         404: OpenApiResponse(description='SoiLENZ reading not found or not owned by you'),
         409: OpenApiResponse(description='Confirmation needed, or already linked elsewhere'),
     },
 )
-@api_view(['POST', 'DELETE'])
+@api_view(['GET', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def ph_bottle_link_soil_lens(request, device_id, call_id):
     device    = get_user_device(request, device_id)
     ph_bottle = get_object_or_404(DeviseApisFields, pk=call_id, device=device)
+
+    if request.method == 'GET':
+        return list_link_candidates(request, ph_bottle=ph_bottle)
 
     if request.method == 'DELETE':
         try:

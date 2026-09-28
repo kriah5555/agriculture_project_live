@@ -30,6 +30,8 @@ const colormaps = {
   'k'             : [{ max: 80, hex: '#FFF8E1' }, { max: 120, hex: '#FFE082' }, { max: 200, hex: '#FFB74D' }, { max: 300, hex: '#E65100' }, { max: 500, hex: '#9E2A2B' }, { max: Infinity, hex: '#3E0F05' }],
   'organic_carbon': [{ max: 0.25, hex: '#F5EBE6' }, { max: 0.5, hex: '#D7CCC8' }, { max: 0.75, hex: '#BCAAA4' }, { max: 1.5, hex: '#6D4C41' }, { max: 3.0, hex: '#3E2723' }, { max: Infinity, hex: '#1A0B05' }],
   's'             : [{ max: 5, hex: '#FFFDE7' }, { max: 10, hex: '#FFF59D' }, { max: 20, hex: '#FBC02D' }, { max: 40, hex: '#F57F17' }, { max: 80, hex: '#827717' }, { max: Infinity, hex: '#333008' }],
+  'ca'            : [{ max: 0.75, hex: '#E0F7FA' }, { max: 1.5, hex: '#80DEEA' }, { max: 3.0, hex: '#26C6DA' }, { max: 5.0, hex: '#00838F' }, { max: 10.0, hex: '#005662' }, { max: Infinity, hex: '#00262B' }],
+  'mg'            : [{ max: 0.5, hex: '#F1F8E9' }, { max: 1.0, hex: '#C5E1A5' }, { max: 2.0, hex: '#9CCC65' }, { max: 3.0, hex: '#689F38' }, { max: 6.0, hex: '#33691E' }, { max: Infinity, hex: '#142A0C' }],
   'fe'            : [{ max: 2, hex: '#FFEBEE' }, { max: 4.5, hex: '#FF8A80' }, { max: 9, hex: '#D32F2F' }, { max: 20, hex: '#B71C1C' }, { max: 50, hex: '#7F0000' }, { max: Infinity, hex: '#3B0000' }],
   'zn'            : [{ max: 0.5, hex: '#ECEFF1' }, { max: 1.0, hex: '#B0BEC5' }, { max: 2.0, hex: '#78909C' }, { max: 5.0, hex: '#455A64' }, { max: 10.0, hex: '#263238' }, { max: Infinity, hex: '#0D1417' }],
   'cu'            : [{ max: 0.2, hex: '#E0F2F1' }, { max: 1.0, hex: '#80CBC4' }, { max: 2.5, hex: '#26A69A' }, { max: 5.0, hex: '#00695C' }, { max: 10.0, hex: '#004D40' }, { max: Infinity, hex: '#00251E' }],
@@ -53,6 +55,8 @@ const PARAMETERS = {
   k:              { name: 'k', label: 'Potassium', unit: 'kg/ha', getColor: makeGetColor('k'), legendGradient: 'linear-gradient(to right, #FFF8E1, #FFE082, #FFB74D, #E65100, #9E2A2B, #3E0F05)' },
   organic_carbon: { name: 'organic_carbon', label: 'Organic Carbon', unit: '%', getColor: makeGetColor('organic_carbon'), legendGradient: 'linear-gradient(to right, #F5EBE6, #D7CCC8, #BCAAA4, #6D4C41, #3E2723, #1A0B05)' },
   s:              { name: 's', label: 'Sulphur', unit: 'ppm', getColor: makeGetColor('s'), legendGradient: 'linear-gradient(to right, #FFFDE7, #FFF59D, #FBC02D, #F57F17, #827717, #333008)' },
+  ca:             { name: 'ca', label: 'Calcium', unit: 'meq/100g', getColor: makeGetColor('ca'), legendGradient: 'linear-gradient(to right, #E0F7FA, #80DEEA, #26C6DA, #00838F, #005662, #00262B)' },
+  mg:             { name: 'mg', label: 'Magnesium', unit: 'meq/100g', getColor: makeGetColor('mg'), legendGradient: 'linear-gradient(to right, #F1F8E9, #C5E1A5, #9CCC65, #689F38, #33691E, #142A0C)' },
   fe:             { name: 'fe', label: 'Iron', unit: 'ppm', getColor: makeGetColor('fe'), legendGradient: 'linear-gradient(to right, #FFEBEE, #FF8A80, #D32F2F, #B71C1C, #7F0000, #3B0000)' },
   zn:             { name: 'zn', label: 'Zinc', unit: 'ppm', getColor: makeGetColor('zn'), legendGradient: 'linear-gradient(to right, #ECEFF1, #B0BEC5, #78909C, #455A64, #263238, #0D1417)' },
   cu:             { name: 'cu', label: 'Copper', unit: 'ppm', getColor: makeGetColor('cu'), legendGradient: 'linear-gradient(to right, #E0F2F1, #80CBC4, #26A69A, #00695C, #004D40, #00251E)' },
@@ -61,7 +65,7 @@ const PARAMETERS = {
 };
 
 const getShortLabel = (p) => {
-  const map = { ph: 'pH', ec: 'EC', n: 'N', p: 'P', k: 'K', organic_carbon: 'Org C', s: 'S', fe: 'Fe', zn: 'Zn', cu: 'Cu', b: 'B', mn: 'Mn' };
+  const map = { ph: 'pH', ec: 'EC', n: 'N', p: 'P', k: 'K', organic_carbon: 'Org C', s: 'S', ca: 'Ca', mg: 'Mg', fe: 'Fe', zn: 'Zn', cu: 'Cu', b: 'B', mn: 'Mn' };
   return map[p.name] || p.label;
 };
 
@@ -128,6 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initMap();
   initParameterTabs();
   bindGlobalEvents();
+  initCoordSearch();
   if (highlightReadingId) {
     readingsQuery = highlightReadingId;
     if (readingsSearchInput) readingsSearchInput.value = highlightReadingId;
@@ -249,6 +254,50 @@ function bindGlobalEvents() {
     clearTimeout(searchDebounce);
     const val = this.value;
     searchDebounce = setTimeout(() => { readingsQuery = val.trim(); readingsPage = 1; fetchReadings(); }, 350);
+  });
+}
+
+// ── Lat/long search ──────────────────────────────────────────────────────────
+// Accepts "lat, lon" / "lat lon" (as copied from Google Maps or a reading's
+// Location field), flies there and drops a marker; ✕ removes it.
+let coordSearchMarker = null;
+
+function initCoordSearch() {
+  const form     = document.getElementById('coord-search');
+  const input    = document.getElementById('coord-search-input');
+  const clearBtn = document.getElementById('coord-search-clear');
+  const errorEl  = document.getElementById('coord-search-error');
+  if (!form) return;
+
+  // Keep map drag/zoom from firing while typing or clicking in the box.
+  L.DomEvent.disableClickPropagation(form);
+  L.DomEvent.disableScrollPropagation(form);
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const parts = input.value.trim().split(/[\s,]+/).filter(Boolean).map(Number);
+    const [lat, lon] = parts;
+    if (parts.length !== 2 || !Number.isFinite(lat) || !Number.isFinite(lon)) {
+      errorEl.textContent = 'Enter latitude and longitude, e.g. 16.1667, 74.6167';
+      return;
+    }
+    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      errorEl.textContent = 'Latitude must be -90 to 90 and longitude -180 to 180.';
+      return;
+    }
+    errorEl.textContent = '';
+    if (coordSearchMarker) coordSearchMarker.remove();
+    coordSearchMarker = L.marker([lat, lon]).addTo(mapInstance)
+      .bindPopup(`<strong>${lat.toFixed(6)}, ${lon.toFixed(6)}</strong>`).openPopup();
+    clearBtn.style.display = '';
+    mapInstance.flyTo([lat, lon], 17, { duration: 1.2 });
+  });
+
+  clearBtn.addEventListener('click', () => {
+    if (coordSearchMarker) { coordSearchMarker.remove(); coordSearchMarker = null; }
+    input.value = '';
+    errorEl.textContent = '';
+    clearBtn.style.display = 'none';
   });
 }
 
@@ -701,7 +750,7 @@ function toggleFormParameter(paramKey, forceAdd = false, existingValue) {
   }
 }
 
-const PARAM_NEUTRALS = { ph: 7.0, ec: 2.0, n: 150.0, p: 50.0, k: 200.0, organic_carbon: 2.0, s: 15.0, fe: 10.0, zn: 2.0, cu: 1.0, b: 0.8, mn: 15.0 };
+const PARAM_NEUTRALS = { ph: 7.0, ec: 2.0, n: 150.0, p: 50.0, k: 200.0, organic_carbon: 2.0, s: 15.0, ca: 3.0, mg: 2.0, fe: 10.0, zn: 2.0, cu: 1.0, b: 0.8, mn: 15.0 };
 
 // ── Save handler ─────────────────────────────────────────────────────────────
 

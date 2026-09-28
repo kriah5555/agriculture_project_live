@@ -9,6 +9,8 @@ PARAMETER_DEFAULTS = {
     'k': {'neutral': 200.0, 'min': 0.0, 'max': 600.0},
     'organic_carbon': {'neutral': 2.0, 'min': 0.0, 'max': 10.0},
     's': {'neutral': 15.0, 'min': 0.0, 'max': 100.0},
+    'ca': {'neutral': 3.0, 'min': 0.0, 'max': 20.0},
+    'mg': {'neutral': 2.0, 'min': 0.0, 'max': 10.0},
     'fe': {'neutral': 10.0, 'min': 0.0, 'max': 50.0},
     'zn': {'neutral': 2.0, 'min': 0.0, 'max': 15.0},
     'cu': {'neutral': 1.0, 'min': 0.0, 'max': 10.0},

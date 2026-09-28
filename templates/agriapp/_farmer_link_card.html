@@ -44,6 +44,7 @@
         {% endif %}
       </div>
     </div>
+    <div class="flc-row"><span class="flc-label">Farmer ID</span><span class="flc-value" style="font-family:monospace;">#{{ linked_farmer.pk }}</span></div>
     <div class="flc-row"><span class="flc-label">Name</span>     <span class="flc-value">{{ linked_farmer.farmer_name }}</span></div>
     <div class="flc-row"><span class="flc-label">Phone</span>    <span class="flc-value">{{ linked_farmer.phone|default:"--" }}</span></div>
     <div class="flc-row"><span class="flc-label">Village</span>  <span class="flc-value">{{ linked_farmer.village }}</span></div>
@@ -83,7 +84,7 @@
         <select name="farmer_id" class="form-select" required>
           <option value="">— Select Farmer —</option>
           {% for f in available_farmers %}
-          <option value="{{ f.pk }}" {% if linked_farmer and f.pk == linked_farmer.pk %}selected{% endif %}>{{ f.farmer_name }} ({{ f.village|default:"--" }})</option>
+          <option value="{{ f.pk }}" {% if linked_farmer and f.pk == linked_farmer.pk %}selected{% endif %}>#{{ f.pk }} — {{ f.farmer_name }} ({{ f.village|default:"--" }})</option>
           {% endfor %}
         </select>
       </div>
