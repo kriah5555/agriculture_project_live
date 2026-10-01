@@ -1,0 +1,358 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Privacy Policy - ArkaShine</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta name="description" content="Privacy Policy of ArkaShine Innovations Pvt. Ltd. for the ArkaShine website, mobile application and connected agri-tech devices.">
+    <script src="{% static 'theme/theme.js' %}"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
+
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            background: var(--tc-bg);
+            color: var(--tc-text);
+            line-height: 1.7;
+        }
+        a { color: var(--tc-link); }
+
+        .pp-header {
+            background: var(--tc-primary);
+            color: var(--tc-primary-contrast);
+            padding: 14px 16px;
+        }
+        .pp-header-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .pp-brand {
+            color: var(--tc-primary-contrast);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .pp-header-actions { display: flex; align-items: center; gap: 10px; }
+        .pp-back {
+            color: var(--tc-primary-contrast);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .pp-back:hover { text-decoration: underline; }
+
+        .pp-container {
+            max-width: 900px;
+            margin: 32px auto;
+            padding: 0 16px;
+        }
+        .pp-card {
+            background: var(--tc-surface);
+            border: 1px solid var(--tc-border);
+            border-radius: 10px;
+            box-shadow: 0 8px 25px var(--tc-shadow);
+            padding: 32px;
+        }
+        .pp-eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 0.8rem;
+            color: var(--tc-text-muted);
+            margin: 0;
+        }
+        h1 { margin: 4px 0 4px; font-size: 2rem; }
+        .pp-updated { color: var(--tc-text-muted); font-size: 0.9rem; margin: 0 0 24px; }
+        h2 {
+            font-size: 1.2rem;
+            margin: 32px 0 8px;
+            padding-top: 16px;
+            border-top: 1px solid var(--tc-border);
+            color: var(--tc-link);
+        }
+        h3 { font-size: 1rem; margin: 20px 0 6px; }
+        ul { padding-left: 22px; margin: 6px 0 12px; }
+        li { margin-bottom: 2px; }
+
+        .pp-toc {
+            background: var(--tc-surface-alt);
+            border: 1px solid var(--tc-border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 8px;
+        }
+        .pp-toc ol { margin: 6px 0 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+        .pp-toc a { text-decoration: none; }
+        .pp-toc a:hover { text-decoration: underline; }
+
+        .pp-note {
+            background: var(--tc-surface-alt);
+            border-left: 4px solid var(--tc-link);
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin: 12px 0;
+        }
+        .pp-contact {
+            background: var(--tc-surface-alt);
+            border: 1px solid var(--tc-border);
+            border-radius: 8px;
+            padding: 16px 20px;
+        }
+        .pp-contact p { margin: 4px 0; }
+
+        .pp-footer {
+            text-align: center;
+            color: var(--tc-text-muted);
+            font-size: 0.85rem;
+            padding: 0 16px 32px;
+        }
+
+        @media (max-width: 600px) {
+            .pp-card { padding: 20px 16px; }
+            h1 { font-size: 1.6rem; }
+            .pp-toc ol { columns: 1; }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="pp-header">
+    <div class="pp-header-inner">
+        <a href="{% url 'home' %}" class="pp-brand">ArkaShine</a>
+        <div class="pp-header-actions">
+            <a href="{% url 'home' %}" class="pp-back"><i class="fa fa-arrow-left mr-1"></i> Back to Home</a>
+            <button type="button" class="theme-toggle-btn" aria-label="Toggle theme"><i data-theme-icon class="fas fa-moon"></i></button>
+        </div>
+    </div>
+</header>
+
+<main class="pp-container">
+    <article class="pp-card">
+        <p class="pp-eyebrow">Data Protection &amp; Privacy</p>
+        <h1>Privacy Policy</h1>
+        <p class="pp-updated">Last updated: October 2026</p>
+
+        <p>ArkaShine is operated by <strong>ArkaShine Innovations Pvt. Ltd.</strong> (&ldquo;ArkaShine&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;).</p>
+        <p>This Privacy Policy explains how we collect, use, store, and share information when you use our website, mobile application, dashboards, reports, and connected agri-tech devices such as SoiLENZ, SOILIFE, AtmoS Sense, pH Bottle, and LeafLenz (together, the &ldquo;Services&rdquo;).</p>
+        <p>The information we process depends on how you use the Services&mdash;as a farmer, a field agent or device user, a partner organisation, or a website visitor.</p>
+
+        <nav class="pp-toc" aria-label="Contents">
+            <strong>Contents</strong>
+            <ol>
+                <li><a href="#s1">Information You Provide</a></li>
+                <li><a href="#s2">Location Information</a></li>
+                <li><a href="#s3">Device &amp; Soil Test Data</a></li>
+                <li><a href="#s4">Images &amp; Uploaded Content</a></li>
+                <li><a href="#s5">Payments &amp; Transactions</a></li>
+                <li><a href="#s6">Technical &amp; Usage Information</a></li>
+                <li><a href="#s7">How We Use Information</a></li>
+                <li><a href="#s8">When Information Is Shared</a></li>
+                <li><a href="#s9">Recommendations &amp; Advisory</a></li>
+                <li><a href="#s10">How We Protect Information</a></li>
+                <li><a href="#s11">How Long We Keep Information</a></li>
+                <li><a href="#s12">Your Choices &amp; Rights</a></li>
+                <li><a href="#s13">Children's Privacy</a></li>
+                <li><a href="#s14">External Services &amp; Links</a></li>
+                <li><a href="#s15">Changes to This Policy</a></li>
+                <li><a href="#s16">Contact &amp; Privacy Requests</a></li>
+            </ol>
+        </nav>
+
+        <h2 id="s1">1. Information You Provide to ArkaShine</h2>
+        <h3>Account Information</h3>
+        <p>When you register or maintain an ArkaShine account, we may collect information such as your:</p>
+        <ul>
+            <li>Name</li>
+            <li>Email address</li>
+            <li>Mobile number</li>
+            <li>Organisation or profile information</li>
+            <li>Login and authentication information</li>
+        </ul>
+
+        <h3>Farmer Information</h3>
+        <p>When you or a field agent register a farmer or a farm on the Services, we may process information such as:</p>
+        <ul>
+            <li>Farmer name and contact number</li>
+            <li>Village, district, and state</li>
+            <li>Farm or plot details and land area</li>
+            <li>Crops grown, crop history, and cultivation details</li>
+            <li>Links between the farmer and the soil readings taken for them</li>
+        </ul>
+
+        <h3>Contact &amp; Support Information</h3>
+        <p>When you contact us through our website form, email, or phone, we may process your name, contact details, and the content of your message.</p>
+
+        <h2 id="s2">2. Location Information</h2>
+        <p>Location is an important part of soil testing and field reporting. When you give the ArkaShine app permission to access your location, or when you enter a location manually, we may process location information for purposes such as:</p>
+        <ul>
+            <li>Tagging soil, leaf, and environmental readings to the field where they were taken</li>
+            <li>Recording device locations</li>
+            <li>Soil maps and regional soil-health visualisations</li>
+            <li>Location-based crop, fertiliser, and weather-related recommendations</li>
+        </ul>
+        <div class="pp-note"><strong>Note:</strong> You can control location permissions through your device settings. Some features, such as field tagging and soil maps, may not work correctly when location access is disabled.</div>
+
+        <h2 id="s3">3. Device &amp; Soil Test Data</h2>
+        <p>When you use our devices with the Services, we may process the readings and related data they generate, including:</p>
+        <ul>
+            <li>Soil nutrient readings (for example N, P, K, and micronutrients)</li>
+            <li>pH, electrical conductivity, moisture, and temperature</li>
+            <li>Environmental and atmospheric readings</li>
+            <li>Device identifiers, configuration, and calibration information</li>
+            <li>Date, time, and location of each reading</li>
+            <li>Reports generated from these readings</li>
+        </ul>
+        <p>Soil and field data may also be used in aggregated or anonymised form to improve our calibration models, thresholds, and recommendations.</p>
+
+        <h2 id="s4">4. Images &amp; Uploaded Content</h2>
+        <p>Depending on the features you use, we may process:</p>
+        <ul>
+            <li>Leaf and crop images captured or uploaded for LeafLenz analysis</li>
+            <li>Photos attached to soil readings or field records</li>
+            <li>Other files or notes you upload to the Services</li>
+        </ul>
+        <p>Please avoid including people or unrelated personal information in photos you upload.</p>
+
+        <h2 id="s5">5. Payments &amp; Transactions</h2>
+        <p>When you purchase a product, subscription, or test credits, payments are processed by third-party payment-service providers such as Razorpay.</p>
+        <p>We may receive and maintain transaction-related information such as:</p>
+        <ul>
+            <li>Order and transaction reference</li>
+            <li>Amount</li>
+            <li>Payment status</li>
+            <li>Payment method type</li>
+            <li>Refund status</li>
+        </ul>
+        <p>Card numbers, UPI PINs, and other sensitive payment credentials are handled directly by the payment provider and are not stored by ArkaShine.</p>
+
+        <h2 id="s6">6. Technical &amp; Usage Information</h2>
+        <p>When you use the Services, we may automatically collect certain technical and usage information needed to operate, secure, and improve them. This may include:</p>
+        <ul>
+            <li>IP address</li>
+            <li>Device and browser information</li>
+            <li>Operating system and app version</li>
+            <li>Session information</li>
+            <li>Pages and features used</li>
+            <li>Performance, error, and diagnostic information</li>
+        </ul>
+        <p>Our website may use cookies or similar technologies for login sessions, security, preferences (such as light or dark theme), and analytics.</p>
+
+        <h2 id="s7">7. How We Use Information</h2>
+        <p>We may use information collected through the Services to:</p>
+        <ul>
+            <li>Create and manage user accounts</li>
+            <li>Authenticate users</li>
+            <li>Record and display soil, leaf, and environmental readings</li>
+            <li>Generate soil-health reports and PDF/CSV exports</li>
+            <li>Provide crop, fertiliser, and yield recommendations</li>
+            <li>Manage farmer records and link them to readings</li>
+            <li>Provide soil maps and visualisations</li>
+            <li>Process orders, payments, and refunds</li>
+            <li>Send important account, report, and service notifications</li>
+            <li>Provide customer support</li>
+            <li>Calibrate devices and improve our models and products</li>
+            <li>Detect fraud, abuse, or unauthorised activity</li>
+            <li>Diagnose errors and improve performance</li>
+            <li>Meet applicable legal and regulatory requirements</li>
+        </ul>
+        <p>Where required, we will ask for additional permission or consent for particular uses.</p>
+
+        <h2 id="s8">8. When Information Is Shared</h2>
+        <p>We do not sell your personal information. Information may be shared only where necessary to provide the Services:</p>
+        <h3>Within Your Organisation</h3>
+        <p>If you use ArkaShine through an organisation, such as an FPO, NGO, cooperative, or company, authorised administrators of that organisation may be able to view readings, reports, and farmer records associated with it.</p>
+        <h3>With Farmers</h3>
+        <p>Soil-health reports and recommendations generated for a farmer may be shared with that farmer.</p>
+        <h3>With Service Providers</h3>
+        <p>We may use third-party providers for services such as:</p>
+        <ul>
+            <li>Payment processing</li>
+            <li>Cloud hosting and storage</li>
+            <li>Maps and location services</li>
+            <li>Weather data</li>
+            <li>Email and SMS delivery</li>
+            <li>Analytics and performance monitoring</li>
+        </ul>
+        <p>These providers may process information only as required to perform their service.</p>
+        <h3>When Required by Law</h3>
+        <p>Information may be disclosed where required by applicable law, legal process, court order, or government request, or where reasonably necessary to protect users, ArkaShine, or others.</p>
+
+        <h2 id="s9">9. Recommendations &amp; Advisory</h2>
+        <p>Crop, fertiliser, and yield recommendations provided through the Services are generated from device readings, models, and agronomic thresholds. They are advisory only.</p>
+        <div class="pp-note">Results can be affected by sampling method, field conditions, and device handling. Please consult a qualified agronomist or your local Krishi Vigyan Kendra before making major decisions.</div>
+
+        <h2 id="s10">10. How We Protect Information</h2>
+        <p>We use technical and organisational measures to protect information handled through the Services, including:</p>
+        <ul>
+            <li>Authentication and role-based access controls</li>
+            <li>Restricted access to personal information, limited to authorised personnel</li>
+            <li>Secure communications (HTTPS / TLS encryption)</li>
+            <li>Token-based authentication for the mobile application</li>
+            <li>Infrastructure monitoring and security controls</li>
+        </ul>
+        <p>No online service can guarantee absolute security, but we continually work to improve our safeguards.</p>
+
+        <h2 id="s11">11. How Long We Keep Information</h2>
+        <p>We keep information only as long as reasonably necessary for the purpose for which it was collected. Retention periods may depend on:</p>
+        <ul>
+            <li>Whether accounts and devices are active</li>
+            <li>Historical soil-health tracking for a field</li>
+            <li>Order and transaction records</li>
+            <li>Support requirements</li>
+            <li>Accounting, legal, and regulatory obligations</li>
+        </ul>
+        <p>When information is no longer required, it may be deleted, anonymised, or otherwise handled in line with applicable requirements.</p>
+
+        <h2 id="s12">12. Your Choices &amp; Rights</h2>
+        <p>Depending on applicable law, including the Digital Personal Data Protection Act, 2023, you may be able to:</p>
+        <ul>
+            <li>Access information associated with your account</li>
+            <li>Correct or update your information</li>
+            <li>Request deletion of your account and eligible information</li>
+            <li>Manage app permissions such as location and camera</li>
+            <li>Withdraw consent where applicable</li>
+            <li>Opt out of marketing communications</li>
+            <li>Raise a privacy-related request or grievance</li>
+        </ul>
+        <p>Some records may need to be kept after a deletion request where this is required or permitted for legal, transaction, security, or dispute purposes.</p>
+        <p>To request account or data deletion, email us at the address in <a href="#s16">Section 16</a> from your registered email or mobile number.</p>
+
+        <h2 id="s13">13. Children's Privacy</h2>
+        <p>The Services are not intended for children under 18, and we do not knowingly collect their personal data. If you believe a child has provided us with personal data, please contact us and we will take appropriate steps.</p>
+
+        <h2 id="s14">14. External Services &amp; Links</h2>
+        <p>The Services may link to or integrate with third-party services, which operate under their own privacy policies and terms. ArkaShine is not responsible for the privacy practices of third-party services outside our control.</p>
+
+        <h2 id="s15">15. Changes to This Policy</h2>
+        <p>We may update this Privacy Policy as we add features or change how the Services work. When we do, we will update the &ldquo;Last updated&rdquo; date above and give additional notice where required.</p>
+
+        <h2 id="s16">16. Contact &amp; Privacy Requests</h2>
+        <p>You can send questions, privacy requests, data-deletion requests, or grievances about the Services to:</p>
+        <div class="pp-contact">
+            <p><strong>ArkaShine Innovations Pvt. Ltd.</strong></p>
+            <p>H. No. 9.1 2-226, 11th Cross, Bhawani Rice Mill Road, Vidyanagar Colony, Bidar, Karnataka, India &ndash; 585403</p>
+            <p>Website: <a href="https://www.arkashine-innovations.com/">www.arkashine-innovations.com</a></p>
+            <p>Email: <a href="mailto:karbari.rsudha@gmail.com">karbari.rsudha@gmail.com</a></p>
+            <p>Phone: <a href="tel:+919611297893">+91 9611297893</a></p>
+        </div>
+    </article>
+</main>
+
+<footer class="pp-footer">
+    &copy; ArkaShine Innovations Pvt. Ltd. &middot; <a href="{% url 'home' %}">www.arkashine-innovations.com</a> &middot; All Rights Reserved
+</footer>
+
+</body>
+</html>

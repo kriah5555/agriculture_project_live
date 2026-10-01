@@ -12,6 +12,7 @@ urlpatterns = [
     path('admin-login/', v.login, name = "admin-login"),
     path('user-login/', v.login, name = "user-login"),
     path('logout/', v.logout, name = "logout"),
+    path('privacy-policy/', TemplateView.as_view(template_name="privacy_policy.html"), name = "privacy-policy"),
     path('acess_denied/', TemplateView.as_view(template_name="authapp/acess_denied.html"), name = "acess_denied"),
 
     # ── Admin-only pages (views already carry @admin_required or AdminRequiredMixin) ──

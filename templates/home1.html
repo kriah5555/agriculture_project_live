@@ -1085,7 +1085,7 @@
                     <div class="d-flex flex-column align-items-left footer-products">
                         <a class="text-white btn-scroll mb-1" href="javascript:void(0);" data-toggle="modal" data-target="#shipping-policy">Shipping Policy</a>
                         <a class="text-white btn-scroll mb-1" href="javascript:void(0);" data-toggle="modal" data-target="#terms-and-conditions">Terms & Conditions</a>
-                        <a class="text-white btn-scroll mb-1" href="javascript:void(0);" data-toggle="modal" data-target="#privacy-policy">Privacy </a>
+                        <a class="text-white mb-1" href="{% url 'privacy-policy' %}">Privacy Policy</a>
                         <a class="text-white btn-scroll mb-1" href="javascript:void(0);" data-toggle="modal" data-target="#cancellation-refund-policy">Cancellation & Refund Policy</a>
                     </div>
                 </div>
@@ -1272,61 +1272,6 @@
 </div>
 <!-- Modal End for terms-and-conditions -->
 
-<!-- Modal Start for privacy-policy -->
-<div class="modal fade" id="privacy-policy" tabindex="-1" role="dialog" aria-labelledby="privacy-policy" aria-hidden="true">
-    <div class="modal-dialog" role="document" style="max-width:850px;">
-        <div class="modal-content" style="border-radius:10px; box-shadow:0 8px 25px rgba(0,0,0,0.2);">
-
-            <div class="modal-header" style="background:#f5f7fa; border-bottom:1px solid #ddd;">
-                <h5 class="modal-title" style="font-weight:600; color:#2c3e50;">
-                    Privacy Policy
-                </h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-
-            <div class="modal-body" style="font-size:15px; line-height:1.7; color:#444;">
-
-                <p>
-                    We respect your privacy and are committed to protecting your personal information.
-                </p>
-
-                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Information Collected</h5>
-                <ul style="padding-left:20px;">
-                    <li>Name, phone number, email address</li>
-                    <li>Location details (for service and reporting)</li>
-                    <li>Soil test data generated using SoilENZ</li>
-                </ul>
-
-                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Use of Information</h5>
-                <ul style="padding-left:20px;">
-                    <li>Providing services and reports</li>
-                    <li>Improving product performance and analytics</li>
-                    <li>Customer support and communication</li>
-                </ul>
-
-                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">Data Protection</h5>
-                <ul style="padding-left:20px;">
-                    <li>Data is stored securely and accessed only by authorised personnel.</li>
-                    <li>No selling or sharing of personal data without consent, except as required by law.</li>
-                </ul>
-
-                <h5 style="margin-top:20px; font-weight:600; color:#1a237e;">User Rights</h5>
-                <p>
-                    Users may request access, correction, or deletion of personal data by contacting us.
-                </p>
-
-            </div>
-
-            <div class="modal-footer" style="border-top:1px solid #ddd;">
-                <button class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-
-        </div>
-    </div>
-</div>
-<!-- Modal End for privacy-policy -->
 
 <!-- Modal Start for cancellation-refund-policy -->
 <div class="modal fade" id="cancellation-refund-policy" tabindex="-1" role="dialog" aria-labelledby="cancellation-refund-policy" aria-hidden="true">
@@ -1419,7 +1364,7 @@
 }
 </style>
 <div class="container-fluid footer-bottom bg-dark-custom text-white text-center border-top py-4 px-sm-3 px-md-5" style="border-color: rgba(255, 255, 255, .05) !important;">
-    <p class="m-0 text-white">&copy; <a href="https://www.arkashine-innovations.com/">www.arkashine-innovations.com</a> - All Rights Reserved</p>
+    <p class="m-0 text-white">&copy; <a href="https://www.arkashine-innovations.com/">www.arkashine-innovations.com</a> - All Rights Reserved &middot; <a href="{% url 'privacy-policy' %}">Privacy Policy</a></p>
 </div>
 <!-- Footer End -->
 <!-- Modal 3 -->
