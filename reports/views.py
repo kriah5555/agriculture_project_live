@@ -1,3 +1,4 @@
+import os
 from django.http import HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -210,6 +211,40 @@ def soil_report_html(request):
 
 # ── WeasyPrint PDF download ───────────────────────────────────────────────────
 
+def _local_static_fetcher(request):
+    """WeasyPrint url_fetcher that reads this site's own /static/ files from
+    disk instead of over HTTP. Fetching them back through nginx made the
+    report slow enough to hit the gunicorn worker timeout (502), and with
+    sync workers the server could end up waiting on itself."""
+    import mimetypes
+    from urllib.parse import urlparse
+    from django.conf import settings
+    from django.contrib.staticfiles import finders
+    from weasyprint import default_url_fetcher
+
+    own_host = request.get_host()
+    static_prefix = settings.STATIC_URL if settings.STATIC_URL.startswith('/') else '/' + settings.STATIC_URL
+
+    def fetch(url, *args, **kwargs):
+        parsed = urlparse(url)
+        if parsed.netloc == own_host and parsed.path.startswith(static_prefix):
+            rel = parsed.path[len(static_prefix):]
+            path = finders.find(rel)
+            if not path and settings.STATIC_ROOT:
+                candidate = os.path.join(settings.STATIC_ROOT, rel)
+                path = candidate if os.path.isfile(candidate) else None
+            if path:
+                with open(path, 'rb') as f:
+                    return {
+                        'string': f.read(),
+                        'mime_type': mimetypes.guess_type(path)[0] or 'application/octet-stream',
+                        'redirected_url': url,
+                    }
+        return default_url_fetcher(url, *args, **kwargs)
+
+    return fetch
+
+
 def soil_report_pdf(request):
     """Generate and download the SoiLENZ PDF using WeasyPrint from the HTML template."""
     api_id = request.GET.get("api_id")
@@ -222,7 +257,11 @@ def soil_report_pdf(request):
     html_str = render_to_string('reports/soil_report.html', ctx, request=request)
     try:
         from weasyprint import HTML as WP_HTML
-        pdf_bytes = WP_HTML(string=html_str, base_url=request.build_absolute_uri('/')).write_pdf()
+        pdf_bytes = WP_HTML(
+            string=html_str,
+            base_url=request.build_absolute_uri('/'),
+            url_fetcher=_local_static_fetcher(request),
+        ).write_pdf()
     except Exception as e:
         return HttpResponseBadRequest(f"PDF generation failed: {e}")
 
