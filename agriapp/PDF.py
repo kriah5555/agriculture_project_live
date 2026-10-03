@@ -144,7 +144,6 @@ def download_api_response_pdf(request, **kwargs):
 
     if 'pk' in kwargs:
         api      = DeviseApis.objects.get(pk=kwargs['pk'])
-        location = DeviseLocation.objects.filter(devise=api.device).first()
 
         # ── Format time in IST ────────────────────────────────────────────────
         ist      = pytz.timezone('Asia/Kolkata')
@@ -160,8 +159,10 @@ def download_api_response_pdf(request, **kwargs):
         c.drawString(50, 758, f"Area name       : {api.area_name}")
         c.drawString(50, 743, f"API call time   : {formatted_time}")
         c.drawString(50, 728, f"Crop            : {api.crop_type}")
-        c.drawString(310, 758, f"Latitude  : {location.latitude if location else 'N/A'}")
-        c.drawString(310, 743, f"Longitude : {location.longitude if location else 'N/A'}")
+        # The reading's own GPS fix (0.0 = not captured), not the device's
+        # registered location.
+        c.drawString(310, 758, f"Latitude  : {api.latitude or 'N/A'}")
+        c.drawString(310, 743, f"Longitude : {api.longitude or 'N/A'}")
         c.drawString(310, 728, f"Phone     : +91 9611297893")
 
         # ── Farmer Details (only when a farmer is linked) ─────────────────────
