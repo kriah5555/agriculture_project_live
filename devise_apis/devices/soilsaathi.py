@@ -590,7 +590,25 @@ def soilsaathi_recommendation_pdf(request, device_id, call_id):
     device  = get_user_device(request, device_id)
     reading = get_object_or_404(DeviseApis, pk=call_id, device=device)
 
-    from reports.views import download_recommendation_pdf
-    request.GET = request.GET.copy()
-    request.GET['api_id'] = str(call_id)
-    return download_recommendation_pdf(request)
+    # Generated in the background and cached on disk (reports/pdf_cache.py):
+    # building it inline outlasts the gunicorn worker timeout -> 502. This
+    # waits up to 15s; if it isn't ready yet the app gets 503 "generating"
+    # and asks again a few seconds later.
+    from reports.pdf_cache import get_or_start
+    from reports.views import pdf_response
+    state, payload = get_or_start(
+        reading, request.build_absolute_uri('/'), request.get_host(),
+    )
+    if state == 'ready':
+        return pdf_response(*payload)
+    if state == 'generating':
+        msg = 'Report is being prepared — please try again in a few seconds.'
+        return Response(
+            {'status': 'generating', 'message': msg, 'retry_after': 5},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            headers={'Retry-After': '5'},
+        )
+    return Response(
+        {'status': 'error', 'error': f'PDF generation failed: {payload}'},
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )

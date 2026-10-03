@@ -19,4 +19,4 @@ agri_ai/soil/*.zip
 # agri_ai/crop/models/*.pkl
 
 # Google Earth Engine service-account keys — never commit secrets
-agri_ai/gee/credentials/
+agri_ai/gee/credentials/media/report_cache/

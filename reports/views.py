@@ -211,7 +211,7 @@ def soil_report_html(request):
 
 # ── WeasyPrint PDF download ───────────────────────────────────────────────────
 
-def _local_static_fetcher(request):
+def _local_static_fetcher(own_host):
     """WeasyPrint url_fetcher that reads this site's own /static/ files from
     disk instead of over HTTP. Fetching them back through nginx made the
     report slow enough to hit the gunicorn worker timeout (502), and with
@@ -222,7 +222,6 @@ def _local_static_fetcher(request):
     from django.contrib.staticfiles import finders
     from weasyprint import default_url_fetcher
 
-    own_host = request.get_host()
     static_prefix = settings.STATIC_URL if settings.STATIC_URL.startswith('/') else '/' + settings.STATIC_URL
 
     def fetch(url, *args, **kwargs):
@@ -250,25 +249,36 @@ def soil_report_pdf(request):
     api_id = request.GET.get("api_id")
     if not api_id:
         return HttpResponseBadRequest("Missing api_id parameter.")
-    ctx = build_report_context(api_id)
-    if ctx is None:
-        return HttpResponseBadRequest("Reading not found.")
-
-    html_str = render_to_string('reports/soil_report.html', ctx, request=request)
     try:
-        from weasyprint import HTML as WP_HTML
-        pdf_bytes = WP_HTML(
-            string=html_str,
-            base_url=request.build_absolute_uri('/'),
-            url_fetcher=_local_static_fetcher(request),
-        ).write_pdf()
+        result = render_soil_report_pdf(api_id, request.build_absolute_uri('/'), request.get_host())
     except Exception as e:
         return HttpResponseBadRequest(f"PDF generation failed: {e}")
+    if result is None:
+        return HttpResponseBadRequest("Reading not found.")
+    return pdf_response(*result)
 
+
+def render_soil_report_pdf(api_id, base_url, own_host):
+    """Build the SoiLENZ report PDF. Returns (pdf_bytes, filename), or None
+    if the reading doesn't exist. Doesn't need the request, so it can also
+    run in a background thread (see reports/pdf_cache.py)."""
+    ctx = build_report_context(api_id)
+    if ctx is None:
+        return None
+    html_str = render_to_string('reports/soil_report.html', ctx)
+    from weasyprint import HTML as WP_HTML
+    pdf_bytes = WP_HTML(
+        string=html_str,
+        base_url=base_url,
+        url_fetcher=_local_static_fetcher(own_host),
+    ).write_pdf()
     farmer_name = ctx['meta'].get('farmer_name') or 'report'
-    slug = farmer_name.replace(' ', '_')
+    return pdf_bytes, f"SoiLENZ_Report_{farmer_name.replace(' ', '_')}.pdf"
+
+
+def pdf_response(pdf_bytes, filename):
     resp = HttpResponse(pdf_bytes, content_type='application/pdf')
-    resp['Content-Disposition'] = f'attachment; filename="SoiLENZ_Report_{slug}.pdf"'
+    resp['Content-Disposition'] = f'attachment; filename="{filename}"'
     resp['Content-Length'] = len(pdf_bytes)
     return resp
 
