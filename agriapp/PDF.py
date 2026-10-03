@@ -164,20 +164,38 @@ def download_api_response_pdf(request, **kwargs):
         c.drawString(310, 743, f"Longitude : {location.longitude if location else 'N/A'}")
         c.drawString(310, 728, f"Phone     : +91 9611297893")
 
+        # ── Farmer Details (only when a farmer is linked) ─────────────────────
+        # Everything below shifts down by `dy` to make room for this box.
+        farmer = api.farmer
+        dy = 0
+        if farmer:
+            dy = 70
+            c.rect(45, 640, 500, 70, stroke=1, fill=0)
+            c.setFont("Helvetica-Bold", 10)
+            c.drawString(50, 697, "Farmer Details")
+            c.setFont("Helvetica", 9)
+            place = ", ".join(p for p in (farmer.village, farmer.district, farmer.state) if p)
+            c.drawString(50, 682, f"Name     : {farmer.farmer_name or '-'}")
+            c.drawString(50, 667, f"Phone    : {farmer.phone or farmer.mobile or '-'}")
+            c.drawString(50, 652, f"Location : {place or '-'}")
+            c.drawString(310, 682, f"Land area : {farmer.land_area or 0} acres")
+            c.drawString(310, 667, f"Crop      : {farmer.crop or '-'}")
+            c.drawString(310, 652, f"Season    : {farmer.get_season_display() if farmer.season else '-'}")
+
         # ── Gauges (pH & EC) ──────────────────────────────────────────────────
-        c.rect(45, 600, 500, 110, stroke=1, fill=0)
+        c.rect(45, 600 - dy, 500, 110, stroke=1, fill=0)
         ph_gauge = draw_gauge(api.ph, "pH")
         ec_gauge = draw_gauge(api.ec, "EC")
-        c.drawImage(ph_gauge, 100, 615, width=150, height=90)
-        c.drawImage(ec_gauge, 300, 615, width=150, height=90)
+        c.drawImage(ph_gauge, 100, 615 - dy, width=150, height=90)
+        c.drawImage(ec_gauge, 300, 615 - dy, width=150, height=90)
         c.setFont("Helvetica", 10)
         from agriapp.reports.soilenz_pdf import lmh_status
-        c.drawCentredString(175, 607, f"pH Value: {api.ph} ({lmh_status('ph', api.ph)})")
-        c.drawCentredString(375, 607, f"EC Value: {api.ec} ({lmh_status('ec', api.ec)})")
+        c.drawCentredString(175, 607 - dy, f"pH Value: {api.ph} ({lmh_status('ph', api.ph)})")
+        c.drawCentredString(375, 607 - dy, f"EC Value: {api.ec} ({lmh_status('ec', api.ec)})")
 
         # ── Soil Parameters Table ─────────────────────────────────────────────
         c.setFont("Helvetica-Bold", 11)
-        c.drawString(50, 576, "Soil Parameter Details")
+        c.drawString(50, 576 - dy, "Soil Parameter Details")
 
         def _row(label, unit, key, value):
             val = round(value, 2) if value is not None else 'N/A'
@@ -211,7 +229,7 @@ def download_api_response_pdf(request, **kwargs):
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f0f4ff')]),
         ]))
 
-        frame = Frame(45, 150, 500, 415, showBoundary=0)
+        frame = Frame(45, 100, 500, 465 - dy, showBoundary=0)
         frame.addFromList([table], c)
 
     else:
