@@ -9,7 +9,7 @@ from agriapp.reports.soilenz_pdf import (
     _ph_info, _ec_info, _oc_info, _n_info, _p_info, _k_info,
     _ca_info, _mg_info, _s_info, _fe_info, _mn_info, _cu_info,
     _zn_info, _b_info,
-    PARAMS_14, _categorize_nutrients,
+    PARAMS_14, _categorize_nutrients, lmh_status,
 )
 from django.utils import timezone
 
@@ -87,6 +87,14 @@ _PARAM_INFO = {
     'cu':             _cu_info,
     'zn':             _zn_info,
     'b':              _b_info,
+}
+
+# params_display key -> SOIL_SAATHI_FIELD_THRESHOLDS key
+_THRESHOLD_KEY = {
+    'ph': 'ph', 'ec': 'ec', 'organic_carbon': 'oc', 'n': 'nitrogen',
+    'p': 'phosphorous', 'k': 'potassium', 'ca': 'calcium', 'mg': 'magnesium',
+    's': 'sulphur', 'fe': 'iron', 'mn': 'manganese', 'cu': 'copper',
+    'zn': 'zinc', 'b': 'boron',
 }
 
 # CSS color class names for status
@@ -287,7 +295,8 @@ def build_report_context(api_id):
         status, _, ideal, interp = _PARAM_INFO[key](val)
         params_display.append({
             'name':   name,    'unit':   unit,  'key':    key,
-            'value':  _fmt(val, dec),            'status': status,
+            'value':  _fmt(val, dec),
+            'status': lmh_status(_THRESHOLD_KEY[key], val),
             'css':    _css(status),              'ideal':  ideal,
             'interp': interp,
         })

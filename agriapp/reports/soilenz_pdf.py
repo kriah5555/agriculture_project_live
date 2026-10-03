@@ -76,6 +76,20 @@ def _range_info(v, key, mode, labels, notes, unit='', na_note='No data'):
     return mid_lbl, _MED_GREEN, rng, mid_note
 
 
+def lmh_status(key, v):
+    """Plain Low/Medium/High band for a value against
+    SOIL_SAATHI_FIELD_THRESHOLDS[key] — below min is Low, above max is High."""
+    if v is None:
+        return 'N/A'
+    th = SOIL_SAATHI_FIELD_THRESHOLDS.get(key, {})
+    lo, hi = th.get('min'), th.get('max')
+    if lo is not None and v < lo:
+        return 'Low'
+    if hi is not None and v > hi:
+        return 'High'
+    return 'Medium'
+
+
 def _ph_info(v):
     return _range_info(v, 'ph', 'optimal_range',
         ('Acidic', 'Normal', 'Alkaline'),

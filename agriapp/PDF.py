@@ -171,29 +171,35 @@ def download_api_response_pdf(request, **kwargs):
         c.drawImage(ph_gauge, 100, 615, width=150, height=90)
         c.drawImage(ec_gauge, 300, 615, width=150, height=90)
         c.setFont("Helvetica", 10)
-        c.drawCentredString(175, 607, f"pH Value: {api.ph}")
-        c.drawCentredString(375, 607, f"EC Value: {api.ec}")
+        from agriapp.reports.soilenz_pdf import lmh_status
+        c.drawCentredString(175, 607, f"pH Value: {api.ph} ({lmh_status('ph', api.ph)})")
+        c.drawCentredString(375, 607, f"EC Value: {api.ec} ({lmh_status('ec', api.ec)})")
 
         # ── Soil Parameters Table ─────────────────────────────────────────────
         c.setFont("Helvetica-Bold", 11)
         c.drawString(50, 576, "Soil Parameter Details")
 
+        def _row(label, unit, key, value):
+            val = round(value, 2) if value is not None else 'N/A'
+            return (label, unit, val, lmh_status(key, value))
+
         table_data = [
-            ("Nitrogen (N)",     "kg/ha",    round(api.nitrogen,    2)),
-            ("Phosphorus (P)",   "kg/ha",    round(api.phosphorous, 2)),
-            ("Potassium (K)",    "kg/ha",    round(api.potassium,   2)),
-            ("Calcium (Ca)",     "meq/100g", round(api.calcium,     2)),
-            ("Magnesium (Mg)",   "meq/100g", round(api.magnesium,   2)),
-            ("Sulfur (S)",       "ppm",      round(api.sulphur,     2)),
-            ("Iron (Fe)",        "ppm",      round(api.iron,        2)),
-            ("Manganese (Mn)",   "ppm",      round(api.manganese,   2)),
-            ("Zinc (Zn)",        "ppm",      round(api.zinc,        2)),
-            ("Copper (Cu)",      "ppm",      round(api.copper,      2)),
-            ("Boron (B)",        "ppm",      round(api.boron,       2)),
+            _row("Organic Carbon (OC)", "%",        'oc',          api.oc),
+            _row("Nitrogen (N)",        "kg/ha",    'nitrogen',    api.nitrogen),
+            _row("Phosphorus (P)",      "kg/ha",    'phosphorous', api.phosphorous),
+            _row("Potassium (K)",       "kg/ha",    'potassium',   api.potassium),
+            _row("Calcium (Ca)",        "meq/100g", 'calcium',     api.calcium),
+            _row("Magnesium (Mg)",      "meq/100g", 'magnesium',   api.magnesium),
+            _row("Sulfur (S)",          "ppm",      'sulphur',     api.sulphur),
+            _row("Iron (Fe)",           "ppm",      'iron',        api.iron),
+            _row("Manganese (Mn)",      "ppm",      'manganese',   api.manganese),
+            _row("Zinc (Zn)",           "ppm",      'zinc',        api.zinc),
+            _row("Copper (Cu)",         "ppm",      'copper',      api.copper),
+            _row("Boron (B)",           "ppm",      'boron',       api.boron),
         ]
 
-        full_table_data = [["Parameter", "Unit", "Value"]] + list(table_data)
-        table = Table(full_table_data, colWidths=[260, 110, 100])
+        full_table_data = [["Parameter", "Unit", "Value", "Status"]] + list(table_data)
+        table = Table(full_table_data, colWidths=[200, 100, 100, 100])
         table.setStyle(TableStyle([
             ('BACKGROUND',  (0, 0), (-1, 0),  colors.HexColor('#1a2f6b')),
             ('TEXTCOLOR',   (0, 0), (-1, 0),  colors.white),
