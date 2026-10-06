@@ -33,7 +33,7 @@ def check_active_version(request):
     if not version_str:
         return Response({
             "version": None,
-            "update": 1,
+            "update" : 1,
             "message": "Version parameter is missing"
         })
 
@@ -43,7 +43,7 @@ def check_active_version(request):
     if not active_version:
         return Response({
             "version": version_str,
-            "update": 1,
+            "update" : 1,
             "message": "No active version available, please update"
         })
 
@@ -51,18 +51,46 @@ def check_active_version(request):
     if version_str == active_version.version:
         return Response({
             "version": version_str,
-            "update": 0,
+            "update" : 0,
             "message": "You have the latest version"
         })
     else:
         return Response({
             "version": version_str,
-            "update": 1,
+            "update" : 1,
             "message": f"Update available: {active_version.version}"
         })
 
 
-# API 2: Download zip file for a given version
+# API 2: Get the currently active version
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def current_version(request):
+    """
+    URL: /versions/api/current-version/
+    Response:
+    - If an active version exists: { "version": "v1.2.0", "description": "...", "created_at": "...", "message": "Current active version" }
+    - If no active version:        { "version": null, "description": null, "created_at": null, "message": "No active version available" }
+    """
+    active_version = AppVersion.objects.filter(is_active=True).first()
+
+    if not active_version:
+        return Response({
+            "version"    : None,
+            "description": None,
+            "created_at" : None,
+            "message"    : "No active version available"
+        })
+
+    return Response({
+        "version"    : active_version.version,
+        "description": active_version.description,
+        "created_at" : active_version.created_at,
+        "message"    : "Current active version"
+    })
+
+
+# API 3: Download zip file for a given version
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def download_active_version(request):
@@ -79,7 +107,7 @@ def download_active_version(request):
     if not version_obj or not version_obj.zip_file:
         return Response({
             "version": None,
-            "active": 0,
+            "active" : 0,
             "message": "No active version available"
         })
 

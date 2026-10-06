@@ -76,6 +76,7 @@
           <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-crops">→ get_crops</a>
           <a class="nav-link py-1 px-2" href="#section-firmware">Firmware / Version APIs</a>
           <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-check-version">→ check-active-version</a>
+          <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-current-version">→ current-version</a>
           <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-download">→ download-version</a>
           <a class="nav-link py-1 px-2" href="#section-mobile" style="color:#0d6efd;font-weight:600;">📱 Mobile APIs</a>
           <a class="nav-link py-1 px-2 ps-4 text-muted" href="#ep-m-login">→ login</a>
@@ -286,6 +287,24 @@
             <small class="text-muted"><i class="fas fa-info-circle me-1"></i>
               When <code>update=1</code> the device should call the download endpoint to fetch the new firmware file.</small>
           </div>
+        </div>
+      </div>
+
+      <!-- current-version -->
+      <div id="ep-current-version" class="card shadow-sm mb-3">
+        <div class="card-header bg-white d-flex align-items-center gap-2 py-2">
+          <span class="method-badge method-get">GET</span>
+          <code class="fs-6">/versions/api/current-version/</code>
+          <span class="ms-auto text-muted" style="font-size:12px;">Get the current active version</span>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-3">Returns the version currently marked active on the server. No parameters required.</p>
+          <h6 class="fw-semibold">Example</h6>
+          <pre>GET /versions/api/current-version/</pre>
+          <h6 class="fw-semibold">Response — Success</h6>
+          <pre>{"version": "v1.2.0", "description": "Bug fixes", "created_at": "2026-10-06T10:15:00Z", "message": "Current active version"}</pre>
+          <h6 class="fw-semibold">Response — No active version</h6>
+          <pre>{"version": null, "description": null, "created_at": null, "message": "No active version available"}</pre>
         </div>
       </div>
 
