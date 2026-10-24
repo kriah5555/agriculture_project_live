@@ -191,8 +191,11 @@
     <div class="col-12">
       <div class="card p-3">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
-          <h6 class="mb-0">AI Recommendations <span class="text-muted fw-normal" style="font-size:0.75rem;">(LeafLenz disease scans — the only AI feature currently logged)</span></h6>
-          <div class="ai-scan-count"><i class="fas fa-microscope me-1"></i>{{ ov_ai.leaflenz_scan_count }} scan{{ ov_ai.leaflenz_scan_count|pluralize }} performed</div>
+          <h6 class="mb-0">AI Recommendations <span class="text-muted fw-normal" style="font-size:0.75rem;">(LeafLenz disease scans &amp; HarvestLenz fruit grading — the AI features currently logged)</span></h6>
+          <div class="d-flex flex-wrap gap-3">
+            <div class="ai-scan-count"><i class="fas fa-microscope me-1"></i>{{ ov_ai.leaflenz_scan_count }} leaf scan{{ ov_ai.leaflenz_scan_count|pluralize }}</div>
+            <div class="ai-scan-count"><i class="fas fa-apple-alt me-1"></i>{{ ov_ai.harvestlenz_scan_count }} fruit scan{{ ov_ai.harvestlenz_scan_count|pluralize }}</div>
+          </div>
         </div>
         {% if ov_ai.top_diagnoses %}
         <div class="d-flex flex-wrap gap-2">
@@ -428,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var userTypeUsage = JSON.parse("{{ ov_usage_by_user_type_json|escapejs }}");
   var quotaPct = {{ ov_quota_pct }};
 
-  var moduleColors = { 'SoiLENZ': '#198754', 'SoilSparsh': '#0dcaf0', 'SoiLIFE': '#ffc107', 'PHBottle': '#6f42c1', 'LeafLenz': '#fd7e14', 'SoilMap': '#20c997', 'CarbonCredits': '#6610f2' };
+  var moduleColors = { 'SoiLENZ': '#198754', 'SoilSparsh': '#0dcaf0', 'SoiLIFE': '#ffc107', 'PHBottle': '#6f42c1', 'LeafLenz': '#fd7e14', 'HarvestLenz': '#d63384', 'SoilMap': '#20c997', 'CarbonCredits': '#6610f2' };
 
   // ── Live clock (top-right corner) ────────────────────────────
   function updateOverviewClock() {

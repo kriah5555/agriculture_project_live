@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'razorpay_app',
     'soilmap',
     'leaflenz',
+    'harvestlenz',
     'soil_visualizer',
 ]
 

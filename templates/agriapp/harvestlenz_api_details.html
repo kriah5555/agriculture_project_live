@@ -1,0 +1,83 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+
+<div>
+
+  <!-- Top bar -->
+  <div style="display:flex; flex-direction:row; gap:2rem; margin-bottom:2rem; justify-content:space-between; align-items:center; background-color:var(--tc-surface); padding:1rem; border-radius:8px;">
+    <div style="flex:1; text-align:center;">
+      <span style="font-size:18px; font-weight:600; color:#bf360c;">HarvestLenz — Scan Details</span>
+    </div>
+    <div style="text-align:right;">
+      <a href="javascript:history.back()" style="padding:0.75rem 1.5rem;">
+        <i class="fas fa-arrow-left" style="font-size:24px;"></i>
+      </a>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:row; gap:2rem; flex-wrap:wrap;">
+
+    <!-- Left: annotated image -->
+    <div style="flex:0 0 40%; min-width:280px; background-color:var(--tc-surface-alt); padding:1.5rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <div><strong>Device:</strong> {{ device.name }}</div>
+        <div style="color:var(--tc-text-muted); font-size:13px;">{{ reading.created_at }}</div>
+      </div>
+      {% if annotated_image %}
+        <img src="{{ annotated_image }}" alt="Graded fruit" style="width:100%; border-radius:10px; object-fit:contain; max-height:380px;"
+             onerror="this.onerror=null; this.src='{{ reading.image_path }}';">
+        <div style="margin-top:8px; font-size:12px; color:var(--tc-text-muted);">
+          Each fruit is boxed with its grade. <a href="{{ reading.image_path }}" target="_blank">Original photo</a>
+        </div>
+      {% else %}
+        <div style="padding:60px 0; text-align:center; color:var(--tc-text-muted);">
+          <i class="fas fa-image" style="font-size:2.5rem; display:block; margin-bottom:10px;"></i>
+          No image saved for this scan.
+        </div>
+      {% endif %}
+
+      <a href="{% url 'harvestlenz-admin-scan-view' device.pk %}" class="btn btn-success w-100 mt-3">
+        <i class="fas fa-apple-alt"></i> Grade a New Fruit Photo
+      </a>
+    </div>
+
+    <!-- Right: summary -->
+    <div style="flex:1; min-width:300px; background-color:var(--tc-surface-alt); padding:1.5rem; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+      <div style="display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:16px;">
+        <span style="background:#bf360c; color:#fff; border-radius:20px; padding:4px 14px; font-size:13px; font-weight:600;">{{ fruit_name }}</span>
+        <span style="background:{% if mismatch or overall.overall_grade == 'Reject' %}#E53935{% else %}#198754{% endif %}; color:#fff; border-radius:20px; padding:4px 14px; font-size:13px; font-weight:600;">{{ overall.overall_grade }}</span>
+        <span style="background:#455a64; color:#fff; border-radius:20px; padding:4px 14px; font-size:13px; font-weight:600;">Score {{ reading.field1|floatformat:0 }}/100</span>
+        <span style="background:#e65100; color:#fff; border-radius:20px; padding:4px 14px; font-size:13px; font-weight:600;">{{ confidence_pct }}% avg confidence</span>
+      </div>
+
+      {% if mismatch %}
+      <div style="padding:10px 14px; border-radius:8px; background:#ffebee; color:#c62828; font-weight:600; margin-bottom:16px;">
+        <i class="fas fa-triangle-exclamation"></i> The photo did not match the selected fruit type, so it was not graded as {{ fruit_name }}.
+      </div>
+      {% endif %}
+
+      <table class="table table-sm" style="margin-bottom:16px;">
+        <tbody>
+          <tr><th>Fruits graded</th><td>{{ counts.total }}</td></tr>
+          <tr><th>Good / Better / Reject</th><td>{{ counts.good }} / {{ counts.better }} / {{ counts.reject }}</td></tr>
+          <tr><th>Average shelf life</th><td>{{ reading.field6|floatformat:1 }} days</td></tr>
+          <tr><th>Recommended market</th><td>{{ overall.recommended_market }}</td></tr>
+          <tr><th>Wholesale value</th><td>Rs {{ reading.field7|floatformat:2 }}</td></tr>
+          <tr><th>Estimated selling price</th><td>Rs {{ reading.field8|floatformat:2 }}</td></tr>
+          {% if reading.farmer %}<tr><th>Farmer</th><td>{{ reading.farmer.farmer_name }}</td></tr>{% endif %}
+          {% if reading.latitude and reading.longitude %}<tr><th>Location</th><td>{{ reading.latitude }}, {{ reading.longitude }}</td></tr>{% endif %}
+        </tbody>
+      </table>
+
+      <h6 style="color:#bf360c;"><i class="fas fa-lightbulb"></i> Recommendations</h6>
+      <ul style="color:var(--tc-text-muted);">
+        {% for rec in overall.ai_recommendations %}<li>{{ rec }}</li>{% empty %}<li>No recommendations.</li>{% endfor %}
+      </ul>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

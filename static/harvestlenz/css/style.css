@@ -1,0 +1,100 @@
+/* HarvestLenz — additions on top of leaflenz/css/style.css (shared layout/components). */
+
+.hl-logo { color: #e65100; font-size: 1.8rem; }
+
+.hl-options {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    margin: 20px 24px 0;
+}
+.hl-field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 200px; }
+.hl-field > span { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; }
+.hl-field select {
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color); background: var(--tc-input-bg, #fff); color: inherit;
+    font: inherit;
+}
+.hl-toggle { display: flex; border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; }
+.hl-toggle button {
+    flex: 1; padding: 10px 8px; border: 0; background: transparent; color: inherit;
+    font: inherit; font-size: 0.9rem; cursor: pointer;
+}
+.hl-toggle button.active { background: var(--primary-medium); color: #fff; font-weight: 600; }
+
+.hl-result-head { text-align: center; padding: 24px 24px 0; margin-bottom: 16px; }
+.hl-result-head .result-image { display: block; margin: 0 auto 12px; max-height: 320px; width: 100%; object-fit: contain; }
+.hl-headline { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+.hl-fruit, .hl-grade, .hl-score {
+    border-radius: 20px; padding: 4px 14px; font-size: 0.85rem; font-weight: 700; color: #fff;
+}
+.hl-grade { background: #66BB6A; }
+.hl-grade.grade-reject, .hl-grade.grade-mismatch { background: #E53935; }
+.hl-score { background: #455a64; }
+.hl-fruit { background: #e65100; text-transform: uppercase; letter-spacing: .5px; }
+.hl-mismatch {
+    margin-top: 12px; padding: 10px 14px; border-radius: var(--radius-sm);
+    background: var(--danger-light); color: var(--danger); font-weight: 600; font-size: 0.9rem;
+}
+
+.hl-kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;
+    margin: 0 24px 18px;
+}
+.hl-kpis > div {
+    background: var(--tc-surface-alt, #f4f5f8); border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm); padding: 10px 12px;
+}
+.hl-kpis span { display: block; font-size: 0.75rem; color: var(--text-muted); }
+.hl-kpis strong { font-size: 1.05rem; }
+
+.hl-subhead { font-size: 1rem; margin: 6px 24px 10px; }
+.hl-table-wrap { overflow-x: auto; margin: 0 24px 16px; }
+.panel > .hl-table-wrap { margin: 0; }
+.hl-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.hl-table th, .hl-table td { padding: 8px 10px; border-bottom: 1px solid var(--border-color); text-align: left; vertical-align: top; }
+.hl-table th { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); }
+.hl-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.hl-recs { padding-left: 18px; margin: 0 24px 16px; }
+.hl-recs li { margin-bottom: 6px; }
+.hl-note { font-size: 0.8rem; color: var(--text-muted); margin: 0; padding: 12px 24px 16px; }
+
+/* leaflenz's stats grids have no side spacing inside the (padding-less) panel */
+.stats-panel .metrics-grid { margin: 24px 24px; }
+.stats-panel .stats-details-grid { margin: 0 24px 24px; }
+
+/* ==========================================================================
+   Dark mode. leaflenz/css/style.css has none (light-only panels), while the
+   site theme turns body text light — so remap its variables and override the
+   colours it hard-codes. This file is only loaded on HarvestLenz pages.
+   ========================================================================== */
+:root[data-theme="dark"] {
+    --primary-dark: #81c784;
+    --primary-medium: #66bb6a;
+    --primary-accent: #4caf50;
+    --primary-light: rgba(76, 175, 80, 0.15);
+    --primary-sage: #3d6b41;
+    --bg-app: var(--tc-bg);
+    --bg-card: var(--tc-surface);
+    --text-main: var(--tc-text);
+    --text-muted: var(--tc-text-muted);
+    --border-color: var(--tc-border);
+    --danger: #ef5350;
+    --danger-light: rgba(239, 83, 80, 0.15);
+    --success-light: rgba(76, 175, 80, 0.15);
+}
+[data-theme="dark"] .panel {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+[data-theme="dark"] .media-tabs,
+[data-theme="dark"] .drop-zone,
+[data-theme="dark"] .feedback-footer,
+[data-theme="dark"] .image-preview-container img {
+    background: var(--tc-surface-alt);
+}
+[data-theme="dark"] .drop-zone:hover,
+[data-theme="dark"] .drop-zone.dragover {
+    background: var(--primary-light);
+}
+[data-theme="dark"] .hl-table td { color: var(--text-main); }
+[data-theme="dark"] .hl-table th { background: var(--tc-surface-alt); color: var(--text-muted); }
+[data-theme="dark"] .hl-field select { background: var(--tc-input-bg); color: var(--text-main); }

@@ -72,6 +72,13 @@ LeafLenz readings (leaflenz)                       (devices/leaflenz.py)
   GET   /api/mobile/devices/<id>/leaflenz/stats/          Total scans + plant distribution for a device
   GET   /api/mobile/leaflenz/diseases/                    Static disease encyclopedia (description/symptoms/treatment)
 
+HarvestLenz readings (harvestlenz)                 (devices/harvestlenz.py)
+  GET   /api/mobile/devices/<id>/harvestlenz/             List scans
+  POST  /api/mobile/devices/<id>/harvestlenz/scan/        Upload a fruit photo (+fruit_type, is_single) → Keras grading + save
+  GET   /api/mobile/devices/<id>/harvestlenz/<cid>/       Single scan (summary rebuilt from stored counts)
+  GET   /api/mobile/devices/<id>/harvestlenz/stats/       Total scans, grade totals + fruit distribution for a device
+  GET   /api/mobile/harvestlenz/fruits/                   Supported fruits (dropdown) with shelf-life/market rules
+
 Account       (requires auth)                      (mobile_api.py / auth_api.py)
   GET   /api/mobile/account/profile/               Get profile
   PATCH /api/mobile/account/profile/update/        Update profile
@@ -112,6 +119,7 @@ from .devices import atmo_sense as atmo
 from .devices import soil_life  as sl
 from .devices import ph_bottle  as pb
 from .devices import leaflenz   as ll
+from .devices import harvestlenz as hl
 from agriapp import farmer_api as fa
 from soilmap  import views     as sm
 from agriapp  import views     as svc
@@ -176,6 +184,13 @@ urlpatterns = [
     path('devices/<int:device_id>/leaflenz/stats/',                 ll.leaflenz_stats,  name='mobile_ll_stats'),
     path('devices/<int:device_id>/leaflenz/<int:call_id>/',         ll.leaflenz_detail, name='mobile_ll_detail'),
     path('leaflenz/diseases/',                                      ll.leaflenz_diseases, name='mobile_ll_diseases'),
+
+    # ── HarvestLenz (harvestlenz) device-specific routes ──────────────────────
+    path('devices/<int:device_id>/harvestlenz/',                    hl.harvestlenz_list,   name='mobile_hl_list'),
+    path('devices/<int:device_id>/harvestlenz/scan/',               hl.harvestlenz_scan,   name='mobile_hl_scan'),
+    path('devices/<int:device_id>/harvestlenz/stats/',              hl.harvestlenz_stats,  name='mobile_hl_stats'),
+    path('devices/<int:device_id>/harvestlenz/<int:call_id>/',      hl.harvestlenz_detail, name='mobile_hl_detail'),
+    path('harvestlenz/fruits/',                                     hl.harvestlenz_fruits, name='mobile_hl_fruits'),
 
     # ── Account ───────────────────────────────────────────────────────────────
     path('account/profile/',           m.account_profile,        name='mobile_profile'),

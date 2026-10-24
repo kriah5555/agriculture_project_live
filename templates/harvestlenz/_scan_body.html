@@ -1,0 +1,223 @@
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fa-solid fa-apple-whole hl-logo"></i>
+                    <h1>Harvest<span>Lenz</span></h1>
+                </div>
+                <p class="tagline">{{ device.name }}{% if device.devise_id %} &bull; ID: {{ device.devise_id }}{% endif %}</p>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="app-nav">
+            <button class="nav-btn active" data-tab="scanner">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> Quality Scanner
+            </button>
+            <button class="nav-btn" data-tab="fruits">
+                <i class="fa-solid fa-book-open"></i> Supported Fruits
+            </button>
+            <button class="nav-btn" data-tab="analytics">
+                <i class="fa-solid fa-chart-line"></i> Analytics & Stats
+            </button>
+        </nav>
+
+        <!-- Tab: Scanner -->
+        <div id="tab-scanner" class="tab-content active">
+            <main class="dashboard-grid">
+                <!-- Left Panel: options + capture -->
+                <section class="panel scan-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-expand"></i> Fruit Quality Scan</h2>
+                        <span class="mode-indicator">AI Engine</span>
+                    </div>
+
+                    <div class="hl-options">
+                        <label class="hl-field">
+                            <span>Fruit type</span>
+                            <select id="fruit-type">
+                                <option value="auto">Auto-detect</option>
+                                {% for key, name in fruit_choices %}
+                                <option value="{{ key }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <div class="hl-field">
+                            <span>Photo contains</span>
+                            <div class="hl-toggle" role="radiogroup">
+                                <button type="button" class="active" data-single="true">One fruit</button>
+                                <button type="button" data-single="false">Basket / several</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="media-tabs">
+                        <button class="media-tab active" id="tab-upload">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Image
+                        </button>
+                        <button class="media-tab" id="tab-camera">
+                            <i class="fa-solid fa-camera"></i> Live Camera
+                        </button>
+                    </div>
+
+                    <div class="drop-zone" id="upload-zone">
+                        <input type="file" id="file-input" accept="image/*" class="file-input">
+                        <div class="drop-zone-content">
+                            <div class="icon-circle"><i class="fa-solid fa-image"></i></div>
+                            <h3>Drag & drop your fruit photo</h3>
+                            <p>Supports JPEG, PNG, WEBP up to 10MB</p>
+                            <button class="btn btn-primary">Browse Files</button>
+                        </div>
+                    </div>
+
+                    <div class="camera-zone hidden" id="camera-zone">
+                        <div class="camera-viewport">
+                            <video id="video-stream" autoplay playsinline muted></video>
+                            <div class="camera-overlay"><div class="focus-brackets"></div></div>
+                            <canvas id="capture-canvas" class="hidden"></canvas>
+                        </div>
+                        <div class="camera-controls">
+                            <button class="btn btn-secondary" id="btn-stop-camera">
+                                <i class="fa-solid fa-xmark"></i> Stop
+                            </button>
+                            <button class="btn btn-success circle-btn" id="btn-snap" title="Capture Image">
+                                <div class="inner-circle"></div>
+                            </button>
+                            <div class="placeholder-spacer"></div>
+                        </div>
+                    </div>
+
+                    <div class="image-preview-container hidden" id="preview-container">
+                        <img id="image-preview" src="" alt="Fruit preview">
+                        <div class="preview-overlay">
+                            <button class="btn btn-danger btn-sm" id="btn-reset">
+                                <i class="fa-solid fa-trash"></i> Remove
+                            </button>
+                            <button class="btn btn-success btn-sm" id="btn-analyze">
+                                <i class="fa-solid fa-magnifying-glass-chart"></i> Grade Fruit
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Right Panel: results -->
+                <section class="panel results-panel empty" id="results-panel">
+                    <div class="empty-state" id="results-empty">
+                        <div class="pulse-plant"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                        <h3>Waiting for Analysis</h3>
+                        <p>Upload a fruit photo or take a picture to grade its quality, shelf life and market value.</p>
+                    </div>
+
+                    <div class="loading-state hidden" id="results-loading">
+                        <div class="leaf-loader">
+                            <i class="fa-solid fa-apple-whole spin-leaf"></i>
+                            <div class="scan-bar"></div>
+                        </div>
+                        <h3>Grading Fruit Quality...</h3>
+                        <p>Segmenting fruits and running the grading model. The first scan of a fruit type can take ~20s while its model loads.</p>
+                    </div>
+
+                    <div class="results-content hidden" id="results-content">
+                        <div class="hl-result-head">
+                            <img id="res-image" class="result-image" src="" alt="Graded fruit">
+                            <div class="hl-headline">
+                                <span class="hl-fruit" id="res-fruit">Mango</span>
+                                <span class="hl-grade" id="res-grade">Premium</span>
+                                <span class="hl-score" id="res-score">Score 100/100</span>
+                            </div>
+                            <div class="hl-mismatch hidden" id="res-mismatch"></div>
+                        </div>
+
+                        <div class="hl-kpis">
+                            <div><span>Fruits</span><strong id="res-total">0</strong></div>
+                            <div><span>Good / Better / Reject</span><strong id="res-counts">0 / 0 / 0</strong></div>
+                            <div><span>Avg shelf life</span><strong id="res-shelf">0 days</strong></div>
+                            <div><span>Best market</span><strong id="res-market">—</strong></div>
+                            <div><span>Wholesale value</span><strong id="res-value">Rs 0</strong></div>
+                            <div><span>Selling price</span><strong id="res-selling">Rs 0</strong></div>
+                        </div>
+
+                        <h3 class="hl-subhead"><i class="fa-solid fa-list"></i> Per-fruit grades</h3>
+                        <div class="hl-table-wrap">
+                            <table class="hl-table">
+                                <thead><tr><th>Fruit</th><th>Grade</th><th>Confidence</th><th>Shelf life</th><th>Market</th><th>Defects</th></tr></thead>
+                                <tbody id="res-fruits"></tbody>
+                            </table>
+                        </div>
+
+                        <h3 class="hl-subhead"><i class="fa-solid fa-lightbulb"></i> Recommendations</h3>
+                        <ul class="hl-recs" id="res-recs"></ul>
+
+                        <div class="feedback-footer">
+                            <button class="btn btn-primary" id="btn-scan-another">
+                                <i class="fa-solid fa-arrow-rotate-left"></i> Scan Another Fruit
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- Tab: Supported fruits -->
+        <div id="tab-fruits" class="tab-content hidden">
+            <section class="panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-book-open"></i> Supported Fruits</h2>
+                    <span class="badge" id="fruits-count">0 fruits</span>
+                </div>
+                <div class="hl-table-wrap">
+                    <table class="hl-table">
+                        <thead><tr><th>Fruit</th><th>Good</th><th>Better</th><th>Reject</th></tr></thead>
+                        <tbody id="fruits-table"></tbody>
+                    </table>
+                </div>
+                <p class="hl-note">Each cell: shelf life &bull; recommended market &bull; price range for that grade.</p>
+            </section>
+        </div>
+
+        <!-- Tab: Analytics -->
+        <div id="tab-analytics" class="tab-content hidden">
+            <section class="panel stats-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-chart-line"></i> Analytics Dashboard</h2>
+                    <span class="mode-indicator">This Device</span>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon scan-icon"><i class="fa-solid fa-qrcode"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-label">Total Scans</span>
+                            <h3 class="metric-value" id="stat-total-scans">0</h3>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon scan-icon"><i class="fa-solid fa-apple-whole"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-label">Fruits Graded</span>
+                            <h3 class="metric-value" id="stat-total-fruits">0</h3>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon scan-icon"><i class="fa-solid fa-ranking-star"></i></div>
+                        <div class="metric-info">
+                            <span class="metric-label">Good / Better / Reject</span>
+                            <h3 class="metric-value" id="stat-grades">0 / 0 / 0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-details-grid">
+                    <div class="stats-chart-card">
+                        <h3><i class="fa-solid fa-chart-bar"></i> Scans by Fruit Type</h3>
+                        <div class="chart-container" id="stats-distribution-chart">
+                            <div class="no-stats-state" id="no-stats-text">
+                                <p><i class="fa-solid fa-chart-pie"></i> No data recorded yet. Run scans to view the fruit distribution.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>

@@ -72,6 +72,7 @@ urlpatterns = [
     path('ph-bottle-dashboard/',                    PHBottleDashboard.as_view(),        name="ph-bottle-dashboard"),
     path('ph-bottle-api-overview/<int:pk>/',        v.api_overview,                     name="ph-bottle-api-overview"),
     path('leaflenz-api-overview/<int:pk>/',         v.api_overview,                     name="leaflenz-api-overview"),
+    path('harvestlenz-api-overview/<int:pk>/',         v.api_overview,                     name="harvestlenz-api-overview"),
 
     # ── AJAX / JSON endpoints ────────────────────────────────────────────────────
     path('devise-api-calls/<int:id>/',              GetDeviseApiCallsJsonData.as_view(),        name="devise-api-calls"),

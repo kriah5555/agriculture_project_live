@@ -10,12 +10,13 @@ from .models import (
     ColumnName, DeviseLocation, DeviseApisFields,
     SOIL_LIFE_FIELDS, ATMO_SENSE_FIELDS, SOIL_SAATHI_FIELDS,
     SOIL_SAATHI_FIELD_THRESHOLDS, DEVICE_NAMES, DEVICE_ICONS, PH_BOTTLE_FIELDS, SOIL_MAP_FIELDS,
-    LEAFLENZ_FIELDS,
+    LEAFLENZ_FIELDS, HARVESTLENZ_FIELDS,
     UserProfile, USER_TYPE_CHOICES,
     Farmer, FarmerStatusHistory, FARMER_STATUS_CHOICES, SEASON_CHOICES,
     PartnerPayment, PaymentAttachment,
 )
 from agri_ai.leaf import parse_class_label, get_disease_details
+from agri_ai.fruit import fruit_display_name, overall_from_counts
 from reports.views import build_recommendation, build_fertilizer_recommendation, build_crop_recommendation_v2
 from agri_ai.fertilizer import get_states as get_fertilizer_states, get_crops_for_state as get_fertilizer_crops_for_state
 from agri_ai.crop_recommendation import get_states as get_crop_rec_states
@@ -124,7 +125,7 @@ def userPage(request):
         match devise.devise_type:
             case "soilsaathi":
                 devise.api_used = DeviseApis.objects.filter(device=devise).count()
-            case "atmo_sense" | "soil_life" | "ph_bottle" | "leaflenz":
+            case "atmo_sense" | "soil_life" | "ph_bottle" | "leaflenz" | "harvestlenz":
                 devise.api_used = DeviseApisFields.objects.filter(device=devise).count()
             case _:
                 devise.api_used = 0
@@ -584,7 +585,7 @@ def user_details(request, **kwargs):
         match devise.devise_type:
             case "soilsaathi":
                 devise.api_used = DeviseApis.objects.filter(device=devise).count()
-            case "atmo_sense" | "soil_life" | "ph_bottle" | "leaflenz":
+            case "atmo_sense" | "soil_life" | "ph_bottle" | "leaflenz" | "harvestlenz":
                 devise.api_used = DeviseApisFields.objects.filter(device=devise).count()
             case _:
                 devise.api_used = 0
@@ -723,6 +724,25 @@ def api_overview(request, **kwargs):
             'description'  : details.get('description', 'N/A'),
             'symptoms'     : details.get('symptoms', 'N/A'),
             'treatment'    : details.get('treatment_prevention', 'N/A'),
+        }
+
+    elif "harvestlenz-api-overview" in request.path:
+        template_name = 'agriapp/harvestlenz_api_details.html'
+        devise_data   = get_object_or_404(DeviseApisFields, pk=kwargs['pk'])
+        fruit_type    = (devise_data.tag or '').lower()
+        image_path    = devise_data.image_path
+        context       = {
+            'device'         : devise_data.device,
+            'api_pk'         : devise_data.pk,
+            'reading'        : devise_data,
+            'fruit_name'     : fruit_display_name(fruit_type),
+            'annotated_image': f"{image_path.rsplit('.', 1)[0]}_annotated.jpg" if image_path else None,
+            'counts'         : {'good': int(devise_data.field2), 'better': int(devise_data.field3),
+                                'reject': int(devise_data.field4), 'total': int(devise_data.field5)},
+            'mismatch'       : bool(devise_data.field9),
+            'confidence_pct' : round((devise_data.field10 or 0) * 100, 1),
+            'overall'        : overall_from_counts(fruit_type, int(devise_data.field2), int(devise_data.field3),
+                                                   int(devise_data.field4), mismatch=bool(devise_data.field9)),
         }
 
     else :
@@ -1466,6 +1486,7 @@ _SUMMARY_KEYS = {
     'soil_life' : ['id', 'tag', 'image_path', 'field1', 'field2', 'field3', 'field4', 'field5', 'field6', 'field7', 'field8', 'farmer_name', 'created_at'],
     'ph_bottle' : ['id', 'tag', 'field1', 'field2', 'field3', 'field4', 'farmer_name', 'created_at'],
     'soil_map'  : ['id', 'tag', 'field1', 'field2', 'field3', 'field4', 'field5', 'field6', 'created_at'],
+    'harvestlenz': ['id', 'tag', 'image_path', 'field1', 'field2', 'field3', 'field4', 'field5', 'farmer_name', 'created_at'],
 }
 
 
@@ -1501,6 +1522,9 @@ class GetDeviseApiCallsJsonData(LoginRequiredMixin, View):
                     queryset = DeviseApisFields.objects.filter(device=devise).order_by('-created_at')
                 case "leaflenz":
                     headers  = LEAFLENZ_FIELDS
+                    queryset = DeviseApisFields.objects.filter(device=devise).order_by('-created_at')
+                case "harvestlenz":
+                    headers  = HARVESTLENZ_FIELDS
                     queryset = DeviseApisFields.objects.filter(device=devise).order_by('-created_at')
                 case _:
                     return JsonResponse({'error': 'Invalid device type'}, status=400)

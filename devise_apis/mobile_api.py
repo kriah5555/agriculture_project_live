@@ -26,7 +26,7 @@ from rest_framework import serializers as drf_serializers
 from agriapp.models import (
     Devise, DeviseApis, DeviseApisFields, DeviseLocation,
     DEVICE_NAMES,
-    SOIL_SAATHI_FIELDS, ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, LEAFLENZ_FIELDS,
+    SOIL_SAATHI_FIELDS, ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, LEAFLENZ_FIELDS, HARVESTLENZ_FIELDS,
     SOIL_SAATHI_FIELD_THRESHOLDS,
 )
 from .devices._common import check_threshold, resolve_farmer
@@ -157,6 +157,7 @@ _FIELD_SCHEMA_MAP = {
     'soil_life' : SOIL_LIFE_FIELDS,
     'ph_bottle' : PH_BOTTLE_FIELDS,
     'leaflenz'  : LEAFLENZ_FIELDS,
+    'harvestlenz': HARVESTLENZ_FIELDS,
 }
 
 @extend_schema(

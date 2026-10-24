@@ -634,6 +634,7 @@
     ph_bottle : { color: '#e65100', label: 'PHBottle',    icon: 'fa-flask'         },
     soil_map  : { color: '#2c5e1a', label: 'SoilMap',     icon: 'fa-map-marked-alt'},
     leaflenz  : { color: '#2c5e1a', label: 'LeafLenz',    icon: 'fa-camera'        },
+    harvestlenz: { color: '#bf360c', label: 'HarvestLenz', icon: 'fa-apple-alt'     },
   };
 
   function showDeviceDetails(device, clickedEl) {
@@ -737,6 +738,30 @@
       }
     } else if (leaflenzBanner) {
       leaflenzBanner.style.display = 'none';
+    }
+
+    // Show/hide "Open HarvestLenz" banner for harvestlenz devices
+    let harvestlenzBanner = document.getElementById('harvestlenz-banner');
+    if (device.devise_type === 'harvestlenz') {
+      if (!harvestlenzBanner) {
+        harvestlenzBanner = document.createElement('div');
+        harvestlenzBanner.id = 'harvestlenz-banner';
+        harvestlenzBanner.style.cssText = 'margin-top:16px;';
+        harvestlenzBanner.innerHTML = `
+          <a id="harvestlenz-open-btn" href="/harvestlenz-admin/${device.pk}/" target="_blank"
+             style="display:flex;align-items:center;justify-content:center;gap:10px;
+                    padding:16px 24px;border-radius:12px;text-decoration:none;color:#fff;
+                    background:linear-gradient(135deg,#bf360c,#e65100);
+                    font-weight:700;font-size:1rem;box-shadow:0 4px 14px rgba(191,54,12,.35);">
+            <i class="fas fa-apple-alt"></i> Open HarvestLenz
+          </a>`;
+        document.getElementById('api-details-container').before(harvestlenzBanner);
+      } else {
+        harvestlenzBanner.style.display = 'block';
+        document.getElementById('harvestlenz-open-btn').href = `/harvestlenz-admin/${device.pk}/`;
+      }
+    } else if (harvestlenzBanner) {
+      harvestlenzBanner.style.display = 'none';
     }
 
     document.getElementById('api-details-container').style.display = 'block';
@@ -952,6 +977,7 @@
       atmo_sense: '/atmos-sense-api-overview',
       soil_life : '/soil-life-api-overview',
       leaflenz  : '/leaflenz-api-overview',
+      harvestlenz: '/harvestlenz-api-overview',
     };
     const endpoint = endpoints[selected_devise.devise_type];
     if (endpoint) window.location.href = `${endpoint}/${id}/`;

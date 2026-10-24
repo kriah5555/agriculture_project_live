@@ -16,6 +16,7 @@ DEVICE_NAMES = {
     'soil_map'      : 'SoilMap',
     'carbon_credits': 'CarbonCredits',
     'leaflenz'      : 'LeafLenz',
+    'harvestlenz'   : 'HarvestLenz',
 }
 
 DEVICE_ICONS = {
@@ -26,6 +27,7 @@ DEVICE_ICONS = {
     'soil_map'      : 'fa-map',
     'carbon_credits': 'fa-coins',
     'leaflenz'      : 'fa-camera',
+    'harvestlenz'   : 'fa-apple-alt',
 }
 
 DEVICE_CHOICES = list(DEVICE_NAMES.items())
@@ -148,6 +150,27 @@ LEAFLENZ_FIELDS = {
     'tag'       : 'Predicted Label',
     'image_path': 'Leaf Image',
     'field1'    : 'Confidence (%)',
+    'latitude'  : 'Latitude',
+    'longitude' : 'Longitude',
+    'created_at': 'Scanned At',
+}
+
+# HarvestLenz (fruit quality grading) — one row per photo; per-fruit grades are
+# drawn on the annotated image saved next to `image_path` (<name>_annotated.jpg).
+HARVESTLENZ_FIELDS = {
+    'id'        : 'ID',
+    'tag'       : 'Fruit Type',
+    'image_path': 'Fruit Image',
+    'field1'    : 'Quality Score',
+    'field2'    : 'Good Count',
+    'field3'    : 'Better Count',
+    'field4'    : 'Reject Count',
+    'field5'    : 'Total Fruits',
+    'field6'    : 'Avg Shelf Life (days)',
+    'field7'    : 'Wholesale Value (Rs)',
+    'field8'    : 'Selling Price (Rs)',
+    'field9'    : 'Fruit Mismatch (1=yes)',
+    'field10'   : 'Avg Grade Confidence',
     'latitude'  : 'Latitude',
     'longitude' : 'Longitude',
     'created_at': 'Scanned At',

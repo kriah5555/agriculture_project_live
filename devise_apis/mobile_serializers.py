@@ -9,9 +9,10 @@ from agriapp.models import (
     Devise, DeviseApis, DeviseApisFields, DeviseLocation,
     APICountThreshold, DEVICE_NAMES, Farmer,
     ATMO_SENSE_FIELDS, SOIL_LIFE_FIELDS, PH_BOTTLE_FIELDS, SOIL_SAATHI_FIELDS, SOIL_MAP_FIELDS,
-    LEAFLENZ_FIELDS, Plot, Point,
+    LEAFLENZ_FIELDS, HARVESTLENZ_FIELDS, Plot, Point,
 )
 from agri_ai.leaf import parse_class_label, get_disease_details
+from agri_ai.fruit.rules import fruit_display_name, overall_from_counts
 
 
 # ── Auth ─────────────────────────────────────────────────────────────────────
@@ -254,6 +255,7 @@ FIELD_LABELS = {
     'ph_bottle' : _sensor_fields(PH_BOTTLE_FIELDS),
     'soil_map'  : _sensor_fields(SOIL_MAP_FIELDS),
     'leaflenz'  : _sensor_fields(LEAFLENZ_FIELDS),
+    'harvestlenz': _sensor_fields(HARVESTLENZ_FIELDS),
 }
 
 
@@ -345,6 +347,55 @@ class LeafLenzReadingSerializer(FieldsReadingSerializer):
             'symptoms'              : details.get('symptoms', 'N/A'),
             'treatment_and_prevention': details.get('treatment_prevention', 'N/A'),
         }
+
+
+# ── HarvestLenz (fruit quality grading) ──────────────────────────────────────
+
+def harvestlenz_annotated_path(image_path):
+    """URL of the annotated image saved next to the original ('<name>_annotated.jpg')."""
+    if not image_path:
+        return None
+    stem = image_path.rsplit('.', 1)[0]
+    return f'{stem}_annotated.jpg'
+
+
+class HarvestLenzReadingSerializer(FieldsReadingSerializer):
+    """
+    FieldsReadingSerializer + the scan summary rebuilt from the stored counts
+    (tag = fruit type, field1..field10 — see HARVESTLENZ_FIELDS).
+    """
+    fruit_name         = serializers.SerializerMethodField()
+    annotated_image    = serializers.SerializerMethodField()
+    mismatch           = serializers.SerializerMethodField()
+    summary            = serializers.SerializerMethodField()
+    overall            = serializers.SerializerMethodField()
+
+    class Meta(FieldsReadingSerializer.Meta):
+        fields = FieldsReadingSerializer.Meta.fields + [
+            'field9', 'field10',
+            'fruit_name', 'annotated_image', 'mismatch', 'summary', 'overall',
+        ]
+
+    def get_fruit_name(self, obj):
+        return fruit_display_name(obj.tag)
+
+    def get_annotated_image(self, obj):
+        path = harvestlenz_annotated_path(obj.image_path)
+        request = self.context.get('request')
+        return request.build_absolute_uri(path) if (path and request) else path
+
+    def get_mismatch(self, obj):
+        return bool(obj.field9)
+
+    def get_summary(self, obj):
+        return {'good': int(obj.field2), 'better': int(obj.field3),
+                'reject': int(obj.field4), 'total': int(obj.field5)}
+
+    def get_overall(self, obj):
+        overall = overall_from_counts((obj.tag or '').lower(), int(obj.field2), int(obj.field3),
+                                      int(obj.field4), mismatch=bool(obj.field9))
+        overall['average_shelf_life'] = obj.field6
+        return overall
 
 
 # ── Threshold ─────────────────────────────────────────────────────────────────

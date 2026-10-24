@@ -32,14 +32,14 @@ from .dashboard_utils import (
 
 # Device types that actually record readings (matches the match/case logic
 # already used in views.userPage for per-device api_used counts).
-MODULE_TYPES = ['soilsaathi', 'atmo_sense', 'soil_life', 'ph_bottle', 'leaflenz']
+MODULE_TYPES = ['soilsaathi', 'atmo_sense', 'soil_life', 'ph_bottle', 'leaflenz', 'harvestlenz']
 
 # All device types the platform sells (agriapp.models.DEVICE_CHOICES). Every
 # one of these EXCEPT carbon_credits has real, queryable usage rows — carbon
 # credit calculations are computed on demand and never written to the DB
 # (see devise_apis/devices/carbon_credits.py), so it's called out as
 # "not tracked yet" rather than shown as a fabricated zero.
-ALL_DEVICE_TYPES = ['soilsaathi', 'atmo_sense', 'soil_life', 'ph_bottle', 'soil_map', 'leaflenz', 'carbon_credits']
+ALL_DEVICE_TYPES = ['soilsaathi', 'atmo_sense', 'soil_life', 'ph_bottle', 'soil_map', 'leaflenz', 'harvestlenz', 'carbon_credits']
 UNTRACKED_DEVICE_TYPES = {'carbon_credits'}
 
 ALERT_SEVERITY_BY_REQUEST_TYPE = {
@@ -235,7 +235,7 @@ def build_overview_context():
     total_quota = APICountThreshold.objects.aggregate(total=Sum('red'))['total'] or 0
     soilsaathi_ids = APICountThreshold.objects.filter(devise__devise_type='soilsaathi').values_list('devise_id', flat=True)
     other_ids = APICountThreshold.objects.filter(
-        devise__devise_type__in=['atmo_sense', 'soil_life', 'ph_bottle', 'leaflenz']
+        devise__devise_type__in=['atmo_sense', 'soil_life', 'ph_bottle', 'leaflenz', 'harvestlenz']
     ).values_list('devise_id', flat=True)
     total_used = (
         DeviseApis.objects.filter(device_id__in=soilsaathi_ids).count()
@@ -340,9 +340,12 @@ def build_overview_context():
         }
         for r in diagnosis_rows
     ]
+    # HarvestLenz fruit grading is persisted the same way (tag = fruit type).
+    harvestlenz_scan_count = DeviseApisFields.objects.filter(device__devise_type='harvestlenz').count()
     ai_recommendations = {
-        'leaflenz_scan_count': leaflenz_scan_count,
-        'top_diagnoses'      : top_diagnoses,
+        'leaflenz_scan_count'   : leaflenz_scan_count,
+        'harvestlenz_scan_count': harvestlenz_scan_count,
+        'top_diagnoses'         : top_diagnoses,
     }
 
     # ---------------- Payments summary (lifetime, prominent KPIs) ----------------
