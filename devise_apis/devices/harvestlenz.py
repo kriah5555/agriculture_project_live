@@ -1,6 +1,5 @@
 """HarvestLenz (harvestlenz) mobile API endpoints — fruit quality grading from a photo."""
 import os
-import uuid
 
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -130,11 +129,15 @@ def harvestlenz_scan(request, device_id):
         location=os.path.join(settings.MEDIA_ROOT, 'harvestlenz_uploads'),
         base_url=settings.MEDIA_URL + 'harvestlenz_uploads/',
     )
-    ext       = os.path.splitext(image_file.name)[1].lower() or '.jpg'
-    file_name = fs.save(f'{uuid.uuid4().hex}{ext}', image_file)
+    file_name = fs.save(image_file.name, image_file)
     image_url = fs.url(file_name)
     if annotated_jpeg:
-        fs.save(os.path.basename(harvestlenz_annotated_path(file_name)), ContentFile(annotated_jpeg))
+        # Must sit at exactly '<saved name>_annotated.jpg' (the serializer derives
+        # it from image_path), so replace any stale file instead of letting
+        # storage pick a new name.
+        annotated_name = harvestlenz_annotated_path(file_name)
+        fs.delete(annotated_name)
+        fs.save(annotated_name, ContentFile(annotated_jpeg))
 
     summary = analysis['summary']
     reading = DeviseApisFields.objects.create(

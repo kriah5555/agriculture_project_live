@@ -1916,11 +1916,16 @@ def delete_api_call(request, pk):
         obj = get_object_or_404(DeviseApisFields, pk=pk)
         if obj.image_path and obj.image_path.startswith(settings.MEDIA_URL):
             file_path = os.path.join(settings.MEDIA_ROOT, obj.image_path[len(settings.MEDIA_URL):])
-            if os.path.isfile(file_path):
-                try:
-                    os.remove(file_path)
-                except OSError:
-                    pass
+            paths = [file_path]
+            if obj.device.devise_type == 'harvestlenz':
+                # HarvestLenz also saves '<name>_annotated.jpg' next to the photo.
+                paths.append(f"{file_path.rsplit('.', 1)[0]}_annotated.jpg")
+            for path in paths:
+                if os.path.isfile(path):
+                    try:
+                        os.remove(path)
+                    except OSError:
+                        pass
     obj.delete()
     return JsonResponse({'success': True})
 
