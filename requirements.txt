@@ -32,9 +32,10 @@ scikit-learn>=1.7,<2.0
 matplotlib>=3.10,<4.0
 onnxruntime>=1.19,<2.0
 # HarvestLenz fruit grading (agri_ai/fruit): Keras 3 loads the .keras/.h5 models.
-# Uses TensorFlow if installed, else JAX (TensorFlow has no Python 3.14 wheels).
-keras>=3.10,<4.0
-jax[cpu]>=0.7
+# Backend: TensorFlow where it has wheels, JAX otherwise (no TensorFlow for 3.13+).
+keras>=3.12,<4.0
+tensorflow-cpu>=2.16; python_version < "3.13"
+jax[cpu]>=0.4.30; python_version >= "3.13"
 h5py>=3.12,<4.0
 opencv-python-headless>=4.10,<6.0
 
