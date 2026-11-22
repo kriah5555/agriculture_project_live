@@ -560,8 +560,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ── Device map (real device locations) ──────────────────────
   var overviewMap = L.map('overviewMap').setView([21.5, 79.5], 4.6);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; OpenStreetMap contributors'
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri'
   }).addTo(overviewMap);
 
   if (deviceLocations.length) {

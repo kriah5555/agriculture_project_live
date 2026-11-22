@@ -197,10 +197,14 @@ function initMap() {
 
   L.control.zoom({ position: 'topright' }).addTo(mapInstance);
 
-  const googleRoadmap = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { attribution: '&copy; Google Maps', maxZoom: 20 });
-  const googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { attribution: '&copy; Google Maps', maxZoom: 20 });
+  // Free, keyless Esri tiles (Google tile URLs are not permitted without an API key)
+  const googleRoadmap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri', maxNativeZoom: 19, maxZoom: 20 });
+  const googleHybrid = L.layerGroup([
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri', maxNativeZoom: 18, maxZoom: 20 }),
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 18, maxZoom: 20 })
+  ]);
   googleHybrid.addTo(mapInstance);
-  L.control.layers({ 'Google Maps (Satellite Hybrid)': googleHybrid, 'Google Maps (Standard Roadmap)': googleRoadmap }, null, { position: 'bottomleft' }).addTo(mapInstance);
+  L.control.layers({ 'Satellite (Hybrid)': googleHybrid, 'Street Map': googleRoadmap }, null, { position: 'bottomleft' }).addTo(mapInstance);
 
   plotsLayerGroup.addTo(mapInstance);
   pointsLayerGroup.addTo(mapInstance);

@@ -1,0 +1,214 @@
+/* Shared user/device detail UI (admin user-details + user dashboard). Agri theme, animated, responsive. */
+  /* ═════════ User Details — agri theme, animated ═════════ */
+  :root{
+    --ud-g1:#14532d; --ud-g2:#15803d; --ud-g3:#0d9488;
+    --ud-grad:linear-gradient(135deg,var(--ud-g1) 0%,var(--ud-g2) 55%,var(--ud-g3) 100%);
+    --ud-soft:#f0fdf4; --ud-ring:rgba(21,128,61,.25);
+  }
+  [data-theme="dark"]{ --ud-soft:rgba(34,197,94,.08); --ud-ring:rgba(34,197,94,.35); }
+
+  @keyframes udUp   { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+  @keyframes udIn   { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:none} }
+  @keyframes udPop  { 0%{transform:scale(.6);opacity:0} 70%{transform:scale(1.08)} 100%{transform:scale(1);opacity:1} }
+  @keyframes udFloat{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  @keyframes udShine{ from{background-position:-200% 0} to{background-position:200% 0} }
+  @keyframes udPulse{ 0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)} 100%{box-shadow:0 0 0 10px rgba(34,197,94,0)} }
+  @keyframes spin   { to{transform:rotate(360deg)} }
+
+  /* ── hero ── */
+  .ud-hero{
+    position:relative; overflow:hidden; border-radius:18px; padding:22px 24px;
+    background:var(--ud-grad); color:#fff; margin:0 4px 20px;
+    box-shadow:0 10px 30px rgba(20,83,45,.25); animation:udUp .5s both;
+  }
+  .ud-hero::before,.ud-hero::after{
+    content:""; position:absolute; border-radius:50%; background:rgba(255,255,255,.08); pointer-events:none;
+  }
+  .ud-hero::before{ width:260px;height:260px; right:-60px; top:-120px; }
+  .ud-hero::after { width:160px;height:160px; right:180px; bottom:-90px; }
+  .ud-hero-avatar{
+    width:58px;height:58px;border-radius:16px;flex-shrink:0;
+    background:rgba(255,255,255,.18); backdrop-filter:blur(4px);
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;font-weight:800;border:1px solid rgba(255,255,255,.3);
+    animation:udPop .6s .1s both;
+  }
+  .ud-hero h4{ color:#fff; font-weight:800; margin:0; letter-spacing:.2px; }
+  .ud-hero .ud-sub{ font-size:13px; opacity:.85; }
+  .ud-hero .btn-back{
+    background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.35);
+    border-radius:10px; font-size:13px; padding:6px 14px; text-decoration:none; transition:all .2s; position:relative; z-index:1;
+  }
+  .ud-hero .btn-back:hover{ background:#fff; color:var(--ud-g1); transform:translateX(-3px); }
+  .ud-stats{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; position:relative; z-index:1; }
+  .ud-stat{
+    background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.22);
+    border-radius:12px; padding:8px 14px; min-width:110px; animation:udUp .5s both;
+    transition:transform .2s, background .2s;
+  }
+  .ud-stat:hover{ transform:translateY(-3px); background:rgba(255,255,255,.22); }
+  .ud-stat:nth-child(2){animation-delay:.08s} .ud-stat:nth-child(3){animation-delay:.16s}
+  .ud-stat:nth-child(4){animation-delay:.24s} .ud-stat:nth-child(5){animation-delay:.32s}
+  .ud-stat .v{ font-size:18px; font-weight:800; line-height:1.1; }
+  .ud-stat .l{ font-size:10.5px; text-transform:uppercase; letter-spacing:.6px; opacity:.8; }
+
+  /* ── cards ── */
+  .ud-card{
+    background:var(--tc-surface); border-radius:16px; overflow:hidden; margin-bottom:16px;
+    border:1px solid var(--tc-border);
+    box-shadow:0 4px 18px rgba(15,23,42,.06);
+    transition:transform .25s ease, box-shadow .25s ease;
+    animation:udUp .5s both;
+  }
+  .ud-card:hover{ transform:translateY(-2px); box-shadow:0 12px 28px rgba(15,23,42,.10); }
+  .col-lg-4 > .ud-card:nth-child(2){animation-delay:.08s}
+  .col-lg-4 > .ud-card:nth-child(3){animation-delay:.16s}
+  .ud-card-header{
+    background:var(--ud-grad); background-size:200% 100%;
+    color:#fff; padding:12px 18px; display:flex; align-items:center; gap:9px; position:relative;
+  }
+  .ud-card-header > i:first-child, .ud-card-header .d-flex > i:first-child{
+    width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.18);
+    display:inline-flex;align-items:center;justify-content:center;font-size:12px;
+  }
+  .ud-card-header h6{ margin:0; font-size:12.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; }
+  .ud-card-header .btn-light{ border-radius:8px; transition:transform .15s; }
+  .ud-card-header .btn-light:hover{ transform:translateY(-1px); }
+  .ud-card-header a.text-white{ opacity:.85; transition:opacity .15s, transform .15s; }
+  .ud-card-header a.text-white:hover{ opacity:1; transform:scale(1.15); }
+
+  /* ── avatar ── */
+  .user-avatar-lg{
+    width:76px;height:76px;border-radius:50%;
+    background:var(--ud-grad); color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;font-weight:800;flex-shrink:0;
+    box-shadow:0 0 0 5px var(--ud-soft), 0 0 0 7px var(--ud-ring);
+    animation:udPop .6s .15s both;
+  }
+
+  .user-action{
+    display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:999px;
+    font-size:12px;font-weight:600;text-decoration:none;transition:transform .2s, box-shadow .2s;
+  }
+  .user-action:hover{ transform:translateY(-2px); box-shadow:0 6px 14px rgba(0,0,0,.12); }
+
+  /* ── device list ── */
+  .device-list-item{
+    display:flex;align-items:center;padding:11px 16px;gap:11px;cursor:pointer;
+    border-bottom:1px solid var(--tc-border); position:relative;
+    transition:background .2s, padding-left .2s;
+    animation:udIn .4s both;
+  }
+  .device-list-item::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ud-g2);
+    transform:scaleY(0);transition:transform .2s;
+  }
+  .device-list-item:last-child{ border-bottom:none; }
+  .device-list-item:hover{ background:var(--ud-soft); padding-left:20px; }
+  .device-list-item:hover::before, .device-list-item.active::before{ transform:scaleY(1); }
+  .device-list-item.active{ background:var(--ud-soft); }
+  [data-theme="dark"] .device-list-item.active{ background:rgba(34,197,94,.14) !important; }
+  .device-list-item:nth-child(2){animation-delay:.04s} .device-list-item:nth-child(3){animation-delay:.08s}
+  .device-list-item:nth-child(4){animation-delay:.12s} .device-list-item:nth-child(5){animation-delay:.16s}
+  .device-list-item:nth-child(n+6){animation-delay:.2s}
+
+  .device-type-dot{ width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+  .device-type-ico{
+    width:34px;height:34px;border-radius:10px;flex-shrink:0;color:#fff;font-size:14px;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.15);
+    transition:transform .2s;
+  }
+  .device-list-item:hover .device-type-ico{ transform:rotate(-6deg) scale(1.08); }
+  .device-item-name{ font-size:13px;font-weight:600;color:var(--tc-text);flex:1; }
+  .device-item-type{ font-size:11px;color:var(--tc-text-muted); }
+  .device-item-actions a{
+    color:var(--tc-text-muted);width:26px;height:26px;border-radius:7px;font-size:12px;
+    display:inline-flex;align-items:center;justify-content:center;transition:all .15s;
+  }
+  .device-item-actions a:hover{ color:#fff;background:var(--ud-g2);transform:translateY(-1px); }
+  .device-item-actions a[title="Delete Device"]:hover{ background:#dc3545;color:#fff !important; }
+
+  .ud-chip{ border-radius:999px;padding:4px 11px;font-size:11px;font-weight:600;text-decoration:none;
+    display:inline-flex;align-items:center;transition:transform .15s, box-shadow .15s; }
+  .ud-chip:hover{ transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,.1); }
+
+  /* ── info rows ── */
+  .info-row{
+    display:flex;align-items:center;padding:10px 18px;border-bottom:1px dashed var(--tc-border);
+    font-size:13px;transition:background .15s;
+  }
+  .info-row:hover{ background:var(--ud-soft); }
+  .info-row:last-child{ border-bottom:none; }
+  .info-label{ width:40%;font-weight:600;color:var(--tc-text-muted);flex-shrink:0;font-size:12px; }
+  .info-value{ color:var(--tc-text);word-break:break-word; }
+
+  /* usage bar */
+  .ud-usage{ padding:4px 18px 14px; }
+  .ud-usage-track{ height:8px;border-radius:99px;background:var(--tc-border);overflow:hidden; }
+  .ud-usage-fill{
+    height:100%;width:0;border-radius:99px;transition:width .9s cubic-bezier(.2,.8,.2,1);
+    background:linear-gradient(90deg,#22c55e,#16a34a,#22c55e);background-size:200% 100%;
+    animation:udShine 2.5s linear infinite;
+  }
+  .ud-usage-fill.warn{ background:linear-gradient(90deg,#f59e0b,#ea580c,#f59e0b);background-size:200% 100%; }
+  .ud-usage-fill.crit{ background:linear-gradient(90deg,#ef4444,#b91c1c,#ef4444);background-size:200% 100%; }
+  .ud-usage-lbl{ display:flex;justify-content:space-between;font-size:11px;color:var(--tc-text-muted);margin-top:5px; }
+
+  /* right panel reveal */
+  .ud-reveal > *{ animation:udUp .45s both; }
+  .ud-reveal > *:nth-child(2){ animation-delay:.08s; }
+  .ud-device-head{ padding:16px 18px !important; }
+  .ud-live{ width:9px;height:9px;border-radius:50%;background:#4ade80;animation:udPulse 1.6s infinite;display:inline-block; }
+
+  /* ── API table ── */
+  #api-btn-prev:disabled, #api-btn-next:disabled{ opacity:.4;cursor:not-allowed; }
+  #api-btn-prev, #api-btn-next{ border-radius:8px; }
+  .table-container{ max-height:520px;overflow-y:auto;overflow-x:auto; }
+  .sticky-header{ position:sticky;top:0;background:var(--tc-surface);z-index:5; }
+  #api-details-table tr{ transition:background .15s; animation:udUp .3s both; }
+  #api-details-table tr:hover{ background:var(--ud-soft) !important; }
+  .col-secondary{ display:none; }
+  .show-all-cols .col-secondary{ display:table-cell; }
+  .small-img{ width:48px;height:48px;object-fit:cover;cursor:zoom-in;border-radius:8px;transition:all .3s; }
+  .small-img:hover{ width:120px;height:120px;position:relative;z-index:10;box-shadow:0 8px 20px rgba(0,0,0,.25); }
+  #searchInput::placeholder{ color:rgba(255,255,255,.75); }
+  #searchInput:focus{ background:rgba(255,255,255,.25) !important; box-shadow:0 0 0 3px rgba(255,255,255,.25); }
+
+  /* banners added by JS */
+  #soil-map-banner a, #leaflenz-banner a, #harvestlenz-banner a{
+    transition:transform .2s, box-shadow .2s; animation:udUp .4s both;
+  }
+  #soil-map-banner a:hover, #leaflenz-banner a:hover, #harvestlenz-banner a:hover{
+    transform:translateY(-3px); box-shadow:0 10px 24px rgba(0,0,0,.25) !important;
+  }
+
+  /* ── empty state ── */
+  .empty-state{ display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;color:var(--tc-text-muted);text-align:center; }
+  .empty-state i{
+    font-size:30px;margin-bottom:14px;width:72px;height:72px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--ud-soft);color:var(--ud-g2);animation:udFloat 3s ease-in-out infinite;
+  }
+  .empty-state p{ font-size:14px; }
+
+  /* farmer status tabs */
+  .ud-fstat{ transition:background .15s; } .ud-fstat:hover{ background:var(--ud-soft); }
+
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+  @media (max-width:576px){ .ud-hero{ padding:18px 16px; } .ud-stat{ min-width:calc(50% - 5px); } .info-label{ width:45%; } }
+
+/* ── user dashboard extras: top bar + popups in theme colours ── */
+.user-topbar{ background:var(--ud-grad) !important; }
+.user-topbar .brand-icon{ animation:udPop .6s both; }
+.logout-btn{ transition:all .2s !important; }
+.logout-btn:hover{ background:#fff !important; color:var(--ud-g1) !important; }
+.popup-header{ background:var(--ud-grad) !important; }
+#logoutPopup{ animation:udUp .3s both; }
+@media (max-width:767.98px){
+  #logoutPopup{ width:94% !important; }
+  .user-topbar{ padding:0 14px !important; }
+}
+
+
+#right-panel, #api-details-container { scroll-margin-top: 70px; }

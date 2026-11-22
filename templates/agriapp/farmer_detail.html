@@ -453,8 +453,8 @@
   document.addEventListener('DOMContentLoaded', function () {
     const lat = {{ farmer.latitude }}, lng = {{ farmer.longitude }};
     const map = L.map('farmerMap').setView([lat, lng], 12);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri'
     }).addTo(map);
     L.marker([lat, lng]).addTo(map).bindPopup('{{ farmer.farmer_name }}').openPopup();
   });

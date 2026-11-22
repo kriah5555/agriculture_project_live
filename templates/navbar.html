@@ -293,6 +293,30 @@
         z-index: 1040;
       }
     }
+    /* ── Global polish: responsive + entrance animations (all pages) ── */
+    #content { min-width: 0; max-width: 100%; }
+    @keyframes pgUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    #content .card { animation: pgUp .45s both; transition: box-shadow .25s ease; }
+    #content .card:hover { box-shadow: 0 10px 26px rgba(15,23,42,.10); }
+    #content .row > *:nth-child(2) > .card { animation-delay: .06s; }
+    #content .row > *:nth-child(3) > .card { animation-delay: .12s; }
+    #content .row > *:nth-child(4) > .card { animation-delay: .18s; }
+    #content .row > *:nth-child(n+5) > .card { animation-delay: .24s; }
+    #content img, #content video, #content canvas { max-width: 100%; }
+    #content .btn { transition: transform .15s ease, box-shadow .15s ease; }
+    #content .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .auto-table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #content .leaflet-container { border-radius: 12px; }
+    @media (max-width: 767.98px) {
+      #content h1, #content .h1 { font-size: 1.5rem; }
+      #content h2, #content .h2 { font-size: 1.3rem; }
+      #content h3, #content .h3 { font-size: 1.15rem; }
+      #content .card { border-radius: 12px; }
+      #content .leaflet-container { max-height: 60vh; }
+      #content .modal-content { width: 94% !important; margin: 12% auto !important; }
+      #content .btn-group { flex-wrap: wrap; }
+    }
+    @media (prefers-reduced-motion: reduce) { #content * { animation: none !important; transition: none !important; } }
   </style>
 
   <!-- Restore sidebar state BEFORE paint to avoid flash -->
@@ -562,5 +586,19 @@
   </script>
 
   {% block extra_scripts %}{% endblock %}
+<script>
+  /* Wrap wide tables so they scroll sideways instead of breaking the layout on small screens */
+  (function () {
+    function wrapTables(root) {
+      (root || document).querySelectorAll('#content table').forEach(function (t) {
+        var p = t.parentElement, ox = p && getComputedStyle(p).overflowX;
+        if (!p || t.closest('.auto-table-scroll') || ox === 'auto' || ox === 'scroll' || p.classList.contains('table-responsive')) return;
+        var w = document.createElement('div'); w.className = 'auto-table-scroll';
+        p.insertBefore(w, t); w.appendChild(t);
+      });
+    }
+    document.addEventListener('DOMContentLoaded', function () { wrapTables(); setTimeout(wrapTables, 1500); });
+  })();
+</script>
 </body>
 </html>

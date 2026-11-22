@@ -259,6 +259,7 @@
   .st-testing_done     { background:#fff8e1; color:#e65100;  border:1px solid #ffe082; }
   .st-report_delivered { background:#e8f5e9; color:#2e7d32;  border:1px solid #a5d6a7; }
 </style>
+<link rel="stylesheet" href="{% static 'theme/user-ui.css' %}" />
 
 <!-- ══ Popup overlay ══════════════════════════════════════════ -->
 <div id="overlay" onclick="hidePopup()"></div>
@@ -288,13 +289,26 @@
 <div>
 
   <!-- Page header -->
-  <div class="d-flex align-items-center gap-3 mb-4 px-2">
-    <div style="width:44px;height:44px;border-radius:10px;background:#1a2f6b;display:flex;align-items:center;justify-content:center;">
-      <i class="fas fa-user text-white" style="font-size:18px;"></i>
+  <div class="ud-hero">
+    <div class="d-flex align-items-center gap-3 flex-wrap" style="position:relative;z-index:1;">
+      <div class="ud-hero-avatar">
+        {% if request.user.first_name %}{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}{% else %}<i class="fas fa-user"></i>{% endif %}
+      </div>
+      <div style="min-width:0;">
+        <h4>My Dashboard</h4>
+        <div class="ud-sub"><i class="fas fa-at me-1"></i>{{ request.user.username }}{% if request.user.get_full_name %} &nbsp;·&nbsp; {{ request.user.get_full_name }}{% endif %}</div>
+      </div>
     </div>
-    <div>
-      <h4 class="mb-0 fw-bold">My Dashboard</h4>
-      <span class="text-muted" style="font-size:13px;">{{ request.user.username }}</span>
+    <div class="ud-stats">
+      <div class="ud-stat"><div class="v">{{ linked_devices|length }}</div><div class="l"><i class="fas fa-microchip me-1"></i>Devices</div></div>
+      {% if profile %}
+      <div class="ud-stat"><div class="v">{% if profile.status %}<span class="ud-live me-1"></span>Active{% else %}Inactive{% endif %}</div><div class="l"><i class="fas fa-signal me-1"></i>Status</div></div>
+      {% endif %}
+      {% if is_soil_partner %}
+      <div class="ud-stat"><div class="v">{{ farmers|length }}</div><div class="l"><i class="fas fa-tractor me-1"></i>Farmers</div></div>
+      <div class="ud-stat"><div class="v">₹{{ payment_totals.paid_amount|default:"0"|floatformat:0 }}</div><div class="l"><i class="fas fa-check-circle me-1"></i>Paid</div></div>
+      <div class="ud-stat"><div class="v">₹{{ payment_totals.pending_amount|default:"0"|floatformat:0 }}</div><div class="l"><i class="fas fa-clock me-1"></i>Pending</div></div>
+      {% endif %}
     </div>
   </div>
 
@@ -393,15 +407,19 @@
 
             <!-- Colored dot per device type -->
             {% if device.devise_type == 'soilsaathi' %}
-              <span class="device-type-dot" style="background:#2e7d32;"></span>
+              <span class="device-type-ico" style="background:linear-gradient(135deg,#2e7d32,#43a047);"><i class="fas fa-leaf"></i></span>
             {% elif device.devise_type == 'atmo_sense' %}
-              <span class="device-type-dot" style="background:#1565c0;"></span>
+              <span class="device-type-ico" style="background:linear-gradient(135deg,#1565c0,#42a5f5);"><i class="fas fa-wind"></i></span>
             {% elif device.devise_type == 'soil_life' %}
-              <span class="device-type-dot" style="background:#6a1b9a;"></span>
+              <span class="device-type-ico" style="background:linear-gradient(135deg,#6a1b9a,#ab47bc);"><i class="fas fa-seedling"></i></span>
+            {% elif device.devise_type == 'leaflenz' %}
+              <span class="device-type-ico" style="background:linear-gradient(135deg,#33691e,#7cb342);"><i class="fas fa-camera"></i></span>
+            {% elif device.devise_type == 'harvestlenz' %}
+              <span class="device-type-ico" style="background:linear-gradient(135deg,#bf360c,#ff7043);"><i class="fas fa-apple-alt"></i></span>
             {% elif device.devise_type == 'soil_map' %}
-              <span class="device-type-dot" style="background:#2c5e1a;"></span>
+              <span class="device-type-ico" style="background:linear-gradient(135deg,#2c5e1a,#689f38);"><i class="fas fa-map-marked-alt"></i></span>
             {% else %}
-              <span class="device-type-dot" style="background:#e65100;"></span>
+              <span class="device-type-ico" style="background:linear-gradient(135deg,#e65100,#ffa726);"><i class="fas fa-flask"></i></span>
             {% endif %}
 
             <div class="flex-fill" style="min-width:0;">
@@ -494,6 +512,10 @@
               <div class="info-row"><span class="info-label">Balance Amount</span> <span class="info-value" id="balanceAmount"></span></div>
               <div class="info-row"><span class="info-label">API Limit</span>      <span class="info-value" id="api_limit"></span></div>
               <div class="info-row"><span class="info-label">API Used</span>       <span class="info-value" id="api_used"></span></div>
+              <div class="ud-usage" id="api_usage_wrap" style="display:none;">
+                <div class="ud-usage-track"><div class="ud-usage-fill" id="api_usage_fill"></div></div>
+                <div class="ud-usage-lbl"><span>API usage</span><span id="api_usage_pct"></span></div>
+              </div>
             </div>
             <!-- Map card -->
             <div class="ud-card flex-fill" style="min-height:200px; overflow:visible;">
@@ -763,6 +785,23 @@
       document.getElementById('right-placeholder').style.display = 'none';
       document.getElementById('right-panel').style.display       = 'block';
 
+      // Animated usage bar + reveal; on phones scroll the details into view
+      (function () {
+        const lim = parseFloat(device.api_limit), used = parseFloat(device.api_used) || 0;
+        const uWrap = document.getElementById('api_usage_wrap'), uFill = document.getElementById('api_usage_fill');
+        if (lim > 0) {
+          const pct = Math.min(100, used / lim * 100);
+          uWrap.style.display = 'block';
+          uFill.className = 'ud-usage-fill' + (pct >= 90 ? ' crit' : pct >= 70 ? ' warn' : '');
+          uFill.style.width = '0';
+          requestAnimationFrame(() => requestAnimationFrame(() => { uFill.style.width = pct + '%'; }));
+          document.getElementById('api_usage_pct').textContent = used + ' / ' + lim + ' (' + pct.toFixed(0) + '%)';
+        } else { uWrap.style.display = 'none'; }
+        const rp = document.getElementById('right-panel');
+        rp.classList.remove('ud-reveal'); void rp.offsetWidth; rp.classList.add('ud-reveal');
+        if (window.innerWidth < 992) setTimeout(() => rp.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+      })();
+
       // Highlight the active device item
       document.querySelectorAll('.device-list-item').forEach(el => el.classList.remove('active'));
       if (event && event.currentTarget) event.currentTarget.classList.add('active');
@@ -777,8 +816,8 @@
         mapInstance = L.map('leaflet-map').setView([device.latitude, device.longitude], 5);
 
         // Add a tile layer (OpenStreetMap)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+          attribution: 'Tiles &copy; Esri'
         }).addTo(mapInstance);
 
         // Add a marker at the device's location

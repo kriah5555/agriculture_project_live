@@ -167,227 +167,86 @@
     }
   </style>
   
-<!-- Impact Overview Card with Donut Chart 1 -->
-<div class="row justify-content-end mb-4">
-  <div class="col-md-4 d-flex justify-content-end">
-    <div class="card p-3 d-flex flex-column w-100" style="height: 355px; border-radius: 4px;">
-      <div class="d-flex justify-content-between align-items-center mb-2 w-100">
-        <h5 class="mb-0">Impact Overview</h5>
-      </div>
-      <div class="d-flex flex-column align-items-center w-100">
-        <div id="impactDonutChartApex1" style="width:220px;height:110px;"></div>
-        <div class="fw-bold fs-4 mt-n3 mb-2" style="margin-top: -110px;">100 Kgs CO₂e</div>
-      </div>
-      <div class="d-flex justify-content-around mt-2 w-100" style="font-size: 0.95rem;">
-        <span class="d-flex align-items-center">
-          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#4e79a7,#76b7b2);border-radius:50%;margin-right:6px;"></span>
-          GHG Reduced 30%
-        </span>
-      </div>
-      <div class="text-muted mt-1" style="font-size: 0.92rem; margin-top: -10px;">
-        Reduced greenhouse gas and fertilizer use, with optimized water for crop growth.
-      </div>
+<!-- Impact Overview — animated SVG gauges (no overlap, responsive) -->
+<style>
+  @media (max-width:767.98px){ #realTimeClock{position:static !important;display:inline-block;margin:0 0 10px;font-size:1rem !important;padding:.4rem .8rem !important} }
+  .imp-card{background:var(--tc-surface);border:1px solid var(--tc-border);border-radius:16px;padding:18px 18px 16px;height:100%;
+    box-shadow:0 4px 18px rgba(15,23,42,.06);transition:transform .25s,box-shadow .25s;animation:impUp .5s both;display:flex;flex-direction:column}
+  .imp-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(15,23,42,.1)}
+  .imp-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .imp-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--g);flex-shrink:0}
+  .imp-head h5{margin:0;font-size:15px;font-weight:700;color:var(--tc-text)}
+  .imp-head small{display:block;font-size:11px;color:var(--tc-text-muted)}
+  .imp-gauge{position:relative;width:100%;max-width:240px;margin:6px auto 0}
+  .imp-gauge svg{width:100%;height:auto;display:block;overflow:visible}
+  .imp-gauge .trk{stroke:var(--tc-border);}
+  .imp-gauge .val{transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)}
+  .imp-center{position:absolute;left:0;right:0;bottom:2px;text-align:center}
+  .imp-pct{font-size:28px;font-weight:800;line-height:1;color:var(--tc-text)}
+  .imp-lbl{font-size:11px;color:var(--tc-text-muted);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+  .imp-metric{text-align:center;font-weight:800;font-size:17px;color:var(--tc-text);margin:10px 0 2px}
+  .imp-legend{display:flex;justify-content:center;gap:8px;align-items:center;font-size:13px;color:var(--tc-text)}
+  .imp-legend i{width:10px;height:10px;border-radius:50%;background:var(--g);display:inline-block}
+  .imp-desc{font-size:12.5px;color:var(--tc-text-muted);text-align:center;margin-top:8px;line-height:1.45}
+  @keyframes impUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .imp-row > div:nth-child(2) .imp-card{animation-delay:.1s}
+  .imp-row > div:nth-child(3) .imp-card{animation-delay:.2s}
+</style>
+<div class="row g-3 mb-4 imp-row">
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="imp-card" style="--g:linear-gradient(135deg,#4e79a7,#76b7b2)">
+      <div class="imp-head"><span class="imp-ico"><i class="fas fa-cloud"></i></span><div><h5>Impact Overview</h5><small>Carbon footprint</small></div></div>
+      <div class="imp-gauge" data-pct="30" data-c1="#4e79a7" data-c2="#76b7b2"></div>
+      <div class="imp-metric">100 Kgs CO₂e</div>
+      <div class="imp-legend"><i></i> GHG Reduced 30%</div>
+      <div class="imp-desc">Reduced greenhouse gas and fertilizer use, with optimized water for crop growth.</div>
     </div>
   </div>
-  <!-- Impact Overview Card with Donut Chart 2 -->
-  <div class="col-md-4 d-flex justify-content-end">
-    <div class="card p-3 d-flex flex-column w-100" style="height: 355px; border-radius: 4px;">
-      <div class="d-flex justify-content-between align-items-center mb-2 w-100">
-        <h5 class="mb-0">Impact Overview</h5>
-      </div>
-      <div class="d-flex flex-column align-items-center w-100">
-        <div id="impactDonutChartApex2" style="width:220px;height:110px;"></div>
-        <div class="fw-bold fs-4 mt-n3 mb-2" style="margin-top: -110px;">SI (Salt Index)</div>
-      </div>
-      <div class="d-flex justify-content-around mt-2 w-100" style="font-size: 0.95rem;">
-        <span class="d-flex align-items-center">
-          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#f28e2b,#f6c85f);border-radius:50%;margin-right:6px;"></span>
-          Fertilizer Reduced 20%
-        </span>
-      </div>
-      <div class="text-muted mt-1" style="font-size: 0.92rem; margin-top: -10px;">
-        Reduced greenhouse gas and fertilizer use, with optimized water for crop growth.
-      </div>
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="imp-card" style="--g:linear-gradient(135deg,#f28e2b,#f6c85f)">
+      <div class="imp-head"><span class="imp-ico"><i class="fas fa-flask"></i></span><div><h5>Impact Overview</h5><small>Fertilizer efficiency</small></div></div>
+      <div class="imp-gauge" data-pct="20" data-c1="#f28e2b" data-c2="#f6c85f"></div>
+      <div class="imp-metric">SI (Salt Index)</div>
+      <div class="imp-legend"><i></i> Fertilizer Reduced 20%</div>
+      <div class="imp-desc">Reduced greenhouse gas and fertilizer use, with optimized water for crop growth.</div>
     </div>
   </div>
-  <!-- Impact Overview Card with Donut Chart 3 -->
-  <div class="col-md-4 d-flex justify-content-end">
-    <div class="card p-3 d-flex flex-column w-100" style="height: 355px; border-radius: 4px;">
-      <div class="d-flex justify-content-between align-items-center mb-2 w-100">
-        <h5 class="mb-0">Impact Overview</h5>
-      </div>
-      <div class="d-flex flex-column align-items-center w-100">
-        <div id="impactDonutChartApex3" style="width:220px;height:110px;"></div>
-        <div class="fw-bold fs-4 mt-n3 mb-2" style="margin-top: -110px;">Water(m³)</div>
-      </div>
-      <div class="d-flex justify-content-around mt-2 w-100" style="font-size: 0.95rem;">
-        <span class="d-flex align-items-center">
-          <span style="display:inline-block;width:12px;height:12px;background:linear-gradient(90deg,#76b7b2,#4fc3f7);border-radius:50%;margin-right:6px;"></span>
-          Water Optimized 50%
-        </span>
-      </div>
-      <div class="text-muted mt-1" style="font-size: 0.92rem; margin-top: -10px;">
-        Reduced greenhouse gas and fertilizer use, with optimized water for crop growth.
-      </div>
+  <div class="col-12 col-md-12 col-xl-4">
+    <div class="imp-card" style="--g:linear-gradient(135deg,#76b7b2,#4fc3f7)">
+      <div class="imp-head"><span class="imp-ico"><i class="fas fa-tint"></i></span><div><h5>Impact Overview</h5><small>Water savings</small></div></div>
+      <div class="imp-gauge" data-pct="50" data-c1="#76b7b2" data-c2="#4fc3f7"></div>
+      <div class="imp-metric">Water(m³)</div>
+      <div class="imp-legend"><i></i> Water Optimized 50%</div>
+      <div class="imp-desc">Reduced greenhouse gas and fertilizer use, with optimized water for crop growth.</div>
     </div>
   </div>
 </div>
-
-<!-- ApexCharts CDN -->
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-// Chart 1: GHG Reduced
-var options1 = {
-  chart: {
-    type: 'donut',
-    height: 200,
-  },
-  series: [30, 70], // 30% reduced, 70% remaining
-  labels: ['GHG Reduced', 'Remaining'],
-  colors: [
-    'url(#ghgGradient)',
-    'url(#ghgGradientRemaining)'
-  ],
-  legend: { show: false },
-  dataLabels: { enabled: false },
-  stroke: { width: 0 },
-  plotOptions: {
-    pie: {
-      startAngle: -90,
-      endAngle: 90,
-      donut: {
-        size: '70%',
-      }
-    }
-  },
-  tooltip: {
-    y: {
-      formatter: function(val, opts) {
-        return opts.w.globals.labels[opts.seriesIndex] + ': ' + val + '%';
-      }
-    }
-  }
-};
-var chart1 = new ApexCharts(document.querySelector("#impactDonutChartApex1"), options1);
-chart1.render().then(function() {
-  var svgDefs = document.querySelector("#impactDonutChartApex1 svg defs");
-  if (svgDefs) {
-    svgDefs.innerHTML = `
-      <linearGradient id="ghgGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#4e79a7"/>
-        <stop offset="100%" stop-color="#76b7b2"/>
-      </linearGradient>
-      <linearGradient id="ghgGradientRemaining" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#b0b7c3"/>
-        <stop offset="100%" stop-color="#e0e4ea"/>
-      </linearGradient>
-    `;
-  }
-});
-
-// Chart 2: Fertilizer Reduced
-var options2 = {
-  chart: {
-    type: 'donut',
-    height: 200,
-  },
-  series: [20, 80], // 20% reduced, 80% remaining
-  labels: ['Fertilizer Reduced', 'Remaining'],
-  colors: [
-    'url(#fertilizerGradient)',
-    'url(#ghgGradientRemaining)'
-  ],
-  legend: { show: false },
-  dataLabels: { enabled: false },
-  stroke: { width: 0 },
-  plotOptions: {
-    pie: {
-      startAngle: -90,
-      endAngle: 90,
-      donut: {
-        size: '70%',
-      }
-    }
-  },
-  tooltip: {
-    y: {
-      formatter: function(val, opts) {
-        return opts.w.globals.labels[opts.seriesIndex] + ': ' + val + '%';
-      }
-    }
-  }
-};
-var chart2 = new ApexCharts(document.querySelector("#impactDonutChartApex2"), options2);
-chart2.render().then(function() {
-  var svgDefs = document.querySelector("#impactDonutChartApex2 svg defs");
-  if (svgDefs) {
-    svgDefs.innerHTML = `
-      <linearGradient id="fertilizerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#f28e2b"/>
-        <stop offset="100%" stop-color="#f6c85f"/>
-      </linearGradient>
-      <linearGradient id="ghgGradientRemaining" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#b0b7c3"/>
-        <stop offset="100%" stop-color="#e0e4ea"/>
-      </linearGradient>      
-    `;
-  }
-});
-
-// Chart 3: Water Optimized
-var options3 = {
-  chart: {
-    type: 'donut',
-    height: 200,
-  },
-  series: [50, 50], // 50% optimized, 50% remaining
-  labels: ['Water Optimized', 'Remaining'],
-  colors: [
-    'url(#waterGradient)',
-    'url(#ghgGradientRemaining)'
-  ],
-  legend: { show: false },
-  dataLabels: { enabled: false },
-  stroke: { width: 0 },
-  plotOptions: {
-    pie: {
-      startAngle: -90,
-      endAngle: 90,
-      donut: {
-        size: '70%',
-      }
-    }
-  },
-  tooltip: {
-    y: {
-      formatter: function(val, opts) {
-        return opts.w.globals.labels[opts.seriesIndex] + ': ' + val + '%';
-      }
-    }
-  }
-};
-var chart3 = new ApexCharts(document.querySelector("#impactDonutChartApex3"), options3);
-chart3.render().then(function() {
-  var svgDefs = document.querySelector("#impactDonutChartApex3 svg defs");
-  if (svgDefs) {
-    svgDefs.innerHTML = `
-      <linearGradient id="waterGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#76b7b2"/>
-        <stop offset="100%" stop-color="#4fc3f7"/>
-      </linearGradient>
-      <linearGradient id="ghgGradientRemaining" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#b0b7c3"/>
-        <stop offset="100%" stop-color="#e0e4ea"/>
-      </linearGradient>
-    `;
-  }
-});
+(function(){
+  const LEN = Math.PI * 80;   // semicircle r=80
+  document.querySelectorAll('.imp-gauge').forEach((g, i) => {
+    const pct = +g.dataset.pct, id = 'impg' + i, lbl = g.closest('.imp-card').querySelector('.imp-legend').textContent.replace(/\s*\d+%\s*$/,'').trim();
+    g.innerHTML = `<svg viewBox="0 0 200 112"><defs><linearGradient id="${id}" x1="0" x2="1"><stop offset="0" stop-color="${g.dataset.c1}"/><stop offset="1" stop-color="${g.dataset.c2}"/></linearGradient></defs>
+      <path class="trk" d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke-width="16" stroke-linecap="round"/>
+      <path class="val" d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="url(#${id})" stroke-width="16" stroke-linecap="round" stroke-dasharray="${LEN}" stroke-dashoffset="${LEN}"/></svg>
+      <div class="imp-center"><div class="imp-pct">0%</div><div class="imp-lbl">${lbl}</div></div>`;
+    const arc = g.querySelector('.val'), num = g.querySelector('.imp-pct');
+    const run = () => {
+      arc.style.strokeDashoffset = LEN * (1 - pct/100);
+      const t0 = performance.now();
+      (function step(t){ const k = Math.min(1,(t-t0)/1400); num.textContent = Math.round(pct*(1-Math.pow(1-k,3))) + '%'; if (k<1) requestAnimationFrame(step); })(t0);
+    };
+    'IntersectionObserver' in window
+      ? (function(){ let done=false; const go=()=>{ if(!done){ done=true; run(); } }; new IntersectionObserver((es,o)=>es.forEach(e=>{ if(e.isIntersecting){ setTimeout(go,150+i*120); o.disconnect(); } }),{threshold:.3}).observe(g); setTimeout(go,3000+i*120); })()
+      : run();
+  });
+})();
 </script>
   
 
   <div class="row">
     <div id="map" class="col-md-12 mb-12">
-      <div id="leaflet-map" style="height: 400px;"></div>
+      <div id="leaflet-map" style="width:100%; height:400px; max-height:60vh; margin-bottom:24px; border-radius:12px; box-shadow:0 4px 24px rgba(0,0,0,0.10);"></div>
     </div>
   </div>
 
@@ -401,13 +260,6 @@ chart3.render().then(function() {
 
 
 <!-- Map Section Start -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Leaflet.js Script -->
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-
-<!-- Add the map container -->
-<div id="leaflet-map" style="width: 100%; height: 400px; margin-bottom: 24px; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.10);"></div>
 
 <!-- Map script -->
 <script>
@@ -415,8 +267,8 @@ chart3.render().then(function() {
   var map = L.map('leaflet-map').setView([20.5937, 78.9629], 5); // Center on India, for example
 
   // Add a CartoDB Positron tile layer for better view
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri'
   }).addTo(map);
 
   // Define device types and their colors
@@ -506,8 +358,8 @@ chart3.render().then(function() {
   };
 
   // Render Chart
-  const ctx = document.getElementById('apiCallsLineChart').getContext('2d');
-  new Chart(ctx, config);
+  const lineEl = document.getElementById('apiCallsLineChart');
+  if (lineEl) new Chart(lineEl.getContext('2d'), config);
 </script>
 
 <!-- script for donut chart -->
@@ -723,8 +575,8 @@ chart3.render().then(function() {
   var Lref = L;
 
   // Add tile layer
-  Lref.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; OpenStreetMap contributors'
+  Lref.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri'
   }).addTo(heat_map);
 
   var indiaGeoJsonUrl = 'https://raw.githubusercontent.com/udit-001/india-maps-data/main/geojson/india.geojson';

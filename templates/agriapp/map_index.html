@@ -150,18 +150,17 @@
 <input type="hidden" name="" id="zoom" value="{{zoom}}">
   
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-    // var directionsDisplay;
-    // var directionsService = new google.maps.DirectionsService();
+    /* Leaflet (keyless) replacement for Google Maps: map = satellite hybrid, map1 = road map */
     var map;
     var map1;
+    var MARKER_HEX = {red:'#e53935',green:'#43a047',blue:'#1e88e5',yellow:'#fdd835',orange:'#fb8c00',purple:'#8e24aa',pink:'#d81b60',ltblue:'#29b6f6'};
     function initialize() {
-        directionsDisplay  = new google.maps.DirectionsRenderer();
-        directionsDisplay1 = new google.maps.DirectionsRenderer();
-        locations          = document.getElementById("locs").value;
-        zoom               = parseFloat(document.getElementById("zoom").value);
-        locations          = locations.split('-')
+        var locations = document.getElementById("locs").value.split('-');
+        var zoom      = parseFloat(document.getElementById("zoom").value);
+        var latitude, longitude;
         if (zoom != 0) {
             var tt    = locations[1].split(',');
             latitude  = parseFloat(tt[1]);
@@ -169,55 +168,24 @@
         } else {
             latitude  = 15.3173;
             longitude = 75.7139;
-            zoom      = 7
+            zoom      = 7;
         }
-        var india          = new google.maps.LatLng(latitude, longitude);
-        var mapOptions     = { zoom:zoom, mapTypeId: google.maps.MapTypeId.HYBRID , center: india } // ROADMAP , HYBRID , SATELLITE , TERRAIN 
-        var mapOptions1    = { zoom:zoom, mapTypeId: google.maps.MapTypeId.ROADMAP , center: india } // ROADMAP , HYBRID , SATELLITE , TERRAIN 
-        map                = new google.maps.Map(document.getElementById("map_canvas"), mapOptions); // 
-        map1               = new google.maps.Map(document.getElementById("map_canvas1"), mapOptions1); // 
-        directionsDisplay.setMap(map);
-        directionsDisplay1.setMap(map1);
+        map  = L.map('map_canvas').setView([latitude, longitude], zoom);
+        map1 = L.map('map_canvas1').setView([latitude, longitude], zoom);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {attribution:'Tiles &copy; Esri', maxNativeZoom:18, maxZoom:20}).addTo(map);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {maxZoom:20}).addTo(map);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {attribution: 'Tiles &copy; Esri', maxZoom:19}).addTo(map1);
 
-        var i;
-        locations = document.getElementById("locs").value;
-        locations = locations.split('-')
-        var loc ={} ;
-        for (i = 0; i < locations.length; i++) {
+        for (var i = 0; i < locations.length; i++) {
             var t = locations[i].split(',');
             var name = t[0], lat = parseFloat(t[1]), long = parseFloat(t[2]), pk = t[3], color = t[4];
-
-            icon = { url: "http://maps.google.com/mapfiles/ms/icons/"+color+"-dot.png" };
-
-            if (name.length) {
-                var mkr =  new google.maps.Marker({
-                    position: {lat: lat, lng: long},
-                    map: map,
-                    icon: icon
-                });
-                var mkr1 =  new google.maps.Marker({
-                    position: {lat: lat, lng: long},
-                    map: map1,
-                    icon: icon
-                });
-
-                var inf = new google.maps.InfoWindow({
-                    content: "<a href='/device-details/"+pk+"'>"+name + ':' + mkr.getPosition() + "</a>",
-                });
-                var inf1 = new google.maps.InfoWindow({
-                    content: "<a href='/device-details/"+pk+"'>"+name + ':' + mkr1.getPosition() + "</a>",
-                });
-
-                // mkr.addListener("click", () => {
-                //     inf.open({
-                //         anchor: mkr,
-                //         map,
-                //     });
-                // });
-                
-                inf.open(map, mkr);
-                inf1.open(map1, mkr1);
-            }  
+            if (!name.length || isNaN(lat) || isNaN(long)) continue;
+            var hex = MARKER_HEX[color] || color || '#e53935';
+            var html = "<a href='/device-details/"+pk+"'>"+name+': ('+lat+', '+long+')</a>';
+            [map, map1].forEach(function (m) {
+                L.circleMarker([lat, long], {radius:8, color:'#fff', weight:2, fillColor:hex, fillOpacity:1})
+                 .addTo(m).bindTooltip(html, {permanent:true, direction:'top', interactive:true, offset:[0,-8]});
+            });
         }
     }
     $(document).ready(function(e) { initialize() });
@@ -246,8 +214,8 @@
 <script>
     $('.select2').select2();
 </script>
-    <div id="map_canvas" style="height: 500px; width:90%; margin: 5%;float:left"></div>
-    <div id="map_canvas1" style="height: 500px; width:90%; margin: 5%;float:left"></div>
+    <div id="map_canvas" style="height: 500px; max-height:70vh; width:90%; margin: 5%;float:left;border-radius:12px;overflow:hidden"></div>
+    <div id="map_canvas1" style="height: 500px; max-height:70vh; width:90%; margin: 5%;float:left;border-radius:12px;overflow:hidden"></div>
     
   
   <!-- map -->

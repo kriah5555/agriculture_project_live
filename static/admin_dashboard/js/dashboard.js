@@ -256,9 +256,9 @@
     const map = L.map('map').setView([0, 0], 2);
   
     // Add the OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
+      attribution: 'Tiles &copy; Esri'
     }).addTo(map);
   
     // Add markers for each location type

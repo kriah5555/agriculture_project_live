@@ -177,8 +177,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Map
 var mapInstance = L.map('map').setView([{{ latitude|default:"15.3173" }}, {{ longitude|default:"75.7139" }}], 5);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles &copy; Esri'
 }).addTo(mapInstance);
 L.circleMarker([{{ latitude|default:"15.3173" }}, {{ longitude|default:"75.7139" }}], {
   radius: 8, fillColor: '#198754', color: '#198754', weight: 2, opacity: 1, fillOpacity: 0.6

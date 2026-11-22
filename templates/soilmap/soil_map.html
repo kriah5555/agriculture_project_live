@@ -539,6 +539,117 @@
             #fetchFilterBox{padding:20px 18px 16px}
             .ff-pill{min-width:48px;padding:8px 5px}
         }
+        /* ═══ Nutrient layer system ═══ */
+        @keyframes lyrUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+        @keyframes lyrDrop{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
+        @keyframes lyrSlide{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+        @keyframes lyrFade{from{opacity:0;filter:blur(6px)}to{opacity:1;filter:none}}
+        @keyframes lyrPulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}100%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
+        .soil-lyr-img{animation:lyrFade .7s ease-out both;image-rendering:auto}
+        .soil-sample-pt{filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));cursor:pointer}
+        .sp-pop{font-family:'Inter',sans-serif;font-size:12px;line-height:1.55}
+
+        /* sidebar switcher */
+        .lyr-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#f1f5ee;padding:4px;border-radius:11px;margin-bottom:9px}
+        .lyr-tab{border:none;background:transparent;border-radius:8px;padding:6px 2px;font:600 9.5px/1.25 'Inter',sans-serif;color:#4a6a4a;cursor:pointer;transition:all .2s}
+        .lyr-tab:hover{background:#fff}
+        .lyr-tab.active{background:#fff;color:var(--primary);box-shadow:0 2px 6px rgba(44,94,26,.15)}
+        .lyr-list{display:flex;flex-direction:column;gap:7px;margin-bottom:10px}
+        .lyr-card{position:relative;display:flex;align-items:center;gap:9px;padding:10px 10px;border-radius:12px;background:#fff;
+            border:1.5px solid #e6ede0;cursor:pointer;transition:all .2s;animation:lyrUp .35s both}
+        .lyr-card:hover{border-color:#a3d977;transform:translateY(-2px);box-shadow:0 6px 16px rgba(44,94,26,.12)}
+        .lyr-card.active{border-color:#22a06b;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);box-shadow:0 0 0 3px rgba(34,160,107,.15)}
+        .lyr-radio{width:15px;height:15px;border-radius:50%;border:2px solid #b7c9b0;flex-shrink:0;transition:all .2s}
+        .lyr-card.active .lyr-radio{border-color:#16a34a;background:radial-gradient(#16a34a 45%,transparent 50%);animation:lyrPulse 1.6s infinite}
+        .lyr-sym{min-width:30px;height:30px;padding:0 4px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+            font-weight:800;font-size:11.5px;color:#fff;background:var(--c);box-shadow:0 3px 8px rgba(0,0,0,.15);flex-shrink:0}
+        .lyr-main{flex:1;min-width:0}
+        .lyr-name{font-size:12.5px;font-weight:700;color:#1a2a1a}
+        .lyr-desc{font-size:9.5px;color:#7b8f7b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lyr-val{font-size:10.5px;color:#4b5b4b;margin-top:2px}
+        .lyr-val b{color:var(--accent)}
+        .lyr-rate{display:inline-block;margin-left:3px;padding:0 6px;border-radius:99px;font-size:8.5px;font-weight:700;color:#fff;background:var(--c)}
+        .lyr-side{width:86px;flex-shrink:0;text-align:right}
+        .lyr-tag{font-size:8.5px;font-weight:700;color:#8aa08a;margin-bottom:4px;white-space:nowrap}
+        .lyr-card.active .lyr-tag{color:#16a34a}
+        .lyr-grad{height:7px;border-radius:99px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+        .lyr-range{font-size:8.5px;color:#7b8f7b;margin-top:3px;white-space:nowrap}
+        #par-sel-sb{font-size:.8rem;padding:7px 12px}
+
+        /* top layer bar (inside map) */
+        #lyrBar{position:absolute;top:64px;left:50%;transform:translateX(-50%);z-index:1000;display:none;
+            background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-radius:14px;padding:8px 12px;
+            box-shadow:0 6px 22px rgba(0,0,0,.18);max-width:calc(100% - 120px);font-family:'Inter',sans-serif}
+        #lyrBar.show{display:block;animation:lyrDrop .45s cubic-bezier(.2,.8,.2,1) both}
+        .lb-title{font-size:11px;font-weight:800;letter-spacing:.5px;color:#14532d;display:flex;align-items:center;gap:7px;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lb-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:lyrPulse 1.6s infinite;flex-shrink:0}
+        .lb-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+        .lb-lbl{font-size:10px;color:#6b7c6b;font-weight:600;margin-right:2px}
+        .lb-chip{border:1.5px solid #dfe8d8;background:#fff;border-radius:8px;padding:4px 9px;font:600 10.5px 'Inter',sans-serif;color:#33503a;cursor:pointer;transition:all .18s}
+        .lb-chip b{color:var(--primary)}
+        .lb-chip:hover{border-color:#86c46a;transform:translateY(-1px)}
+        .lb-chip.active{background:linear-gradient(135deg,#dcfce7,#d1fae5);border-color:#22a06b;color:#14532d}
+        .lb-more{background:var(--primary);color:#fff;border-color:var(--primary)}
+        .lb-more:hover{background:#166534}
+
+        /* live metrics (inside map, top-right) */
+        #lyrMetrics{position:absolute;top:64px;right:12px;z-index:1000;width:230px;display:none;font-family:'Inter',sans-serif;
+            background:rgba(255,255,255,.97);backdrop-filter:blur(6px);border-radius:14px;box-shadow:0 8px 26px rgba(0,0,0,.18);overflow:hidden}
+        #lyrMetrics.show{display:block;animation:lyrSlide .45s cubic-bezier(.2,.8,.2,1) both}
+        .lm-h{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:linear-gradient(135deg,#14532d,#15803d 60%,#0d9488);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.6px}
+        .lm-x{border:none;background:rgba(255,255,255,.18);color:#fff;border-radius:6px;width:22px;height:22px;cursor:pointer;transition:transform .25s}
+        #lyrMetrics.min .lm-x{transform:rotate(180deg)}
+        #lyrMetrics.min .lm-body{display:none}
+        .lm-body{padding:10px 12px 12px;max-height:calc(100vh - 230px);overflow-y:auto}
+        .lm-k{font-size:9px;color:#7b8f7b;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+        .lm-big{font-size:15px;font-weight:800;color:#14532d;margin-bottom:7px}
+        .lm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:7px 0;border-top:1px solid #eef3ea;border-bottom:1px solid #eef3ea;margin-bottom:7px}
+        .lm-v{font-size:15px;font-weight:800;color:#1a2a1a}
+        .lm-v small{font-size:9px;color:#7b8f7b;font-weight:600}
+        .lm-rate{display:inline-block;margin:2px 0 6px;padding:2px 10px;border-radius:99px;color:#fff;font-size:11px;font-weight:700;background:var(--c)}
+        .lm-warn,.lm-ok{display:flex;gap:7px;align-items:flex-start;border-radius:9px;padding:7px 9px;font-size:11px;line-height:1.35;margin-top:4px}
+        .lm-warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
+        .lm-ok{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+        .lm-bar{display:flex;align-items:center;gap:6px;margin-top:5px}
+        .lm-bl{width:76px;font-size:9.5px;color:#4b5b4b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lm-bt{flex:1;height:8px;background:#eef2ea;border-radius:99px;overflow:hidden}
+        .lm-bf{height:100%;width:0;border-radius:99px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+        .lm-bp{width:28px;text-align:right;font-size:9.5px;font-weight:700;color:#33503a}
+
+        /* hover tip */
+        #lyrTip{position:absolute;z-index:1001;pointer-events:none;display:none;background:rgba(17,24,39,.9);color:#fff;
+            border-radius:10px;padding:7px 10px;font-family:'Inter',sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.3);min-width:110px}
+        #lyrTip.show{display:block}
+        #lyrTip .t-h{font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.5px}
+        #lyrTip .t-v{font-size:16px;font-weight:800}
+        #lyrTip .t-v small{font-size:10px;opacity:.75}
+        #lyrTip .t-r{display:inline-block;margin-top:2px;padding:1px 8px;border-radius:99px;font-size:10px;font-weight:700;background:var(--c)}
+
+        /* legend */
+        .soil-legend{padding:11px 13px !important;background:rgba(255,255,255,.97) !important;border-radius:12px !important;
+            box-shadow:0 6px 20px rgba(0,0,0,.18) !important;min-width:200px;animation:lyrUp .4s both;font-family:'Inter',sans-serif}
+        .soil-legend h4{margin:0 0 7px;font-size:12px;font-weight:800;color:#14532d}
+        .soil-legend h4 small{font-weight:600;color:#7b8f7b}
+        .sl-grad{height:8px;border-radius:99px;margin-bottom:8px}
+        .sl-row{display:flex;align-items:center;gap:7px;line-height:20px;font-size:11px}
+        .sl-sw{width:14px;height:14px;border-radius:4px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+        .sl-nm{flex:1;font-weight:600;color:#33503a;white-space:nowrap}
+        .sl-rg{color:#7b8f7b;font-size:10px;white-space:nowrap}
+        .sl-pc{width:30px;text-align:right;font-weight:700;color:#1a2a1a;font-size:10px}
+
+        @media (max-width:767.98px){
+            #lyrBar{top:156px;left:62px;right:8px;transform:none;max-width:none;padding:6px 8px}
+            #lyrBar.show{animation:lyrUp .4s both}
+            .lb-title{font-size:9.5px;margin-bottom:4px}
+            .lb-row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+            .lb-chip{white-space:nowrap;flex-shrink:0}
+            .lb-lbl{display:none}
+            #lyrMetrics{top:auto;bottom:34px;right:8px;width:200px}
+            #lyrMetrics:not(.min) .lm-body{max-height:38vh}
+            .soil-legend{min-width:0;max-width:170px}
+            .sl-rg{display:none}
+        }
+        @media (prefers-reduced-motion:reduce){.lyr-card,.soil-lyr-img,#lyrBar.show,#lyrMetrics.show{animation:none}}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
@@ -823,11 +934,11 @@ function initMap() {
 
     satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         {attribution:'Tiles &copy; Esri', maxNativeZoom:18, maxZoom:20});
-    strLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-        {attribution:'&copy; OSM &copy; CARTO', maxZoom:20});
+    strLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+        {attribution: 'Tiles &copy; Esri', maxZoom:20});
     satLayer.addTo(map);
 
-    L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png',
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
         {attribution:'', subdomains:'abcd', maxZoom:20}).addTo(map);
 
     rasterGridGroup = L.featureGroup().addTo(map);
@@ -1421,8 +1532,9 @@ function renderSoilPane(data) {
     document.getElementById('pane-soil').innerHTML = `
       <div class="${fc} fert-badge-sb">Soil Fertility: ${eh(fert)}</div>
       <div id="soil-overview-sb">${cards}</div>
-      <div class="sb-sec">&#127774; Parameter Map</div>
-      <select class="par-sel" id="par-sel-sb" onchange="updateSoilRaster()">${opts}</select>
+      <div class="sb-sec">&#127774; Layer Switcher &amp; Controls</div>
+      <div id="lyr-switcher"></div>
+      <select class="par-sel" id="par-sel-sb" onchange="updateSoilRaster()" title="All parameters">${opts}</select>
       <div class="val-disp-sb"><span id="par-val-sb">—</span><span id="par-unit-sb">pH</span></div>
       <div class="sb-sec">&#127782; Environmental</div>
       <div class="env-g-sb">
@@ -1434,6 +1546,9 @@ function renderSoilPane(data) {
       <button class="btn-pdf" onclick="generatePDF()">&#128196; Download PDF Report</button>`;
 
     soilData._merged = {...chem, ...env};
+    document.getElementById('par-sel-sb').value = 'n';   // open on Nitrogen like the N-P-K view
+    lyrGroup = 'macro';
+    document.getElementById('lyr-switcher').innerHTML = layerSwitcherHtml();
     document.getElementById('pane-soil').insertAdjacentHTML('beforeend', hiwBlock('soil'));
     updateSoilRaster();
 }
@@ -1613,6 +1728,7 @@ function clearRasters() {
     zoneRasterLayers.length = 0;
     if (legendControl) { map.removeControl(legendControl); legendControl = null; }
     document.getElementById('rasterBox').classList.remove('show');
+    if (typeof hideLyrOverlays === 'function') hideLyrOverlays();
 }
 
 /* ── Zone raster overlay (canvas imageOverlay) ───────────────────────────── */
@@ -1800,19 +1916,207 @@ function pointInPolygon(point,vs){
     return inside;
 }
 
+/* ═══ Soil nutrient LAYERS — switcher, smooth raster, contours, metrics ═══ */
+const SOIL_LAYERS = [
+    ['ph','pH Level','pH'],['ec','Electric Conductivity','dS/m'],
+    ['n','Nitrogen (N)','kg/ha'],['p','Phosphorus (P)','kg/ha'],['k','Potassium (K)','kg/ha'],
+    ['organic_carbon','Organic Carbon','%'],['s','Sulfur','ppm'],['fe','Iron (Fe)','ppm'],
+    ['zn','Zinc (Zn)','ppm'],['cu','Copper (Cu)','ppm'],['b','Boron (B)','ppm'],['mn','Manganese (Mn)','ppm'],
+    ['sand_pct','Sand Content','%'],['clay_pct','Clay Content','%'],['silt_pct','Silt Content','%']
+];
+const LAYER_META = {
+    n:{sym:'N',desc:'Available nitrogen distribution',grp:'macro'},
+    p:{sym:'P',desc:'Plant-available P (Olsen/Bray)',grp:'macro'},
+    k:{sym:'K',desc:'Exchangeable potassium',grp:'macro'},
+    ph:{sym:'pH',desc:'Acidity / alkalinity distribution',grp:'soil'},
+    ec:{sym:'EC',desc:'Soluble salts / salinity',grp:'soil'},
+    organic_carbon:{sym:'OC',desc:'Total organic carbon',grp:'soil'},
+    sand_pct:{sym:'Sa',desc:'Sand fraction (texture)',grp:'soil'},
+    clay_pct:{sym:'Cl',desc:'Clay fraction (texture)',grp:'soil'},
+    silt_pct:{sym:'Si',desc:'Silt fraction (texture)',grp:'soil'},
+    s:{sym:'S',desc:'Available sulphur',grp:'micro'},
+    fe:{sym:'Fe',desc:'DTPA iron',grp:'micro'},
+    zn:{sym:'Zn',desc:'DTPA zinc',grp:'micro'},
+    cu:{sym:'Cu',desc:'DTPA copper',grp:'micro'},
+    b:{sym:'B',desc:'Hot-water boron',grp:'micro'},
+    mn:{sym:'Mn',desc:'DTPA manganese',grp:'micro'}
+};
+const LAYER_GROUPS = [['macro','Macronutrients<br>(N-P-K)'],['micro','Secondary &amp;<br>Micro'],['soil','Soil<br>Properties']];
+const QUICK_LAYERS = ['n','p','k','ph','organic_carbon'];
+const QUICK_LABEL = {n:'Nitrogen',p:'Phosphorus',k:'Potassium',ph:'Soil pH',organic_carbon:'Organic C'};
+let lmMin = null;   // metrics card collapsed? (null → auto: collapsed on phones)
+const CLASS_NAMES = {
+    ph:['Strongly Acidic','Acidic','Slightly Acidic','Neutral','Alkaline','Strongly Alkaline'],
+    ec:['Very Low','Low','Normal','Moderate','High','Very High'],
+    _tex:['Very Low','Low','Medium','High','Very High'],
+    _def:['Very Low','Low','Medium','Optimal','High','Very High']
+};
+const BAD_CLASSES = { ph:[0,1,5], ec:[4,5], sand_pct:[], clay_pct:[], silt_pct:[], _def:[0,1] };
+let lyrGroup = 'macro', soilLyrState = null;
+
+function classNames(param){ return CLASS_NAMES[param] || (/_pct$/.test(param) ? CLASS_NAMES._tex : CLASS_NAMES._def); }
+function badClasses(param){ return BAD_CLASSES[param] !== undefined ? BAD_CLASSES[param] : BAD_CLASSES._def; }
+function classIdx(v, scale){ for (let i=0;i<scale.length;i++) if (v<=scale[i].max) return i; return scale.length-1; }
+function scaleLo(param){ return param==='ph' ? 3.5 : 0; }
+function scaleBounds(scale, i, param){
+    const lo = i===0 ? scaleLo(param) : scale[i-1].max;
+    const hi = scale[i].max===Infinity ? lo + (lo - (i>1?scale[i-2].max:scaleLo(param))) : scale[i].max;
+    return [lo, hi];
+}
+function gradCss(scale){ return `linear-gradient(90deg,${scale.map(s=>s.hex).join(',')})`; }
+function rangeTxt(param, unit){
+    const sc = colormaps[param]; if (!sc) return '';
+    const fin = sc.filter(s=>s.max!==Infinity);
+    return `${param==='ph'?sc[0].max:0}–${fin[fin.length-1].max}+ ${unit}`;
+}
+function predVal(param){
+    const m = (soilData && soilData._merged) || {};
+    let v = parseFloat(m[param]); if (param==='ph' && v>14) while (v>14) v/=10;
+    return v;
+}
+/* smooth colour: interpolate between class-centre stops */
+function smoothRgb(v, scale, param){
+    const stops = scale.map((s,i)=>{ const [lo,hi]=scaleBounds(scale,i,param); return [(lo+hi)/2, hexToRgb(s.hex)]; });
+    if (v<=stops[0][0]) return stops[0][1];
+    for (let i=1;i<stops.length;i++){
+        if (v<=stops[i][0]){
+            const t=(v-stops[i-1][0])/(stops[i][0]-stops[i-1][0]), a=stops[i-1][1], b=stops[i][1];
+            return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+        }
+    }
+    return stops[stops.length-1][1];
+}
+/* value field: centred on the predicted value, varied by deterministic noise */
+function fieldValue(lat, lng, st){
+    const n1 = noise(lat, lng, st.seed, st.ns), n2 = noise(lat, lng, st.seed+57, st.ns*2.4);
+    const nv = n1*0.72 + n2*0.28;                       // 0..1
+    if (isNaN(st.base)) return st.min + nv*(st.max-st.min);
+    if (st.param==='ph')       return Math.max(0, st.base + (nv-0.5)*1.8);
+    if (/_pct$/.test(st.param)) return Math.max(0, Math.min(100, st.base + (nv-0.5)*28));
+    return Math.max(0, st.base * (0.45 + nv*1.1));
+}
+function fmtV(v){ return isNaN(v) ? '—' : (Math.abs(v)>=100 ? v.toFixed(0) : v.toFixed(2)); }
+
+/* ── Sidebar layer switcher ── */
+function layerSwitcherHtml(){
+    const tabs = LAYER_GROUPS.map(([g,l]) => `<button class="lyr-tab${g===lyrGroup?' active':''}" data-g="${g}" onclick="setLyrGroup('${g}')">${l}</button>`).join('');
+    return `<div class="lyr-tabs">${tabs}</div><div class="lyr-list" id="lyr-list">${layerCardsHtml()}</div>`;
+}
+function layerCardsHtml(){
+    const cur = (document.getElementById('par-sel-sb')||{}).value;
+    return SOIL_LAYERS.filter(([k]) => LAYER_META[k].grp===lyrGroup).map(([k,name,unit],i) => {
+        const sc = colormaps[k], v = predVal(k), ci = isNaN(v)?-1:classIdx(v,sc);
+        const rating = ci<0 ? '' : `<span class="lyr-rate" style="--c:${sc[ci].hex}">${classNames(k)[ci]||''}</span>`;
+        return `<div class="lyr-card${k===cur?' active':''}" data-k="${k}" onclick="selectSoilLayer('${k}')" style="animation-delay:${i*0.05}s">
+            <div class="lyr-radio"></div>
+            <div class="lyr-sym" style="--c:${sc[Math.min(3,sc.length-1)].hex}">${LAYER_META[k].sym}</div>
+            <div class="lyr-main">
+              <div class="lyr-name">${name}</div>
+              <div class="lyr-desc">${LAYER_META[k].desc} (${unit})</div>
+              <div class="lyr-val"><b>${fmtV(v)}</b> ${unit} ${rating}</div>
+            </div>
+            <div class="lyr-side">
+              <div class="lyr-tag">${k===cur?'&#128065; VIEWING':'&#8635; Click to view'}</div>
+              <div class="lyr-grad" style="background:${gradCss(sc)}"></div>
+              <div class="lyr-range">${rangeTxt(k,unit)}</div>
+            </div>
+          </div>`;
+    }).join('');
+}
+function setLyrGroup(g){
+    lyrGroup = g;
+    document.querySelectorAll('.lyr-tab').forEach(b => b.classList.toggle('active', b.dataset.g===g));
+    const l = document.getElementById('lyr-list'); if (l) l.innerHTML = layerCardsHtml();
+}
+function selectSoilLayer(k){
+    const sel = document.getElementById('par-sel-sb'); if (!sel) return;
+    sel.value = k;
+    const g = LAYER_META[k].grp; if (g!==lyrGroup) lyrGroup = g;
+    if (rasterMode !== 'soil') setRaster('soil'); else updateSoilRaster();
+}
+function refreshLayerUi(){
+    const l = document.getElementById('lyr-list'); if (l) l.innerHTML = layerCardsHtml();
+    document.querySelectorAll('.lyr-tab').forEach(b => b.classList.toggle('active', b.dataset.g===lyrGroup));
+}
+
+/* ── On-map overlays (layer bar, metrics, hover tip) ── */
+function ensureLyrOverlays(){
+    const mc = map.getContainer();
+    if (!document.getElementById('lyrBar')){
+        const bar = document.createElement('div'); bar.id='lyrBar'; mc.appendChild(bar);
+        const met = document.createElement('div'); met.id='lyrMetrics'; mc.appendChild(met);
+        const tip = document.createElement('div'); tip.id='lyrTip'; mc.appendChild(tip);
+        [bar,met].forEach(el => { L.DomEvent.disableClickPropagation(el); L.DomEvent.disableScrollPropagation(el); });
+        map.on('mousemove', onLyrHover);
+        map.on('mouseout', () => tip.classList.remove('show'));
+    }
+}
+function hideLyrOverlays(){
+    ['lyrBar','lyrMetrics','lyrTip'].forEach(id => { const e=document.getElementById(id); if (e) e.classList.remove('show'); });
+    soilLyrState = null;
+}
+function onLyrHover(e){
+    const tip = document.getElementById('lyrTip'), st = soilLyrState;
+    if (!tip || !st || rasterMode!=='soil') { if (tip) tip.classList.remove('show'); return; }
+    const {lat,lng} = e.latlng;
+    if (lat<st.s||lat>st.n||lng<st.w||lng>st.e) { tip.classList.remove('show'); return; }
+    const x = Math.min(st.W-1, Math.floor((lng-st.w)/(st.e-st.w)*st.W));
+    const y = Math.min(st.H-1, Math.floor((st.n-lat)/(st.n-st.s)*st.H));
+    const v = st.grid[y*st.W+x];
+    if (isNaN(v)) { tip.classList.remove('show'); return; }
+    const ci = classIdx(v, st.scale);
+    tip.innerHTML = `<div class="t-h">${st.name}</div><div class="t-v">${fmtV(v)} <small>${st.unit}</small></div>
+                     <div class="t-r" style="--c:${st.scale[ci].hex}">${classNames(st.param)[ci]||''}</div>`;
+    tip.style.left = (e.containerPoint.x+16)+'px'; tip.style.top = (e.containerPoint.y+16)+'px';
+    tip.classList.add('show');
+}
+function renderLyrBar(param, name){
+    const bar = document.getElementById('lyrBar');
+    const chips = QUICK_LAYERS.map(k => {
+        const lbl = k==='ph' ? `<b>pH</b>` : `<b>${LAYER_META[k].sym}</b> ${QUICK_LABEL[k]}`;
+        return `<button class="lb-chip${k===param?' active':''}" onclick="selectSoilLayer('${k}')">${lbl}</button>`;
+    }).join('');
+    bar.innerHTML = `<div class="lb-title"><span class="lb-dot"></span>LAYER ACTIVE: ${eh(name).toUpperCase()} DISTRIBUTION</div>
+        <div class="lb-row"><span class="lb-lbl">Switch to:</span>${chips}
+        <button class="lb-chip lb-more" onclick="openSidebar();showSbTab('soil');document.getElementById('lyr-list')&&document.getElementById('lyr-list').scrollIntoView({behavior:'smooth'})">All layers &#9656;</button></div>`;
+    bar.classList.remove('show'); void bar.offsetWidth; bar.classList.add('show');
+}
+function renderLyrMetrics(st, counts, total, avg){
+    const met = document.getElementById('lyrMetrics'), names = classNames(st.param), bad = badClasses(st.param);
+    const ci = isNaN(st.base) ? -1 : classIdx(st.base, st.scale);
+    const badPct = total ? bad.reduce((a,i)=>a+(counts[i]||0),0)/total*100 : 0;
+    const warn = bad.length===0 ? '' : (badPct>0.5
+        ? `<div class="lm-warn"><span>&#9888;</span><div><b>${badPct.toFixed(0)}% of field</b> ${st.param==='ph'?'is outside the optimal pH band':st.param==='ec'?'shows elevated salinity':'is deficient — needs top-dressing'}</div></div>`
+        : `<div class="lm-ok"><span>&#10003;</span><div>No deficient zones detected</div></div>`);
+    const bars = st.scale.map((s,i) => {
+        const pct = total ? (counts[i]||0)/total*100 : 0;
+        return `<div class="lm-bar"><span class="lm-bl">${names[i]||''}</span><div class="lm-bt"><div class="lm-bf" data-w="${pct.toFixed(1)}" style="background:${s.hex}"></div></div><span class="lm-bp">${pct.toFixed(0)}%</span></div>`;
+    }).join('');
+    met.innerHTML = `<div class="lm-h"><span>LIVE LAYER METRICS</span><button class="lm-x" onclick="lmMin=this.closest('#lyrMetrics').classList.toggle('min')" title="Collapse / expand">&#9662;</button></div>
+      <div class="lm-body">
+        <div class="lm-k">Selected Layer</div><div class="lm-big">${eh(st.name)}</div>
+        <div class="lm-grid">
+          <div><div class="lm-k">Predicted</div><div class="lm-v">${fmtV(st.base)} <small>${st.unit}</small></div></div>
+          <div><div class="lm-k">Field Avg</div><div class="lm-v">${fmtV(avg)} <small>${st.unit}</small></div></div>
+        </div>
+        ${ci>=0?`<div class="lm-k">Rating</div><div class="lm-rate" style="--c:${st.scale[ci].hex}">${names[ci]||''}</div>`:''}
+        ${warn}
+        <div class="lm-k" style="margin-top:8px">Field summary</div>${bars}
+      </div>`;
+    if (lmMin === null) lmMin = window.innerWidth < 768;
+    met.classList.toggle('min', lmMin);
+    met.classList.remove('show'); void met.offsetWidth; met.classList.add('show');
+    requestAnimationFrame(() => requestAnimationFrame(() => met.querySelectorAll('.lm-bf').forEach(b => b.style.width = b.dataset.w+'%')));
+}
+
 function updateSoilRaster() {
     if (!soilData || !activePolygonLayer) return;
     const sel = document.getElementById('par-sel-sb');
     if (!sel) return;
     const opt    = sel.options[sel.selectedIndex];
     const param  = sel.value, unit = opt.getAttribute('data-unit'), paramName = opt.text;
-    const merged = soilData._merged || {
-        ...(soilData.predicted_soil_chemistry||{}),
-        ...(soilData.environmental_factors||{})
-    };
-
-    let base = parseFloat(merged[param]);
-    if (param === 'ph' && base > 14) while (base > 14) base /= 10;
+    if (!soilData._merged) soilData._merged = {...(soilData.predicted_soil_chemistry||{}), ...(soilData.environmental_factors||{})};
+    const base = predVal(param);
 
     const parVal  = document.getElementById('par-val-sb');
     const parUnit = document.getElementById('par-unit-sb');
@@ -1823,47 +2127,88 @@ function updateSoilRaster() {
     zoneRasterLayers.forEach(l => map.removeLayer(l));
     zoneRasterLayers.length = 0;
 
-    const bounds = activePolygonLayer.getBounds();
-    const latDiff=bounds.getNorth()-bounds.getSouth(), lngDiff=bounds.getEast()-bounds.getWest();
-    const latStep=latDiff/65, lngStep=lngDiff/65;
-    const noiseScale=1.5/Math.max(latDiff,lngDiff);
-    const scale=colormaps[param];
+    const scale = colormaps[param];
     if (!scale) return;
-    const lastFin=scale.filter(s=>s.max!==Infinity);
-    const cmapMax=lastFin[lastFin.length-1].max;
-    let bv=base; if(isNaN(bv)||bv===null) bv=cmapMax/2;
-    const minValue=0, maxValue=cmapMax*1.05, seedOffset=param.length*10;
-    const vs=activePolygonLayer.getLatLngs()[0].map(ll=>[ll.lat,ll.lng]);
+    const fin = scale.filter(s=>s.max!==Infinity), cmapMax = fin[fin.length-1].max;
 
-    for(let lat=bounds.getSouth();lat<=bounds.getNorth();lat+=latStep){
-        for(let lng=bounds.getWest();lng<=bounds.getEast();lng+=lngStep){
-            const clat=lat+latStep/2, clng=lng+lngStep/2;
-            if(pointInPolygon([clat,clng],vs)){
-                const nv=noise(clat,clng,seedOffset,noiseScale);
-                const cv=minValue+nv*(maxValue-minValue);
-                L.rectangle([[lat,lng],[lat+latStep,lng+lngStep]],
-                    {stroke:false,fillColor:getAbsoluteColor(cv,param),fillOpacity:0.85}).addTo(rasterGridGroup);
-            }
+    const b = activePolygonLayer.getBounds();
+    const s=b.getSouth(), n=b.getNorth(), w=b.getWest(), e=b.getEast();
+    const latDiff=n-s, lngDiff=e-w;
+    const kx = Math.cos((s+n)/2*Math.PI/180)*lngDiff, ky = latDiff;   // metric aspect
+    const W = kx>=ky ? 260 : Math.max(60, Math.round(260*kx/ky));
+    const H = ky>=kx ? 260 : Math.max(60, Math.round(260*ky/kx));
+    const st = {param, unit, name:paramName, scale, base, seed:param.length*10,
+                ns:1.5/Math.max(latDiff,lngDiff), min:0, max:cmapMax*1.05, s, n, w, e, W, H,
+                grid:new Float32Array(W*H).fill(NaN)};
+    const verts = activePolygonLayer.getLatLngs()[0];
+
+    // 1) value + class grid
+    const cls = new Int8Array(W*H).fill(-1), counts = new Array(scale.length).fill(0);
+    let sum = 0, total = 0;
+    for (let y=0;y<H;y++){
+        const lat = n - (y+0.5)/H*latDiff;
+        for (let x=0;x<W;x++){
+            const lng = w + (x+0.5)/W*lngDiff;
+            if (!pip(lat,lng,verts)) continue;
+            const v = fieldValue(lat,lng,st), i = y*W+x;
+            st.grid[i] = v; const c = classIdx(v,scale); cls[i] = c; counts[c]++; sum += v; total++;
         }
     }
-    activePolygonLayer.setStyle({color:'#fff',weight:2,opacity:0.8,dashArray:'4,4',fillOpacity:0});
+    // 2) paint: smooth gradient + contour lines at class boundaries + soft relief
+    const cv = document.createElement('canvas'); cv.width=W; cv.height=H;
+    const ctx = cv.getContext('2d'), img = ctx.createImageData(W,H), px = img.data;
+    for (let y=0;y<H;y++) for (let x=0;x<W;x++){
+        const i=y*W+x; if (cls[i]<0) continue;
+        let [r,g,bl] = smoothRgb(st.grid[i], scale, param), a = 215;
+        const right = x<W-1 ? cls[i+1] : cls[i], down = y<H-1 ? cls[i+W] : cls[i];
+        if ((right>=0 && right!==cls[i]) || (down>=0 && down!==cls[i])) { r*=0.45; g*=0.45; bl*=0.45; a=235; }
+        else if (x>0 && y>0 && !isNaN(st.grid[i-W-1])) {           // light hill-shade for depth
+            const d = (st.grid[i]-st.grid[i-W-1])/(cmapMax||1)*40; r+=d*8; g+=d*8; bl+=d*8;
+        }
+        const o=i*4; px[o]=Math.max(0,Math.min(255,r)); px[o+1]=Math.max(0,Math.min(255,g)); px[o+2]=Math.max(0,Math.min(255,bl)); px[o+3]=a;
+    }
+    ctx.putImageData(img,0,0);
+    L.imageOverlay(cv.toDataURL(), b, {opacity:1, interactive:false, className:'soil-lyr-img'}).addTo(rasterGridGroup);
+    activePolygonLayer.setStyle({color:'#fff',weight:2.5,opacity:0.95,dashArray:'6,5',fillOpacity:0});
 
+    // 3) sample points (deterministic) with popups
+    let placed = 0;
+    for (let t=0; t<400 && placed<7; t++){
+        const x = Math.floor(hash(t*3.1, param.length)*W), y = Math.floor(hash(t*7.7, 11)*H), v = st.grid[y*W+x];
+        if (isNaN(v)) continue;
+        const ci = classIdx(v,scale);
+        L.circleMarker([n-(y+0.5)/H*latDiff, w+(x+0.5)/W*lngDiff],
+            {radius:6, color:'#fff', weight:2.5, fillColor:scale[ci].hex, fillOpacity:1, className:'soil-sample-pt'})
+         .bindPopup(`<div class="sp-pop"><b>Sample Point #${placed+1}</b><br>${eh(paramName)}: <b>${fmtV(v)} ${unit}</b><br>Rating: <span style="color:${scale[ci].hex};font-weight:700">${classNames(param)[ci]||''}</span></div>`)
+         .addTo(rasterGridGroup);
+        placed++;
+    }
+
+    // 4) legend (same class ranges as before, richer look)
+    const names = classNames(param);
     let legendHTML='';
     [...scale].reverse().forEach((item,index) => {
-        const prevMax=scale[scale.length-index-2];
+        const ri = scale.length-index-1, prevMax=scale[scale.length-index-2];
         const label=item.max===Infinity ? `> ${prevMax?prevMax.max:0}` : (index===scale.length-1?`< ${item.max}`:`${prevMax?prevMax.max:0} – ${item.max}`);
-        legendHTML+=`<div style="display:flex;align-items:center;margin-bottom:5px"><div style="width:16px;height:16px;background:${item.hex};margin-right:9px;border-radius:3px"></div><span>${label}</span></div>`;
+        const pct = total ? (counts[ri]/total*100).toFixed(0) : 0;
+        legendHTML+=`<div class="sl-row"><div class="sl-sw" style="background:${item.hex}"></div><span class="sl-nm">${names[ri]||''}</span><span class="sl-rg">${label}</span><span class="sl-pc">${pct}%</span></div>`;
     });
     if (legendControl) map.removeControl(legendControl);
     legendControl = L.control({position:'bottomleft'});
     legendControl.onAdd = () => {
-        const div = L.DomUtil.create('div','info legend');
-        div.style.cssText='padding:11px 13px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15)';
-        div.innerHTML=`<h4 style="margin:0 0 9px 0">${paramName} (${unit})</h4>${legendHTML}`;
+        const div = L.DomUtil.create('div','info legend soil-legend');
+        div.innerHTML=`<h4>${eh(paramName)} <small>(${unit})</small></h4><div class="sl-grad" style="background:${gradCss(scale)}"></div>${legendHTML}`;
         return div;
     };
     legendControl.addTo(map);
     document.getElementById('rasterBox').classList.add('show');
+
+    // 5) overlays + sidebar sync
+    soilLyrState = st;
+    ensureLyrOverlays();
+    renderLyrBar(param, paramName);
+    renderLyrMetrics(st, counts, total, total ? sum/total : NaN);
+    refreshLayerUi();
 }
 
 /* ── PDF Report ──────────────────────────────────────────────────────────────*/
