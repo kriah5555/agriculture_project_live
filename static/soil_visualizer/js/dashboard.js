@@ -956,6 +956,9 @@ function invalidatePlotRasterCache(plotId) {
 // ── Draw-to-add flow ─────────────────────────────────────────────────────────
 
 function startLinkedPointDraw(reading) {
+  // Starting a new add cancels any edit that was open, so Save creates a new boundary.
+  pointFormMode = null;
+  pointFormContext = {};
   pendingAddMode = 'linking';
   pendingReading = reading;
   multiAddCount = 0;
@@ -965,6 +968,8 @@ function startLinkedPointDraw(reading) {
 }
 
 function startManualPointDraw() {
+  pointFormMode = null;
+  pointFormContext = {};
   pendingAddMode = 'manual';
   pendingReading = null;
   document.getElementById('draw-hint').style.display = 'block';
@@ -988,6 +993,8 @@ function openConfirmForm() {
     document.getElementById('notes-only-field').style.display = 'block';
     document.getElementById('point-notes-linked').value = '';
     document.getElementById('linked-params-preview').innerHTML = buildParamGrid(pendingReading.parameters);
+    // Edit mode hides the "keep adding" option — always bring it back for a new add.
+    document.getElementById('multi-add-row').style.display = 'flex';
     document.getElementById('multi-add-toggle').checked = false;
     updateMultiAddCount();
   } else {
