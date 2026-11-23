@@ -2,8 +2,9 @@
 <!DOCTYPE html>
 <html>
 	<head>
+  {% include "_brand_head.html" %}
 		<meta charset="utf-8">
-		<title>RegistrationForm_v10 by Colorlib</title>
+		<title>Add Field — ArkaShine</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<script src="{% static 'theme/theme.js' %}"></script>
 
@@ -35,6 +36,7 @@
 			<div class="inner">
 				<a href="{% url 'dashboard' %}"><img src="{% static '/register/images/image-1.png' %}" alt="" class="image-1"></a>
 				<form action="" method="POST"> {% csrf_token %}
+					<img src="{% static 'brand/arkashine-logo.png' %}" alt="ArkaShine" height="52" style="height:52px; width:auto; max-width:100%; display:block; margin:0 auto 20px;">
 					<h3>{% if field %} Edit {% else %} Add {% endif %} Field</h3>
 					
 					<div class="form-holder">

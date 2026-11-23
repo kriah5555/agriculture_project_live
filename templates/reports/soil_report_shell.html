@@ -1,0 +1,113 @@
+{% load static %}<!DOCTYPE html>
+<html lang="{{ lang|default:'en' }}">
+<head>
+  {% include "_brand_head.html" %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="{% static 'theme/theme.js' %}"></script>
+<title>SoiLENZ Soil Health Report</title>
+<link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
+{% include "translations/_fonts.html" %}
+<style>
+/* Instant loading shell for /soil-report/. The real report is fetched from
+   ?partial=1 and replaces this document (reports/views.py). */
+:root{--sl-green:#0B5E2E;--sl-green2:#2e7d32;--sl-mint:#a5d6a7;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'Segoe UI',Arial,var(--i18n-fonts),sans-serif;display:flex;align-items:center;justify-content:center;padding:16px;
+  background:radial-gradient(circle at 20% 15%,rgba(165,214,167,.45),transparent 45%),
+             radial-gradient(circle at 85% 85%,rgba(46,125,50,.25),transparent 45%),
+             var(--tc-bg,#eef5ef);color:var(--tc-text,#1a1a1a);}
+.sl-card{width:380px;max-width:100%;background:var(--tc-surface,#fff);border:1px solid var(--tc-border,#dfe8e0);
+  border-radius:18px;box-shadow:0 18px 48px rgba(11,94,46,.18);overflow:hidden;text-align:center;animation:slIn .4s both;}
+.sl-top{background:linear-gradient(135deg,var(--sl-green),var(--sl-green2));padding:22px 20px 18px;position:relative;overflow:hidden;}
+.sl-top::after{content:"";position:absolute;inset:auto -30px -40px auto;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.07);}
+.brand-pill{display:inline-flex;align-items:center;background:#fff;border-radius:8px;padding:4px 10px;box-shadow:0 1px 4px rgba(0,0,0,.22);}
+.brand-pill img{height:24px;width:auto;object-fit:contain;display:block;}
+.sl-sub{color:var(--sl-mint);font-size:11px;font-weight:600;letter-spacing:.6px;margin-top:10px;text-transform:uppercase;}
+.sl-body{padding:22px 22px 20px;}
+.sl-leaf{width:54px;height:54px;margin:0 auto 12px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:rgba(46,125,50,.12);position:relative;}
+.sl-leaf::before{content:"";position:absolute;inset:-4px;border-radius:50%;border:3px solid rgba(46,125,50,.18);border-top-color:var(--sl-green2);animation:slSpin 1s linear infinite;}
+.sl-leaf svg{width:26px;height:26px;fill:var(--sl-green2);animation:slSway 2.4s ease-in-out infinite;transform-origin:50% 90%;}
+.sl-title{font-size:16px;font-weight:700;color:var(--tc-text,#1a3c14);}
+.sl-step{font-size:13px;color:var(--tc-text-muted,#5f6b62);margin-top:6px;min-height:18px;transition:opacity .3s;}
+.sl-bar{height:6px;border-radius:6px;background:var(--tc-surface-alt,#e8f0e9);overflow:hidden;margin:16px 0 8px;position:relative;}
+.sl-bar i{position:absolute;top:0;bottom:0;width:40%;border-radius:6px;background:linear-gradient(90deg,var(--sl-green2),#66bb6a);animation:slBar 1.4s ease-in-out infinite;}
+.sl-time{font-size:11.5px;color:var(--tc-text-muted,#7a857c);}
+.sl-err{display:none;margin-top:14px;font-size:13px;color:#c62828;}
+.sl-btn{display:inline-block;margin-top:10px;padding:8px 18px;border:none;border-radius:8px;background:var(--sl-green2);color:#fff;font-weight:600;font-size:13px;cursor:pointer;text-decoration:none;}
+.sl-btn:hover{background:var(--sl-green);}
+.sl-card.failed .sl-bar,.sl-card.failed .sl-leaf::before{display:none;}
+.sl-card.failed .sl-err{display:block;}
+@keyframes slSpin{to{transform:rotate(360deg)}}
+@keyframes slSway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+@keyframes slBar{0%{left:-40%}100%{left:100%}}
+@keyframes slIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:0s!important;animation-iteration-count:1!important;}}
+</style>
+</head>
+<body>
+<div class="sl-card" id="slCard" role="status" aria-live="polite">
+  <div class="sl-top">
+    <span class="brand-pill"><img src="{% static 'brand/arkashine-wordmark.png' %}" alt="ArkaShine"></span>
+    <div class="sl-sub">SoiLENZ Soil Health Report</div>
+  </div>
+  <div class="sl-body">
+    <div class="sl-leaf" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/></svg>
+    </div>
+    <div class="sl-title">{{ txt.title }}</div>
+    <div class="sl-step" id="slStep">{{ txt.steps.0 }}</div>
+    <div class="sl-bar"><i></i></div>
+    <div class="sl-time" id="slTime">0 s</div>
+    <div class="sl-err" id="slErr">
+      <div id="slErrMsg">{{ txt.error }}</div>
+      <button type="button" class="sl-btn" id="slRetry">{{ txt.retry }}</button>
+    </div>
+    <noscript>
+      <div style="margin-top:12px;font-size:13px;">
+        <a class="sl-btn" href="{{ full_url }}">{{ txt.open_full }}</a>
+      </div>
+    </noscript>
+  </div>
+</div>
+{{ txt.steps|json_script:"slSteps" }}
+<script>
+(function () {
+  var steps = JSON.parse(document.getElementById('slSteps').textContent);
+  var card = document.getElementById('slCard'), stepEl = document.getElementById('slStep'),
+      timeEl = document.getElementById('slTime'), errEl = document.getElementById('slErrMsg'),
+      baseErr = errEl.textContent, t0, ticker, stepper;
+  function start() {
+    card.classList.remove('failed'); t0 = Date.now();
+    var i = 0; stepEl.textContent = steps[0];
+    clearInterval(ticker); clearInterval(stepper);
+    ticker = setInterval(function () { timeEl.textContent = Math.floor((Date.now() - t0) / 1000) + ' s'; }, 250);
+    stepper = setInterval(function () { if (i < steps.length - 1) { i++; stepEl.textContent = steps[i]; } }, 2600);
+    var u = new URL(location.href); u.searchParams.set('partial', '1');
+    fetch(u.toString(), { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
+      .then(function (r) {
+        return r.text().then(function (t) {
+          if (!r.ok) throw new Error((t || '').replace(/<[^>]*>/g, ' ').trim().slice(0, 160) || ('HTTP ' + r.status));
+          return t;
+        });
+      })
+      .then(function (html) {
+        clearInterval(ticker); clearInterval(stepper);
+        // Replace this shell with the full report document (its own head,
+        // styles and scripts load exactly as in a direct full render).
+        document.open(); document.write(html); document.close();
+      })
+      .catch(function (e) {
+        clearInterval(ticker); clearInterval(stepper);
+        errEl.textContent = baseErr + (e && e.message ? ' (' + e.message + ')' : '');
+        card.classList.add('failed');
+      });
+  }
+  document.getElementById('slRetry').addEventListener('click', start);
+  start();
+})();
+</script>
+</body>
+</html>

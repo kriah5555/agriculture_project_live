@@ -103,10 +103,22 @@
          class="btn btn-outline-light btn-sm fw-bold" style="white-space:nowrap;">
         <i class="fas fa-eye me-1"></i> View HTML Report
       </a>
-      <a href="/soil-report-pdf/?api_id={{ soil_nutrients.pk }}"
-         class="btn btn-light btn-sm fw-bold" style="white-space:nowrap;color:#1e4d2b;">
-        <i class="fas fa-download me-1"></i> Download PDF Report
-      </a>
+      <div class="btn-group">
+        <a href="/soil-report-pdf/?api_id={{ soil_nutrients.pk }}&amp;lang=en"
+           class="btn btn-light btn-sm fw-bold" style="white-space:nowrap;color:#1e4d2b;">
+          <i class="fas fa-download me-1"></i> Download PDF Report
+        </a>
+        <button type="button" class="btn btn-light btn-sm dropdown-toggle dropdown-toggle-split" style="color:#1e4d2b;border-left:1px solid #c8e6c9;"
+                data-bs-toggle="dropdown" aria-expanded="false" title="Choose report language">
+          <i class="fas fa-language"></i><span class="visually-hidden">Choose language</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><h6 class="dropdown-header">Report language</h6></li>
+          <li><a class="dropdown-item" href="/soil-report-pdf/?api_id={{ soil_nutrients.pk }}&amp;lang=en">English</a></li>
+          <li><a class="dropdown-item" href="/soil-report-pdf/?api_id={{ soil_nutrients.pk }}&amp;lang=kn" lang="kn">ಕನ್ನಡ (Kannada)</a></li>
+          <li><a class="dropdown-item" href="/soil-report-pdf/?api_id={{ soil_nutrients.pk }}&amp;lang=hi" lang="hi">हिंदी (Hindi)</a></li>
+        </ul>
+      </div>
     </div>
   </div>
 

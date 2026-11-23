@@ -1,3 +1,3 @@
 from django.db import models
 
-# Create your models here.
+# Report strings live in the app-wide `translations` app.

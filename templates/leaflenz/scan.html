@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  {% include "_brand_head.html" %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="{% static 'theme/theme.js' %}"></script>
@@ -13,6 +14,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'leaflenz/css/style.css' %}">
     <link rel="stylesheet" href="{% static 'theme/theme.css' %}" />
+    <style>
+        /* Parent brand (ArkaShine) — right side of the product header */
+        .ark-by{display:inline-flex;align-items:center;gap:7px;flex-shrink:0;color:var(--text-muted);font-size:.78rem;font-weight:600;white-space:nowrap}
+        .ark-by img{display:block;height:24px;width:auto}
+        /* Dark mode: keep the original navy logo, on a white pill */
+        [data-theme="dark"] .ark-by img{box-sizing:content-box;background:#fff;border-radius:8px;padding:3px 9px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+        @media (max-width:768px){.ark-by img{height:20px}}
+    </style>
 </head>
 <body>
 <!-- ===== ONBOARDING POPUP MODAL ===== -->
@@ -97,6 +106,7 @@
                 </div>
                 <p class="tagline">{{ device.name }} &bull; ID: {{ device.devise_id }}</p>
             </div>
+            <div class="ark-by"><span>by</span><img src="{% static 'brand/arkashine-wordmark.png' %}" alt="ArkaShine" width="984" height="200"></div>
         </header>
 
         <!-- Navigation Tabs -->

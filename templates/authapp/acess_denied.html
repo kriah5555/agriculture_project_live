@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  {% include "_brand_head.html" %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="{% static 'theme/theme.js' %}"></script>
@@ -39,6 +40,7 @@
 </head>
 <body>
 <div class="error-main">
+<img src="{% static 'brand/arkashine-logo.png' %}" alt="ArkaShine" style="height:60px;width:auto;max-width:90%;display:block;margin:0 auto 18px;">
 <h1>Oops!</h1>
 <div class="error-heading">!</div>
 <p>You do not have permission to access the page.</p>

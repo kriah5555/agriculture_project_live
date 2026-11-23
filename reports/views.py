@@ -1,3 +1,4 @@
+import logging
 import os
 from django.http import HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render
@@ -9,6 +10,8 @@ from agri_ai.crop import run_model
 from agri_ai.fertilizer import recommend_fertilizer
 from agri_ai.crop_recommendation import recommend_crops, get_states as get_crop_rec_states
 from .report_builder import build_report_context
+from translations import api as tr_api
+from .i18n import strings as report_strings
 
 
 def _fetch_climate_for_recommendation(lat, lon):
@@ -199,49 +202,168 @@ def build_crop_recommendation_v2(api_data, state_override=None, climate=None):
 # ── HTML Report preview ───────────────────────────────────────────────────────
 
 def soil_report_html(request):
-    """Render the full SoiLENZ 6-page report as HTML (browser preview)."""
+    """SoiLENZ report (browser view).
+
+    Building the report takes seconds (ML/climate lookups, heatmaps, Esri
+    imagery), so by default this returns an instant loading shell that
+    fetches ?partial=1 and swaps the finished report in. ?partial=1,
+    ?partial=0 (no-JS fallback) and ?full=1 render the full report directly.
+    The PDF (soil_report_pdf) never uses the shell.
+    """
     api_id = request.GET.get("api_id")
     if not api_id:
         return HttpResponseBadRequest("Missing api_id parameter.")
-    ctx = build_report_context(api_id)
+    # URL-driven: ?lang= (active language) else the default — never a
+    # remembered session/cookie value (see translations.api).
+    lang = tr_api.language_from_request(request)
+    if request.GET.get('partial') not in ('0', '1') and request.GET.get('full') != '1':
+        from agriapp.models import DeviseApis
+        if not str(api_id).isdigit() or not DeviseApis.objects.filter(pk=int(api_id)).exists():
+            return HttpResponseBadRequest("Reading not found.")
+        S = report_strings(lang)
+        g = lambda k: S.get(f'report.loading.{k}', k)
+        q = request.GET.copy(); q['partial'] = '0'; q['lang'] = lang
+        return render(request, 'reports/soil_report_shell.html', {
+            'lang': lang,
+            'txt': {
+                'title': g('title'),
+                'steps': [g(f'step{i}') for i in range(1, 6)],
+                'error': g('error'), 'retry': g('retry'), 'open_full': g('open_full'),
+            },
+            'full_url': f"{request.path}?{q.urlencode()}",
+        })
+    ctx = build_report_context(api_id, lang)
     if ctx is None:
         return HttpResponseBadRequest("Reading not found.")
     return render(request, 'reports/soil_report.html', ctx)
 
 
-# ── WeasyPrint PDF download ───────────────────────────────────────────────────
+# ── PDF download ──────────────────────────────────────────────────────────────
+#
+# The downloaded PDF is a print of the very same HTML page the browser shows
+# (same template, same build_report_context), rendered by headless Chromium
+# through Playwright, so the download looks exactly like /soil-report/.
+# WeasyPrint is only a fallback for servers without Playwright/Chromium: it
+# has its own layout engine (no JS, different flex/grid sizing), so it can't
+# match the browser exactly.
 
-def _local_static_fetcher(own_host):
-    """WeasyPrint url_fetcher that reads this site's own /static/ files from
-    disk instead of over HTTP. Fetching them back through nginx made the
-    report slow enough to hit the gunicorn worker timeout (502), and with
-    sync workers the server could end up waiting on itself."""
-    import mimetypes
-    from urllib.parse import urlparse
+logger = logging.getLogger(__name__)
+
+import mimetypes as _mimetypes
+_mimetypes.add_type('font/woff2', '.woff2')
+
+
+def _local_file_for_url(url, own_host):
+    """Map a URL on this site's own /static/ or /media/ to a file on disk, or
+    None. Fetching them back over HTTP through nginx made the report slow
+    enough to hit the gunicorn worker timeout (502), and with sync workers
+    the server could end up waiting on itself."""
+    from urllib.parse import urlparse, unquote
     from django.conf import settings
     from django.contrib.staticfiles import finders
+
+    parsed = urlparse(url)
+    if parsed.netloc != own_host:
+        return None
+    static_prefix = settings.STATIC_URL if settings.STATIC_URL.startswith('/') else '/' + settings.STATIC_URL
+    media_url     = settings.MEDIA_URL or ''
+    media_prefix  = media_url if media_url.startswith('/') else '/' + media_url
+    path = unquote(parsed.path)
+
+    if path.startswith(static_prefix):
+        rel = path[len(static_prefix):]
+        found = finders.find(rel)
+        if not found and settings.STATIC_ROOT:
+            candidate = os.path.join(settings.STATIC_ROOT, rel)
+            found = candidate if os.path.isfile(candidate) else None
+        return found
+    if settings.MEDIA_ROOT and media_prefix != '/' and path.startswith(media_prefix):
+        # Uploaded files (e.g. the farmer photo) — never outside MEDIA_ROOT.
+        root = os.path.realpath(settings.MEDIA_ROOT)
+        candidate = os.path.realpath(os.path.join(root, path[len(media_prefix):]))
+        if candidate.startswith(root + os.sep) and os.path.isfile(candidate):
+            return candidate
+    return None
+
+
+def _local_static_fetcher(own_host):
+    """WeasyPrint url_fetcher that reads this site's /static/ and /media/
+    files from disk (see _local_file_for_url)."""
+    import mimetypes
     from weasyprint import default_url_fetcher
 
-    static_prefix = settings.STATIC_URL if settings.STATIC_URL.startswith('/') else '/' + settings.STATIC_URL
-
     def fetch(url, *args, **kwargs):
-        parsed = urlparse(url)
-        if parsed.netloc == own_host and parsed.path.startswith(static_prefix):
-            rel = parsed.path[len(static_prefix):]
-            path = finders.find(rel)
-            if not path and settings.STATIC_ROOT:
-                candidate = os.path.join(settings.STATIC_ROOT, rel)
-                path = candidate if os.path.isfile(candidate) else None
-            if path:
-                with open(path, 'rb') as f:
-                    return {
-                        'string': f.read(),
-                        'mime_type': mimetypes.guess_type(path)[0] or 'application/octet-stream',
-                        'redirected_url': url,
-                    }
+        path = _local_file_for_url(url, own_host)
+        if path:
+            with open(path, 'rb') as f:
+                return {
+                    'string': f.read(),
+                    'mime_type': mimetypes.guess_type(path)[0] or 'application/octet-stream',
+                    'redirected_url': url,
+                }
         return default_url_fetcher(url, *args, **kwargs)
 
     return fetch
+
+
+CHROMIUM_TIMEOUT_MS = 60_000
+_SYSTEM_CHROME = '/usr/bin/google-chrome'
+
+
+def _html_to_pdf_chromium(html_str, base_url, own_host):
+    """Print the report HTML to PDF with headless Chromium (Playwright).
+    Launches its own browser per call: Playwright's sync API is bound to the
+    thread that started it, and this also runs from pdf_cache's background
+    threads. Raises on any failure so the caller can fall back."""
+    import mimetypes
+    from playwright.sync_api import sync_playwright
+
+    # Resolve the template's root-relative /static/ and /media/ URLs.
+    base_tag = f'<base href="{base_url}">'
+    html_str = html_str.replace('<head>', '<head>\n' + base_tag, 1) if '<head>' in html_str else base_tag + html_str
+
+    def route(r):
+        path = _local_file_for_url(r.request.url, own_host)
+        if path:
+            with open(path, 'rb') as f:
+                return r.fulfill(status=200, body=f.read(),
+                                 content_type=mimetypes.guess_type(path)[0] or 'application/octet-stream')
+        if r.request.url.startswith(base_url):
+            return r.abort()          # never call back into this server
+        return r.continue_()          # external CDN assets (Font Awesome)
+
+    with sync_playwright() as p:
+        try:
+            browser = p.chromium.launch(timeout=CHROMIUM_TIMEOUT_MS)
+        except Exception:
+            if not os.path.exists(_SYSTEM_CHROME):
+                raise
+            browser = p.chromium.launch(executable_path=_SYSTEM_CHROME, timeout=CHROMIUM_TIMEOUT_MS)
+        try:
+            page = browser.new_page()
+            page.set_default_timeout(CHROMIUM_TIMEOUT_MS)
+            page.route('**/*', route)
+            try:
+                page.set_content(html_str, wait_until='networkidle', timeout=CHROMIUM_TIMEOUT_MS)
+            except Exception:
+                # e.g. an unreachable CDN never going idle — print what loaded
+                logger.warning('SoiLENZ PDF: page did not reach network idle; printing anyway')
+            page.evaluate('document.fonts && document.fonts.ready')
+            return page.pdf(
+                format='A4', print_background=True, prefer_css_page_size=True,
+                margin={'top': '0', 'right': '0', 'bottom': '0', 'left': '0'},
+            )
+        finally:
+            browser.close()
+
+
+def _html_to_pdf_weasyprint(html_str, base_url, own_host):
+    from weasyprint import HTML as WP_HTML
+    return WP_HTML(
+        string=html_str,
+        base_url=base_url,
+        url_fetcher=_local_static_fetcher(own_host),
+    ).write_pdf()
 
 
 def soil_report_pdf(request):
@@ -250,7 +372,8 @@ def soil_report_pdf(request):
     if not api_id:
         return HttpResponseBadRequest("Missing api_id parameter.")
     try:
-        result = render_soil_report_pdf(api_id, request.build_absolute_uri('/'), request.get_host())
+        result = render_soil_report_pdf(api_id, request.build_absolute_uri('/'), request.get_host(),
+                                        lang=tr_api.language_from_request(request))
     except Exception as e:
         return HttpResponseBadRequest(f"PDF generation failed: {e}")
     if result is None:
@@ -258,22 +381,27 @@ def soil_report_pdf(request):
     return pdf_response(*result)
 
 
-def render_soil_report_pdf(api_id, base_url, own_host):
+def render_soil_report_pdf(api_id, base_url, own_host, lang='en'):
     """Build the SoiLENZ report PDF. Returns (pdf_bytes, filename), or None
     if the reading doesn't exist. Doesn't need the request, so it can also
     run in a background thread (see reports/pdf_cache.py)."""
-    ctx = build_report_context(api_id)
+    lang = tr_api.normalize_lang(lang)
+    ctx = build_report_context(api_id, lang)
     if ctx is None:
         return None
+    # Exactly what soil_report_html renders.
     html_str = render_to_string('reports/soil_report.html', ctx)
-    from weasyprint import HTML as WP_HTML
-    pdf_bytes = WP_HTML(
-        string=html_str,
-        base_url=base_url,
-        url_fetcher=_local_static_fetcher(own_host),
-    ).write_pdf()
+    try:
+        pdf_bytes = _html_to_pdf_chromium(html_str, base_url, own_host)
+    except Exception as e:
+        logger.warning(
+            'SoiLENZ PDF: headless Chromium unavailable/failed (%s); falling back to '
+            'WeasyPrint, which will not match the on-screen report exactly. Install with: '
+            'pip install playwright && playwright install --with-deps chromium', e)
+        pdf_bytes = _html_to_pdf_weasyprint(html_str, base_url, own_host)
     farmer_name = ctx['meta'].get('farmer_name') or 'report'
-    return pdf_bytes, f"SoiLENZ_Report_{farmer_name.replace(' ', '_')}.pdf"
+    suffix = '' if lang == tr_api.default_language_code() else f'_{lang.upper()}'
+    return pdf_bytes, f"SoiLENZ_Report_{farmer_name.replace(' ', '_')}{suffix}.pdf"
 
 
 def pdf_response(pdf_bytes, filename):

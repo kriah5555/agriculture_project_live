@@ -1,0 +1,3 @@
+{% load static i18n_strings %}{# Bundled fonts for the active UI languages. Use the stack as: font-family: <your fonts>, var(--i18n-fonts), sans-serif; #}
+<link rel="stylesheet" href="{% static 'fonts/noto.css' %}?v=2">
+<style>:root{--i18n-fonts:{% language_font_stack %};}</style>

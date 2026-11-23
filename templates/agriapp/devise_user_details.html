@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  {% include "_brand_head.html" %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="{% static 'theme/theme.js' %}"></script>
@@ -32,11 +33,18 @@
       display: flex; align-items: center; gap: 10px;
       font-weight: 700; font-size: 16px; letter-spacing: .3px;
     }
-    .user-topbar .brand-icon {
-      width: 32px; height: 32px; border-radius: 8px;
-      background: rgba(255,255,255,0.2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 15px;
+    .user-topbar .brand { min-width: 0; }
+    .user-topbar .brand-badge {
+      display: inline-flex; align-items: center; max-width: 100%;
+      background: #fff; border-radius: 8px; padding: 4px 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    }
+    .user-topbar .brand-logo {
+      height: 28px; width: auto; max-width: 100%; display: block;
+    }
+    @media (max-width: 575.98px) {
+      .user-topbar { padding: 0 12px; }
+      .user-topbar .brand-logo { height: 24px; }
     }
     .logout-btn {
       display: inline-flex; align-items: center; gap: 6px;
@@ -63,8 +71,7 @@
 <!-- ══ Top bar ══════════════════════════════════════════════════ -->
 <div class="user-topbar">
   <div class="brand">
-    <div class="brand-icon"><i class="fas fa-leaf"></i></div>
-    <span>ArkaShine</span>
+    <span class="brand-badge"><img src="{% static 'brand/arkashine-wordmark.png' %}" alt="ArkaShine" class="brand-logo" height="28"></span>
   </div>
   <a href="{% url 'logout' %}" class="logout-btn">
     <i class="fas fa-sign-out-alt"></i> Logout

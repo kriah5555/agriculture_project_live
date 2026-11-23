@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  {% include "_brand_head.html" %}
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ArkaShine</title>
@@ -101,6 +102,20 @@
       font-size: 10px; font-weight: 600;
       color: rgba(255,255,255,0.55);
       white-space: nowrap;
+    }
+
+    .sidebar-brand .brand-icon-img {
+      padding: 0; background: none; object-fit: contain;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.22);
+    }
+    .sidebar-brand .brand-logo-pill {
+      display: inline-flex; align-self: flex-start; max-width: 100%;
+      background: #fff; border-radius: 8px; padding: 4px 9px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    }
+    .sidebar-brand .brand-logo {
+      display: block; height: 22px; width: auto; max-width: 100%;
+      object-fit: contain; object-position: left center;
     }
 
     #sidebar.collapsed .brand-icon { display: none; }
@@ -345,9 +360,8 @@
 
       <!-- Brand -->
       <div class="sidebar-brand">
-        <div class="brand-icon"><i class="fas fa-seedling"></i></div>
         <div class="brand-text">
-          <span class="brand-name">ArkaShine</span>
+          <span class="brand-logo-pill"><img class="brand-logo" src="{% static 'brand/arkashine-wordmark.png' %}" alt="ArkaShine"></span>
           {% if app_version %}<span class="brand-version">v{{ app_version }}</span>{% endif %}
         </div>
         <button id="sidebarToggle" title="Toggle sidebar">
@@ -429,6 +443,12 @@
             <span class="nav-text">SoilMap</span>
           </a>
         </li>
+        <li class="nav-item {% if active_page == 'geolenz' %}active{% endif %}">
+          <a href="{% url 'soil-visualizer-index' %}" class="nav-link" title="Geo Lenz">
+            <i class="fas fa-globe-asia"></i>
+            <span class="nav-text">Geo Lenz</span>
+          </a>
+        </li>
         <li class="nav-item {% if active_page == 'leaflenz' %}active{% endif %}">
           <a href="{% url 'leaflenz-dashboard' %}" class="nav-link" title="LeafLenz">
             <i class="fas fa-camera"></i>
@@ -466,6 +486,12 @@
           <a href="{% url 'channel-data-devices' %}" class="nav-link" title="Channel Data (temporary)">
             <i class="fas fa-satellite-dish"></i>
             <span class="nav-text">Channel Data</span>
+          </a>
+        </li>
+        <li class="nav-item {% if active_page == 'translations' %}active{% endif %}">
+          <a href="{% url 'translations' %}" class="nav-link" title="Languages">
+            <i class="fas fa-language"></i>
+            <span class="nav-text">Languages</span>
           </a>
         </li>
         <li class="nav-item {% if active_page == 'versions' %}active{% endif %}">
@@ -600,5 +626,6 @@
     document.addEventListener('DOMContentLoaded', function () { wrapTables(); setTimeout(wrapTables, 1500); });
   })();
 </script>
+<script src="{% static 'theme/pdf-download.js' %}?v=1"></script>
 </body>
 </html>

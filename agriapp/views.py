@@ -1332,8 +1332,10 @@ def _build_api_response_pdf(pk):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
 
-    logo_path = os.path.join(os.getcwd(), 'static/logo3.PNG')
-    c.drawImage(logo_path, 450, 780, width=100, height=40)
+    logo_path = os.path.join(str(settings.BASE_DIR), 'static', 'brand', 'arkashine-logo.png')
+    if not os.path.exists(logo_path):
+        logo_path = os.path.join(str(settings.BASE_DIR), 'static', 'logo3.PNG')
+    c.drawImage(logo_path, 420, 770, width=140, height=46, preserveAspectRatio=True, anchor='ne', mask='auto')
 
     c.setFont("Helvetica-Bold", 14)
     c.drawString(50, 800, "ArkaShine Innovations Pvt Ltd")

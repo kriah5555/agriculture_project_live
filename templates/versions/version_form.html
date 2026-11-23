@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  {% include "_brand_head.html" %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="{% static 'theme/theme.js' %}"></script>
@@ -45,6 +46,13 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 22px; margin-bottom: 14px;
     }
+    .form-header-brand {
+      position: relative; display: inline-flex; align-items: center; max-width: 100%;
+      background: #fff; border-radius: 8px; padding: 4px 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.18);
+      margin-bottom: 16px;
+    }
+    .form-header-brand img { height: 28px; width: auto; max-width: 100%; display: block; }
     .form-header h4 { font-weight: 800; margin: 0 0 4px; font-size: 1.3rem; }
     .form-header p  { margin: 0; opacity: .8; font-size: 13px; }
 
@@ -198,6 +206,7 @@
 
     <!-- Header -->
     <div class="form-header">
+      <span class="form-header-brand"><img src="{% static 'brand/arkashine-wordmark.png' %}" alt="ArkaShine" height="28"></span>
       <div class="form-header-icon">
         {% if 'Edit' in title %}<i class="fas fa-pencil-alt"></i>
         {% else %}<i class="fas fa-plus"></i>{% endif %}

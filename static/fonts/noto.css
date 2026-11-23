@@ -1,0 +1,16 @@
+/* Bundled web fonts for non-Latin UI languages (translations app):
+   Noto Sans Kannada / Noto Sans Devanagari from @fontsource 5.2.8 (SIL Open
+   Font License). unicode-range keeps Latin text on the page's own fonts.
+   A new language: add its woff2 files here plus @font-face rules. */
+@font-face{font-family:'Noto Sans Kannada';font-weight:400;font-style:normal;font-display:swap;
+  src:url("noto-sans-kannada-kannada-400-normal.woff2") format("woff2");
+  unicode-range:U+0C80-0CFF,U+0951-0952,U+0964-0965,U+1CD0,U+1CD2-1CD3,U+1CDA,U+1CF2,U+1CF4,U+200C-200D,U+20B9,U+25CC,U+A830-A835;}
+@font-face{font-family:'Noto Sans Kannada';font-weight:700;font-style:normal;font-display:swap;
+  src:url("noto-sans-kannada-kannada-700-normal.woff2") format("woff2");
+  unicode-range:U+0C80-0CFF,U+0951-0952,U+0964-0965,U+1CD0,U+1CD2-1CD3,U+1CDA,U+1CF2,U+1CF4,U+200C-200D,U+20B9,U+25CC,U+A830-A835;}
+@font-face{font-family:'Noto Sans Devanagari';font-weight:400;font-style:normal;font-display:swap;
+  src:url("noto-sans-devanagari-devanagari-400-normal.woff2") format("woff2");
+  unicode-range:U+0900-097F,U+1CD0-1CF9,U+200C-200D,U+20A8,U+20B9,U+20F0,U+25CC,U+A830-A839,U+A8E0-A8FF,U+11B00-11B09;}
+@font-face{font-family:'Noto Sans Devanagari';font-weight:700;font-style:normal;font-display:swap;
+  src:url("noto-sans-devanagari-devanagari-700-normal.woff2") format("woff2");
+  unicode-range:U+0900-097F,U+1CD0-1CF9,U+200C-200D,U+20A8,U+20B9,U+20F0,U+25CC,U+A830-A839,U+A8E0-A8FF,U+11B00-11B09;}

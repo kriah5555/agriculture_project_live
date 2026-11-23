@@ -23,6 +23,7 @@ urlpatterns = [
     path('', include('leaflenz.urls')),
     path('', include('harvestlenz.urls')),
     path('soil-visualizer/', include('soil_visualizer.urls')),
+    path('translations/', include('translations.urls')),
     path('pay/', include('razorpay_app.urls')),
 
     # ── Interactive API documentation (Swagger & ReDoc) ───────────────────────

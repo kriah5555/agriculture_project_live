@@ -3,6 +3,7 @@
 <html lang="en">
 
 <head>
+  {% include "_brand_head.html" %}
     <meta charset="utf-8">
     <title>Privacy Policy - ArkaShine</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
@@ -130,7 +131,7 @@
 
 <header class="pp-header">
     <div class="pp-header-inner">
-        <a href="{% url 'home' %}" class="pp-brand">ArkaShine</a>
+        <a href="{% url 'home' %}" class="pp-brand"><span style="background:#fff;border-radius:10px;padding:6px 12px;box-shadow:0 2px 10px rgba(0,0,0,.18);display:inline-block;padding:4px 11px;"><img src="{% static 'brand/arkashine-wordmark.png' %}" alt="ArkaShine" style="height:26px;width:auto;display:block;"></span></a>
         <div class="pp-header-actions">
             <a href="{% url 'home' %}" class="pp-back"><i class="fa fa-arrow-left mr-1"></i> Back to Home</a>
             <button type="button" class="theme-toggle-btn" aria-label="Toggle theme"><i data-theme-icon class="fas fa-moon"></i></button>

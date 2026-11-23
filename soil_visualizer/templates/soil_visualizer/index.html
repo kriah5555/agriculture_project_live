@@ -1,0 +1,158 @@
+{% extends "navbar.html" %}
+{% block content %}
+<style>
+  .gli { --gl-a:#14532d; --gl-b:#15803d; --gl-c:#0d9488; padding: 18px 4px 32px; }
+  @keyframes gliUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+  @keyframes gliShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+  @keyframes gliOrbit { to { transform: rotate(360deg); } }
+
+  .gli-hero {
+    position: relative; overflow: hidden; border-radius: 18px; padding: 26px 28px; color: #fff;
+    background: linear-gradient(135deg, var(--gl-a), var(--gl-b) 55%, var(--gl-c)); background-size: 200% 200%;
+    animation: gliShift 14s ease infinite, gliUp .45s both; box-shadow: 0 10px 30px rgba(20,83,45,.25);
+  }
+  .gli-hero::after {
+    content: ''; position: absolute; inset: 0; opacity: .16; pointer-events: none;
+    background: radial-gradient(circle, #bbf7d0 0 2px, transparent 3px) 0 0 / 22px 22px;
+  }
+  .gli-hero-row { position: relative; z-index: 1; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .gli-logo { position: relative; width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    font-size: 26px; background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); flex-shrink: 0; }
+  .gli-logo::after { content: ''; position: absolute; inset: -5px; border-radius: 20px; border: 2px dashed rgba(187,247,208,.55); animation: gliOrbit 18s linear infinite; }
+  .gli-hero h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.3px; color: #fff; }
+  .gli-hero p { margin: 2px 0 0; opacity: .82; font-size: 14px; }
+  .gli-stats { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-top: 20px; }
+  .gli-stat { background: rgba(255,255,255,.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); border-radius: 12px; padding: 10px 12px; animation: gliUp .45s both; }
+  .gli-stat:nth-child(2){animation-delay:.06s} .gli-stat:nth-child(3){animation-delay:.12s} .gli-stat:nth-child(4){animation-delay:.18s}
+  .gli-stat b { display: block; font-size: 22px; font-weight: 800; line-height: 1.1; }
+  .gli-stat span { font-size: 11px; opacity: .78; text-transform: uppercase; letter-spacing: .4px; }
+
+  .gli-tools { display: flex; gap: 10px; align-items: center; margin: 22px 0 14px; flex-wrap: wrap; }
+  .gli-search { position: relative; flex: 1; min-width: 220px; max-width: 420px; }
+  .gli-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--tc-text-muted); font-size: 13px; }
+  .gli-search input { width: 100%; padding: 10px 14px 10px 38px; border-radius: 12px; border: 1px solid var(--tc-border);
+    background: var(--tc-surface); color: var(--tc-text); outline: none; transition: border-color .2s, box-shadow .2s; }
+  .gli-search input:focus { border-color: #22a06b; box-shadow: 0 0 0 3px rgba(34,160,107,.15); }
+  .gli-filter { display: flex; gap: 4px; background: var(--tc-surface-alt); padding: 4px; border-radius: 11px; }
+  .gli-filter button { border: none; background: transparent; border-radius: 8px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; color: var(--tc-text-muted); cursor: pointer; transition: all .2s; }
+  .gli-filter button.active { background: var(--tc-surface); color: #15803d; box-shadow: 0 2px 6px rgba(20,83,45,.15); }
+
+  .gli-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+  .gli-card {
+    display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 14px; text-decoration: none !important;
+    background: var(--tc-surface); border: 1.5px solid var(--tc-border); color: var(--tc-text);
+    box-shadow: 0 2px 10px var(--tc-shadow); transition: transform .2s, border-color .2s, box-shadow .2s; animation: gliUp .4s both;
+  }
+  .gli-card:hover { transform: translateY(-3px); border-color: #22a06b; box-shadow: 0 10px 26px rgba(20,83,45,.16); color: var(--tc-text); }
+  .gli-card-top { display: flex; align-items: center; gap: 12px; }
+  .gli-ic { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+    color: #fff; background: linear-gradient(135deg, var(--gl-b), var(--gl-c)); box-shadow: 0 4px 10px rgba(13,148,136,.3); }
+  .gli-card.empty .gli-ic { background: linear-gradient(135deg, #94a3b8, #64748b); box-shadow: none; }
+  .gli-name { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gli-sub { font-size: 12px; color: var(--tc-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gli-badge { margin-left: auto; flex-shrink: 0; font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 99px; }
+  .gli-badge.on { background: rgba(34,197,94,.14); color: #15803d; }
+  .gli-badge.off { background: var(--tc-surface-alt); color: var(--tc-text-muted); }
+  .gli-nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .gli-num { background: var(--tc-surface-alt); border-radius: 10px; padding: 8px 10px; }
+  .gli-num b { display: block; font-size: 17px; font-weight: 800; }
+  .gli-num span { font-size: 10.5px; color: var(--tc-text-muted); text-transform: uppercase; letter-spacing: .3px; }
+  .gli-open { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 700; color: #15803d; }
+  .gli-open i { transition: transform .2s; }
+  .gli-card:hover .gli-open i { transform: translateX(4px); }
+  .gli-empty { text-align: center; padding: 48px 16px; color: var(--tc-text-muted); }
+  .gli-empty i { font-size: 34px; opacity: .5; margin-bottom: 10px; display: block; }
+
+  [data-theme="dark"] .gli-open, [data-theme="dark"] .gli-filter button.active { color: #4ade80; }
+  [data-theme="dark"] .gli-badge.on { color: #4ade80; }
+  @media (max-width: 767.98px) {
+    .gli-hero { padding: 20px 18px; }
+    .gli-hero h1 { font-size: 23px; }
+    .gli-stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  }
+  @media (prefers-reduced-motion: reduce) { .gli *, .gli-hero, .gli-card { animation: none !important; } }
+</style>
+
+<div class="gli">
+  <section class="gli-hero">
+    <div class="gli-hero-row">
+      <div class="gli-logo"><i class="fas fa-globe-asia"></i></div>
+      <div>
+        <h1>Geo Lenz</h1>
+        <p>Field soil maps from SoiLENZ readings — pick a device to open its interpolated layers.</p>
+      </div>
+    </div>
+    <div class="gli-stats">
+      <div class="gli-stat"><b>{{ devices|length }}</b><span>SoiLENZ devices</span></div>
+      <div class="gli-stat"><b>{{ mapped_count }}</b><span>With field maps</span></div>
+      <div class="gli-stat"><b>{{ total_plots }}</b><span>Boundaries</span></div>
+      <div class="gli-stat"><b>{{ total_points }}</b><span>Sample points</span></div>
+    </div>
+  </section>
+
+  {% if devices %}
+  <div class="gli-tools">
+    <div class="gli-search">
+      <i class="fas fa-search"></i>
+      <input type="search" id="gli-q" placeholder="Search device, ID or owner…" aria-label="Search devices">
+    </div>
+    <div class="gli-filter" role="group" aria-label="Filter devices">
+      <button type="button" class="active" data-f="all">All</button>
+      <button type="button" data-f="mapped">Mapped</button>
+      <button type="button" data-f="empty">Not mapped</button>
+    </div>
+  </div>
+
+  <div class="gli-grid" id="gli-grid">
+    {% for d in devices %}
+    <a class="gli-card{% if not d.gl_plots %} empty{% endif %}" href="{% url 'soil-visualizer-dashboard' d.pk %}"
+       data-mapped="{% if d.gl_plots %}1{% else %}0{% endif %}"
+       data-q="{{ d.name|lower }} {{ d.devise_id|default:''|lower }} {{ d.serial_no|default:''|lower }} {{ d.user.username|default:''|lower }}"
+       {% if forloop.counter0 < 12 %}style="animation-delay: {% widthratio forloop.counter0 1 35 %}ms"{% endif %}>
+      <div class="gli-card-top">
+        <div class="gli-ic"><i class="fas fa-{% if d.gl_plots %}layer-group{% else %}map{% endif %}"></i></div>
+        <div style="min-width:0">
+          <div class="gli-name">{{ d.name }}</div>
+          <div class="gli-sub">{{ d.devise_id|default:d.serial_no|default:"—" }}{% if d.user %} · {{ d.user.username }}{% endif %}</div>
+        </div>
+        <span class="gli-badge {% if d.gl_plots %}on{% else %}off{% endif %}">{% if d.gl_plots %}Mapped{% else %}No map yet{% endif %}</span>
+      </div>
+      <div class="gli-nums">
+        <div class="gli-num"><b>{{ d.gl_plots }}</b><span>Boundaries</span></div>
+        <div class="gli-num"><b>{{ d.gl_points }}</b><span>Points</span></div>
+        <div class="gli-num"><b>{{ d.gl_readings }}</b><span>Readings</span></div>
+      </div>
+      <div class="gli-open">{% if d.gl_plots %}Open field map{% else %}Start mapping{% endif %} <i class="fas fa-arrow-right"></i></div>
+    </a>
+    {% endfor %}
+  </div>
+  <div class="gli-empty" id="gli-none" style="display:none"><i class="fas fa-search"></i>No devices match your search.</div>
+  {% else %}
+  <div class="gli-empty"><i class="fas fa-globe-asia"></i>No SoiLENZ devices yet. Add one to start building field maps.</div>
+  {% endif %}
+</div>
+
+<script>
+  (function () {
+    var q = document.getElementById('gli-q'); if (!q) return;
+    var cards = [].slice.call(document.querySelectorAll('.gli-card')), filter = 'all';
+    function apply() {
+      var term = q.value.trim().toLowerCase(), shown = 0;
+      cards.forEach(function (c) {
+        var ok = (!term || c.dataset.q.indexOf(term) !== -1) &&
+                 (filter === 'all' || (filter === 'mapped') === (c.dataset.mapped === '1'));
+        c.style.display = ok ? '' : 'none'; if (ok) shown++;
+      });
+      document.getElementById('gli-none').style.display = shown ? 'none' : 'block';
+    }
+    q.addEventListener('input', apply);
+    document.querySelectorAll('.gli-filter button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        filter = b.dataset.f;
+        document.querySelectorAll('.gli-filter button').forEach(function (x) { x.classList.toggle('active', x === b); });
+        apply();
+      });
+    });
+  })();
+</script>
+{% endblock %}

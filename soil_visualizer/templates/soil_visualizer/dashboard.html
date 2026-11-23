@@ -2,13 +2,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  {% include "_brand_head.html" %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Soil Visualizer — {{ devise.name }}</title>
+  <title>Geo Lenz — {{ devise.name }}</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -17,40 +19,65 @@
   <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.20.0/dist/leaflet-geoman.js"></script>
 
   <script src="{% static 'theme/theme.js' %}"></script>
-  <link rel="stylesheet" href="{% static 'soil_visualizer/css/dashboard.css' %}?v=20260928" />
+  <link rel="stylesheet" href="{% static 'soil_visualizer/css/dashboard.css' %}?v=20261123e" />
 </head>
 <body>
 
   <div id="root">
-    <div class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
+        <div class="gl-hero-bg" aria-hidden="true"></div>
         <div class="d-flex-row">
-          <div>
-            <h1>Soil Visualizer</h1>
-            <p>{{ devise.name }} &middot; Local Raster Interpolation Engine</p>
+          <div class="gl-brand">
+            <div class="gl-logo" aria-hidden="true"><i class="fas fa-earth-asia"></i><span class="gl-logo-ring"></span></div>
+            <div>
+              <div class="gl-title-row">
+                <h1>Geo Lenz</h1>
+                <span class="gl-by">by <img src="{% static 'brand/arkashine-wordmark.png' %}" alt="ArkaShine" width="984" height="200"></span>
+              </div>
+              <p>{{ devise.name }} &middot; Field Raster Interpolation</p>
+            </div>
           </div>
-          <button type="button" class="theme-toggle-btn" title="Toggle dark mode">
-            <i data-theme-icon class="fas fa-moon"></i>
-          </button>
+          <div class="gl-head-actions">
+            <button type="button" class="theme-toggle-btn" title="Toggle dark mode">
+              <i data-theme-icon class="fas fa-moon"></i>
+            </button>
+            <button type="button" class="gl-icon-btn" id="sidebar-collapse-btn" title="Hide panel" aria-label="Hide panel">
+              <i class="fas fa-angles-left"></i>
+            </button>
+          </div>
+        </div>
+        <div class="gl-stats" id="gl-stats">
+          <div class="gl-stat"><i class="fas fa-location-dot"></i><div><b id="stat-points">0</b><span>Points</span></div></div>
+          <div class="gl-stat"><i class="fas fa-draw-polygon"></i><div><b id="stat-plots">0</b><span>Boundaries</span></div></div>
+          <div class="gl-stat"><i class="fas fa-vial"></i><div><b id="stat-readings">0</b><span>Readings</span></div></div>
         </div>
       </div>
 
       <div class="sidebar-content">
-        <!-- Parameter tabs card -->
-        <div class="card">
+        <!-- Layer switcher card -->
+        <div class="card gl-reveal gl-min-keep-active" id="layers-section">
           <div class="card-title-bar">
-            <h3>Soil Parameter Overlay</h3>
+            <h3><i class="fas fa-layer-group gl-h-ic"></i>Soil Layers</h3>
+            <div class="gl-title-actions">
+              <span class="gl-live-pill"><span class="gl-dot"></span>Live</span>
+              <button type="button" class="gl-min-btn" data-min-key="layers" title="Minimize" aria-label="Minimize" aria-expanded="true"><i class="fas fa-chevron-up"></i></button>
+            </div>
           </div>
-          <div class="parameter-tabs" id="parameter-tabs"></div>
+          <div class="lyr-tabs" id="lyr-tabs"></div>
+          <div class="lyr-list" id="parameter-tabs"></div>
         </div>
 
         <!-- Added to Map list card — every point (each with its own drawn boundary) -->
-        <div class="card" id="points-section" style="display: flex; flex-direction: column; min-height: 260px; max-height: 360px;">
+        <div class="card gl-reveal" id="points-section" style="display: flex; flex-direction: column; min-height: 220px; max-height: 360px;">
           <div class="card-title-bar">
-            <h3>Added to Map</h3>
-            <button class="btn btn-primary btn-sm" id="add-manual-point-btn-trigger" onclick="startManualPointDraw()">
-              + Manual Point
-            </button>
+            <h3><i class="fas fa-map-pin gl-h-ic"></i>Added to Map</h3>
+            <div class="gl-title-actions">
+              <button class="btn btn-primary btn-sm" id="add-manual-point-btn-trigger" onclick="startManualPointDraw()">
+                <i class="fas fa-plus"></i> Manual Point
+              </button>
+              <button type="button" class="gl-min-btn" data-min-key="points" title="Minimize" aria-label="Minimize" aria-expanded="true"><i class="fas fa-chevron-up"></i></button>
+            </div>
           </div>
           <div class="list-container" id="points-list" style="flex-grow: 1;"></div>
         </div>
@@ -59,10 +86,10 @@
              kept right after "Added to Map" and above "All Readings" (which can get
              long) so it's visible without hunting for it, and JS also scrolls it
              into view explicitly when it opens. -->
-        <div class="card" id="point-form-card" style="display: none; flex-direction: column; gap: 12px;">
+        <div class="card gl-form-card" id="point-form-card" style="display: none; flex-direction: column; gap: 12px;">
           <div class="card-title-bar">
             <h3 id="point-form-title">Add Position</h3>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="hidePointForm()" style="padding: 4px 8px;">✕</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="hidePointForm()" style="padding: 4px 8px;" aria-label="Close">✕</button>
           </div>
 
           <form id="point-form" style="display: flex; flex-direction: column; gap: 12px;">
@@ -107,29 +134,36 @@
 
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
               <button type="button" class="btn btn-secondary btn-sm" id="cancel-point-btn">Cancel</button>
-              <button type="submit" class="btn btn-primary btn-sm">Save</button>
+              <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check"></i> Save</button>
             </div>
           </form>
         </div>
 
         <!-- All Readings search card -->
-        <div class="card" id="readings-section" style="display: flex; flex-direction: column; min-height: 380px; max-height: 560px;">
+        <div class="card gl-reveal" id="readings-section" style="display: flex; flex-direction: column; min-height: 380px; max-height: 560px;">
           <div class="card-title-bar">
-            <h3>All Readings</h3>
+            <h3><i class="fas fa-list-check gl-h-ic"></i>All Readings</h3>
+            <button type="button" class="gl-min-btn" data-min-key="readings" title="Minimize" aria-label="Minimize" aria-expanded="true"><i class="fas fa-chevron-up"></i></button>
           </div>
-          <div class="search-row">
+          <div class="search-row gl-search">
+            <i class="fas fa-magnifying-glass"></i>
             <input type="text" class="form-control" id="readings-search-input" placeholder="Search by crop, area, or reading #..." />
           </div>
           <div class="list-container" id="readings-list" style="flex-grow: 1; max-height: 440px;"></div>
           <div class="pager-row" id="readings-pager"></div>
         </div>
       </div>
-    </div>
+    </aside>
 
     <div class="map-container">
       <div id="map"></div>
 
+      <button type="button" class="gl-reopen" id="sidebar-reopen-btn" title="Show panel" aria-label="Show panel">
+        <i class="fas fa-layer-group"></i><span>Geo Lenz</span>
+      </button>
+
       <form class="coord-search" id="coord-search" autocomplete="off">
+        <i class="fas fa-crosshairs gl-cs-ic"></i>
         <input type="text" class="form-control" id="coord-search-input"
                placeholder="Lat, Long  e.g. 16.1667, 74.6167" aria-label="Search by latitude and longitude" />
         <button type="submit" class="btn btn-primary btn-sm">Go</button>
@@ -137,19 +171,29 @@
         <div class="coord-search-error" id="coord-search-error"></div>
       </form>
 
+      <!-- Active-layer bar, live metrics and hover readout (filled by JS) -->
+      <div class="gl-lyr-bar" id="lyr-bar"></div>
+      <div class="gl-metrics" id="lyr-metrics"></div>
+      <div class="gl-tip" id="lyr-tip"></div>
+
       <div class="draw-hint" id="draw-hint" style="display:none;">
+        <i class="fas fa-pen-ruler"></i>
         Draw a boundary on the map for this point — click to place each corner, double-click (or click the first point) to finish.
       </div>
 
       <div class="legend-panel" id="legend-panel" style="display: none;">
+        <button type="button" class="gl-min-btn gl-legend-min" data-min-key="legend" title="Minimize" aria-label="Minimize" aria-expanded="true"><i class="fas fa-chevron-down"></i></button>
         <div class="legend-title" id="legend-title">Soil pH</div>
         <div class="legend-bar" id="legend-bar"></div>
         <div class="legend-labels">
           <span id="legend-min">0.0</span>
           <span id="legend-max">14.0</span>
         </div>
+        <div class="legend-classes" id="legend-classes"></div>
         <div class="legend-method" id="legend-method">IDW Interpolation</div>
       </div>
+
+      <div class="gl-loading" id="raster-loading"><span class="gl-spin"></span>Building layer…</div>
     </div>
   </div>
 
@@ -165,6 +209,6 @@
       pointDetail: function (pointId) { return `/soil-visualizer/{{ devise.pk }}/points/${pointId}/`; },
     };
   </script>
-  <script src="{% static 'soil_visualizer/js/dashboard.js' %}?v=20260928"></script>
+  <script src="{% static 'soil_visualizer/js/dashboard.js' %}?v=20261123e"></script>
 </body>
 </html>

@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  {% include "_brand_head.html" %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="{% static 'theme/theme.js' %}"></script>
@@ -30,7 +31,14 @@
             font-size:0.82rem;font-weight:600;text-decoration:none;font-family:'Inter',sans-serif;
         }
         .header-back:hover{background:rgba(44,94,26,0.08)}
-        .header-title{max-width:calc(100vw - 170px)}
+        .header-title{max-width:calc(100vw - 290px)}
+        /* Parent brand (ArkaShine) — right side of the top bar, mirrors the Back link */
+        .header-brand{
+            position:absolute;right:16px;top:50%;transform:translateY(-50%);
+            display:flex;align-items:center;gap:6px;text-decoration:none;
+            color:var(--primary-light);font-size:0.68rem;font-weight:600;white-space:nowrap;
+        }
+        .header-brand img{display:block;height:22px;width:auto}
         .header-title h1{color:var(--primary);font-size:1.15rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .header-title p {color:var(--primary-light);font-size:0.72rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
@@ -530,7 +538,10 @@
             #upload-modal{padding:20px 18px 26px}
         }
         @media (max-width: 575.98px){
-            .header-title{max-width:calc(100vw - 140px)}
+            .header-title{max-width:calc(100vw - 200px)}
+            .header-brand{right:10px;gap:4px}
+            .header-brand span{display:none}
+            .header-brand img{height:16px}
             #location-search-wrap{width:calc(100% - 60px);top:8px}
             #location-search-input{font-size:0.8rem}
             #legend{padding:10px 12px}
@@ -661,6 +672,7 @@
         <h1>SoilMap</h1>
         <p>{{ device.name }} &mdash; Draw area for analysis</p>
     </div>
+    <div class="header-brand"><span>by</span><img src="{% static 'brand/arkashine-wordmark.png' %}" alt="ArkaShine" width="984" height="200"></div>
 </div>
 
 <div class="map-container">
@@ -973,11 +985,18 @@ function initMap() {
 function openSidebar() {
     document.getElementById('sb').classList.add('open');
     document.getElementById('sb-reopen').style.display = 'none';
+    refitMapAfterPanel();
 }
 function closeSidebar() {
     document.getElementById('sb').classList.remove('open');
     document.getElementById('sb-reopen').style.display = 'block';
-    resetSidebar();
+    // Only hide the panel — keep the analysis, raster layer, legend and metrics on the map.
+    refitMapAfterPanel();
+}
+function refitMapAfterPanel() {
+    // #sb animates its width, so let Leaflet re-measure once the transition settles
+    if (!map) return;
+    [60, 360].forEach(t => setTimeout(() => map.invalidateSize({pan:false}), t));
 }
 function showSbTab(t) {
     ['cfg','soil','zone','crop','cropmap','fert'].forEach(id => {
@@ -1839,6 +1858,7 @@ function setupSearch() {
         clearRasters();
         soilData = null; zoneData = null; activePolygonLayer = null;
         closeSidebar();
+        resetSidebar();   // moving to a new place: drop the old analysis
         map.flyTo([r.lat, r.lon], 17, {animate:true, duration:1.5});
         const m = L.marker([r.lat, r.lon]).addTo(map).bindPopup(r.name).openPopup();
         setTimeout(() => map.removeLayer(m), 4000);

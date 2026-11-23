@@ -22,6 +22,22 @@
   }
   .docs-hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
   .docs-hero p  { opacity: .85; font-size: 1.05rem; margin: 0; }
+  .docs-hero-brand {
+    position: relative;
+    display: flex; align-items: center; flex-wrap: wrap; gap: 12px 20px;
+    margin-bottom: 18px;
+  }
+  .docs-hero-badge {
+    display: inline-flex; align-items: center; max-width: 100%;
+    background: #fff; border-radius: 10px; padding: 6px 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  .docs-hero-logo { height: 56px; width: auto; max-width: 100%; display: block; }
+  .docs-hero-brand .divider { width: 1px; align-self: stretch; background: rgba(255,255,255,.35); }
+  @media (max-width: 575.98px) {
+    .docs-hero-logo { height: 44px; }
+    .docs-hero-brand .divider { display: none; }
+  }
   .docs-hero .badge-chip {
     display: inline-flex; align-items: center; gap: 6px;
     background: rgba(255,255,255,.18); border-radius: 20px;
@@ -167,12 +183,11 @@
 
   <!-- ── Hero ── -->
   <div class="docs-hero">
-    <div style="display:flex; align-items:center; gap:16px; margin-bottom:14px;">
-      <div style="width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:26px;">
-        <i class="fas fa-seedling"></i>
-      </div>
+    <div class="docs-hero-brand">
+      <span class="docs-hero-badge"><img src="{% static 'brand/arkashine-logo.png' %}" alt="ArkaShine" class="docs-hero-logo" height="56"></span>
+      <div class="divider" aria-hidden="true"></div>
       <div>
-        <h1 class="mb-0">ArkaShine Platform</h1>
+        <h1 class="mb-0"><span class="visually-hidden">ArkaShine </span>Platform</h1>
         <p class="mb-0" style="opacity:.7; font-size:13px;">Complete User Guide &amp; Reference</p>
       </div>
     </div>

@@ -10,7 +10,7 @@
 
   .fd-card { background:var(--tc-surface); border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.07); overflow:hidden; margin-bottom:16px; }
   .fd-card-header {
-    background:linear-gradient(135deg,#1a2f6b,#1a73e8);
+    background:linear-gradient(135deg,#14532d,#15803d 60%,#0d9488);
     color:#fff; padding:13px 18px; display:flex; align-items:center; gap:8px;
   }
   .fd-card-header h6 { margin:0; font-size:13px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; opacity:.9; }
@@ -119,32 +119,104 @@
     position:sticky; bottom:0; background:var(--tc-surface);
   }
   .edit-msg { font-size:13px; padding:8px 0; min-height:24px; }
+
+  /* ── Farmer hero ──────────────────────────────────── */
+  @keyframes fhUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  @keyframes fhSway { 0%,100% { transform:rotate(-4deg); } 50% { transform:rotate(4deg); } }
+  .fh {
+    position:relative; overflow:hidden; border-radius:18px; color:#fff; margin:0 8px 20px;
+    padding:22px 24px; background:linear-gradient(135deg,#14532d,#15803d 55%,#0d9488);
+    box-shadow:0 10px 30px rgba(20,83,45,.25); animation:fhUp .45s both;
+  }
+  .fh::before { /* field rows */
+    content:''; position:absolute; inset:auto -10% -40% -10%; height:75%; opacity:.13; pointer-events:none;
+    background:repeating-linear-gradient(100deg,#bbf7d0 0 3px,transparent 3px 26px);
+    transform:perspective(300px) rotateX(55deg); transform-origin:bottom;
+  }
+  .fh::after { /* sun */
+    content:''; position:absolute; width:180px; height:180px; right:-40px; top:-70px; border-radius:50%;
+    background:radial-gradient(circle,rgba(253,224,71,.45),rgba(253,224,71,0) 70%); pointer-events:none;
+  }
+  .fh-row { position:relative; z-index:1; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .fh-avatar { position:relative; width:92px; height:92px; flex-shrink:0; }
+  .fh-avatar img, .fh-avatar .fh-ph {
+    width:92px; height:92px; border-radius:50%; object-fit:cover; border:3px solid rgba(255,255,255,.85);
+    box-shadow:0 6px 18px rgba(0,0,0,.25); background:rgba(255,255,255,.15);
+    display:flex; align-items:center; justify-content:center; font-size:36px; color:rgba(255,255,255,.85);
+  }
+  .fh-avatar .fh-leaf {
+    position:absolute; right:-2px; bottom:2px; width:30px; height:30px; border-radius:50%;
+    background:#facc15; color:#14532d; display:flex; align-items:center; justify-content:center;
+    font-size:14px; border:3px solid #15803d; animation:fhSway 3s ease-in-out infinite;
+  }
+  .fh-main { flex:1; min-width:220px; }
+  .fh-role {
+    display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:800; letter-spacing:1px;
+    text-transform:uppercase; background:#facc15; color:#14532d; padding:3px 10px; border-radius:99px;
+  }
+  .fh-name { font-size:26px; font-weight:800; margin:6px 0 2px; line-height:1.15; color:#fff; }
+  .fh-id { font-family:monospace; font-size:12px; background:rgba(255,255,255,.18); padding:2px 8px; border-radius:6px; vertical-align:middle; margin-left:6px; }
+  .fh-loc { font-size:13.5px; opacity:.88; }
+  .fh-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .fh-chip {
+    display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600;
+    background:rgba(255,255,255,.14); box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);
+    padding:6px 11px; border-radius:10px; animation:fhUp .45s both;
+  }
+  .fh-chip i { color:#fde68a; }
+  .fh-chip:nth-child(2){animation-delay:.05s} .fh-chip:nth-child(3){animation-delay:.1s} .fh-chip:nth-child(4){animation-delay:.15s}
+  .fh-side { display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
+  .fh-side .badge { font-size:12px; padding:6px 12px; border-radius:20px; }
+  .fh-actions { display:flex; gap:8px; }
+  .fh-btn {
+    border:1px solid rgba(255,255,255,.35); background:rgba(255,255,255,.12); color:#fff; border-radius:9px;
+    padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer; transition:background .2s;
+  }
+  .fh-btn:hover { background:rgba(255,255,255,.25); color:#fff; }
+  .fh-partner { font-size:12px; opacity:.85; }
+  @media (max-width:767.98px) {
+    .fh { padding:18px 16px; margin:0 0 16px; }
+    .fh-name { font-size:21px; }
+    .fh-avatar, .fh-avatar img, .fh-avatar .fh-ph { width:72px; height:72px; font-size:28px; }
+    .fh-side { align-items:flex-start; width:100%; }
+  }
+  @media (prefers-reduced-motion:reduce) { .fh, .fh-chip, .fh-avatar .fh-leaf { animation:none; } }
 </style>
 
 <div style="padding:8px 4px 32px;">
 
-  <!-- ── Page header ────────────────────────────────── -->
-  <div class="d-flex align-items-center gap-3 mb-4 px-2">
-    <div style="width:44px;height:44px;border-radius:10px;background:#1a2f6b;
-                display:flex;align-items:center;justify-content:center;">
-      <i class="fas fa-user text-white" style="font-size:18px;"></i>
+  <!-- ── Farmer hero ─────────────────────────────────── -->
+  <section class="fh">
+    <div class="fh-row">
+      <div class="fh-avatar" id="heroAvatar">
+        {% if farmer.farmer_image %}
+        <img src="{{ farmer.farmer_image.url }}" alt="{{ farmer.farmer_name }}">
+        {% else %}
+        <div class="fh-ph"><i class="fas fa-user"></i></div>
+        {% endif %}
+        <span class="fh-leaf" title="Farmer"><i class="fas fa-seedling"></i></span>
+      </div>
+      <div class="fh-main">
+        <span class="fh-role"><i class="fas fa-tractor"></i> Farmer</span>
+        <div class="fh-name">{{ farmer.farmer_name }}<span class="fh-id">ID #{{ farmer.pk }}</span></div>
+        <div class="fh-loc"><i class="fas fa-map-marker-alt me-1"></i>{{ farmer.village }}, {{ farmer.district }}, {{ farmer.state }}</div>
+        <div class="fh-chips">
+          {% if farmer.crop %}<span class="fh-chip"><i class="fas fa-leaf"></i>{{ farmer.crop }}</span>{% endif %}
+          {% if farmer.season %}<span class="fh-chip"><i class="fas fa-cloud-sun"></i>{{ farmer.get_season_display }} season</span>{% endif %}
+          <span class="fh-chip"><i class="fas fa-ruler-combined"></i>{{ farmer.land_area }} acres</span>
+          {% if farmer.survey_number %}<span class="fh-chip"><i class="fas fa-map"></i>Survey {{ farmer.survey_number }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="fh-side">
+        <span class="badge st-{{ farmer.status }}" id="heroStatusBadge">{{ farmer.get_status_display }}</span>
+        <span class="fh-partner"><i class="fas fa-handshake me-1"></i>Soil Partner: {{ farmer.soil_partner.get_full_name|default:farmer.soil_partner.username }}</span>
+        <div class="fh-actions">
+          <button class="fh-btn" onclick="openEdit()"><i class="fas fa-edit me-1"></i> Edit</button>
+          <button class="fh-btn" onclick="history.back()"><i class="fas fa-arrow-left me-1"></i> Back</button>
+        </div>
+      </div>
     </div>
-    <div>
-      <h4 class="mb-0 fw-bold">{{ farmer.farmer_name }}
-        <span class="badge bg-secondary align-middle" style="font-size:12px;font-family:monospace;">ID #{{ farmer.pk }}</span></h4>
-      <span class="text-muted" style="font-size:13px;">
-        {{ farmer.village }}, {{ farmer.district }}, {{ farmer.state }}
-      </span>
-    </div>
-    <div class="ms-auto d-flex gap-2">
-      <button class="btn btn-sm btn-outline-primary" onclick="openEdit()">
-        <i class="fas fa-edit me-1"></i> Edit
-      </button>
-      <button class="btn btn-sm btn-outline-secondary" onclick="history.back()">
-        <i class="fas fa-arrow-left me-1"></i> Back
-      </button>
-    </div>
-  </div>
+  </section>
 
   <div class="row g-3">
 
@@ -153,6 +225,9 @@
 
       <!-- Photo management -->
       <div class="fd-card text-center p-3">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--tc-text-muted);margin-bottom:10px;">
+          <i class="fas fa-camera me-1"></i>Farmer Photo
+        </div>
         <div id="imgWrap" style="position:relative;display:inline-block;margin-bottom:12px;">
           {% if farmer.farmer_image %}
           <img id="farmerPhoto" src="{{ farmer.farmer_image.url }}" alt="{{ farmer.farmer_name }}"
@@ -216,7 +291,7 @@
 
       <!-- Agriculture -->
       <div class="fd-card">
-        <div class="fd-card-header"><i class="fas fa-seedling"></i><h6>Agriculture Details</h6></div>
+        <div class="fd-card-header"><i class="fas fa-seedling"></i><h6>Farm &amp; Crop Details</h6></div>
         <div class="info-row"><span class="info-label">Land Area</span> <span class="info-value">{{ farmer.land_area }} acres</span></div>
         <div class="info-row"><span class="info-label">Survey Number</span> <span class="info-value">{{ farmer.survey_number|default:"—" }}</span></div>
         <div class="info-row"><span class="info-label">Plot Number</span> <span class="info-value">{{ farmer.plot_number|default:"—" }}</span></div>
@@ -473,6 +548,12 @@
   }
 
   /* ── Image ────────────────────────── */
+  function syncHeroAvatar(url) {
+    const box = document.getElementById('heroAvatar'); if (!box) return;
+    const leaf = box.querySelector('.fh-leaf');
+    box.innerHTML = url ? `<img src="${url}" alt="">` : `<div class="fh-ph"><i class="fas fa-user"></i></div>`;
+    if (leaf) box.appendChild(leaf);
+  }
   function uploadImage(e) {
     e.preventDefault();
     const form = document.getElementById('imgUploadForm');
@@ -483,6 +564,7 @@
         if (d.success) {
           document.getElementById('imgWrap').innerHTML =
             `<img src="${d.url}?t=${Date.now()}" style="width:120px;height:120px;object-fit:cover;border-radius:50%;border:3px solid #e3e8f7;">`;
+          syncHeroAvatar(`${d.url}?t=${Date.now()}`);
           msg.textContent = 'Photo updated.'; msg.style.color = '#2e7d32';
           const rb = document.getElementById('removeBtn');
           if (rb) rb.style.display = '';
@@ -503,6 +585,7 @@
           `<div style="width:120px;height:120px;border-radius:50%;border:3px dashed var(--tc-border);
            background:var(--tc-surface-alt);display:flex;align-items:center;justify-content:center;margin:0 auto;">
            <i class="fas fa-user" style="font-size:40px;color:#ccc;"></i></div>`;
+        syncHeroAvatar(null);
         msg.textContent = 'Photo removed.'; msg.style.color = '#dc3545';
         setTimeout(() => msg.textContent = '', 3000);
       }
@@ -522,6 +605,8 @@
         badge.className = `badge ${STATUS_CLASS[d.status]}`;
         badge.style.cssText = 'font-size:12px;padding:5px 12px;border-radius:20px;';
         badge.textContent = d.display;
+        const hb = document.getElementById('heroStatusBadge');
+        if (hb) { hb.className = `badge ${STATUS_CLASS[d.status]}`; hb.textContent = d.display; }
         document.querySelectorAll('[id^="btn-"]').forEach(btn => {
           const s = btn.id.replace('btn-','');
           btn.className = s === d.status ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-secondary';

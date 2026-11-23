@@ -1,3 +1,4 @@
+{% load static %}
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
@@ -8,6 +9,7 @@
                 </div>
                 <p class="tagline">{{ device.name }}{% if device.devise_id %} &bull; ID: {{ device.devise_id }}{% endif %}</p>
             </div>
+            {% if show_parent_brand %}<div class="ark-by"><span>by</span><img src="{% static 'brand/arkashine-wordmark.png' %}" alt="ArkaShine" width="984" height="200"></div>{% endif %}
         </header>
 
         <!-- Navigation Tabs -->

@@ -1,7 +1,9 @@
+{% load static %}
 {% load static  %}
 <!DOCTYPE html>
 <html>
 	<head>
+  {% include "_brand_head.html" %}
 		<meta charset="utf-8">
 		<title>RegistrationForm_v10 by Colorlib</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,6 +28,7 @@
 			<div class="inner">
 				<img src="{% static '/register/images/image-1.png' %}" alt="" class="image-1">
 				<form action="">
+					<div style="text-align:center;margin-bottom:10px;"><img src="{% static 'brand/arkashine-logo.png' %}" alt="ArkaShine" style="height:56px;width:auto;max-width:100%;"></div>
 					<h3>Register device</h3>
 					<div class="form-holder">
 						<span class="lnr lnr-user"></span>

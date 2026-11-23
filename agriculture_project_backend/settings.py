@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'leaflenz',
     'harvestlenz',
     'soil_visualizer',
+    'translations',
 ]
 
 MIDDLEWARE = [
@@ -61,6 +62,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'translations.middleware.LanguageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -78,6 +80,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'agriapp.context_processors.notifications_badge',
                 'agriapp.context_processors.app_version',
+                'translations.context_processors.languages',
             ],
         },
     },

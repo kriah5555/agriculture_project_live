@@ -13,6 +13,8 @@ from agriapp.reports.soilenz_pdf import (
 )
 from django.utils import timezone
 
+from reports.templatetags.report_gauges import gauge_pct
+
 from agriapp.models import DeviseApis
 from agri_ai.fertilizer import recommend_fertilizer
 
@@ -175,9 +177,145 @@ def _crop_score(profile, preds, env):
     return round(max(0.0, min(10.0, s)), 1)
 
 
+# Page 3 grid maps: (title, key, vmin, vmax, reverse colormap)
+HM_PARAMS = [
+    ('pH (0-14)',            'ph',             0,   14,   True),
+    ('EC (dS/m)',            'ec',             0,   30,   True),
+    ('Organic Carbon (%)',   'organic_carbon', 0,   1,    False),
+    ('Nitrogen (kg/ha)',     'n',              125, 800,  False),
+    ('Phosphorus (kg/ha)',   'p',              1,   200,  False),
+    ('Potassium (kg/ha)',    'k',              20,  1000, False),
+    ('Calcium (meq/100g)',   'ca',             1,   100,  False),
+    ('Magnesium (meq/100g)', 'mg',             1,   50,   False),
+    ('Sulfur (ppm)',         's',              2,   250,  False),
+    ('Iron (ppm)',           'fe',             1,   50,   False),
+    ('Zinc (ppm)',           'zn',             0.2, 10,   False),
+    ('Manganese (ppm)',      'mn',             1,   25,   False),
+    ('Copper (ppm)',         'cu',             0.1, 10,   False),
+    ('Boron (ppm)',          'b',              0.1, 10,   False),
+]
+
+
+# ── Page 3 satellite image ─────────────────────────────────────────────────────
+# Keyless Esri World Imagery static export (same provider the site's maps use),
+# fetched server-side and embedded as base64 so the HTML view and the PDF are
+# identical and work without the client reaching Esri. Cached on disk by
+# rounded coordinates. Any failure -> '' and page 3 renders without it.
+_SAT_SPAN_M = 180          # ground width/height of the image, metres
+_FIELD_M    = 120          # 4 x 4 grids of 30 m (matches page 3's "Grid Size")
+_SAT_PX     = 300          # requested pixels (shown at ~150 CSS px -> 2x sharp)
+
+
+def _satellite_b64(lat, lon):
+    import base64, math, os
+    import requests
+    from django.conf import settings
+    try:
+        lat, lon = float(lat), float(lon)
+    except (TypeError, ValueError):
+        return ''
+    if (abs(lat) < 1e-6 and abs(lon) < 1e-6) or not (-85 < lat < 85) or not (-180 <= lon <= 180):
+        return ''
+    cache_dir = os.path.join(settings.MEDIA_ROOT, 'report_cache')
+    cache = os.path.join(cache_dir, f'sat_{lat:.5f}_{lon:.5f}_{_SAT_SPAN_M}_{_SAT_PX}.jpg')
+    try:
+        if os.path.exists(cache):
+            with open(cache, 'rb') as f:
+                return base64.b64encode(f.read()).decode('ascii')
+        # Web-Mercator bbox: ground metres are stretched by 1/cos(lat).
+        r = 6378137.0
+        x = math.radians(lon) * r
+        y = math.log(math.tan(math.pi / 4 + math.radians(lat) / 2)) * r
+        half = _SAT_SPAN_M / 2 / math.cos(math.radians(lat))
+        resp = requests.get(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export',
+            params={'bbox': f'{x-half},{y-half},{x+half},{y+half}', 'bboxSR': 3857,
+                    'imageSR': 3857, 'size': f'{_SAT_PX},{_SAT_PX}', 'format': 'jpg', 'f': 'image'},
+            timeout=6,
+        )
+        resp.raise_for_status()
+        if not resp.headers.get('Content-Type', '').startswith('image/') or len(resp.content) < 1000:
+            return ''
+        try:
+            os.makedirs(cache_dir, exist_ok=True)
+            tmp = cache + '.tmp'
+            with open(tmp, 'wb') as f:
+                f.write(resp.content)
+            os.replace(tmp, cache)
+        except OSError:
+            pass
+        return base64.b64encode(resp.content).decode('ascii')
+    except Exception:
+        return ''
+
+
 # ── Main builder ──────────────────────────────────────────────────────────────
 
-def build_report_context(api_id):
+def build_report_context(api_id, lang='en'):
+    """Report context for one reading, with every display string in `lang`
+    (en / kn / hi — see reports/i18n.py). None if the reading isn't found."""
+    ctx = _build_report_context_en(api_id)
+    if ctx is None:
+        return None
+    return localize_context(ctx, lang)
+
+
+def localize_context(ctx, lang):
+    """Translate the display strings of an English report context in place.
+    Values used for logic/colours (css classes, numbers, keys) are untouched;
+    phrases with no translation stay in English."""
+    from translations import api as tr_api
+    from reports.i18n import strings, tp, t
+
+    lang = tr_api.normalize_lang(lang)
+    S = strings(lang)
+    tr = lambda text: tp(S, text)
+
+    for pd in ctx['params_display']:
+        pd['name'], pd['status'], pd['interp'] = tr(pd['name']), tr(pd['status']), tr(pd['interp'])
+    for h in ctx['hm_data']:
+        h['label'], h['status'] = tr(h['label']), tr(h['status'])
+    ctx['score_label']  = tr(ctx['score_label'])
+    ctx['carbon_label'] = tr(ctx['carbon_label'])
+    for c in ctx['crops_scored']:
+        c['name'], c['status'], c['notes'] = tr(c['name']), tr(c['status']), tr(c['notes'])
+    ctx['top_crops'] = [tr(c) for c in ctx['top_crops']]
+    ctx['top_crops_text'] = ', '.join(ctx['top_crops'])
+    for c in ctx['crop_fert_rows']:
+        c['name'] = tr(c['name'])
+    for a in ctx['amendments']:
+        for f in ('name', 'dose', 'purpose', 'timing', 'pri'):
+            a[f] = tr(a[f])
+    for r in ctx['organic_advisory']:
+        for f in ('name', 'type', 'method', 'dose', 'freq', 'shelf'):
+            r[f] = tr(r[f])
+    lmh = ctx.get('lmh') or {}
+    for p in lmh.get('param_results', []) or []:
+        p['short_status'] = tr(p.get('short_status'))
+    for row in lmh.get('step2_rows', []) or []:
+        if row['status'] == 'Low':
+            row['note'] = t(S, 'report.fmt.step2_low')
+        elif row['status'] == 'High':
+            row['note'] = t(S, 'report.fmt.step2_high')
+        else:
+            row['note'] = t(S, 'report.fmt.step2_no_change', status=tr(row['note_status']))
+        row['status'] = tr(row['status'])
+
+    meta = ctx['meta']
+    meta['crop'] = tr(meta.get('crop'))
+    meta['agro_zone'] = tr(meta.get('agro_zone'))
+    if meta.get('field_area_value'):
+        meta['field_area'] = t(S, 'report.fmt.field_area_acres', area=meta['field_area_value'])
+
+    # Same names the translations context processor provides, so the PDF
+    # path (rendered without a request) gets them too.
+    ctx['lang'] = ctx['lang_code'] = lang
+    ctx['current_language'] = tr_api.get_language(lang) or tr_api.default_language()
+    ctx['languages'] = tr_api.active_languages()
+    return ctx
+
+
+def _build_report_context_en(api_id):
     """
     Load a DeviseApis reading by pk and return a complete context dict
     ready to render soil_report.html (or pass to the ReportLab PDF).
@@ -264,6 +402,7 @@ def build_report_context(api_id):
         'lat':                lat,
         'lon':                lon,
         'field_area':         (f"{farmer.land_area} acres" if farmer and farmer.land_area else '–'),
+        'field_area_value':   (farmer.land_area if farmer and farmer.land_area else None),
         'crop':               crop,
         'agro_zone':          agro_zone,
         'analysis_date':      timezone.localtime(api_data.created_at).strftime('%d %b %Y')          if api_data.created_at else '',
@@ -299,6 +438,7 @@ def build_report_context(api_id):
             'status': lmh_status(_THRESHOLD_KEY[key], val),
             'css':    _css(status),              'ideal':  ideal,
             'interp': interp,
+            'gauge_pct': gauge_pct(key, val),
         })
 
     # Nutrient categories
@@ -420,7 +560,8 @@ def build_report_context(api_id):
                 note = 'High soil → -25%'
             else:
                 note = f'{status or "Medium"} — no change'
-            return {'label': label, 'rdf': rdf, 'status': status, 'note': note, 'final': round(adj, 1)}
+            return {'label': label, 'rdf': rdf, 'status': status, 'note': note, 'final': round(adj, 1),
+                    'note_status': status or 'Medium'}
 
         lmh['step2_rows'] = [
             _step2_row('N',    lmh['n_rdf'], lmh['n_adj'], lmh['param_lookup'].get('nitrogen', {}).get('short_status')),
@@ -488,24 +629,8 @@ def build_report_context(api_id):
             pass
         return b64
 
-    hm_params = [
-        ('pH (0-14)',            'ph',             0,   14,   True),
-        ('EC (dS/m)',            'ec',             0,   30,   True),
-        ('Organic Carbon (%)',   'organic_carbon', 0,   1,    False),
-        ('Nitrogen (kg/ha)',     'n',              125, 800,  False),
-        ('Phosphorus (kg/ha)',   'p',              1,   200,  False),
-        ('Potassium (kg/ha)',    'k',              20,  1000, False),
-        ('Calcium (meq/100g)',   'ca',             1,   100,  False),
-        ('Magnesium (meq/100g)', 'mg',             1,   50,   False),
-        ('Sulfur (ppm)',         's',              2,   250,  False),
-        ('Iron (ppm)',           'fe',             1,   50,   False),
-        ('Zinc (ppm)',           'zn',             0.2, 10,   False),
-        ('Manganese (ppm)',      'mn',             1,   25,   False),
-        ('Copper (ppm)',         'cu',             0.1, 10,   False),
-        ('Boron (ppm)',          'b',              0.1, 10,   False),
-    ]
     hm_data = []
-    for lbl, key2, vmin, vmax, rev in hm_params:
+    for lbl, key2, vmin, vmax, rev in HM_PARAMS:
         avg = preds.get(key2) or ((vmin + vmax) / 2)
         img_b64 = _hm_b64(key2, vmin, vmax, avg, rev)
         stat, _, _, _ = _PARAM_INFO[key2](avg)
@@ -555,4 +680,7 @@ def build_report_context(api_id):
         'oc_after':         oc_after,
         'carbon_score':     c_score,
         'carbon_label':     c_label,
+        # Page 3 satellite view of the sample point ('' when unavailable)
+        'sat_img_b64':      _satellite_b64(lat, lon),
+        'sat_field_pct':    round(_FIELD_M / _SAT_SPAN_M * 100, 1),
     }

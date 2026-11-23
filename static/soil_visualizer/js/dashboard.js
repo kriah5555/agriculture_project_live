@@ -69,6 +69,72 @@ const getShortLabel = (p) => {
   return map[p.name] || p.label;
 };
 
+// ── Geo Lenz layer metadata (same grouping / class wording as SoilMap) ─────
+const LAYER_META = {
+  n:  { sym: 'N',  desc: 'Available nitrogen',          grp: 'macro' },
+  p:  { sym: 'P',  desc: 'Plant-available phosphorus',  grp: 'macro' },
+  k:  { sym: 'K',  desc: 'Exchangeable potassium',      grp: 'macro' },
+  s:  { sym: 'S',  desc: 'Available sulphur',           grp: 'micro' },
+  ca: { sym: 'Ca', desc: 'Exchangeable calcium',        grp: 'micro' },
+  mg: { sym: 'Mg', desc: 'Exchangeable magnesium',      grp: 'micro' },
+  fe: { sym: 'Fe', desc: 'DTPA iron',                   grp: 'micro' },
+  zn: { sym: 'Zn', desc: 'DTPA zinc',                   grp: 'micro' },
+  cu: { sym: 'Cu', desc: 'DTPA copper',                 grp: 'micro' },
+  b:  { sym: 'B',  desc: 'Hot-water boron',             grp: 'micro' },
+  mn: { sym: 'Mn', desc: 'DTPA manganese',              grp: 'micro' },
+  ph: { sym: 'pH', desc: 'Acidity / alkalinity',        grp: 'soil' },
+  ec: { sym: 'EC', desc: 'Soluble salts / salinity',    grp: 'soil' },
+  organic_carbon: { sym: 'OC', desc: 'Total organic carbon', grp: 'soil' },
+};
+const LAYER_GROUPS = [['macro', 'Macronutrients', 'N-P-K'], ['micro', 'Secondary', '& Micro'], ['soil', 'Soil', 'Properties']];
+const QUICK_LAYERS = ['n', 'p', 'k', 'ph', 'organic_carbon'];
+const CLASS_NAMES = {
+  ph:   ['Strongly Acidic', 'Acidic', 'Slightly Acidic', 'Neutral', 'Alkaline', 'Strongly Alkaline'],
+  ec:   ['Very Low', 'Low', 'Normal', 'Moderate', 'High', 'Very High'],
+  _def: ['Very Low', 'Low', 'Medium', 'Optimal', 'High', 'Very High'],
+};
+const BAD_CLASSES = { ph: [0, 1, 5], ec: [4, 5], _def: [0, 1] };
+let lyrGroup = 'macro';
+let lmMin = null;          // metrics card collapsed? null → auto (collapsed on small screens)
+let rasterStates = [];     // per-plot value grids used by the hover readout
+let rasterFetchToken = 0;  // drops stale raster responses after a fast layer switch
+
+const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const classNames = (param) => CLASS_NAMES[param] || CLASS_NAMES._def;
+const badClasses = (param) => BAD_CLASSES[param] || BAD_CLASSES._def;
+function classIdx(v, scale) { for (let i = 0; i < scale.length; i++) if (v <= scale[i].max) return i; return scale.length - 1; }
+function scaleLo(param) { return param === 'ph' ? 3.5 : 0; }
+function scaleBounds(scale, i, param) {
+  const lo = i === 0 ? scaleLo(param) : scale[i - 1].max;
+  const hi = scale[i].max === Infinity ? lo + (lo - (i > 1 ? scale[i - 2].max : scaleLo(param))) : scale[i].max;
+  return [lo, hi];
+}
+function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+// Smooth colour: interpolate between class-centre stops so the raster reads as a continuous surface.
+function smoothRgb(v, scale, param) {
+  const stops = scale.map((st, i) => { const [lo, hi] = scaleBounds(scale, i, param); return [(lo + hi) / 2, hexToRgb(st.hex)]; });
+  if (v <= stops[0][0]) return stops[0][1];
+  for (let i = 1; i < stops.length; i++) {
+    if (v <= stops[i][0]) {
+      const t = (v - stops[i - 1][0]) / (stops[i][0] - stops[i - 1][0]), a = stops[i - 1][1], b = stops[i][1];
+      return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+    }
+  }
+  return stops[stops.length - 1][1];
+}
+function rangeTxt(param) {
+  const sc = colormaps[param]; if (!sc) return '';
+  const fin = sc.filter(x => x.max !== Infinity);
+  return `${param === 'ph' ? sc[0].max : 0}–${fin[fin.length - 1].max}+ ${PARAMETERS[param].unit}`.trim();
+}
+function fmtV(v) { return (v === null || v === undefined || isNaN(v)) ? '—' : (Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(2)); }
+// Average of the sample points' values for a parameter (what the layer card shows).
+function sampleStats(param) {
+  const vals = points.map(pt => pt.parameters && pt.parameters[param]).filter(v => typeof v === 'number' && !isNaN(v));
+  if (!vals.length) return { n: 0, avg: NaN };
+  return { n: vals.length, avg: vals.reduce((a, b) => a + b, 0) / vals.length };
+}
+
 // Compact color-coded stat grid, used anywhere a full parameter set needs
 // to be previewed (reading detail expand, point map popup, add-form preview).
 function buildParamGrid(parameters) {
@@ -139,6 +205,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   await Promise.all([fetchPlots(), fetchPoints(), fetchReadings()]);
   if (highlightReadingId) applyReadingHighlight();
+  else fitToAllPlots();
 });
 
 function applyReadingHighlight() {
@@ -177,7 +244,7 @@ function initMap() {
     fetch('https://ipapi.co/json/')
       .then(res => { if (!res.ok) throw new Error('bad status'); return res.json(); })
       .then(data => {
-        if (data && data.latitude && data.longitude) {
+        if (data && data.latitude && data.longitude && !hasLocated) {
           hasLocated = true;
           mapInstance.setView([data.latitude, data.longitude], 12);
         }
@@ -187,7 +254,7 @@ function initMap() {
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-      (position) => { hasLocated = true; mapInstance.setView([position.coords.latitude, position.coords.longitude], 14); },
+      (position) => { if (hasLocated) return; hasLocated = true; mapInstance.setView([position.coords.latitude, position.coords.longitude], 14); },
       () => fetchIPLocationFallback(),
       { enableHighAccuracy: false, timeout: 5000, maximumAge: 30000 }
     );
@@ -204,7 +271,7 @@ function initMap() {
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxNativeZoom: 18, maxZoom: 20 })
   ]);
   googleHybrid.addTo(mapInstance);
-  L.control.layers({ 'Satellite (Hybrid)': googleHybrid, 'Street Map': googleRoadmap }, null, { position: 'bottomleft' }).addTo(mapInstance);
+  L.control.layers({ 'Satellite (Hybrid)': googleHybrid, 'Street Map': googleRoadmap }, null, { position: 'topright' }).addTo(mapInstance);
 
   plotsLayerGroup.addTo(mapInstance);
   pointsLayerGroup.addTo(mapInstance);
@@ -230,26 +297,104 @@ function initMap() {
 }
 
 function initParameterTabs() {
-  parameterTabsContainer.innerHTML = '';
-  Object.values(PARAMETERS).forEach(p => {
-    const tab = document.createElement('button');
-    tab.className = `param-tab ${p.name === activeParameter ? 'active' : ''}`;
-    tab.setAttribute('data-param', p.name);
-    tab.title = p.label;
-    tab.textContent = getShortLabel(p);
-    tab.addEventListener('click', () => setActiveParameter(p.name));
-    parameterTabsContainer.appendChild(tab);
+  lyrGroup = LAYER_META[activeParameter].grp;
+  const tabs = document.getElementById('lyr-tabs');
+  tabs.innerHTML = LAYER_GROUPS.map(([g, a, b]) =>
+    `<button type="button" class="lyr-tab${g === lyrGroup ? ' active' : ''}" data-g="${g}">${a}<small>${b}</small></button>`).join('');
+  tabs.querySelectorAll('.lyr-tab').forEach(btn => btn.addEventListener('click', () => setLyrGroup(btn.dataset.g)));
+  parameterTabsContainer.addEventListener('click', (e) => {
+    const card = e.target.closest('.lyr-card');
+    if (card) setActiveParameter(card.dataset.k);
   });
+  renderLayerCards();
+}
+
+function setLyrGroup(g) {
+  lyrGroup = g;
+  document.querySelectorAll('.lyr-tab').forEach(b => b.classList.toggle('active', b.dataset.g === g));
+  renderLayerCards();
+}
+
+function renderLayerCards() {
+  parameterTabsContainer.innerHTML = Object.keys(PARAMETERS).filter(k => LAYER_META[k].grp === lyrGroup).map((k, i) => {
+    const p = PARAMETERS[k], sc = colormaps[k], st = sampleStats(k), active = k === activeParameter;
+    const ci = st.n ? classIdx(st.avg, sc) : -1;
+    const rating = ci < 0 ? '' : `<span class="lyr-rate" style="--c:${sc[ci].hex}">${classNames(k)[ci]}</span>`;
+    const val = st.n ? `<b>${fmtV(st.avg)}</b> ${p.unit} ${rating}` : `<span style="opacity:.8">No samples yet</span>`;
+    return `<button type="button" class="lyr-card${active ? ' active' : ''}${st.n ? '' : ' no-data'}" data-k="${k}" style="animation-delay:${i * 0.04}s" title="${esc(p.label)}">
+        <span class="lyr-radio"></span>
+        <span class="lyr-sym" style="--c:${sc[Math.min(3, sc.length - 1)].hex}">${LAYER_META[k].sym}</span>
+        <span class="lyr-main">
+          <span class="lyr-name" style="display:block">${p.label}</span>
+          <span class="lyr-desc" style="display:block">${LAYER_META[k].desc}${p.unit ? ' (' + p.unit + ')' : ''}${st.n ? ' · ' + st.n + ' sample' + (st.n === 1 ? '' : 's') : ''}</span>
+          <span class="lyr-val" style="display:block">${val}</span>
+        </span>
+        <span class="lyr-side">
+          <span class="lyr-tag" style="display:block">${active ? '<i class="fas fa-eye"></i> VIEWING' : '<i class="fas fa-rotate"></i> Click to view'}</span>
+          <span class="lyr-grad" style="display:block;background:${p.legendGradient.replace('to right', '90deg')}"></span>
+          <span class="lyr-range" style="display:block">${rangeTxt(k)}</span>
+        </span>
+      </button>`;
+  }).join('');
 }
 
 function setActiveParameter(param) {
+  if (!PARAMETERS[param]) return;
   activeParameter = param;
-  document.querySelectorAll('.param-tab').forEach(tab => tab.classList.toggle('active', tab.getAttribute('data-param') === param));
+  if (LAYER_META[param].grp !== lyrGroup) setLyrGroup(LAYER_META[param].grp); else renderLayerCards();
   renderPointsOnMap();
   fetchAllRasters();
 }
 
+// ── Sidebar collapse (hiding the panel never clears map data) ──────────────
+function setSidebarCollapsed(collapsed) {
+  document.getElementById('root').classList.toggle('sb-collapsed', collapsed);
+  setTimeout(() => mapInstance && mapInstance.invalidateSize({ pan: false }), 80);
+  // after the slide finishes: re-measure the map and let theme.js reposition its scroll hints
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 400);
+}
+
+// ── Minimize buttons (Soil Layers, Added to Map, All Readings, legend) ───
+// Remembered per browser; a minimized Soil Layers card still shows the active layer.
+function initMinimizers() {
+  document.querySelectorAll('.gl-min-btn').forEach(btn => {
+    const box = btn.closest('.card, .legend-panel'), key = 'geolenz-min-' + btn.dataset.minKey;
+    const apply = (min) => {
+      box.classList.toggle('min', min);
+      btn.setAttribute('aria-expanded', String(!min));
+      btn.title = min ? 'Expand' : 'Minimize';
+      btn.setAttribute('aria-label', btn.title);
+    };
+    let saved = null;
+    try { saved = localStorage.getItem(key); } catch (e) { /* storage blocked — just don't remember */ }
+    apply(saved === '1');
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const min = !box.classList.contains('min');
+      apply(min);
+      try { localStorage.setItem(key, min ? '1' : '0'); } catch (err) { /* ignore */ }
+    });
+  });
+}
+
+function updateStats() {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('stat-points', points.length);
+  set('stat-plots', plots.length);
+  set('stat-readings', readingsData.count || 0);
+}
+
 function bindGlobalEvents() {
+  initMinimizers();
+  document.getElementById('sidebar-collapse-btn').addEventListener('click', () => setSidebarCollapsed(true));
+  document.getElementById('sidebar-reopen-btn').addEventListener('click', () => setSidebarCollapsed(false));
+  if (window.innerWidth <= 900) setSidebarCollapsed(true);
+  ['lyr-bar', 'lyr-metrics', 'legend-panel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { L.DomEvent.disableClickPropagation(el); L.DomEvent.disableScrollPropagation(el); }
+  });
+  mapInstance.on('mousemove', onRasterHover);
+  mapInstance.on('mouseout', () => document.getElementById('lyr-tip').classList.remove('show'));
   document.getElementById('cancel-point-btn').addEventListener('click', cancelDraw);
   pointForm.addEventListener('submit', handlePointFormSubmit);
 
@@ -310,6 +455,17 @@ function flyToLocation(lat, lon) {
   mapInstance.flyTo([lat, lon], 17, { duration: 1.2 });
 }
 
+// Open on the mapped fields (not wherever the browser's GPS happens to be),
+// so the layers are visible straight away.
+function fitToAllPlots() {
+  const b = plotsLayerGroup.getBounds();
+  if (b.isValid()) { hasLocated = true; mapInstance.fitBounds(b, { padding: [60, 60], maxZoom: 18 }); }
+  else if (points.length) {
+    const pt = points.find(p => p.coordinates);
+    if (pt) mapInstance.setView([pt.coordinates.lat, pt.coordinates.lon], 16);
+  }
+}
+
 function flyToPlot(plotId) {
   const plot = plotsById[plotId];
   if (!plot) return;
@@ -326,6 +482,7 @@ async function fetchPlots() {
       plots = await res.json();
       plotsById = {};
       plots.forEach(p => { plotsById[p.id] = p; });
+      updateStats();
       renderPlotsOnMap();
       fetchAllRasters();
     }
@@ -335,7 +492,7 @@ async function fetchPlots() {
 function renderPlotsOnMap() {
   plotsLayerGroup.clearLayers();
   plots.forEach(plot => {
-    const layer = L.geoJSON(plot.geometry, { style: { color: '#2d6a4f', weight: 1.5, fillColor: '#2d6a4f', fillOpacity: 0.05 } });
+    const layer = L.geoJSON(plot.geometry, { style: { color: '#ffffff', weight: 2.5, opacity: 0.95, dashArray: '6,5', fillOpacity: 0 } });
     // Label each boundary with its name so overlapping/nearby boxes for
     // different readings can be told apart at a glance on the map itself.
     layer.bindTooltip(plot.name, { permanent: true, direction: 'center', className: 'plot-label-tooltip' });
@@ -358,6 +515,7 @@ async function fetchReadings() {
     const res = await fetch(`${URLS.readings}?${params.toString()}`);
     if (res.ok) {
       readingsData = await res.json();
+      updateStats();
       renderReadingsList();
     }
   } catch (e) { console.error('Error fetching readings:', e); }
@@ -440,8 +598,10 @@ async function fetchPoints() {
     const res = await fetch(URLS.allPoints);
     if (res.ok) {
       points = await res.json();
+      updateStats();
       renderPointsList();
       renderPointsOnMap();
+      renderLayerCards();
     }
   } catch (e) { console.error('Error fetching points:', e); }
 }
@@ -490,11 +650,14 @@ function renderPointsOnMap() {
     const val = point.parameters[activeParameter];
     const formattedVal = (val !== undefined && val !== null) ? val.toFixed(2) : 'N/A';
 
-    const invisibleIcon = L.divIcon({ className: 'invisible-point-marker', html: '<div style="width:0;height:0;"></div>', iconSize: [0, 0], iconAnchor: [0, 0] });
-    const marker = L.marker([lat, lon], { icon: invisibleIcon });
-
-    marker.bindTooltip(`<div class="ticket-map-label param-${activeParameter}">${formattedVal} ${paramConfig.unit || ''}</div>`, {
-      permanent: true, direction: 'top', offset: [0, -10], className: 'custom-ticket-tooltip',
+    const hasVal = val !== undefined && val !== null;
+    const dotColor = hasVal ? paramConfig.getColor(val) : '#9ca3af';
+    const marker = L.circleMarker([lat, lon], {
+      radius: 7, color: '#fff', weight: 2.5, fillColor: dotColor, fillOpacity: 1, className: 'soil-sample-pt',
+    });
+    const ci = hasVal ? classIdx(val, colormaps[activeParameter]) : -1;
+    marker.bindTooltip(`<div class="sp-tip"><b>${formattedVal} ${paramConfig.unit || ''}</b>${ci >= 0 ? ` · <span style="color:${dotColor}">${classNames(activeParameter)[ci]}</span>` : ''}</div>`, {
+      direction: 'top', offset: [0, -8],
     });
 
     marker.bindPopup(`
@@ -519,6 +682,8 @@ async function handleDeletePoint(point) {
     if (res.ok) {
       if (point.plot) await deletePlotSilently(point.plot);
       points = points.filter(p => p.id !== point.id);
+      updateStats();
+      renderLayerCards();
       renderPointsList();
       renderPointsOnMap();
       fetchPlots();
@@ -530,62 +695,258 @@ async function handleDeletePoint(point) {
 // ── Rasters ──────────────────────────────────────────────────────────────────
 
 async function fetchAllRasters() {
+  const token = ++rasterFetchToken, param = activeParameter;
   if (plots.length === 0) { allRasters = {}; renderRastersOnMap(); return; }
+  const loading = document.getElementById('raster-loading');
+  const needsFetch = plots.some(pl => !rasterCache[`${pl.id}-${param}`]);
+  if (needsFetch) loading.classList.add('show');
   const newRasters = {};
-  for (const plot of plots) {
-    const cacheKey = `${plot.id}-${activeParameter}`;
-    if (rasterCache[cacheKey]) { newRasters[plot.id] = rasterCache[cacheKey]; continue; }
+  await Promise.all(plots.map(async (plot) => {
+    const cacheKey = `${plot.id}-${param}`;
+    if (rasterCache[cacheKey]) { newRasters[plot.id] = rasterCache[cacheKey]; return; }
     try {
-      const res = await fetch(`${URLS.raster(plot.id)}?parameter=${activeParameter}&resolution=60`);
+      const res = await fetch(`${URLS.raster(plot.id)}?parameter=${param}&resolution=60`);
       if (res.ok) {
         const data = await res.json();
         rasterCache[cacheKey] = data;
         newRasters[plot.id] = data;
       }
     } catch (e) { console.error(`Error fetching raster for plot ${plot.id}:`, e); }
-  }
+  }));
+  if (token !== rasterFetchToken) return;   // the user already switched to another layer
+  loading.classList.remove('show');
   allRasters = newRasters;
   renderRastersOnMap();
 }
 
-function renderRastersOnMap() {
-  rasterLayerGroup.clearLayers();
-  const paramConfig = PARAMETERS[activeParameter];
-  if (!paramConfig) return;
-
-  Object.values(allRasters).forEach(raster => {
-    if (!raster || !raster.cells || raster.parameter !== activeParameter) return;
-    raster.cells.forEach(cell => {
-      const color = paramConfig.getColor(cell.value);
-      const rect = L.rectangle(cell.bounds, { stroke: false, fillColor: color, fillOpacity: 0.7, renderer: canvasRenderer, interactive: true });
-      rect.bindTooltip(`<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;padding:4px;color:#1e2f23;">
-        <strong>Value:</strong> ${cell.value.toFixed(2)} ${paramConfig.unit || ''}<br/>
-        <strong>Status:</strong> ${raster.method === 'single_sample_gradient' ? 'Estimated (1 point)' : 'Interpolated (IDW)'}
-      </div>`, { sticky: true });
-      rasterLayerGroup.addLayer(rect);
-    });
-  });
-  updateLegendPanel();
+// Rebuild a server raster (list of grid cells inside the plot) into a regular grid.
+function geomRings(geom) {
+  if (!geom) return [];
+  if (geom.type === 'Polygon') return geom.coordinates;
+  if (geom.type === 'MultiPolygon') return geom.coordinates.flat();
+  return [];
 }
 
-function updateLegendPanel() {
-  const legendPanel = document.getElementById('legend-panel');
-  let globalMin = null, globalMax = null, globalMethod = 'none';
-  Object.values(allRasters).forEach(r => {
-    if (r && r.parameter === activeParameter && r.cells && r.cells.length > 0) {
-      if (globalMin === null || r.min_value < globalMin) globalMin = r.min_value;
-      if (globalMax === null || r.max_value > globalMax) globalMax = r.max_value;
-      if (r.method === 'idw') globalMethod = 'idw';
-      else if (r.method === 'single_sample_gradient' && globalMethod !== 'idw') globalMethod = 'single_sample_gradient';
-    }
+function rasterToGrid(raster, geom) {
+  const cells = raster.cells;
+  let S = Infinity, N = -Infinity, Wl = Infinity, E = -Infinity;
+  cells.forEach(c => { S = Math.min(S, c.bounds[0][0]); N = Math.max(N, c.bounds[1][0]); Wl = Math.min(Wl, c.bounds[0][1]); E = Math.max(E, c.bounds[1][1]); });
+  // The server grid spans the plot's bounding box — use it so edge cells line up with the polygon.
+  geomRings(geom).forEach(r => r.forEach(([lng, lat]) => { S = Math.min(S, lat); N = Math.max(N, lat); Wl = Math.min(Wl, lng); E = Math.max(E, lng); }));
+  const dLat = cells[0].bounds[1][0] - cells[0].bounds[0][0], dLng = cells[0].bounds[1][1] - cells[0].bounds[0][1];
+  const H = Math.max(1, Math.round((N - S) / dLat)), W = Math.max(1, Math.round((E - Wl) / dLng));
+  const grid = new Float32Array(W * H).fill(NaN);
+  cells.forEach(c => {
+    const x = Math.min(W - 1, Math.floor((c.bounds[0][1] - Wl) / dLng + 0.5));
+    const y = Math.min(H - 1, Math.floor((N - c.bounds[1][0]) / dLat + 0.5));   // row 0 = north
+    grid[y * W + x] = c.value;
   });
-  if (globalMin === null || globalMax === null) { legendPanel.style.display = 'none'; return; }
+  return { S, N, Wl, E, W, H, grid, rings: geomRings(geom) };
+}
+
+// Paint one plot as a smooth surface: bilinear upsampling, class contour lines, soft relief.
+function paintRaster(g, param, scale, counts) {
+  const F = Math.max(2, Math.min(10, Math.floor(640 / Math.max(g.W, g.H))));
+  const PW = g.W * F, PH = g.H * F;
+  const at = (x, y) => (x < 0 || y < 0 || x >= g.W || y >= g.H) ? NaN : g.grid[y * g.W + x];
+  const val = new Float32Array(PW * PH).fill(NaN), cls = new Int8Array(PW * PH).fill(-1);
+  for (let py = 0; py < PH; py++) {
+    for (let px = 0; px < PW; px++) {
+      const cx = Math.floor(px / F), cy = Math.floor(py / F);
+      let base = at(cx, cy);
+      if (isNaN(base)) {
+        // Edge cell whose centre fell outside the polygon: borrow the nearest value so the
+        // surface reaches the real boundary (the polygon clip below trims it exactly).
+        if (!g.rings.length) continue;
+        for (let r = 1; r <= 2 && isNaN(base); r++)
+          for (let dy = -r; dy <= r && isNaN(base); dy++)
+            for (let dx = -r; dx <= r && isNaN(base); dx++) base = at(cx + dx, cy + dy);
+        if (isNaN(base)) continue;
+      }
+      const gx = (px + 0.5) / F - 0.5, gy = (py + 0.5) / F - 0.5;
+      const x0 = Math.floor(gx), y0 = Math.floor(gy), tx = gx - x0, ty = gy - y0;
+      let sum = 0, wsum = 0;
+      [[x0, y0, (1 - tx) * (1 - ty)], [x0 + 1, y0, tx * (1 - ty)], [x0, y0 + 1, (1 - tx) * ty], [x0 + 1, y0 + 1, tx * ty]].forEach(([x, y, w]) => {
+        const v = at(x, y); if (!isNaN(v) && w > 0) { sum += v * w; wsum += w; }
+      });
+      const i = py * PW + px;
+      val[i] = wsum ? sum / wsum : base;
+      cls[i] = classIdx(val[i], scale);
+    }
+  }
+  let fMin = Infinity, fMax = -Infinity;
+  for (let i = 0; i < g.grid.length; i++) if (!isNaN(g.grid[i])) {
+    counts[classIdx(g.grid[i], scale)]++; fMin = Math.min(fMin, g.grid[i]); fMax = Math.max(fMax, g.grid[i]);
+  }
+  // Isolines: 6 equal bands across this field's own measured range, so the shape of the
+  // real interpolated surface reads as contours even when it all sits in one class.
+  const fRange = fMax - fMin, BANDS = 6, hasIso = fRange > 1e-6;
+  const iso = new Int8Array(PW * PH).fill(-1);
+  if (hasIso) for (let i = 0; i < val.length; i++) if (cls[i] >= 0) iso[i] = Math.min(BANDS - 1, Math.floor((val[i] - fMin) / fRange * BANDS));
+  const cv = document.createElement('canvas'); cv.width = PW; cv.height = PH;
+  const ctx = cv.getContext('2d'), img = ctx.createImageData(PW, PH), px = img.data;
+  for (let y = 0; y < PH; y++) for (let x = 0; x < PW; x++) {
+    const i = y * PW + x; if (cls[i] < 0) continue;
+    let [r, gr, b] = smoothRgb(val[i], scale, param), a = 215;
+    const right = x < PW - 1 ? cls[i + 1] : cls[i], down = y < PH - 1 ? cls[i + PW] : cls[i];
+    const isoR = x < PW - 1 ? iso[i + 1] : iso[i], isoD = y < PH - 1 ? iso[i + PW] : iso[i];
+    if ((right >= 0 && right !== cls[i]) || (down >= 0 && down !== cls[i])) { r *= 0.45; gr *= 0.45; b *= 0.45; a = 235; }
+    else if (hasIso && ((isoR >= 0 && isoR !== iso[i]) || (isoD >= 0 && isoD !== iso[i]))) { r *= 0.62; gr *= 0.62; b *= 0.62; a = 230; }
+    else if (hasIso) {
+      // relief shading from the field's own slope (light from the top-left) plus a gentle
+      // tint from low → high within the field, so the surface reads in 3D like SoilMap's
+      const t = (val[i] - fMin) / fRange - 0.5;
+      let d = t * 34;
+      if (x > 0 && y > 0 && cls[i - PW - 1] >= 0) d += Math.max(-26, Math.min(26, (val[i] - val[i - PW - 1]) / fRange * PW * 10));
+      r += d; gr += d; b += d;
+    }
+    const o = i * 4;
+    px[o] = Math.max(0, Math.min(255, r)); px[o + 1] = Math.max(0, Math.min(255, gr)); px[o + 2] = Math.max(0, Math.min(255, b)); px[o + 3] = a;
+  }
+  ctx.putImageData(img, 0, 0);
+  if (g.rings.length) {
+    // Clip to the exact drawn boundary for clean edges at any zoom.
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.beginPath();
+    g.rings.forEach(ring => ring.forEach(([lng, lat], j) => {
+      const x = (lng - g.Wl) / (g.E - g.Wl) * PW, y = (g.N - lat) / (g.N - g.S) * PH;
+      if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }));
+    ctx.closePath();
+    ctx.fill('evenodd');
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  return cv.toDataURL();
+}
+
+function renderRastersOnMap() {
+  rasterLayerGroup.clearLayers();
+  rasterStates = [];
+  const paramConfig = PARAMETERS[activeParameter];
+  if (!paramConfig) return;
+  const scale = colormaps[activeParameter];
+  const counts = new Array(scale.length).fill(0);
+  let sum = 0, total = 0, vmin = Infinity, vmax = -Infinity, method = 'none';
+
+  Object.entries(allRasters).forEach(([plotId, raster]) => {
+    if (!raster || !raster.cells || !raster.cells.length || raster.parameter !== activeParameter) return;
+    const g = rasterToGrid(raster, (plotsById[plotId] || {}).geometry);
+    const url = paintRaster(g, activeParameter, scale, counts);
+    L.imageOverlay(url, [[g.S, g.Wl], [g.N, g.E]], { opacity: 1, interactive: false, className: 'gl-raster-img' }).addTo(rasterLayerGroup);
+    raster.cells.forEach(c => { sum += c.value; total++; vmin = Math.min(vmin, c.value); vmax = Math.max(vmax, c.value); });
+    if (raster.method === 'idw') method = 'idw';
+    else if (raster.method === 'single_sample_gradient' && method !== 'idw') method = 'single_sample_gradient';
+    rasterStates.push({ ...g, method: raster.method, name: (plotsById[plotId] || {}).name || '' });
+  });
+
+  const stats = { counts, total, avg: total ? sum / total : NaN, min: total ? vmin : NaN, max: total ? vmax : NaN, method };
+  updateLegendPanel(stats);
+  renderLyrBar();
+  renderLyrMetrics(stats);
+}
+
+function onRasterHover(e) {
+  const tip = document.getElementById('lyr-tip');
+  const { lat, lng } = e.latlng;
+  for (const st of rasterStates) {
+    if (lat < st.S || lat > st.N || lng < st.Wl || lng > st.E) continue;
+    const x = Math.min(st.W - 1, Math.floor((lng - st.Wl) / (st.E - st.Wl) * st.W));
+    const y = Math.min(st.H - 1, Math.floor((st.N - lat) / (st.N - st.S) * st.H));
+    const v = st.grid[y * st.W + x];
+    if (isNaN(v)) continue;
+    const p = PARAMETERS[activeParameter], sc = colormaps[activeParameter], ci = classIdx(v, sc);
+    tip.innerHTML = `<div class="t-h">${esc(p.label)}</div><div class="t-v">${fmtV(v)} <small>${p.unit}</small></div>
+      <div class="t-r" style="--c:${sc[ci].hex}">${classNames(activeParameter)[ci]}</div>
+      <div class="t-m">${st.method === 'single_sample_gradient' ? 'Estimated (1 point)' : 'Interpolated (IDW)'}${st.name ? ' · ' + esc(st.name) : ''}</div>`;
+    tip.style.left = (e.containerPoint.x + 16) + 'px';
+    tip.style.top = (e.containerPoint.y + 16) + 'px';
+    tip.classList.add('show');
+    return;
+  }
+  tip.classList.remove('show');
+}
+
+function renderLyrBar() {
+  const bar = document.getElementById('lyr-bar');
+  if (!points.length && !plots.length) { bar.classList.remove('show'); return; }
+  const p = PARAMETERS[activeParameter];
+  const chips = QUICK_LAYERS.map(k => {
+    const lbl = k === 'ph' ? '<b>pH</b>' : `<b>${LAYER_META[k].sym}</b> ${PARAMETERS[k].label}`;
+    return `<button type="button" class="lb-chip${k === activeParameter ? ' active' : ''}" data-k="${k}">${lbl}</button>`;
+  }).join('');
+  bar.innerHTML = `<div class="lb-title"><span class="gl-dot"></span>LAYER ACTIVE: ${esc(p.label).toUpperCase()} DISTRIBUTION</div>
+    <div class="lb-row"><span class="lb-lbl">Switch to:</span>${chips}
+    <button type="button" class="lb-chip lb-more" data-more="1">All layers <i class="fas fa-caret-right"></i></button></div>`;
+  bar.querySelectorAll('.lb-chip').forEach(btn => btn.addEventListener('click', () => {
+    if (btn.dataset.more) {
+      setSidebarCollapsed(false);
+      parameterTabsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else setActiveParameter(btn.dataset.k);
+  }));
+  bar.classList.remove('show'); void bar.offsetWidth; bar.classList.add('show');
+}
+
+function renderLyrMetrics(stats) {
+  const met = document.getElementById('lyr-metrics');
+  if (!points.length && !plots.length) { met.classList.remove('show'); return; }
+  const k = activeParameter, p = PARAMETERS[k], sc = colormaps[k], names = classNames(k), bad = badClasses(k);
+  const smp = sampleStats(k);
+  const ref = !isNaN(stats.avg) ? stats.avg : smp.avg;
+  const ci = isNaN(ref) ? -1 : classIdx(ref, sc);
+  let body;
+  if (!stats.total) {
+    body = `<div class="lm-info"><i class="fas fa-circle-info"></i><div>${smp.n ? 'No boundary has this layer yet.' : 'No samples have a value for this layer yet.'} Add a reading with ${esc(p.label)} to see its field map.</div></div>`;
+  } else {
+    const badPct = bad.reduce((a, i) => a + (stats.counts[i] || 0), 0) / stats.total * 100;
+    const warn = badPct > 0.5
+      ? `<div class="lm-warn"><i class="fas fa-triangle-exclamation"></i><div><b>${badPct.toFixed(0)}% of mapped area</b> ${k === 'ph' ? 'is outside the optimal pH band' : k === 'ec' ? 'shows elevated salinity' : 'is deficient — needs attention'}</div></div>`
+      : `<div class="lm-ok"><i class="fas fa-check"></i><div>No deficient zones detected</div></div>`;
+    const bars = sc.map((x, i) => {
+      const pct = (stats.counts[i] || 0) / stats.total * 100;
+      return `<div class="lm-bar"><span class="lm-bl">${names[i]}</span><div class="lm-bt"><div class="lm-bf" data-w="${pct.toFixed(1)}" style="background:${x.hex}"></div></div><span class="lm-bp">${pct.toFixed(0)}%</span></div>`;
+    }).join('');
+    body = `<div class="lm-grid">
+        <div><div class="lm-k">Field Avg</div><div class="lm-v">${fmtV(stats.avg)} <small>${p.unit}</small></div></div>
+        <div><div class="lm-k">Samples Avg</div><div class="lm-v">${fmtV(smp.avg)} <small>${p.unit}</small></div></div>
+        <div><div class="lm-k">Min</div><div class="lm-v">${fmtV(stats.min)}</div></div>
+        <div><div class="lm-k">Max</div><div class="lm-v">${fmtV(stats.max)}</div></div>
+      </div>
+      ${ci >= 0 ? `<div class="lm-k">Rating</div><div class="lm-rate" style="--c:${sc[ci].hex}">${names[ci]}</div>` : ''}
+      ${warn}
+      <div class="lm-k" style="margin-top:8px">Field summary</div>${bars}`;
+  }
+  met.innerHTML = `<div class="lm-h"><span><i class="fas fa-chart-simple"></i>LIVE LAYER METRICS</span><button type="button" class="lm-x" title="Collapse / expand">&#9662;</button></div>
+    <div class="lm-body">
+      <div class="lm-k">Selected Layer</div><div class="lm-big">${esc(p.label)}</div>
+      ${body}
+      <div class="lm-k" style="margin-top:8px">${smp.n} sample${smp.n === 1 ? '' : 's'} · ${rasterStates.length} mapped boundar${rasterStates.length === 1 ? 'y' : 'ies'}</div>
+    </div>`;
+  met.querySelector('.lm-x').addEventListener('click', () => { lmMin = met.classList.toggle('min'); });
+  if (lmMin === null) lmMin = window.innerWidth < 900;
+  met.classList.toggle('min', lmMin);
+  met.classList.remove('show'); void met.offsetWidth; met.classList.add('show');
+  requestAnimationFrame(() => requestAnimationFrame(() => met.querySelectorAll('.lm-bf').forEach(b => { b.style.width = b.dataset.w + '%'; })));
+}
+
+function updateLegendPanel(stats) {
+  const legendPanel = document.getElementById('legend-panel');
+  if (!stats || !stats.total) { legendPanel.style.display = 'none'; return; }
+  const k = activeParameter, p = PARAMETERS[k], sc = colormaps[k], names = classNames(k);
   legendPanel.style.display = 'block';
-  document.getElementById('legend-title').textContent = PARAMETERS[activeParameter].label;
-  document.getElementById('legend-bar').style.background = PARAMETERS[activeParameter].legendGradient;
-  document.getElementById('legend-min').textContent = `${globalMin.toFixed(1)} ${PARAMETERS[activeParameter].unit}`;
-  document.getElementById('legend-max').textContent = `${globalMax.toFixed(1)} ${PARAMETERS[activeParameter].unit}`;
-  document.getElementById('legend-method').textContent = globalMethod === 'idw' ? 'IDW Interpolation' : globalMethod === 'single_sample_gradient' ? 'Radial Gradient (1 point)' : 'No Overlays';
+  legendPanel.style.animation = 'none'; void legendPanel.offsetWidth; legendPanel.style.animation = '';
+  document.getElementById('legend-title').innerHTML = `${esc(p.label)} ${p.unit ? `<small>(${p.unit})</small>` : ''}`;
+  document.getElementById('legend-bar').style.background = p.legendGradient;
+  document.getElementById('legend-min').textContent = `min ${stats.min.toFixed(1)} ${p.unit}`;
+  document.getElementById('legend-max').textContent = `max ${stats.max.toFixed(1)} ${p.unit}`;
+  document.getElementById('legend-classes').innerHTML = [...sc].map((item, i) => {
+    const lo = i === 0 ? null : sc[i - 1].max;
+    const label = item.max === Infinity ? `> ${lo}` : (lo === null ? `< ${item.max}` : `${lo} – ${item.max}`);
+    const pct = (stats.counts[i] / stats.total * 100).toFixed(0);
+    return `<div class="lg-row"><span class="lg-sw" style="background:${item.hex}"></span><span class="lg-nm">${names[i]}</span><span class="lg-rg">${label}</span><span class="lg-pc">${pct}%</span></div>`;
+  }).reverse().join('');
+  document.getElementById('legend-method').innerHTML = stats.method === 'idw'
+    ? '<i class="fas fa-wave-square"></i> IDW Interpolation'
+    : stats.method === 'single_sample_gradient' ? '<i class="fas fa-bullseye"></i> Radial Gradient (1 point)' : 'No Overlays';
 }
 
 function invalidatePlotRasterCache(plotId) {

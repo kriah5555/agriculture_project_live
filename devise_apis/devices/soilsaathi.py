@@ -598,6 +598,7 @@ def soilsaathi_recommendation_pdf(request, device_id, call_id):
     from reports.views import pdf_response
     state, payload = get_or_start(
         reading, request.build_absolute_uri('/'), request.get_host(),
+        lang=request.GET.get('lang') or 'en',   # en | kn | hi
     )
     if state == 'ready':
         return pdf_response(*payload)

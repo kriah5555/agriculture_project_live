@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.db.models import Count, Max
 
 from agriapp.models import Devise, DeviseApis, Plot, Point
 from agriapp.views import admin_required
@@ -30,6 +31,31 @@ def _point_json(point):
         'sample_date': point.sample_date.isoformat(),
         'notes': point.notes,
     }
+
+
+@admin_required
+def index_view(request):
+    """Geo Lenz landing page (navbar entry): pick a SoiLENZ device to open its field map."""
+    devices = list(Devise.objects.filter(devise_type='soilsaathi').select_related('user').order_by('name'))
+    ids = [d.pk for d in devices]
+    # Separate grouped counts — one join per table keeps this cheap on big reading tables.
+    point_counts = dict(Point.objects.filter(devise_id__in=ids).values_list('devise_id').annotate(c=Count('id')))
+    plot_counts  = dict(Plot.objects.filter(devise_id__in=ids).values_list('devise_id').annotate(c=Count('id')))
+    reading_rows = DeviseApis.objects.filter(device_id__in=ids).values('device_id').annotate(c=Count('id'), last=Max('id'))
+    readings     = {r['device_id']: r['c'] for r in reading_rows}
+    for d in devices:
+        d.gl_points   = point_counts.get(d.pk, 0)
+        d.gl_plots    = plot_counts.get(d.pk, 0)
+        d.gl_readings = readings.get(d.pk, 0)
+    # Devices that already have a field map first, then the rest by name.
+    devices.sort(key=lambda d: (d.gl_plots == 0, d.name.lower()))
+    return render(request, 'soil_visualizer/index.html', {
+        'devices': devices,
+        'mapped_count': sum(1 for d in devices if d.gl_plots),
+        'total_points': sum(d.gl_points for d in devices),
+        'total_plots': sum(d.gl_plots for d in devices),
+        'active_page': 'geolenz',
+    })
 
 
 @admin_required

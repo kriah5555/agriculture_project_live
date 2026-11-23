@@ -1,0 +1,309 @@
+{% extends "navbar.html" %}
+{% block content %}
+<style>
+  .tr { --g1:#14532d; --g2:#15803d; --g3:#0d9488; padding: 16px 4px 40px; }
+  @keyframes trUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  .tr-hero { position:relative; overflow:hidden; border-radius:18px; padding:22px 24px; color:#fff;
+    background:linear-gradient(135deg,var(--g1),var(--g2) 55%,var(--g3)); box-shadow:0 10px 30px rgba(20,83,45,.22); animation:trUp .4s both; }
+  .tr-hero::after { content:''; position:absolute; inset:0; opacity:.14; pointer-events:none;
+    background:radial-gradient(circle,#bbf7d0 0 2px,transparent 3px) 0 0/22px 22px; }
+  .tr-hero h1 { margin:0; font-size:26px; font-weight:800; color:#fff; display:flex; align-items:center; gap:12px; position:relative; z-index:1; }
+  .tr-hero h1 i { width:46px; height:46px; border-radius:14px; display:inline-flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.16); font-size:20px; }
+  .tr-hero p { margin:6px 0 0; opacity:.85; font-size:13.5px; position:relative; z-index:1; }
+  .tr-stats { position:relative; z-index:1; display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-top:16px; }
+  .tr-stat { background:rgba(255,255,255,.12); box-shadow:inset 0 0 0 1px rgba(255,255,255,.16); border-radius:12px; padding:10px 12px; }
+  .tr-stat b { font-size:20px; font-weight:800; display:block; line-height:1.1; }
+  .tr-stat span { font-size:11px; opacity:.8; text-transform:uppercase; letter-spacing:.4px; }
+  .tr-meter { height:5px; border-radius:99px; background:rgba(255,255,255,.2); margin-top:7px; overflow:hidden; display:flex; }
+  .tr-meter i { display:block; height:100%; background:#bbf7d0; }
+  .tr-meter i + i { background:#facc15; }
+
+  .tr-card { background:var(--tc-surface); border:1px solid var(--tc-border); border-radius:14px; box-shadow:0 2px 10px var(--tc-shadow); margin-top:16px; animation:trUp .4s both; }
+  .tr-toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:14px; border-bottom:1px solid var(--tc-border); }
+  .tr-toolbar .grow { flex:1; min-width:200px; position:relative; }
+  .tr-toolbar .grow i { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--tc-text-muted); font-size:13px; }
+  .tr-in, .tr-sel { border:1px solid var(--tc-border); border-radius:10px; padding:8px 12px; font-size:13px; background:var(--tc-input-bg); color:var(--tc-text); outline:none; }
+  .tr-in:focus, .tr-sel:focus { border-color:#22a06b; box-shadow:0 0 0 3px rgba(34,160,107,.15); }
+  .tr-toolbar .grow .tr-in { width:100%; padding-left:34px; }
+  .tr-btn { border:1px solid var(--tc-border); background:var(--tc-surface); color:var(--tc-text); border-radius:10px; padding:8px 12px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+  .tr-btn:hover { border-color:#22a06b; color:#15803d; }
+  .tr-btn.primary { background:#15803d; border-color:#15803d; color:#fff; }
+  .tr-btn.primary:hover { background:#166534; color:#fff; }
+  .tr-chips { display:flex; gap:6px; flex-wrap:wrap; padding:10px 14px 0; }
+  .tr-chip { border:1px solid var(--tc-border); border-radius:99px; padding:4px 11px; font-size:12px; font-weight:600; color:var(--tc-text-muted); text-decoration:none; background:var(--tc-surface); }
+  .tr-chip.on { background:rgba(34,197,94,.14); border-color:#22a06b; color:#15803d; }
+  .tr-chip small { opacity:.7; margin-left:3px; }
+
+  .tr-table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
+  .tr-table th { position:sticky; top:0; z-index:2; background:var(--tc-surface-alt); color:var(--tc-text-muted); font-size:11px; text-transform:uppercase; letter-spacing:.4px; font-weight:700; padding:10px; text-align:left; border-bottom:1px solid var(--tc-border); }
+  .tr-table td { padding:10px; border-bottom:1px solid var(--tc-border); vertical-align:top; color:var(--tc-text); }
+  .tr-table tr:hover td { background:color-mix(in srgb, var(--tc-surface-alt) 55%, transparent); }
+  .tr-key { font-family:monospace; font-size:12px; font-weight:600; word-break:break-all; color:var(--tc-text); }
+  .tr-mod { display:inline-block; margin-top:4px; font-size:10.5px; font-weight:700; padding:1px 8px; border-radius:99px; background:rgba(13,148,136,.12); color:#0d9488; }
+  .tr-ctx { font-size:11.5px; color:var(--tc-text-muted); margin-top:4px; }
+  .tr-cell { min-width:220px; }
+  .tr-cell textarea { width:100%; min-height:44px; resize:vertical; border:1px solid var(--tc-border); border-radius:9px; padding:7px 9px;
+    font-size:13.5px; line-height:1.45; background:var(--tc-input-bg); color:var(--tc-text); outline:none; transition:border-color .15s, box-shadow .15s;
+    font-family: var(--i18n-fonts), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  .tr-cell textarea:focus { border-color:#22a06b; box-shadow:0 0 0 3px rgba(34,160,107,.15); }
+  .tr-cell textarea.dirty { border-color:#f59e0b; }
+  .tr-cell textarea.saved { border-color:#22c55e; }
+  .tr-cell textarea.missing { background:rgba(239,68,68,.05); border-style:dashed; }
+  .tr-cell-foot { display:flex; align-items:center; gap:8px; margin-top:5px; font-size:11.5px; color:var(--tc-text-muted); }
+  .tr-cell-foot label { display:inline-flex; align-items:center; gap:4px; cursor:pointer; margin:0; }
+  .tr-cell-foot .tr-reset { margin-left:auto; border:none; background:none; color:var(--tc-text-muted); cursor:pointer; padding:2px 4px; border-radius:6px; font-size:11.5px; }
+  .tr-cell-foot .tr-reset:hover { color:#dc2626; background:rgba(220,38,38,.08); }
+  .tr-flag { font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:99px; }
+  .tr-flag.draft { background:#fef3c7; color:#92400e; }
+  .tr-flag.ok { background:#dcfce7; color:#166534; }
+  .tr-status { font-size:11px; min-height:14px; }
+  .tr-pager { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; font-size:12.5px; color:var(--tc-text-muted); flex-wrap:wrap; }
+  .tr-empty { text-align:center; padding:40px 16px; color:var(--tc-text-muted); }
+
+  .tr-langs { padding:14px; display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; }
+  .tr-lang { border:1px solid var(--tc-border); border-radius:12px; padding:12px; background:var(--tc-surface); }
+  .tr-lang h4 { margin:0 0 8px; font-size:15px; font-weight:800; color:var(--tc-text); display:flex; align-items:center; gap:8px; }
+  .tr-lang h4 code { font-size:11px; background:var(--tc-surface-alt); padding:1px 6px; border-radius:6px; }
+  .tr-lang .row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+  .tr-lang input[type=text], .tr-lang input[type=number] { width:100%; }
+  .tr-lang .checks { display:flex; gap:12px; font-size:12.5px; margin:6px 0 10px; color:var(--tc-text); }
+  .tr-sec-h { display:flex; align-items:center; justify-content:space-between; padding:14px 14px 0; }
+  .tr-sec-h h3 { margin:0; font-size:16px; font-weight:800; color:var(--tc-text); display:flex; gap:8px; align-items:center; }
+  .tr-toast { position:fixed; right:20px; bottom:20px; z-index:3000; background:#14532d; color:#fff; padding:10px 14px; border-radius:10px; font-size:13px; box-shadow:0 10px 30px rgba(0,0,0,.25); display:none; }
+  .tr-toast.err { background:#b91c1c; }
+  [data-theme="dark"] .tr-chip.on, [data-theme="dark"] .tr-btn:hover { color:#4ade80; }
+  [data-theme="dark"] .tr-flag.draft { background:rgba(245,158,11,.18); color:#fcd34d; }
+  [data-theme="dark"] .tr-flag.ok { background:rgba(34,197,94,.16); color:#86efac; }
+  @media (max-width: 767.98px) {
+    .tr-hero { padding:18px 16px; } .tr-hero h1 { font-size:21px; }
+    .tr-table thead { display:none; }
+    .tr-table, .tr-table tbody, .tr-table tr, .tr-table td { display:block; width:100%; }
+    .tr-table tr { border-bottom:6px solid var(--tc-surface-alt); }
+    .tr-table td { border-bottom:none; padding:8px 12px; }
+    .tr-table td[data-lang]::before { content:attr(data-lang); display:block; font-size:11px; font-weight:700; color:var(--tc-text-muted); margin-bottom:4px; text-transform:uppercase; }
+    .tr-cell { min-width:0; }
+  }
+</style>
+{% include "translations/_fonts.html" %}
+
+<div class="tr">
+  <section class="tr-hero">
+    <h1><i class="fas fa-language"></i> Languages</h1>
+    <p>Edit the text shown across ArkaShine pages in every language. Changes apply immediately — no deploy needed.</p>
+    <div class="tr-stats">
+      <div class="tr-stat"><b>{{ total_strings }}</b><span>Strings</span></div>
+      {% for st in lang_stats %}
+      <div class="tr-stat" title="{{ st.done }} translated, {{ st.reviewed }} reviewed">
+        <b>{{ st.lang.native_name }}</b>
+        <span>{{ st.pct }}% translated · {{ st.rpct }}% reviewed</span>
+        <div class="tr-meter"><i style="width:{{ st.rpct }}%"></i><i style="width:{{ st.dpct }}%"></i></div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <div class="tr-card">
+    <form class="tr-toolbar" method="get" action="">
+      <div class="grow"><i class="fas fa-search"></i>
+        <input class="tr-in" type="search" name="q" value="{{ q }}" placeholder="Search key, note or any translation…">
+      </div>
+      <select class="tr-sel" name="module" onchange="this.form.submit()" aria-label="Module">
+        <option value="">All modules</option>
+        {% for m in modules %}<option value="{{ m.module }}" {% if m.module == module %}selected{% endif %}>{{ m.module }} ({{ m.n }})</option>{% endfor %}
+      </select>
+      <select class="tr-sel" name="status" onchange="this.form.submit()" aria-label="Status">
+        <option value="">All strings</option>
+        <option value="review" {% if status == 'review' %}selected{% endif %}>Needs review</option>
+        <option value="missing" {% if status == 'missing' %}selected{% endif %}>Missing translation</option>
+      </select>
+      <select class="tr-sel" name="slang" onchange="this.form.submit()" aria-label="Language for status filter">
+        <option value="">Any language</option>
+        {% for l in active_langs %}<option value="{{ l.code }}" {% if l.code == slang %}selected{% endif %}>{{ l.native_name }}</option>{% endfor %}
+      </select>
+      <button class="tr-btn" type="submit"><i class="fas fa-filter"></i> Apply</button>
+      <a class="tr-btn" href="{% url 'translations-export' %}{% if module %}?module={{ module }}{% endif %}" data-no-pdf-progress><i class="fas fa-file-export"></i> Export CSV</a>
+      <label class="tr-btn" style="margin:0;"><i class="fas fa-file-import"></i> Import CSV
+        <input type="file" accept=".csv,text/csv" id="tr-import" hidden>
+      </label>
+    </form>
+
+    <div class="tr-chips">
+      <a class="tr-chip {% if not module %}on{% endif %}" href="?">All<small>{{ total_strings }}</small></a>
+      {% for m in modules %}<a class="tr-chip {% if m.module == module %}on{% endif %}" href="?module={{ m.module }}">{{ m.module }}<small>{{ m.n }}</small></a>{% endfor %}
+      <span style="margin-left:auto;font-size:12px;color:var(--tc-text-muted);align-self:center;">
+        Preview reading:
+        <input class="tr-in" style="width:90px;padding:4px 8px;" id="tr-preview-id" value="{{ preview_api_id }}" inputmode="numeric" aria-label="Reading ID for preview">
+      </span>
+    </div>
+
+    <div style="overflow-x:auto;margin-top:10px;">
+      <table class="tr-table">
+        <thead>
+          <tr>
+            <th style="width:22%;">Key</th>
+            {% for l in active_langs %}<th>{{ l.native_name }} <span style="opacity:.6">({{ l.code }})</span>
+              <a href="#" class="tr-preview" data-lang="{{ l.code }}" title="Preview report in {{ l.name }}" style="margin-left:6px;color:inherit;"><i class="fas fa-external-link-alt"></i></a></th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in rows %}
+          <tr>
+            <td>
+              <div class="tr-key">{{ r.s.key }}</div>
+              <span class="tr-mod">{{ r.s.module }}</span>
+              {% if r.s.context %}<div class="tr-ctx">{{ r.s.context }}</div>{% endif %}
+            </td>
+            {% for l, t in r.cells %}
+            <td class="tr-cell" data-lang="{{ l.native_name }}" lang="{{ l.code }}">
+              <textarea data-string="{{ r.s.pk }}" data-lang="{{ l.code }}"
+                        class="{% if not t or not t.text %}missing{% endif %}"
+                        placeholder="Missing — falls back to the default language"
+                        rows="2">{% if t %}{{ t.text }}{% endif %}</textarea>
+              <div class="tr-cell-foot">
+                {% if not l.is_default %}
+                <label><input type="checkbox" class="tr-rev" data-string="{{ r.s.pk }}" data-lang="{{ l.code }}" {% if t.reviewed %}checked{% endif %}> Reviewed</label>
+                <span class="tr-flag {% if t.reviewed %}ok{% else %}draft{% endif %}">{% if t.reviewed %}Reviewed{% else %}Draft{% endif %}</span>
+                {% endif %}
+                <span class="tr-status"></span>
+                <button type="button" class="tr-reset" data-string="{{ r.s.pk }}" data-lang="{{ l.code }}" title="Reset to default text"><i class="fas fa-undo"></i> Reset</button>
+              </div>
+            </td>
+            {% endfor %}
+          </tr>
+        {% empty %}
+          <tr><td colspan="{{ active_langs|length|add:1 }}" class="tr-empty"><i class="fas fa-search" style="font-size:26px;display:block;margin-bottom:8px;opacity:.5"></i>No strings match these filters.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tr-pager">
+      <span>{{ page.paginator.count }} string{{ page.paginator.count|pluralize }} · page {{ page.number }} of {{ page.paginator.num_pages }} · edits save automatically</span>
+      <span style="display:flex;gap:6px;">
+        {% if page.has_previous %}<a class="tr-btn" href="?{{ qs_no_page }}&page={{ page.previous_page_number }}">‹ Prev</a>{% endif %}
+        {% if page.has_next %}<a class="tr-btn" href="?{{ qs_no_page }}&page={{ page.next_page_number }}">Next ›</a>{% endif %}
+      </span>
+    </div>
+  </div>
+
+  <div class="tr-card" id="languages">
+    <div class="tr-sec-h"><h3><i class="fas fa-globe-asia" style="color:#15803d"></i> Languages</h3>
+      <span style="font-size:12px;color:var(--tc-text-muted);">Add a language by code (e.g. te, ta, mr), then fill its column above or import a CSV.</span></div>
+    <div class="tr-langs">
+      {% for l in languages %}
+      <form class="tr-lang" method="post" action="{% url 'translations-language-save' %}">
+        {% csrf_token %}<input type="hidden" name="code" value="{{ l.code }}"><input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <h4>{{ l.native_name }} <code>{{ l.code }}</code>{% if l.is_default %}<span class="tr-flag ok">Default</span>{% endif %}{% if not l.is_active %}<span class="tr-flag draft">Inactive</span>{% endif %}</h4>
+        <div class="row2">
+          <input class="tr-in" type="text" name="name" value="{{ l.name }}" placeholder="English name" aria-label="English name">
+          <input class="tr-in" type="text" name="native_name" value="{{ l.native_name }}" placeholder="Native name" aria-label="Native name">
+        </div>
+        <div class="row2">
+          <input class="tr-in" type="text" name="font_family" value="{{ l.font_family }}" placeholder="Font (e.g. Noto Sans Telugu)" aria-label="Font family">
+          <input class="tr-in" type="number" name="sort_order" value="{{ l.sort_order }}" min="0" aria-label="Sort order">
+        </div>
+        <div class="checks">
+          <label><input type="checkbox" name="is_active" {% if l.is_active %}checked{% endif %} {% if l.is_default %}disabled checked{% endif %}> Active</label>
+          <label><input type="checkbox" name="is_default" {% if l.is_default %}checked disabled{% endif %}> Default</label>
+        </div>
+        <button class="tr-btn primary" type="submit"><i class="fas fa-save"></i> Save</button>
+      </form>
+      {% endfor %}
+      <form class="tr-lang" method="post" action="{% url 'translations-language-save' %}" style="border-style:dashed;">
+        {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><input type="hidden" name="is_active" value="on">
+        <h4><i class="fas fa-plus" style="color:#15803d"></i> Add language</h4>
+        <div class="row2">
+          <input class="tr-in" type="text" name="code" placeholder="Code (te)" required maxlength="10" pattern="[A-Za-z\-]{2,10}" aria-label="Language code">
+          <input class="tr-in" type="text" name="name" placeholder="English name (Telugu)" required aria-label="English name">
+        </div>
+        <div class="row2">
+          <input class="tr-in" type="text" name="native_name" placeholder="Native name (తెలుగు)" required aria-label="Native name">
+          <input class="tr-in" type="text" name="font_family" placeholder="Font (Noto Sans Telugu)" aria-label="Font family">
+        </div>
+        <button class="tr-btn primary" type="submit" style="margin-top:4px;"><i class="fas fa-plus"></i> Add</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="tr-toast" id="tr-toast" role="status"></div>
+
+<script>
+(function () {
+  function csrf() { var m = document.cookie.match(/csrftoken=([^;]+)/); return m ? decodeURIComponent(m[1]) : ''; }
+  var toastT;
+  function toast(msg, err) {
+    var t = document.getElementById('tr-toast'); t.textContent = msg; t.className = 'tr-toast' + (err ? ' err' : '');
+    t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(function () { t.style.display = 'none'; }, err ? 6000 : 2200);
+  }
+  function post(url, data) {
+    var fd = new FormData(); Object.keys(data).forEach(function (k) { fd.append(k, data[k]); });
+    return fetch(url, { method: 'POST', body: fd, headers: { 'X-CSRFToken': csrf() }, credentials: 'same-origin' })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok || j.ok === false) throw new Error(j.error || ('HTTP ' + r.status)); return j; }); });
+  }
+  function status(el, msg, color) { var s = el.closest('.tr-cell').querySelector('.tr-status'); s.textContent = msg; s.style.color = color || ''; }
+
+  // Autosave each textarea 700 ms after typing stops (and on blur).
+  document.querySelectorAll('.tr-cell textarea').forEach(function (ta) {
+    var timer, last = ta.value;
+    function save() {
+      clearTimeout(timer);
+      if (ta.value === last) return;
+      var val = ta.value; status(ta, 'Saving…');
+      post('{% url "translations-save" %}', { string_id: ta.dataset.string, lang: ta.dataset.lang, text: val }).then(function () {
+        last = val; ta.classList.remove('dirty', 'missing'); ta.classList.add('saved'); status(ta, 'Saved ✓', '#16a34a');
+        if (!val.trim()) ta.classList.add('missing');
+        setTimeout(function () { ta.classList.remove('saved'); status(ta, ''); }, 1800);
+      }).catch(function (e) { status(ta, 'Not saved', '#dc2626'); toast('Could not save: ' + e.message, true); });
+    }
+    ta.addEventListener('input', function () { ta.classList.add('dirty'); clearTimeout(timer); timer = setTimeout(save, 700); });
+    ta.addEventListener('blur', save);
+  });
+
+  document.querySelectorAll('.tr-rev').forEach(function (cb) {
+    cb.addEventListener('change', function () {
+      post('{% url "translations-save" %}', { string_id: cb.dataset.string, lang: cb.dataset.lang, reviewed: cb.checked ? '1' : '0' }).then(function (j) {
+        var flag = cb.closest('.tr-cell-foot').querySelector('.tr-flag');
+        flag.className = 'tr-flag ' + (j.reviewed ? 'ok' : 'draft'); flag.textContent = j.reviewed ? 'Reviewed' : 'Draft';
+      }).catch(function (e) { cb.checked = !cb.checked; toast('Could not update: ' + e.message, true); });
+    });
+  });
+
+  document.querySelectorAll('.tr-reset').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (!confirm('Reset this text to its default?')) return;
+      post('{% url "translations-reset" %}', { string_id: b.dataset.string, lang: b.dataset.lang }).then(function (j) {
+        var cell = b.closest('.tr-cell'), ta = cell.querySelector('textarea'); ta.value = j.text; ta.classList.remove('missing', 'dirty');
+        var cb = cell.querySelector('.tr-rev'); if (cb) cb.checked = j.reviewed;
+        var flag = cell.querySelector('.tr-flag'); if (flag) { flag.className = 'tr-flag ' + (j.reviewed ? 'ok' : 'draft'); flag.textContent = j.reviewed ? 'Reviewed' : 'Draft'; }
+        toast('Reset to default');
+      }).catch(function (e) { toast(e.message, true); });
+    });
+  });
+
+  var imp = document.getElementById('tr-import');
+  imp.addEventListener('change', function () {
+    if (!imp.files.length) return;
+    toast('Importing…');
+    post('{% url "translations-import" %}', { file: imp.files[0] }).then(function (j) {
+      toast('Imported: ' + j.created + ' new, ' + j.updated + ' updated' + (j.errors.length ? ' · ' + j.errors.length + ' skipped' : ''));
+      setTimeout(function () { location.reload(); }, 1400);
+    }).catch(function (e) { toast('Import failed: ' + e.message, true); });
+    imp.value = '';
+  });
+
+  var PREVIEW = {{ preview_urls_json|safe }};
+  document.querySelectorAll('.tr-preview').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var id = (document.getElementById('tr-preview-id').value || '').trim();
+      if (!id) { toast('Enter a reading ID to preview', true); return; }
+      var mod = new URLSearchParams(location.search).get('module') || 'report';
+      var tpl = PREVIEW[mod] || PREVIEW.report;
+      window.open(tpl.replace('{api_id}', encodeURIComponent(id)).replace('{lang}', a.dataset.lang), '_blank', 'noopener');
+    });
+  });
+})();
+</script>
+{% endblock %}

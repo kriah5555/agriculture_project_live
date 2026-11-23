@@ -129,11 +129,12 @@ def draw_nutrient_grid(api):
 
 def _draw_header(c):
     """Draw the ArkaShine logo in the top-right corner."""
-    new_logo = os.path.join(os.getcwd(), 'static/arkashine_logo.png')
-    old_logo = os.path.join(os.getcwd(), 'static/logo.PNG')
-    logo_path = new_logo if os.path.exists(new_logo) else old_logo
-    # A4 right edge = 595pt; logo 80×80 right-aligned with 15pt margin
-    c.drawImage(logo_path, 500, 755, width=80, height=80, preserveAspectRatio=True, mask='auto')
+    base = str(settings.BASE_DIR)
+    brand_logo = os.path.join(base, 'static', 'brand', 'arkashine-logo.png')
+    old_logo = os.path.join(base, 'static', 'logo.PNG')
+    logo_path = brand_logo if os.path.exists(brand_logo) else old_logo
+    # A4 right edge = 595pt; wide logo (~3.5:1) right-aligned in a 140×46pt box, 15pt margin
+    c.drawImage(logo_path, 440, 782, width=140, height=46, preserveAspectRatio=True, anchor='ne', mask='auto')
 
 
 def download_api_response_pdf(request, **kwargs):
