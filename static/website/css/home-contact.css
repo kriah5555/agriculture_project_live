@@ -1,0 +1,30 @@
+/* homepage section styles (classes not in the design build) — #faq, #contact, footer */
+
+/* FAQ answer: height 0 → auto + fade, 0.4s ease [0.22,1,0.36,1] */
+.ak-faq-a {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition: grid-template-rows 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.4s;
+}
+.ak-faq-a > * { min-height: 0; }
+.ak-faq-a.is-open { grid-template-rows: 1fr; opacity: 1; visibility: visible; transition-delay: 0s; }
+
+/* closing headline: {opacity 0, y 40, blur 14px} → in view (amount 0.5), 1.2s */
+html.js .ak-blurin {
+  opacity: 0;
+  transform: translateY(40px);
+  filter: blur(14px);
+  transition: opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1), transform 1.2s cubic-bezier(0.22, 1, 0.36, 1), filter 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+html.js .ak-blurin.is-in { opacity: 1; transform: none; filter: none; }
+
+/* Terms dialog: scale .94, y 16 → spring */
+.ak-modal .ak-terms { transform: translateY(16px) scale(0.94); }
+.ak-modal.is-open .ak-terms { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ak-faq-a, html.js .ak-blurin { transition: none !important; }
+  html.js .ak-blurin { opacity: 1; transform: none; filter: none; }
+}

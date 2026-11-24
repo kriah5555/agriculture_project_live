@@ -1,0 +1,44 @@
+/* homepage section styles (classes not in the design build) — #field globe + #growers wall */
+
+/* ---------- #field detail card: AnimatePresence mode="wait" swap ---------- */
+.ak-field-card {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(8px);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), filter 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ak-field-card.is-in { opacity: 1; transform: none; filter: blur(0); }
+.ak-field-card.is-out { opacity: 0; transform: translateY(-12px); filter: blur(8px); }
+
+/* ---------- #growers headline: blur-in reveal (Motion whileInView) ---------- */
+html.js .rv.ak-blur-in {
+  transform: translateY(30px);
+  filter: blur(12px);
+  transition: opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1), transform 1.1s cubic-bezier(0.22, 1, 0.36, 1), filter 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+html.js .rv.ak-blur-in.is-in { transform: none; filter: blur(0); }
+
+/* ---------- #growers hover preview: lifts out of the wall, sinks back ---------- */
+.ak-preview { will-change: transform; }
+.ak-preview-card {
+  opacity: 0;
+  transform: scale(0.55) rotateY(-25deg);
+  filter: blur(10px);
+  /* spring { stiffness 260, damping 22 } ≈ slight overshoot */
+  transition: opacity 0.35s ease-out, transform 0.6s cubic-bezier(0.34, 1.32, 0.64, 1), filter 0.45s ease-out;
+}
+.ak-preview-card.ak-from-left { transform: scale(0.55) rotateY(25deg); }
+.ak-preview.is-in .ak-preview-card { opacity: 1; transform: none; filter: blur(0); }
+.ak-preview.is-out .ak-preview-card {
+  opacity: 0;
+  transform: scale(0.6);
+  filter: blur(14px);
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), filter 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* countdown bar: 100% → 0% over 2.6s */
+.ak-preview-bar { width: 100%; }
+.ak-preview.is-in .ak-preview-bar { width: 0; transition: width 2.6s linear; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ak-field-card, .ak-preview-card, html.js .rv.ak-blur-in { transition: none !important; filter: none; }
+}

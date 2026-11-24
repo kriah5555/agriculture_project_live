@@ -1,0 +1,140 @@
+{% load static %}
+{% comment %} How we work, desktop (lg+): pinned full-screen photo story, one scroll step per chapter (design: HowWeWork.tsx).
+   State (active chapter, progress bar, card swaps) is driven by static/website/js/home/how-we-work.js; markup is server-rendered in the chapter-1 state. {% endcomment %}
+<section id="how-we-work" aria-labelledby="hww-title" data-hww class="home-keep relative hidden bg-[#06201e] lg:block" style="height:570vh">
+  <div class="sticky top-0 h-screen overflow-hidden">
+    <div data-hww-photo aria-hidden="false" class="ak-hww-photo absolute inset-0 is-on">
+      <img alt="Aerial view of green farm fields and water channels in India" data-alt="Aerial view of green farm fields and water channels in India" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;inset:0;object-position:50% 50%" src="{% static 'website/images/journey/02-land.webp' %}">
+    </div>
+    <div data-hww-photo aria-hidden="true" class="ak-hww-photo absolute inset-0">
+      <img alt="" data-alt="A farmer kneeling in his field, collecting a soil sample into a bag" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;inset:0;object-position:65% 40%" src="{% static 'website/images/journey/02-farmer-soil-sample.webp' %}">
+    </div>
+    <div data-hww-photo aria-hidden="true" class="ak-hww-photo absolute inset-0">
+      <img alt="" data-alt="A farmer in Odisha holding his printed SoiLenz soil ticket next to the device" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;inset:0;object-position:50% 22%" src="{% static 'website/images/journey/03-farmer-with-ticket.webp' %}">
+    </div>
+    <div data-hww-photo aria-hidden="true" class="ak-hww-photo absolute inset-0">
+      <img alt="" data-alt="Wide view of farm fields that GeoLenz maps zone by zone" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;inset:0;object-position:50% 50%" src="{% static 'website/images/field-wide.webp' %}">
+    </div>
+    <div data-hww-photo aria-hidden="true" class="ak-hww-photo absolute inset-0">
+      <img alt="" data-alt="A farmer on a call with the ArkaShine team" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;inset:0;object-position:50% 30%" src="{% static 'website/images/journey/01-book.webp' %}">
+    </div>
+    <div data-hww-photo aria-hidden="true" class="ak-hww-photo absolute inset-0">
+      <img alt="" data-alt="A smiling woman farmer holding a healthy paddy harvest" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;inset:0;object-position:35% 30%" src="{% static 'website/images/journey/05-farmer-harvest.webp' %}">
+    </div>
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#041512]/90 via-[#041512]/55 to-[#041512]/10"></div>
+    <div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#041512]/80 to-transparent"></div>
+    <div class="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[#041512]/70 to-transparent"></div>
+
+    <div class="container-site relative z-10 pt-24">
+      <div class="flex items-end justify-between gap-8">
+        <div>
+          <p class="font-mono text-xs uppercase tracking-[0.2em] text-[#a7d48a]">Our story · How we work</p>
+          <h2 id="hww-title" class="mt-2 font-display text-3xl font-bold tracking-tight text-[#fff] xl:text-4xl">From the land’s history <span class="font-light text-[#fff]/85">to a better harvest.</span></h2>
+        </div>
+        <button type="button" data-open="demo" class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#1E7A33] px-5 py-3 text-sm font-semibold text-[#fff] shadow-lg transition-transform duration-300 hover:-translate-y-0.5">Book a slot <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right h-4 w-4" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
+      </div>
+
+      <div class="relative mt-8">
+        <div class="absolute left-5 right-5 top-5 h-[2px] rounded-full bg-[#fff]/15"></div>
+        <div data-hww-bar class="absolute left-5 right-5 top-5 h-[2px] origin-left rounded-full bg-[#8CBF5F]" style="transform:scaleX(0.02)"></div>
+        <ol class="relative flex justify-between">
+          <li>
+            <button type="button" data-hww-step="0" class="group flex flex-col items-center gap-2" aria-current="step">
+              <span data-hww-dot class="flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-500 scale-110 border-[#8CBF5F] bg-[#8CBF5F] text-[#06201e] shadow-[0_0_0_8px_rgba(140,191,95,0.22)]"><svg data-hww-check hidden xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check h-4 w-4" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><svg data-hww-icon xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-satellite h-4 w-4" aria-hidden="true"><path d="m13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5"></path><path d="M16.5 7.5 19 5"></path><path d="m17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5"></path><path d="M9 21a6 6 0 0 0-6-6"></path><path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"></path></svg></span>
+              <span data-hww-label class="font-mono text-[10px] uppercase tracking-[0.18em] transition-colors text-[#fff]">01 · TerraMap</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" data-hww-step="1" class="group flex flex-col items-center gap-2">
+              <span data-hww-dot class="flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-500 border-[#fff]/30 bg-[#06201e]/80 text-[#fff]/70 group-hover:border-[#fff]/60"><svg data-hww-check hidden xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check h-4 w-4" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><svg data-hww-icon xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flask-conical h-4 w-4" aria-hidden="true"><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"></path><path d="M6.453 15h11.094"></path><path d="M8.5 2h7"></path></svg></span>
+              <span data-hww-label class="font-mono text-[10px] uppercase tracking-[0.18em] transition-colors text-[#fff]/60">02 · Soil test</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" data-hww-step="2" class="group flex flex-col items-center gap-2">
+              <span data-hww-dot class="flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-500 border-[#fff]/30 bg-[#06201e]/80 text-[#fff]/70 group-hover:border-[#fff]/60"><svg data-hww-check hidden xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check h-4 w-4" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><svg data-hww-icon xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt h-4 w-4" aria-hidden="true"><path d="M12 17V7"></path><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"></path><path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"></path></svg></span>
+              <span data-hww-label class="font-mono text-[10px] uppercase tracking-[0.18em] transition-colors text-[#fff]/60">03 · Ticket + report</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" data-hww-step="3" class="group flex flex-col items-center gap-2">
+              <span data-hww-dot class="flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-500 border-[#fff]/30 bg-[#06201e]/80 text-[#fff]/70 group-hover:border-[#fff]/60"><svg data-hww-check hidden xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check h-4 w-4" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><svg data-hww-icon xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers lucide-layers-3 h-4 w-4" aria-hidden="true"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"></path><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"></path><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"></path></svg></span>
+              <span data-hww-label class="font-mono text-[10px] uppercase tracking-[0.18em] transition-colors text-[#fff]/60">04 · GeoLenz</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" data-hww-step="4" class="group flex flex-col items-center gap-2">
+              <span data-hww-dot class="flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-500 border-[#fff]/30 bg-[#06201e]/80 text-[#fff]/70 group-hover:border-[#fff]/60"><svg data-hww-check hidden xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check h-4 w-4" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><svg data-hww-icon xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-check h-4 w-4" aria-hidden="true"><path d="M8 2v3"></path><path d="M16 2v3"></path><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18"></path><path d="m9 15 2 2 4-4"></path></svg></span>
+              <span data-hww-label class="font-mono text-[10px] uppercase tracking-[0.18em] transition-colors text-[#fff]/60">05 · Consult</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" data-hww-step="5" class="group flex flex-col items-center gap-2">
+              <span data-hww-dot class="flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-500 border-[#fff]/30 bg-[#06201e]/80 text-[#fff]/70 group-hover:border-[#fff]/60"><svg data-hww-check hidden xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check h-4 w-4" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><svg data-hww-icon xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sprout h-4 w-4" aria-hidden="true"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3"></path><path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4"></path><path d="M5 21h14"></path></svg></span>
+              <span data-hww-label class="font-mono text-[10px] uppercase tracking-[0.18em] transition-colors text-[#fff]/60">06 · Playbook</span>
+            </button>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="container-site absolute inset-x-0 bottom-0 z-10 grid grid-cols-12 items-end gap-8 pb-10">
+      <div class="col-span-6">
+        <div class="ak-hww-stack" aria-live="polite">
+          <div data-hww-text class="ak-hww-text is-on">
+            <span class="block font-display text-[clamp(3.5rem,7vh,5rem)] font-bold leading-none text-transparent [-webkit-text-stroke:1.5px_rgba(167,212,138,0.8)]">01</span>
+            <h3 class="mt-2 font-display text-[clamp(1.9rem,2.9vw,2.75rem)] font-bold leading-[1.05] tracking-tight text-[#fff] [text-wrap:balance]">We study the land&#x27;s history.</h3>
+            <p class="mt-4 max-w-[46ch] text-lg leading-relaxed text-[#fff]/85">TerraMap reads years of satellite history: past crops, land use and weak zones. We know the field before we touch the soil.</p>
+          </div>
+          <div data-hww-text class="ak-hww-text" aria-hidden="true">
+            <span class="block font-display text-[clamp(3.5rem,7vh,5rem)] font-bold leading-none text-transparent [-webkit-text-stroke:1.5px_rgba(167,212,138,0.8)]">02</span>
+            <h3 class="mt-2 font-display text-[clamp(1.9rem,2.9vw,2.75rem)] font-bold leading-[1.05] tracking-tight text-[#fff] [text-wrap:balance]">Soil tested on the farm.</h3>
+            <p class="mt-4 max-w-[46ch] text-lg leading-relaxed text-[#fff]/85">SoiLenz 2.0 completes the full analysis in 15 minutes: 14 parameters, right there in the village.</p>
+          </div>
+          <div data-hww-text class="ak-hww-text" aria-hidden="true">
+            <span class="block font-display text-[clamp(3.5rem,7vh,5rem)] font-bold leading-none text-transparent [-webkit-text-stroke:1.5px_rgba(167,212,138,0.8)]">03</span>
+            <h3 class="mt-2 font-display text-[clamp(1.9rem,2.9vw,2.75rem)] font-bold leading-[1.05] tracking-tight text-[#fff] [text-wrap:balance]">Instant ticket. AI advisory report.</h3>
+            <p class="mt-4 max-w-[46ch] text-lg leading-relaxed text-[#fff]/85">A printed soil ticket in the farmer&#x27;s hand at once, then an AI-generated advisory report on soil quality and the best crops to grow.</p>
+          </div>
+          <div data-hww-text class="ak-hww-text" aria-hidden="true">
+            <span class="block font-display text-[clamp(3.5rem,7vh,5rem)] font-bold leading-none text-transparent [-webkit-text-stroke:1.5px_rgba(167,212,138,0.8)]">04</span>
+            <h3 class="mt-2 font-display text-[clamp(1.9rem,2.9vw,2.75rem)] font-bold leading-[1.05] tracking-tight text-[#fff] [text-wrap:balance]">Tickets become nutrient maps.</h3>
+            <p class="mt-4 max-w-[46ch] text-lg leading-relaxed text-[#fff]/85">Every ticket&#x27;s values go into GeoLenz. It maps N, P, K, pH and organic matter across the whole field, zone by zone.</p>
+          </div>
+          <div data-hww-text class="ak-hww-text" aria-hidden="true">
+            <span class="block font-display text-[clamp(3.5rem,7vh,5rem)] font-bold leading-none text-transparent [-webkit-text-stroke:1.5px_rgba(167,212,138,0.8)]">05</span>
+            <h3 class="mt-2 font-display text-[clamp(1.9rem,2.9vw,2.75rem)] font-bold leading-[1.05] tracking-tight text-[#fff] [text-wrap:balance]">Speak with our team.</h3>
+            <p class="mt-4 max-w-[46ch] text-lg leading-relaxed text-[#fff]/85">Book a slot for a detailed, customised session. Together we plan your crop cycle for the seasons ahead.</p>
+          </div>
+          <div data-hww-text class="ak-hww-text" aria-hidden="true">
+            <span class="block font-display text-[clamp(3.5rem,7vh,5rem)] font-bold leading-none text-transparent [-webkit-text-stroke:1.5px_rgba(167,212,138,0.8)]">06</span>
+            <h3 class="mt-2 font-display text-[clamp(1.9rem,2.9vw,2.75rem)] font-bold leading-[1.05] tracking-tight text-[#fff] [text-wrap:balance]">Soil Amendment Playbook.</h3>
+            <p class="mt-4 max-w-[46ch] text-lg leading-relaxed text-[#fff]/85">A week-by-week plan to rebuild the soil, so every crop grows stronger than the last.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-span-6 flex justify-end">
+        <div class="ak-hww-stack w-full max-w-[420px]">
+          <div data-hww-proof class="ak-hww-proof is-on">
+            {% include "website/partials/home/_how_we_work_card.html" with kind="geo" %}
+          </div>
+          <div data-hww-proof class="ak-hww-proof" aria-hidden="true" inert>
+            {% include "website/partials/home/_how_we_work_card.html" with kind="test" %}
+          </div>
+          <div data-hww-proof class="ak-hww-proof" aria-hidden="true" inert>
+            {% include "website/partials/home/_how_we_work_card.html" with kind="report" %}
+          </div>
+          <div data-hww-proof class="ak-hww-proof" aria-hidden="true" inert>
+            {% include "website/partials/home/_how_we_work_card.html" with kind="geolenz" %}
+          </div>
+          <div data-hww-proof class="ak-hww-proof" aria-hidden="true" inert>
+            {% include "website/partials/home/_how_we_work_card.html" with kind="book" %}
+          </div>
+          <div data-hww-proof class="ak-hww-proof" aria-hidden="true" inert>
+            {% include "website/partials/home/_how_we_work_card.html" with kind="playbook" %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

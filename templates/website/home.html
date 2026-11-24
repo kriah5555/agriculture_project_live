@@ -1,0 +1,50 @@
+{% extends "website/base.html" %}
+{% load static %}
+{% comment %} Homepage — www.arkashine-innovations.com/  (view: agriapp.views.home)
+   Each section is a partial in website/partials/home/ with its behaviour in
+   static/website/js/home/<section>.js {% endcomment %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'website/css/home-how-we-work.css' %}">
+  <link rel="stylesheet" href="{% static 'website/css/home-products.css' %}">
+  <link rel="stylesheet" href="{% static 'website/css/home-field.css' %}">
+  <link rel="stylesheet" href="{% static 'website/css/home-advisory.css' %}">
+  <link rel="stylesheet" href="{% static 'website/css/home-solutions.css' %}">
+  <link rel="stylesheet" href="{% static 'website/css/home-patents.css' %}">
+  <link rel="stylesheet" href="{% static 'website/css/home-contact.css' %}">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"ArkaShine Innovations Pvt Ltd","telephone":"+91-9611297893","address":{"@type":"PostalAddress","streetAddress":"38, 1st Main Rd, 3rd Stage, 4th Block, SBI Staff Colony, Basaveshwar Nagar","addressLocality":"Bengaluru","addressRegion":"Karnataka","postalCode":"560079","addressCountry":"IN"},"slogan":"Healthy soils. Brighter tomorrows."},{"@type":"Product","name":"SoiLenz 2.0","brand":{"@type":"Brand","name":"ArkaShine"},"description":"Portable soil intelligence lab: pH, EC, OC and 11 nutrients, built-in thermal printer, Bluetooth app.","image":"{% static 'website/images/products/soillenz-2-studio.webp' %}"}]}</script>
+{% endblock %}
+
+{% block body %}
+  {% include "website/partials/_header.html" %}
+  <main id="main-content" class="home-light relative w-full overflow-x-clip">
+    {% include "website/partials/home/_hero.html" %}
+    {% include "website/partials/home/_how_we_work_desktop.html" %}
+    {% include "website/partials/home/_how_we_work_mobile.html" %}
+    {% include "website/partials/home/_soillenz.html" %}
+    {% include "website/partials/home/_ph_ec.html" %}
+    {% include "website/partials/home/_how_video.html" %}
+    {% include "website/partials/home/_app.html" %}
+    {% include "website/partials/home/_field.html" %}
+    {% include "website/partials/home/_growers.html" %}
+    {% include "website/partials/home/_advisory.html" %}
+    {% include "website/partials/home/_solutions.html" %}
+    {% include "website/partials/home/_partners.html" %}
+    {% include "website/partials/home/_patents.html" %}
+    {% include "website/partials/home/_blog.html" %}
+    {% include "website/partials/home/_faq.html" %}
+    {% include "website/partials/home/_contact_footer.html" %}
+  </main>
+{% endblock %}
+
+{% block scripts %}
+  <script defer src="{% static 'website/js/arka-3d.js' %}"></script>
+  <script defer src="{% static 'website/js/home/hero.js' %}"></script>
+  <script defer src="{% static 'website/js/home/how-we-work.js' %}"></script>
+  <script defer src="{% static 'website/js/home/products.js' %}"></script>
+  <script defer src="{% static 'website/js/home/field.js' %}"></script>
+  <script defer src="{% static 'website/js/home/advisory.js' %}"></script>
+  <script defer src="{% static 'website/js/home/solutions.js' %}"></script>
+  <script defer src="{% static 'website/js/home/patents.js' %}"></script>
+  <script defer src="{% static 'website/js/home/contact.js' %}"></script>
+{% endblock %}

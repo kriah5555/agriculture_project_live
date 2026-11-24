@@ -1,0 +1,30 @@
+{% load static %}
+{% comment %} Soil Partner app (design: AppShowcase). products.js cycles the three
+   screens inside the phone mockup; picking a row locks it. {% endcomment %}
+<section id="app" data-appshow class="home-keep relative overflow-hidden bg-ivory-2 py-24 text-ink md:py-36" aria-labelledby="app-title">
+  <div class="container-site grid items-center gap-14 lg:grid-cols-12">
+    <div class="lg:col-span-5">
+      <p class="eyebrow text-ink/80">Soil Partner app</p>
+      <h2 id="app-title" class="display mt-6 text-[clamp(2.4rem,4.6vw,4.4rem)] text-forest">Every test.<br><span class="font-light">In your pocket.</span></h2>
+      <ul class="mt-14" role="tablist" aria-label="App screens">
+        <li><button type="button" role="tab" aria-selected="true" data-app-tab class="group flex w-full items-center gap-5 py-4 text-left"><span class="relative h-px w-10 overflow-hidden bg-ink/15"><span data-bar class="ak-bar is-on absolute inset-0 bg-botanical-dark"></span></span><span data-title class="text-xl transition-colors md:text-2xl text-forest">Soil Health Dashboard</span></button></li>
+        <li><button type="button" role="tab" aria-selected="false" data-app-tab class="group flex w-full items-center gap-5 py-4 text-left"><span class="relative h-px w-10 overflow-hidden bg-ink/15"><span data-bar class="ak-bar absolute inset-0 bg-botanical-dark"></span></span><span data-title class="text-xl transition-colors md:text-2xl text-ink/70 group-hover:text-ink/85">Nutrient Results</span></button></li>
+        <li><button type="button" role="tab" aria-selected="false" data-app-tab class="group flex w-full items-center gap-5 py-4 text-left"><span class="relative h-px w-10 overflow-hidden bg-ink/15"><span data-bar class="ak-bar absolute inset-0 bg-botanical-dark"></span></span><span data-title class="text-xl transition-colors md:text-2xl text-ink/70 group-hover:text-ink/85">Crop Advisory</span></button></li>
+      </ul>
+      <p class="mt-10 text-[13px] text-ink/80">Screens from a sample SoiLenz advisory report.</p>
+      <p class="mt-2 text-[13px] text-ink/80">pH &amp; EC from the pH/EC Bottle · everything else from SoiLenz 2.0.</p>
+    </div>
+    <div class="relative lg:col-span-6 lg:col-start-7">
+      <div aria-hidden="true" class="absolute left-1/2 top-1/2 h-[120%] w-[120%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(140,191,95,0.22),transparent)]"></div>
+      <div data-app-phone class="ak-phone relative mx-auto w-[min(64vw,250px,calc((100svh-11rem)*0.45))] rounded-[40px] bg-[#0c1411] p-2.5 shadow-[0_60px_120px_-30px_rgba(19,32,27,0.55),inset_0_0_0_1.5px_rgba(255,255,255,0.08)]">
+        <div class="absolute left-1/2 top-4 z-20 h-5 w-20 -translate-x-1/2 rounded-full bg-black"></div>
+        <div class="relative aspect-[9/19.5] overflow-hidden rounded-[32px] bg-white">
+          <div class="absolute inset-x-0 top-0 z-10 flex h-12 items-end justify-between bg-[#1d5c2e] px-4 pb-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/90"><span>Soil Partner</span><span class="font-mono"><span data-app-count>01</span>/03</span></div>
+          <div data-app-screen class="ak-screen absolute inset-x-0 bottom-0 top-12 overflow-hidden bg-white"><div class="ak-kenburns absolute inset-0"><img alt="Soil Partner app — Soil Health Dashboard" decoding="async" class="object-contain object-top" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/app/dashboard-bhanu.webp' %}"></div></div>
+          <div data-app-screen hidden class="ak-screen absolute inset-x-0 bottom-0 top-12 overflow-hidden bg-white"><div class="ak-kenburns absolute inset-0"><img alt="Soil Partner app — Nutrient Results" loading="lazy" decoding="async" class="object-contain object-top" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/app/nutrients.webp' %}"></div></div>
+          <div data-app-screen hidden class="ak-screen absolute inset-x-0 bottom-0 top-12 overflow-hidden bg-white"><div class="ak-kenburns absolute inset-0"><img alt="Soil Partner app — Crop Advisory" loading="lazy" decoding="async" class="object-contain object-top" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/app/advisory.webp' %}"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

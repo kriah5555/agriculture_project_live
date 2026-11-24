@@ -1,13 +1,16 @@
 from django.urls import path, include
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
+from django.templatetags.static import static as static_url
 from . import views as v
 from . import PDF as pdf
 from .views import *
 from .exportInfo import *
+from .website_api import website_enquiry
 from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
     path('',  v.home, name = "home"),
+    path('favicon.ico', RedirectView.as_view(url=static_url('website/favicon.ico'), permanent=True)),
     path('login/', TemplateView.as_view(template_name="authapp/login.html"), name = "login"),
     path('admin-login/', v.login, name = "admin-login"),
     path('user-login/', v.login, name = "user-login"),
@@ -90,6 +93,7 @@ urlpatterns = [
     # ── Public / shared ──────────────────────────────────────────────────────────
     path('forgot_password/',                        v.forgot_password_request,                  name='forgot_password'),
     path('soil-partner-enquiry/',                   v.soil_partner_enquiry,                     name='soil-partner-enquiry'),
+    path('website-enquiry/',                        website_enquiry,                            name='website-enquiry'),
     path('devise_user_details/',                    login_required(TemplateView.as_view(template_name="agriapp/devise_user_details.html")), name="devise_user_details"),
 
     # ── Exports ──────────────────────────────────────────────────────────────────

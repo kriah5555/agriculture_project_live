@@ -1,0 +1,31 @@
+{% load static %}
+{% comment %} pH/EC capsule (design: SensorShowcase + FocusImage).
+   Each tab carries its line and its focus point (x%, y%, scale) on the photo;
+   products.js cycles them and glides the photo to the focus. {% endcomment %}
+<section id="ph-ec" data-phec class="home-keep relative bg-ivory py-24 text-ink md:py-36" aria-labelledby="phec-title">
+  <div class="container-site grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+    <div class="lg:col-span-7">
+      <div class="relative overflow-hidden rounded-[28px] shadow-[0_40px_90px_-40px_rgba(19,32,27,0.55)]">
+        <div class="relative overflow-hidden" style="aspect-ratio:1080 / 603">
+          <div data-ph-img class="ak-focus absolute will-change-transform" style="left:0%;top:0%;width:100%;height:100%;transform:translateX(-5.4%) translateY(17.5%) scale(1.35)">
+            <img alt="ArkaShine pH and EC capsule with electrode probe" loading="lazy" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/products/ph-ec-bottle.webp' %}">
+          </div>
+          <span aria-hidden="true" data-ph-marker class="ak-marker pointer-events-none absolute h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-botanical/90" style="left:50%;top:37.8%"><span class="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-botanical shadow-[0_0_14px_4px_rgba(140,191,95,0.6)]"></span></span>
+        </div>
+      </div>
+    </div>
+    <div class="lg:col-span-5">
+      <p class="rv eyebrow text-ink/80">Hardware · 02 · pH &amp; EC capsule</p>
+      <h2 id="phec-title" class="rv display mt-6 text-[clamp(2.4rem,4.6vw,4.4rem)] text-forest">Precision beyond<br><span class="font-light">nutrients.</span></h2>
+      <div data-ph-tabs class="relative mt-14 flex flex-wrap gap-x-10 gap-y-4 border-b border-ink/12" role="tablist" aria-label="Capsule parts">
+        <button role="tab" aria-selected="true" type="button" data-ph-tab data-focus="54,28,1.35" data-line="Sealed white housing. Built for daily field use." class="relative pb-4 text-[15px] transition-colors md:text-base text-forest">Sensor Housing</button>
+        <button role="tab" aria-selected="false" type="button" data-ph-tab data-focus="54,68,1.4" data-line="5 g soil + 50 ml extractant, mixed for 60 seconds." class="relative pb-4 text-[15px] transition-colors md:text-base text-ink/75 hover:text-ink/75">Reaction Chamber</button>
+        <button role="tab" aria-selected="false" type="button" data-ph-tab data-focus="39,50,1.5" data-line="Reads pH and EC directly in the mixed sample." class="relative pb-4 text-[15px] transition-colors md:text-base text-ink/75 hover:text-ink/75">Electrode Probe</button>
+        <span aria-hidden="true" data-ph-underline class="ak-underline absolute left-0 h-[2px] bg-botanical-dark" style="width:0"></span>
+      </div>
+      <div class="relative mt-8 min-h-[4.5rem]"><p data-ph-line aria-live="polite" class="ak-swap ak-swap-blur max-w-[34ch] text-xl leading-snug text-ink/80 md:text-2xl">Sealed white housing. Built for daily field use.</p></div>
+      <p class="mt-10 font-mono text-xs uppercase tracking-[0.16em] text-ink/75">Soil pH · Electrical conductivity · 60 s</p>
+      <p class="mt-4 max-w-[36ch] text-[14px] leading-relaxed text-ink/80">Reads pH and EC only. SoiLenz 2.0 reads the other 12 nutrients.</p>
+    </div>
+  </div>
+</section>

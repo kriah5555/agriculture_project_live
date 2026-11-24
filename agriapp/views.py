@@ -90,11 +90,17 @@ class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
 
 from django.core.paginator import Paginator
         
+WEBSITE_DEMO_ORG_TYPES = [
+    "FPO / Farmer Group", "Corporate Agriculture", "CSR Foundation", "NGO / Non-Profit",
+    "Agri-Input Company", "Government / KVK", "Soil Entrepreneur", "Other",
+]
+
 def home(request):
     if request.method == 'GET':
-        template_name = 'home1.html'
-        return render(request, template_name)
+        # Public homepage (new ArkaShine website design): templates/website/home.html
+        return render(request, 'website/home.html', {'demo_org_types': WEBSITE_DEMO_ORG_TYPES})
     elif request.method == 'POST':
+        # Legacy contact form of the old homepage (templates/home1.html)
         form = ContactForm(request.POST)
         if form.is_valid():
             form.save()

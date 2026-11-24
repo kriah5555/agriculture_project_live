@@ -102,7 +102,7 @@
                 {% for req in user_requests_pending %}
                   <div class="notif-item"
                        data-search="{{ req.username|lower }} {{ req.email|lower }}"
-                       onclick="showRequest({{ req.pk }}, '{{ req.username }}', '{{ req.email }}', '{{ req.phone }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'pending', '{% url 'resolve-user-request' req.pk %}', '{{ req.request_type }}', '{% if req.device_id %}{% url 'device-details' req.device_id %}{% endif %}', '{% if req.user_id %}{% url 'user-details' req.user.username %}{% endif %}')">
+                       onclick="showRequest({{ req.pk }}, '{{ req.username|escapejs }}', '{{ req.email|escapejs }}', '{{ req.phone|escapejs }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'pending', '{% url 'resolve-user-request' req.pk %}', '{{ req.request_type }}', '{% if req.device_id %}{% url 'device-details' req.device_id %}{% endif %}', '{% if req.user_id %}{% url 'user-details' req.user.username %}{% endif %}')">
                     <span class="notif-dot {% if req.request_type == 'usage_limit_reached' %}dot-critical{% elif req.request_type == 'usage_warning' %}dot-warning{% else %}dot-pending{% endif %}"></span>
                     <div style="flex:1;min-width:0;">
                       <div class="d-flex align-items-center gap-2 mb-1">
@@ -134,7 +134,7 @@
                 {% for req in user_requests_resolved %}
                   <div class="notif-item"
                        data-search="{{ req.username|lower }} {{ req.email|lower }}"
-                       onclick="showRequest({{ req.pk }}, '{{ req.username }}', '{{ req.email }}', '{{ req.phone }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'resolved', '', '{{ req.request_type }}', '{% if req.device_id %}{% url 'device-details' req.device_id %}{% endif %}', '{% if req.user_id %}{% url 'user-details' req.user.username %}{% endif %}')">
+                       onclick="showRequest({{ req.pk }}, '{{ req.username|escapejs }}', '{{ req.email|escapejs }}', '{{ req.phone|escapejs }}', '{{ req.get_request_type_display }}', '{{ req.message|escapejs }}', '{{ req.created_at|date:"d M Y, H:i" }}', 'resolved', '', '{{ req.request_type }}', '{% if req.device_id %}{% url 'device-details' req.device_id %}{% endif %}', '{% if req.user_id %}{% url 'user-details' req.user.username %}{% endif %}')">
                     <span class="notif-dot dot-resolved"></span>
                     <div style="flex:1;min-width:0;">
                       <div class="d-flex align-items-center gap-2 mb-1">
@@ -173,7 +173,7 @@
               {% for notif in notification_active %}
                 <div class="notif-item"
                      data-search="{{ notif.name|lower }} {{ notif.mail|lower }} {{ notif.phone|lower }}"
-                     onclick="showContact({{ notif.pk }}, '{{ notif.name|escapejs }}','{{ notif.phone }}','{{ notif.mail }}','{{ notif.message|escapejs }}', true, '{% url 'notifications' notif.pk %}')">
+                     onclick="showContact({{ notif.pk }}, '{{ notif.name|escapejs }}','{{ notif.phone|escapejs }}','{{ notif.mail|escapejs }}','{{ notif.message|escapejs }}', true, '{% url 'notifications' notif.pk %}')">
                   <span class="notif-dot dot-unread"></span>
                   <div style="flex:1;min-width:0;">
                     <div class="d-flex align-items-center gap-2 mb-1">
@@ -195,7 +195,7 @@
               {% for notif in notification_inactive %}
                 <div class="notif-item"
                      data-search="{{ notif.name|lower }} {{ notif.mail|lower }} {{ notif.phone|lower }}"
-                     onclick="showContact({{ notif.pk }}, '{{ notif.name|escapejs }}','{{ notif.phone }}','{{ notif.mail }}','{{ notif.message|escapejs }}', false, '')">
+                     onclick="showContact({{ notif.pk }}, '{{ notif.name|escapejs }}','{{ notif.phone|escapejs }}','{{ notif.mail|escapejs }}','{{ notif.message|escapejs }}', false, '')">
                   <span class="notif-dot dot-read"></span>
                   <div style="flex:1;min-width:0;">
                     <div class="d-flex align-items-center gap-2 mb-1">
@@ -272,11 +272,17 @@
     }
   }
 
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
   function showRequest(id, username, email, phone, typeName, message, date, status, resolveUrl, requestType, deviceUrl, userUrl) {
     document.querySelectorAll('.notif-item').forEach(el => el.classList.remove('selected'));
     event.currentTarget.classList.add('selected');
     scrollToDetailOnMobile();
 
+    const rawUsername = username;
+    username = esc(username); email = esc(email); phone = esc(phone); message = esc(message);
     const isPending   = status === 'pending';
     const isPasswordType = requestType === 'forgot_password' || requestType === 'change_password';
     const isUsageAlert   = requestType === 'usage_warning' || requestType === 'usage_limit_reached';
@@ -336,7 +342,7 @@
           <hr>
           <div style="display:flex;gap:12px;flex-wrap:wrap;">
             ${isPasswordType ? `
-            <a href="/change-password/${username}/"
+            <a href="/change-password/${encodeURIComponent(rawUsername)}/"
                class="btn btn-primary"
                style="background:linear-gradient(135deg,#1a3a9f,#0d7cf5);border:none;border-radius:8px;font-weight:700;">
               <i class="fas fa-key me-1"></i> Reset Password
@@ -362,6 +368,7 @@
     document.querySelectorAll('.notif-item').forEach(el => el.classList.remove('selected'));
     event.currentTarget.classList.add('selected');
     scrollToDetailOnMobile();
+    name = esc(name); phone = esc(phone); mail = esc(mail); message = esc(message);
 
     document.getElementById('detailContent').innerHTML = `
       <div style="text-align:left;">

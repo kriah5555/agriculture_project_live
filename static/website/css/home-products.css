@@ -1,0 +1,58 @@
+/* homepage product sections: SoiLenz 2.0, pH/EC capsule, Soil Partner app, four-steps video
+   (classes not in the design build; behaviour in static/website/js/home/products.js) */
+
+/* ---------- shared: AnimatePresence-style text swap ---------- */
+.ak-swap { transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+.ak-swap.is-out { opacity: 0; transform: translateY(-8px); }
+.ak-swap.is-pre { opacity: 0; transform: translateY(8px); transition: none; }
+.ak-swap-blur { transition-duration: 0.45s; }
+.ak-swap-blur.is-out { transform: translateY(-10px); filter: blur(6px); }
+.ak-swap-blur.is-pre { transform: translateY(12px); filter: blur(6px); }
+
+/* ---------- SoiLenz stage ---------- */
+[data-sl-lift] { will-change: transform; }
+.ak-sl-tilt { transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }
+.ak-sl-zoom { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }
+.ak-sl-sweep { animation: ak-sl-sweep 7.5s ease-in-out infinite; }
+@keyframes ak-sl-sweep {
+  0% { left: -30%; }
+  46.67%, 100% { left: 130%; }
+}
+
+/* feature description: height 0 <-> auto */
+.ak-acc { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+.ak-acc > span { min-height: 0; }
+[aria-selected="true"] .ak-acc { grid-template-rows: 1fr; opacity: 1; }
+
+/* ---------- pH/EC focus photo ---------- */
+.ak-focus { transition: transform 1.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.ak-marker { opacity: 0.75; }
+.ak-marker.is-anim { animation: ak-marker 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both; }
+@keyframes ak-marker {
+  0% { opacity: 0; transform: scale(1.8); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.75; transform: scale(1); }
+}
+.ak-underline { transition: left 0.5s cubic-bezier(0.22, 1, 0.36, 1), top 0.5s cubic-bezier(0.22, 1, 0.36, 1), width 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* ---------- Soil Partner app ---------- */
+.ak-bar { transform: scaleX(0); transform-origin: left; opacity: 0; transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease; }
+.ak-bar.is-on { transform: none; opacity: 1; }
+
+.ak-phone { transform: rotate(-2deg); }
+html.js .ak-phone.ak-pre { opacity: 0; transform: translateY(60px) rotate(-4deg); }
+.ak-phone.ak-in { transition: opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1), transform 1.1s cubic-bezier(0.22, 1, 0.36, 1); }
+
+.ak-screen { transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), transform 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+.ak-screen.is-pre { opacity: 0; transform: translateX(40px) scale(0.98); transition: none; }
+.ak-screen.is-leaving { opacity: 0; transform: translateX(-40px) scale(0.98); z-index: 1; }
+.ak-kenburns { animation: ak-kenburns 14s ease-in-out 1.2s infinite; }
+@keyframes ak-kenburns {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.035); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ak-swap, .ak-sl-tilt, .ak-sl-zoom, .ak-acc, .ak-focus, .ak-underline, .ak-bar, .ak-screen, .ak-phone.ak-in { transition: none !important; }
+  .ak-sl-sweep, .ak-kenburns, .ak-marker.is-anim { animation: none !important; }
+}

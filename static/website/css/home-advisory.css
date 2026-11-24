@@ -1,0 +1,57 @@
+/* #advisory — styles for behaviour the design did with Motion (see js/home/advisory.js) */
+
+/* report stack: spring-ish transitions between dealt / fanned poses */
+.ak-adv-live .ak-adv-page {
+  transition: transform 0.75s cubic-bezier(0.34, 1.25, 0.64, 1), opacity 0.5s ease;
+  will-change: transform;
+}
+/* light sweep across the front page after each deal */
+.ak-adv-sweep { left: -40%; }
+.ak-adv-sweep.is-go { animation: ak-adv-sweep 1.1s ease-in-out forwards; }
+@keyframes ak-adv-sweep { from { left: -40%; } to { left: 130%; } }
+
+/* page label: exit up, enter from below */
+.ak-adv-label { transition: opacity 0.18s ease, transform 0.18s ease; }
+.ak-adv-label-out { opacity: 0; transform: translateY(-6px); }
+.ak-adv-label-in { opacity: 0; transform: translateY(6px); transition: none; }
+
+/* score gauge + parameter bars + step connector */
+.ak-adv-gauge-go { transition: stroke-dashoffset 1.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.ak-adv-bar-go { transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1) calc(0.2s + var(--ak-i, 0) * 0.1s); }
+.ak-adv-line { transition: transform 1.4s cubic-bezier(0.22, 1, 0.36, 1); }
+.ak-adv-line-start { transform: scaleX(0); }
+
+/* steps pop in with a bouncy spring, staggered 150ms */
+html.js .rv.ak-adv-step {
+  transition: opacity 0.5s ease, transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: calc(0.2s + var(--ak-i, 0) * 0.15s);
+}
+html.js .rv.ak-adv-step:not(.is-in) { transform: translateY(20px) scale(0.9); }
+/* reach rows slide in from the left */
+html.js .rv.ak-adv-reach:not(.is-in) { transform: translateX(-20px); }
+html.js .rv.ak-adv-reach { transition-duration: 0.6s; }
+
+/* pulsing ring around each step icon */
+.ak-adv-ring { animation: ak-adv-ring 2.2s linear infinite; animation-delay: calc(var(--ak-i, 0) * 0.5s); opacity: 0; }
+@keyframes ak-adv-ring { from { transform: scale(1); opacity: 0.6; } to { transform: scale(1.45); opacity: 0; } }
+
+/* "advisory for everyone" card */
+.ak-adv-blob { animation: ak-adv-blob 5s ease-in-out infinite; }
+@keyframes ak-adv-blob { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+.ak-adv-cta { transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1); }
+.ak-adv-cta:hover { transform: translateY(-2px); }
+.ak-adv-cta:active { transform: scale(0.97); }
+
+/* reader dialog */
+.ak-modal .ak-adv-ui { opacity: 0; transition: opacity 0.3s ease; }
+.ak-modal.is-open .ak-adv-ui { opacity: 1; }
+.ak-adv-flip { animation: ak-adv-flip 0.7s cubic-bezier(0.34, 1.2, 0.64, 1); }
+@keyframes ak-adv-flip {
+  from { opacity: 0; transform: perspective(1200px) rotateY(-20deg) scale(0.94); }
+  to { opacity: 1; transform: perspective(1200px) rotateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ak-adv-live .ak-adv-page, .ak-adv-label, .ak-adv-gauge-go, .ak-adv-bar-go, .ak-adv-line, .ak-adv-cta { transition: none !important; }
+  .ak-adv-ring, .ak-adv-blob, .ak-adv-sweep, .ak-adv-flip { animation: none !important; }
+}

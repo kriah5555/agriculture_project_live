@@ -1,0 +1,10 @@
+{% load static %}
+{% comment %} Four steps video (design: HowItWorksVideo). The client's workflow film,
+   muted/looping/inline; products.js plays it only while it is on screen. {% endcomment %}
+<section id="how" class="home-keep relative flex min-h-[80vh] md:min-h-[88vh] lg:min-h-screen items-center justify-center overflow-hidden py-4 md:py-8" style="background-color:#092321" aria-label="How SoiLenz works: Connect, Prepare, Analyze, Report">
+  <div class="mx-auto flex w-full max-w-[1280px] items-center justify-center px-4 sm:px-6">
+    <div class="relative flex max-h-[84vh] w-full items-center justify-center overflow-hidden rounded-2xl border border-ivory/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)]">
+      <video data-how-video class="block max-h-[80vh] w-full max-w-full object-contain" src="{% static 'website/video/soilenz-four-steps-workflow.mp4' %}" muted autoplay loop playsinline preload="auto" aria-label="SoiLenz in four steps: Connect, Prepare, Analyze, Report"></video>
+    </div>
+  </div>
+</section>

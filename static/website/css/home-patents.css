@@ -1,0 +1,42 @@
+/* homepage section styles (classes not in the design build) — #patents
+   Motion → CSS: card rotateX entrance + hover lift, drawer slide-in, ring rotation. */
+
+/* granted patent cards: initial {opacity 0, y 30, rotateX 12} → spring, stagger 0.1s; hover y -8 */
+html.js .ak-pcard {
+  opacity: 0;
+  transform: perspective(900px) translateY(30px) rotateX(12deg);
+  transition: opacity 0.6s ease, transform 0.9s cubic-bezier(0.34, 1.28, 0.64, 1);
+  transition-delay: var(--pc-delay, 0s);
+}
+html.js .ak-pcard.is-in { opacity: 1; transform: perspective(900px); }
+html.js .ak-pcard.is-in.is-done { transition-delay: 0s; transition: transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1); }
+html.js .ak-pcard.is-in:hover { transform: perspective(900px) translateY(-8px); }
+
+/* "10 more patents" pill: whileHover scale 1.02, whileTap 0.98, dashed ring spins (8s linear) */
+html.js .ak-pmore.rv.is-in { transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); }
+html.js .ak-pmore.rv.is-in:hover { transform: scale(1.02); }
+html.js .ak-pmore.rv.is-in:active { transform: scale(0.98); }
+.ak-spin { animation: ak-spin 8s linear infinite; }
+@keyframes ak-spin { to { transform: rotate(360deg); } }
+
+/* details drawer: x 100% → 0 (spring 220/30) */
+.ak-modal .ak-drawer { transform: translateX(100%); transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.ak-modal.is-open .ak-drawer { transform: none; }
+
+/* more-patents dialog: y 40, scale .96 → spring */
+.ak-modal .ak-pm-dialog { opacity: 1; transform: translateY(40px) scale(0.96); }
+.ak-modal.is-open .ak-pm-dialog { transform: none; }
+
+/* the ring itself: rotateY spring (stiffness 60, damping 16) */
+.ak-ring { transition: transform 1.1s cubic-bezier(0.3, 1.25, 0.5, 1); }
+
+/* caption swap (AnimatePresence mode="wait": fade/slide 6px) */
+.ak-ring-cap { opacity: 0; transform: translateY(6px); transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+.ak-ring-cap.is-on { opacity: 1; transform: none; }
+.ak-ring-cap.is-out { opacity: 0; transform: translateY(-6px); }
+
+@media (prefers-reduced-motion: reduce) {
+  html.js .ak-pcard, .ak-modal .ak-drawer, .ak-ring, .ak-ring-cap { transition: none !important; }
+  html.js .ak-pcard { opacity: 1; transform: none; }
+  .ak-spin { animation: none; }
+}

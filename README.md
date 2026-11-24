@@ -148,6 +148,34 @@ sudo systemctl restart nginx
 
 ---
 
+## Public Website (homepage)
+
+The public homepage (`/`, `agriapp.views.home`) is plain Django — no Node or
+build step on the server:
+
+- `templates/website/base.html` — page shell (head, fonts, scripts)
+- `templates/website/home.html` — homepage, one partial per section in
+  `templates/website/partials/home/`
+- `templates/website/partials/_header.html` — header, Login menu
+  (User / Admin / Become a Soil Partner) and mobile menu
+- `templates/website/partials/_demo_modal.html` — "Book a demo" form
+- `static/website/css/site.css` — the design's compiled stylesheet;
+  `site-extra.css` + `home-*.css` — extra styles for the Django version
+- `static/website/js/site.js` — shared behaviour (smooth scroll, header,
+  login menu, dialogs, scroll reveals, demo form);
+  `static/website/js/home/*.js` — one script per homepage section;
+  `static/website/js/arka-3d.js` — hero soil film + globe (three.js)
+- `static/website/images|video|textures|data` — site assets
+
+**Forms**: "Book a demo" and the other enquiry forms post to
+`/website-enquiry/` (`agriapp/website_api.py`, CSRF-protected). Soil Partner
+enquiries are saved as *Soil Partner Interest* requests, everything else as
+*Contact* — both show in the admin **Notifications** page.
+
+The old homepage template (`templates/home1.html`) is no longer used for `/`.
+
+---
+
 ## Adding New ML Models
 
 1. Create `agri_ai/<model_name>/` with `__init__.py`, `model.py`, and `models/` folder

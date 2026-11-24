@@ -1,0 +1,372 @@
+{% load static %}
+{% comment %} Who we work with (design: EcosystemRibbon in cinema/StorySections.tsx).
+   Rows [data-sol-row] become active on hover / click / scroll position; the photo card on the right
+   shows the active audience ([data-sol-panel]) and the CSR gallery rotates every 2400ms.
+   Behaviour: static/website/js/home/solutions.js · styles: static/website/css/home-solutions.css {% endcomment %}
+<section id="solutions" data-sol class="home-keep relative min-h-[90vh] py-24 sm:py-32 overflow-hidden flex flex-col justify-center bg-[#12352f] text-ivory" aria-labelledby="eco-title">
+  <div class="container-site relative z-10 w-full max-w-6xl mx-auto">
+    <div class="text-center mb-14 sm:mb-20">
+      <p id="eco-title" class="eyebrow text-botanical font-mono uppercase tracking-[0.2em] text-xs font-semibold">Who we work with</p>
+      <h2 class="rv display mt-3 text-[clamp(2.4rem,4.5vw,4.4rem)] font-semibold leading-tight text-ivory tracking-tight">Built for those who feed India.</h2>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+      <div class="lg:col-span-6 flex flex-col divide-y divide-ivory/15 border-y border-ivory/15">
+        <div data-sol-row="0" role="button" tabindex="0" aria-pressed="true" class="cursor-pointer group select-none py-5 px-3 sm:px-4 transition-all duration-300 opacity-100">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-sol-icon class="lucide lucide-users h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-colors duration-300 text-botanical" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
+              <div>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <span data-sol-name class="font-display text-xl sm:text-2xl lg:text-3xl font-semibold transition-all duration-300 block leading-tight text-ivory translate-x-1">FPOs</span>
+                </div>
+                <div data-sol-detail class="ak-sol-detail flex items-center gap-3 mt-1.5">
+                  <p class="text-xs sm:text-sm text-botanical font-medium">Profitable village soil testing hub.</p>
+                </div>
+              </div>
+            </div>
+            <div class="shrink-0 flex items-center">
+              <div data-sol-bar class="ak-sol-bar h-2 w-10 sm:w-14 bg-botanical rounded-full shadow-[0_0_12px_rgba(47,158,68,0.7)]"></div>
+              <div data-sol-dot class="h-1.5 w-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory/40 transition-colors" hidden></div>
+            </div>
+          </div>
+          <div data-sol-line class="ak-sol-line h-[2px] bg-botanical/90 rounded-full mt-2.5 w-24 sm:w-32"></div>
+        </div>
+        <div data-sol-row="1" role="button" tabindex="0" aria-pressed="false" class="cursor-pointer group select-none py-5 px-3 sm:px-4 transition-all duration-300 opacity-45 hover:opacity-85">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-sol-icon class="lucide lucide-landmark h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-colors duration-300 text-ivory/70 group-hover:text-ivory/85" aria-hidden="true"><path d="M10 18v-7"></path><path d="M11.119 2.205a2 2 0 0 1 1.762 0l7.84 3.846A.5.5 0 0 1 20.5 7h-17a.5.5 0 0 1-.22-.949z"></path><path d="M14 18v-7"></path><path d="M18 18v-7"></path><path d="M3 22h18"></path><path d="M6 18v-7"></path></svg>
+              <div>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <span data-sol-name class="font-display text-xl sm:text-2xl lg:text-3xl font-semibold transition-all duration-300 block leading-tight text-ivory/85 group-hover:text-ivory">Govt &amp; KVKs</span>
+                </div>
+                <div data-sol-detail class="ak-sol-detail flex items-center gap-3 mt-1.5" hidden>
+                  <p class="text-xs sm:text-sm text-botanical font-medium">Decentralized Soil Monitoring Health Card.</p>
+                </div>
+              </div>
+            </div>
+            <div class="shrink-0 flex items-center">
+              <div data-sol-bar class="ak-sol-bar h-2 w-10 sm:w-14 bg-botanical rounded-full shadow-[0_0_12px_rgba(47,158,68,0.7)]" hidden></div>
+              <div data-sol-dot class="h-1.5 w-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory/40 transition-colors"></div>
+            </div>
+          </div>
+          <div data-sol-line class="ak-sol-line h-[2px] bg-botanical/90 rounded-full mt-2.5 w-24 sm:w-32" hidden></div>
+        </div>
+        <div data-sol-row="2" role="button" tabindex="0" aria-pressed="false" class="cursor-pointer group select-none py-5 px-3 sm:px-4 transition-all duration-300 opacity-45 hover:opacity-85">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-sol-icon class="lucide lucide-graduation-cap h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-colors duration-300 text-ivory/70 group-hover:text-ivory/85" aria-hidden="true"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg>
+              <div>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <span data-sol-name class="font-display text-xl sm:text-2xl lg:text-3xl font-semibold transition-all duration-300 block leading-tight text-ivory/85 group-hover:text-ivory">Agricultural Universities</span>
+                </div>
+                <div data-sol-detail class="ak-sol-detail flex items-center gap-3 mt-1.5" hidden>
+                  <p class="text-xs sm:text-sm text-botanical font-medium">Precision agronomy research and trials.</p>
+                </div>
+              </div>
+            </div>
+            <div class="shrink-0 flex items-center">
+              <div data-sol-bar class="ak-sol-bar h-2 w-10 sm:w-14 bg-botanical rounded-full shadow-[0_0_12px_rgba(47,158,68,0.7)]" hidden></div>
+              <div data-sol-dot class="h-1.5 w-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory/40 transition-colors"></div>
+            </div>
+          </div>
+          <div data-sol-line class="ak-sol-line h-[2px] bg-botanical/90 rounded-full mt-2.5 w-24 sm:w-32" hidden></div>
+        </div>
+        <div data-sol-row="3" role="button" tabindex="0" aria-pressed="false" class="cursor-pointer group select-none py-5 px-3 sm:px-4 transition-all duration-300 opacity-45 hover:opacity-85">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-sol-icon class="lucide lucide-heart-handshake h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-colors duration-300 text-ivory/70 group-hover:text-ivory/85" aria-hidden="true"><path d="M19.414 14.414C21 12.828 22 11.5 22 9.5a5.5 5.5 0 0 0-9.591-3.676.6.6 0 0 1-.818.001A5.5 5.5 0 0 0 2 9.5c0 2.3 1.5 4 3 5.5l5.535 5.362a2 2 0 0 0 2.879.052 2.12 2.12 0 0 0-.004-3 2.124 2.124 0 1 0 3-3 2.124 2.124 0 0 0 3.004 0 2 2 0 0 0 0-2.828l-1.881-1.882a2.41 2.41 0 0 0-3.409 0l-1.71 1.71a2 2 0 0 1-2.828 0 2 2 0 0 1 0-2.828l2.823-2.762"></path></svg>
+              <div>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <span data-sol-name class="font-display text-xl sm:text-2xl lg:text-3xl font-semibold transition-all duration-300 block leading-tight text-ivory/85 group-hover:text-ivory">CSR Initiatives</span>
+                  <a class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider bg-[#1E7A33] text-[#fff] font-bold hover:bg-[#17642a] transition-transform hover:scale-105" href="/skill-development/">View details →</a>
+                </div>
+                <div data-sol-detail class="ak-sol-detail flex items-center gap-3 mt-1.5" hidden>
+                  <p class="text-xs sm:text-sm text-botanical font-medium">Skill development programmes for young professionals.</p>
+                  <a class="text-xs font-mono text-ivory/80 underline underline-offset-4 hover:text-botanical transition-colors" href="/skill-development/">Read full program details</a>
+                </div>
+              </div>
+            </div>
+            <div class="shrink-0 flex items-center">
+              <div data-sol-bar class="ak-sol-bar h-2 w-10 sm:w-14 bg-botanical rounded-full shadow-[0_0_12px_rgba(47,158,68,0.7)]" hidden></div>
+              <div data-sol-dot class="h-1.5 w-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory/40 transition-colors"></div>
+            </div>
+          </div>
+          <div data-sol-line class="ak-sol-line h-[2px] bg-botanical/90 rounded-full mt-2.5 w-24 sm:w-32" hidden></div>
+        </div>
+        <div data-sol-row="4" role="button" tabindex="0" aria-pressed="false" class="cursor-pointer group select-none py-5 px-3 sm:px-4 transition-all duration-300 opacity-45 hover:opacity-85">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-sol-icon class="lucide lucide-package h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-colors duration-300 text-ivory/70 group-hover:text-ivory/85" aria-hidden="true"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"></path><path d="M12 22V12"></path><polyline points="3.29 7 12 12 20.71 7"></polyline><path d="m7.5 4.27 9 5.15"></path></svg>
+              <div>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <span data-sol-name class="font-display text-xl sm:text-2xl lg:text-3xl font-semibold transition-all duration-300 block leading-tight text-ivory/85 group-hover:text-ivory">Agri-Input Companies</span>
+                </div>
+                <div data-sol-detail class="ak-sol-detail flex items-center gap-3 mt-1.5" hidden>
+                  <p class="text-xs sm:text-sm text-botanical font-medium">Targeted product positioning and dosage.</p>
+                </div>
+              </div>
+            </div>
+            <div class="shrink-0 flex items-center">
+              <div data-sol-bar class="ak-sol-bar h-2 w-10 sm:w-14 bg-botanical rounded-full shadow-[0_0_12px_rgba(47,158,68,0.7)]" hidden></div>
+              <div data-sol-dot class="h-1.5 w-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory/40 transition-colors"></div>
+            </div>
+          </div>
+          <div data-sol-line class="ak-sol-line h-[2px] bg-botanical/90 rounded-full mt-2.5 w-24 sm:w-32" hidden></div>
+        </div>
+        <div data-sol-row="5" role="button" tabindex="0" aria-pressed="false" class="cursor-pointer group select-none py-5 px-3 sm:px-4 transition-all duration-300 opacity-45 hover:opacity-85">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-sol-icon class="lucide lucide-graduation-cap h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-colors duration-300 text-ivory/70 group-hover:text-ivory/85" aria-hidden="true"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg>
+              <div>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <span data-sol-name class="font-display text-xl sm:text-2xl lg:text-3xl font-semibold transition-all duration-300 block leading-tight text-ivory/85 group-hover:text-ivory">School Innovation Labs &amp; Summer Camps</span>
+                  <a class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider bg-[#1E7A33] text-[#fff] font-bold hover:bg-[#17642a] transition-transform hover:scale-105" href="/school-innovation-lab/">View details →</a>
+                </div>
+                <div data-sol-detail class="ak-sol-detail flex items-center gap-3 mt-1.5" hidden>
+                  <p class="text-xs sm:text-sm text-botanical font-medium">Experiential STEM &amp; 4-week student rural soil health program.</p>
+                  <a class="text-xs font-mono text-ivory/80 underline underline-offset-4 hover:text-botanical transition-colors" href="/school-innovation-lab/">Read full program details</a>
+                </div>
+              </div>
+            </div>
+            <div class="shrink-0 flex items-center">
+              <div data-sol-bar class="ak-sol-bar h-2 w-10 sm:w-14 bg-botanical rounded-full shadow-[0_0_12px_rgba(47,158,68,0.7)]" hidden></div>
+              <div data-sol-dot class="h-1.5 w-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory/40 transition-colors"></div>
+            </div>
+          </div>
+          <div data-sol-line class="ak-sol-line h-[2px] bg-botanical/90 rounded-full mt-2.5 w-24 sm:w-32" hidden></div>
+        </div>
+        <div data-sol-row="6" role="button" tabindex="0" aria-pressed="false" class="cursor-pointer group select-none py-5 px-3 sm:px-4 transition-all duration-300 opacity-45 hover:opacity-85">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-sol-icon class="lucide lucide-sprout h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-colors duration-300 text-ivory/70 group-hover:text-ivory/85" aria-hidden="true"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3"></path><path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4"></path><path d="M5 21h14"></path></svg>
+              <div>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <span data-sol-name class="font-display text-xl sm:text-2xl lg:text-3xl font-semibold transition-all duration-300 block leading-tight text-ivory/85 group-hover:text-ivory">Soil Partners</span>
+                  <a class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider bg-[#1E7A33] text-[#fff] font-bold hover:bg-[#17642a] transition-transform hover:scale-105" href="/soil-partners/">View details →</a>
+                </div>
+                <div data-sol-detail class="ak-sol-detail flex items-center gap-3 mt-1.5" hidden>
+                  <p class="text-xs sm:text-sm text-botanical font-medium">With our hardware SoiLenz 2.0 and pH bottle, you get 3 services: LeafLENZ, HarvestLENZ, and Carbon Intelligence.</p>
+                  <a class="text-xs font-mono text-ivory/80 underline underline-offset-4 hover:text-botanical transition-colors" href="/soil-partners/">Read full program details</a>
+                </div>
+              </div>
+            </div>
+            <div class="shrink-0 flex items-center">
+              <div data-sol-bar class="ak-sol-bar h-2 w-10 sm:w-14 bg-botanical rounded-full shadow-[0_0_12px_rgba(47,158,68,0.7)]" hidden></div>
+              <div data-sol-dot class="h-1.5 w-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory/40 transition-colors"></div>
+            </div>
+          </div>
+          <div data-sol-line class="ak-sol-line h-[2px] bg-botanical/90 rounded-full mt-2.5 w-24 sm:w-32" hidden></div>
+        </div>
+        <div data-sol-row="7" role="button" tabindex="0" aria-pressed="false" class="cursor-pointer group select-none py-5 px-3 sm:px-4 transition-all duration-300 opacity-45 hover:opacity-85">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-sol-icon class="lucide lucide-leaf h-5 w-5 sm:h-6 sm:w-6 shrink-0 transition-colors duration-300 text-ivory/70 group-hover:text-ivory/85" aria-hidden="true"><path d="M11 20a10 10 0 0010-10 25.9 25.9 0 00-1.04-7.281 1 1 0 00-1.755-.325C15.833 5.5 13 5.5 9.8 6.1A7 7 0 0011 20"></path><path d="M2 21a5 5 0 012.911-4.544C7.613 15.212 8.351 15.24 11 13"></path></svg>
+              <div>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <span data-sol-name class="font-display text-xl sm:text-2xl lg:text-3xl font-semibold transition-all duration-300 block leading-tight text-ivory/85 group-hover:text-ivory">Growers</span>
+                  <a class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider bg-[#1E7A33] text-[#fff] font-bold hover:bg-[#17642a] transition-transform hover:scale-105" href="/growers/">View details →</a>
+                </div>
+                <div data-sol-detail class="ak-sol-detail flex items-center gap-3 mt-1.5" hidden>
+                  <p class="text-xs sm:text-sm text-botanical font-medium">Natural &amp; organic farming for smallholders, kitchen gardeners &amp; natural growers.</p>
+                  <a class="text-xs font-mono text-ivory/80 underline underline-offset-4 hover:text-botanical transition-colors" href="/growers/">Read full program details</a>
+                </div>
+              </div>
+            </div>
+            <div class="shrink-0 flex items-center">
+              <div data-sol-bar class="ak-sol-bar h-2 w-10 sm:w-14 bg-botanical rounded-full shadow-[0_0_12px_rgba(47,158,68,0.7)]" hidden></div>
+              <div data-sol-dot class="h-1.5 w-1.5 rounded-full bg-ivory/20 group-hover:bg-ivory/40 transition-colors"></div>
+            </div>
+          </div>
+          <div data-sol-line class="ak-sol-line h-[2px] bg-botanical/90 rounded-full mt-2.5 w-24 sm:w-32" hidden></div>
+        </div>
+      </div>
+      <div class="lg:col-span-6 w-full flex justify-center">
+        <div class="relative w-full aspect-[4/3] sm:aspect-[16/11] max-w-lg lg:max-w-none rounded-2xl overflow-hidden border border-white/15 bg-black/40 shadow-[0_20px_60px_rgba(0,0,0,0.6)] group/card">
+          <div data-sol-panel="0" class="absolute inset-0 transition-all duration-700 ease-out opacity-100 scale-100">
+            <img alt="" aria-hidden="true" loading="lazy" decoding="async" class="object-cover object-center blur-2xl scale-110 opacity-30 pointer-events-none" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/fpo-women-field.webp' %}">
+            <img alt="Women farmers and FPO members at a village demonstration table with SoiLenz and ArkaShine brochures" decoding="async" class="object-contain object-center transition-transform duration-700 group-hover/card:scale-105" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/fpo-women-field.webp' %}">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/25 pointer-events-none"></div>
+          </div>
+          <div data-sol-panel="1" class="absolute inset-0 transition-all duration-700 ease-out opacity-0 scale-105 pointer-events-none" aria-hidden="true" tabindex="-1">
+            <img alt="" aria-hidden="true" loading="lazy" decoding="async" class="object-cover object-center blur-2xl scale-110 opacity-30 pointer-events-none" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/kvk-presentation.webp' %}">
+            <img alt="ArkaShine team presenting SoiLenz to farmers at a Krishi Vigyan Kendra" loading="lazy" decoding="async" class="object-contain object-center transition-transform duration-700 group-hover/card:scale-105" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/kvk-presentation.webp' %}">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/25 pointer-events-none"></div>
+          </div>
+          <div data-sol-panel="2" class="absolute inset-0 transition-all duration-700 ease-out opacity-0 scale-105 pointer-events-none" aria-hidden="true" tabindex="-1">
+            <img alt="" aria-hidden="true" loading="lazy" decoding="async" class="object-cover object-center blur-2xl scale-110 opacity-30 pointer-events-none" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/partners/agricultural-university.webp' %}">
+            <img alt="ArkaShine precision agronomy demonstration and research trial at an agricultural university" loading="lazy" decoding="async" class="object-contain object-center transition-transform duration-700 group-hover/card:scale-105" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/partners/agricultural-university.webp' %}">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/25 pointer-events-none"></div>
+          </div>
+          <a data-sol-panel="3" href="/skill-development/" class="absolute inset-0 transition-all duration-700 ease-out cursor-pointer opacity-0 scale-105 pointer-events-none" aria-hidden="true" tabindex="-1">
+            <div data-sol-g="0" class="ak-sol-g absolute inset-0 is-on">
+              <img alt="" aria-hidden="true" loading="lazy" decoding="async" class="object-cover object-center blur-2xl scale-110 opacity-30 pointer-events-none" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/csr-cini-gujarat.webp' %}">
+              <img alt="CSR programme team with two SoiLenz devices" loading="lazy" decoding="async" class="object-contain object-center" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/csr-cini-gujarat.webp' %}">
+            </div>
+            <div data-sol-g="1" class="ak-sol-g absolute inset-0">
+              <img alt="" aria-hidden="true" loading="lazy" decoding="async" class="object-cover object-center blur-2xl scale-110 opacity-30 pointer-events-none" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/odisha-training-hall.webp' %}">
+              <img alt="CSR training session in Odisha with the SoiLenz kit" loading="lazy" decoding="async" class="object-contain object-center" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/odisha-training-hall.webp' %}">
+            </div>
+            <div data-sol-g="2" class="ak-sol-g absolute inset-0">
+              <img alt="" aria-hidden="true" loading="lazy" decoding="async" class="object-cover object-center blur-2xl scale-110 opacity-30 pointer-events-none" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/young-professionals-training.webp' %}">
+              <img alt="Young professionals trained under a CSR programme" loading="lazy" decoding="async" class="object-contain object-center" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/young-professionals-training.webp' %}">
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
+            <div class="absolute bottom-[5.5rem] right-4 z-10 flex gap-1.5">
+              <span data-sol-thumb="0" class="relative h-10 w-8 overflow-hidden rounded-md border transition-all duration-500 -translate-y-1.5 border-botanical shadow-lg"><img alt="" loading="lazy" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/csr-cini-gujarat.webp' %}"></span>
+              <span data-sol-thumb="1" class="relative h-10 w-8 overflow-hidden rounded-md border transition-all duration-500 border-white/30 opacity-60"><img alt="" loading="lazy" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/odisha-training-hall.webp' %}"></span>
+              <span data-sol-thumb="2" class="relative h-10 w-8 overflow-hidden rounded-md border transition-all duration-500 border-white/30 opacity-60"><img alt="" loading="lazy" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/young-professionals-training.webp' %}"></span>
+            </div>
+          </a>
+          <div data-sol-panel="4" class="absolute inset-0 transition-all duration-700 ease-out opacity-0 scale-105 pointer-events-none" aria-hidden="true" tabindex="-1">
+            <img alt="" aria-hidden="true" loading="lazy" decoding="async" class="object-cover object-center blur-2xl scale-110 opacity-30 pointer-events-none" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/agri-university-training.webp' %}">
+            <img alt="ArkaShine SoiLenz being demonstrated for agri-input company representatives" loading="lazy" decoding="async" class="object-contain object-center transition-transform duration-700 group-hover/card:scale-105" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/agri-university-training.webp' %}">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/25 pointer-events-none"></div>
+          </div>
+          <a data-sol-panel="5" href="/school-innovation-lab/" class="absolute inset-0 transition-all duration-700 ease-out cursor-pointer opacity-0 scale-105 pointer-events-none" aria-hidden="true" tabindex="-1">
+            <img alt="" aria-hidden="true" loading="lazy" decoding="async" class="object-cover object-center blur-2xl scale-110 opacity-30 pointer-events-none" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/school-innovation.webp' %}">
+            <img alt="Students at a school assembly during an ArkaShine School Innovation Lab session" loading="lazy" decoding="async" class="object-contain object-center transition-transform duration-700 group-hover/card:scale-105" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/school-innovation.webp' %}">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/25 pointer-events-none"></div>
+          </a>
+          <a data-sol-panel="6" href="/soil-partners/" class="absolute inset-0 transition-all duration-700 ease-out cursor-pointer opacity-0 scale-105 pointer-events-none" aria-hidden="true" tabindex="-1">
+            <img alt="" aria-hidden="true" loading="lazy" decoding="async" class="object-cover object-center blur-2xl scale-110 opacity-30 pointer-events-none" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/youth-field-outreach.webp' %}">
+            <img alt="An ArkaShine Soil Partner explaining soil testing to village youth holding ArkaShine leaflets" loading="lazy" decoding="async" class="object-contain object-center transition-transform duration-700 group-hover/card:scale-105" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/youth-field-outreach.webp' %}">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/25 pointer-events-none"></div>
+          </a>
+          <a data-sol-panel="7" href="/growers/" class="absolute inset-0 transition-all duration-700 ease-out cursor-pointer opacity-0 scale-105 pointer-events-none" aria-hidden="true" tabindex="-1">
+            <img alt="" aria-hidden="true" loading="lazy" decoding="async" class="object-cover object-center blur-2xl scale-110 opacity-30 pointer-events-none" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/growers-field.webp' %}">
+            <img alt="Field soil sampling and organic protocol testing with local growers" loading="lazy" decoding="async" class="object-contain object-center transition-transform duration-700 group-hover/card:scale-105" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" src="{% static 'website/images/people/growers-field.webp' %}">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/25 pointer-events-none"></div>
+          </a>
+          <div data-sol-stats="5" class="absolute left-4 right-4 top-4 z-20 flex flex-wrap gap-2 sm:gap-3 pointer-events-none" hidden>
+            <div class="ak-sol-stat rounded-xl border border-botanical/30 bg-forest-deep/80 px-3 py-2 backdrop-blur-md" style="--ak-i:0">
+              <p class="font-display text-lg font-bold leading-none text-botanical sm:text-xl">15–20</p>
+              <p class="mt-1 font-mono text-xs uppercase tracking-[0.14em] text-ivory/85">Students</p>
+            </div>
+            <div class="ak-sol-stat rounded-xl border border-botanical/30 bg-forest-deep/80 px-3 py-2 backdrop-blur-md" style="--ak-i:1">
+              <p class="font-display text-lg font-bold leading-none text-botanical sm:text-xl">1,500+</p>
+              <p class="mt-1 font-mono text-xs uppercase tracking-[0.14em] text-ivory/85">Farmers reached</p>
+            </div>
+            <div class="ak-sol-stat rounded-xl border border-botanical/30 bg-forest-deep/80 px-3 py-2 backdrop-blur-md" style="--ak-i:2">
+              <p class="font-display text-lg font-bold leading-none text-botanical sm:text-xl">~750</p>
+              <p class="mt-1 font-mono text-xs uppercase tracking-[0.14em] text-ivory/85">Soil tests run</p>
+            </div>
+          </div>
+          <div data-sol-stats="6" class="absolute left-4 right-4 top-4 z-20 flex flex-wrap gap-2 sm:gap-3 pointer-events-none" hidden>
+            <div class="ak-sol-stat rounded-xl border border-botanical/30 bg-forest-deep/80 px-3 py-2 backdrop-blur-md" style="--ak-i:0">
+              <p class="font-display text-lg font-bold leading-none text-botanical sm:text-xl">SoiLenz 2.0 + pH</p>
+              <p class="mt-1 font-mono text-xs uppercase tracking-[0.14em] text-ivory/85">Hardware</p>
+            </div>
+            <div class="ak-sol-stat rounded-xl border border-botanical/30 bg-forest-deep/80 px-3 py-2 backdrop-blur-md" style="--ak-i:1">
+              <p class="font-display text-lg font-bold leading-none text-botanical sm:text-xl">3 Services</p>
+              <p class="mt-1 font-mono text-xs uppercase tracking-[0.14em] text-ivory/85">Included</p>
+            </div>
+            <div class="ak-sol-stat rounded-xl border border-botanical/30 bg-forest-deep/80 px-3 py-2 backdrop-blur-md" style="--ak-i:2">
+              <p class="font-display text-lg font-bold leading-none text-botanical sm:text-xl">Leaf · Harvest · Carbon</p>
+              <p class="mt-1 font-mono text-xs uppercase tracking-[0.14em] text-ivory/85">Intelligence</p>
+            </div>
+          </div>
+          <div data-sol-stats="7" class="absolute left-4 right-4 top-4 z-20 flex flex-wrap gap-2 sm:gap-3 pointer-events-none" hidden>
+            <div class="ak-sol-stat rounded-xl border border-botanical/30 bg-forest-deep/80 px-3 py-2 backdrop-blur-md" style="--ak-i:0">
+              <p class="font-display text-lg font-bold leading-none text-botanical sm:text-xl">19</p>
+              <p class="mt-1 font-mono text-xs uppercase tracking-[0.14em] text-ivory/85">Natural Methods</p>
+            </div>
+            <div class="ak-sol-stat rounded-xl border border-botanical/30 bg-forest-deep/80 px-3 py-2 backdrop-blur-md" style="--ak-i:1">
+              <p class="font-display text-lg font-bold leading-none text-botanical sm:text-xl">100%</p>
+              <p class="mt-1 font-mono text-xs uppercase tracking-[0.14em] text-ivory/85">Organic Inputs</p>
+            </div>
+            <div class="ak-sol-stat rounded-xl border border-botanical/30 bg-forest-deep/80 px-3 py-2 backdrop-blur-md" style="--ak-i:2">
+              <p class="font-display text-lg font-bold leading-none text-botanical sm:text-xl">Living Soil</p>
+              <p class="mt-1 font-mono text-xs uppercase tracking-[0.14em] text-ivory/85">Zero Chemical</p>
+            </div>
+          </div>
+          <div class="absolute bottom-4 left-4 right-4 z-20 p-3.5 rounded-xl bg-forest-deep/85 backdrop-blur-md border border-white/10">
+            <div data-sol-caption="0" class="flex items-center justify-between">
+              <div class="min-w-0 pr-2">
+                <span class="font-mono text-xs uppercase tracking-[0.2em] text-botanical font-semibold">DEPLOYMENT · FPOS</span>
+                <p class="font-display font-medium text-ivory text-xs sm:text-sm mt-0.5 truncate">Profitable village soil testing hub.</p>
+              </div>
+              <div class="shrink-0 flex items-center gap-2">
+                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-botanical/20 border border-botanical/30">
+                  <span class="h-1.5 w-1.5 rounded-full bg-botanical animate-pulse"></span>
+                  <span class="text-xs font-mono text-botanical font-semibold">LIVE</span>
+                </div>
+              </div>
+            </div>
+            <div data-sol-caption="1" class="flex items-center justify-between" hidden>
+              <div class="min-w-0 pr-2">
+                <span class="font-mono text-xs uppercase tracking-[0.2em] text-botanical font-semibold">DEPLOYMENT · GOVT &amp; KVKS</span>
+                <p class="font-display font-medium text-ivory text-xs sm:text-sm mt-0.5 truncate">Decentralized Soil Monitoring Health Card.</p>
+              </div>
+              <div class="shrink-0 flex items-center gap-2">
+                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-botanical/20 border border-botanical/30">
+                  <span class="h-1.5 w-1.5 rounded-full bg-botanical animate-pulse"></span>
+                  <span class="text-xs font-mono text-botanical font-semibold">LIVE</span>
+                </div>
+              </div>
+            </div>
+            <div data-sol-caption="2" class="flex items-center justify-between" hidden>
+              <div class="min-w-0 pr-2">
+                <span class="font-mono text-xs uppercase tracking-[0.2em] text-botanical font-semibold">DEPLOYMENT · AGRICULTURAL UNIVERSITIES</span>
+                <p class="font-display font-medium text-ivory text-xs sm:text-sm mt-0.5 truncate">Precision agronomy research and trials.</p>
+              </div>
+              <div class="shrink-0 flex items-center gap-2">
+                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-botanical/20 border border-botanical/30">
+                  <span class="h-1.5 w-1.5 rounded-full bg-botanical animate-pulse"></span>
+                  <span class="text-xs font-mono text-botanical font-semibold">LIVE</span>
+                </div>
+              </div>
+            </div>
+            <div data-sol-caption="3" class="flex items-center justify-between" hidden>
+              <div class="min-w-0 pr-2">
+                <span class="font-mono text-xs uppercase tracking-[0.2em] text-botanical font-semibold">DEPLOYMENT · CSR INITIATIVES</span>
+                <p class="font-display font-medium text-ivory text-xs sm:text-sm mt-0.5 truncate">Skill development programmes for young professionals.</p>
+              </div>
+              <div class="shrink-0 flex items-center gap-2">
+                <a class="px-3.5 py-1.5 rounded-lg bg-[#1E7A33] text-[#fff] text-xs font-semibold uppercase tracking-wider hover:bg-[#17642a] transition-transform hover:scale-105 flex items-center gap-1.5 shadow-md" href="/skill-development/">View More Details →</a>
+              </div>
+            </div>
+            <div data-sol-caption="4" class="flex items-center justify-between" hidden>
+              <div class="min-w-0 pr-2">
+                <span class="font-mono text-xs uppercase tracking-[0.2em] text-botanical font-semibold">DEPLOYMENT · AGRI-INPUT COMPANIES</span>
+                <p class="font-display font-medium text-ivory text-xs sm:text-sm mt-0.5 truncate">Targeted product positioning and dosage.</p>
+              </div>
+              <div class="shrink-0 flex items-center gap-2">
+                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-botanical/20 border border-botanical/30">
+                  <span class="h-1.5 w-1.5 rounded-full bg-botanical animate-pulse"></span>
+                  <span class="text-xs font-mono text-botanical font-semibold">LIVE</span>
+                </div>
+              </div>
+            </div>
+            <div data-sol-caption="5" class="flex items-center justify-between" hidden>
+              <div class="min-w-0 pr-2">
+                <span class="font-mono text-xs uppercase tracking-[0.2em] text-botanical font-semibold">DEPLOYMENT · SCHOOL INNOVATION LABS &amp; SUMMER CAMPS</span>
+                <p class="font-display font-medium text-ivory text-xs sm:text-sm mt-0.5 truncate">Experiential STEM &amp; 4-week student rural soil health program.</p>
+              </div>
+              <div class="shrink-0 flex items-center gap-2">
+                <a class="px-3.5 py-1.5 rounded-lg bg-[#1E7A33] text-[#fff] text-xs font-semibold uppercase tracking-wider hover:bg-[#17642a] transition-transform hover:scale-105 flex items-center gap-1.5 shadow-md" href="/school-innovation-lab/">View More →</a>
+              </div>
+            </div>
+            <div data-sol-caption="6" class="flex items-center justify-between" hidden>
+              <div class="min-w-0 pr-2">
+                <span class="font-mono text-xs uppercase tracking-[0.2em] text-botanical font-semibold">DEPLOYMENT · SOIL PARTNERS</span>
+                <p class="font-display font-medium text-ivory text-xs sm:text-sm mt-0.5 truncate">With our hardware SoiLenz 2.0 and pH bottle, you get 3 services: LeafLENZ, HarvestLENZ, and Carbon Intelligence.</p>
+              </div>
+              <div class="shrink-0 flex items-center gap-2">
+                <a class="px-3.5 py-1.5 rounded-lg bg-[#1E7A33] text-[#fff] text-xs font-semibold uppercase tracking-wider hover:bg-[#17642a] transition-transform hover:scale-105 flex items-center gap-1.5 shadow-md" href="/soil-partners/">Explore 3 Products →</a>
+              </div>
+            </div>
+            <div data-sol-caption="7" class="flex items-center justify-between" hidden>
+              <div class="min-w-0 pr-2">
+                <span class="font-mono text-xs uppercase tracking-[0.2em] text-botanical font-semibold">DEPLOYMENT · GROWERS</span>
+                <p class="font-display font-medium text-ivory text-xs sm:text-sm mt-0.5 truncate">Natural &amp; organic farming for smallholders, kitchen gardeners &amp; natural growers.</p>
+              </div>
+              <div class="shrink-0 flex items-center gap-2">
+                <a class="px-3.5 py-1.5 rounded-lg bg-[#1E7A33] text-[#fff] text-xs font-semibold uppercase tracking-wider hover:bg-[#17642a] transition-transform hover:scale-105 flex items-center gap-1.5 shadow-md" href="/growers/">Explore Organic Guide →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

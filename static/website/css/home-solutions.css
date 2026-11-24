@@ -1,0 +1,30 @@
+/* #solutions — styles for behaviour the design did with Motion (see js/home/solutions.js) */
+
+/* active row: description fades up, indicator bar + underline spring in (were Motion layoutId) */
+.ak-sol-detail.ak-sol-enter { animation: ak-sol-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.ak-sol-bar.ak-sol-enter { transform-origin: 100% 50%; animation: ak-sol-grow 0.45s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+.ak-sol-line.ak-sol-enter { transform-origin: 0 50%; animation: ak-sol-grow 0.5s cubic-bezier(0.34, 1.3, 0.64, 1) both; }
+@keyframes ak-sol-up { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+@keyframes ak-sol-grow { from { opacity: 0; transform: scaleX(0.2); } to { opacity: 1; transform: none; } }
+
+/* floating stat badges drop in, staggered 80ms */
+.ak-sol-enter .ak-sol-stat {
+  animation: ak-sol-drop 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--ak-i, 0) * 0.08s);
+}
+@keyframes ak-sol-drop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+/* CSR photo gallery cross-fade: enter from a slight zoom + tilt, leave shrinking */
+.ak-sol-g {
+  opacity: 0;
+  transform: scale(1.12) rotate(1.5deg);
+  transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ak-sol-g.is-on { opacity: 1; transform: none; }
+.ak-sol-g.is-off { opacity: 0; transform: scale(0.96); }
+.ak-sol-g.ak-sol-g-reset { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ak-sol-enter, .ak-sol-enter .ak-sol-stat { animation: none !important; }
+  .ak-sol-g { transition: none !important; }
+}

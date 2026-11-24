@@ -1,0 +1,94 @@
+{% load static %}
+{# How we work, phones/tablets (design: HowWeWork). Cards: _how_we_work_card.html, behaviour: js/home/how-we-work.js #}
+<section id="how-we-work-mobile" aria-labelledby="hww-title-m" class="home-keep bg-[#06201e] py-14 lg:hidden">
+  <div class="container-site">
+    <p class="font-mono text-xs uppercase tracking-[0.2em] text-[#a7d48a]">Our story · How we work</p>
+    <h2 id="hww-title-m" class="mt-2 font-display text-[clamp(1.9rem,7vw,2.6rem)] font-bold leading-tight text-[#fff]">From the land’s history <span class="font-light text-[#fff]/85">to a better harvest.</span></h2>
+    <ol class="mt-8 space-y-10">
+      <li class="rv">
+        <div class="relative aspect-[4/5] overflow-hidden rounded-3xl sm:aspect-[16/11]">
+          <img alt="Aerial view of green farm fields and water channels in India" loading="lazy" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;inset:0;object-position:50% 50%" src="{% static 'website/images/journey/02-land.webp' %}">
+          <div class="absolute inset-0 bg-gradient-to-t from-[#041512]/95 via-[#041512]/35 to-transparent"></div>
+          <div class="absolute inset-x-0 bottom-0 p-5">
+            <span class="block font-display text-6xl font-bold leading-none text-transparent [-webkit-text-stroke:1.2px_rgba(167,212,138,0.85)]">01</span>
+            <h3 class="mt-1 font-display text-2xl font-bold leading-tight text-[#fff]">We study the land&#x27;s history.</h3>
+            <p class="mt-2 text-[15px] leading-relaxed text-[#fff]/85">TerraMap reads years of satellite history: past crops, land use and weak zones. We know the field before we touch the soil.</p>
+          </div>
+        </div>
+        <div class="mt-3">
+          {% include "website/partials/home/_how_we_work_card.html" with kind="geo" %}
+        </div>
+      </li>
+      <li class="rv">
+        <div class="relative aspect-[4/5] overflow-hidden rounded-3xl sm:aspect-[16/11]">
+          <img alt="A farmer kneeling in his field, collecting a soil sample into a bag" loading="lazy" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;inset:0;object-position:65% 40%" src="{% static 'website/images/journey/02-farmer-soil-sample.webp' %}">
+          <div class="absolute inset-0 bg-gradient-to-t from-[#041512]/95 via-[#041512]/35 to-transparent"></div>
+          <div class="absolute inset-x-0 bottom-0 p-5">
+            <span class="block font-display text-6xl font-bold leading-none text-transparent [-webkit-text-stroke:1.2px_rgba(167,212,138,0.85)]">02</span>
+            <h3 class="mt-1 font-display text-2xl font-bold leading-tight text-[#fff]">Soil tested on the farm.</h3>
+            <p class="mt-2 text-[15px] leading-relaxed text-[#fff]/85">SoiLenz 2.0 completes the full analysis in 15 minutes: 14 parameters, right there in the village.</p>
+          </div>
+        </div>
+        <div class="mt-3">
+          {% include "website/partials/home/_how_we_work_card.html" with kind="test" %}
+        </div>
+      </li>
+      <li class="rv">
+        <div class="relative aspect-[4/5] overflow-hidden rounded-3xl sm:aspect-[16/11]">
+          <img alt="A farmer in Odisha holding his printed SoiLenz soil ticket next to the device" loading="lazy" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;inset:0;object-position:50% 22%" src="{% static 'website/images/journey/03-farmer-with-ticket.webp' %}">
+          <div class="absolute inset-0 bg-gradient-to-t from-[#041512]/95 via-[#041512]/35 to-transparent"></div>
+          <div class="absolute inset-x-0 bottom-0 p-5">
+            <span class="block font-display text-6xl font-bold leading-none text-transparent [-webkit-text-stroke:1.2px_rgba(167,212,138,0.85)]">03</span>
+            <h3 class="mt-1 font-display text-2xl font-bold leading-tight text-[#fff]">Instant ticket. AI advisory report.</h3>
+            <p class="mt-2 text-[15px] leading-relaxed text-[#fff]/85">A printed soil ticket in the farmer&#x27;s hand at once, then an AI-generated advisory report on soil quality and the best crops to grow.</p>
+          </div>
+        </div>
+        <div class="mt-3">
+          {% include "website/partials/home/_how_we_work_card.html" with kind="report" %}
+        </div>
+      </li>
+      <li class="rv">
+        <div class="relative aspect-[4/5] overflow-hidden rounded-3xl sm:aspect-[16/11]">
+          <img alt="Wide view of farm fields that GeoLenz maps zone by zone" loading="lazy" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;inset:0;object-position:50% 50%" src="{% static 'website/images/field-wide.webp' %}">
+          <div class="absolute inset-0 bg-gradient-to-t from-[#041512]/95 via-[#041512]/35 to-transparent"></div>
+          <div class="absolute inset-x-0 bottom-0 p-5">
+            <span class="block font-display text-6xl font-bold leading-none text-transparent [-webkit-text-stroke:1.2px_rgba(167,212,138,0.85)]">04</span>
+            <h3 class="mt-1 font-display text-2xl font-bold leading-tight text-[#fff]">Tickets become nutrient maps.</h3>
+            <p class="mt-2 text-[15px] leading-relaxed text-[#fff]/85">Every ticket&#x27;s values go into GeoLenz. It maps N, P, K, pH and organic matter across the whole field, zone by zone.</p>
+          </div>
+        </div>
+        <div class="mt-3">
+          {% include "website/partials/home/_how_we_work_card.html" with kind="geolenz" %}
+        </div>
+      </li>
+      <li class="rv">
+        <div class="relative aspect-[4/5] overflow-hidden rounded-3xl sm:aspect-[16/11]">
+          <img alt="A farmer on a call with the ArkaShine team" loading="lazy" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;inset:0;object-position:50% 30%" src="{% static 'website/images/journey/01-book.webp' %}">
+          <div class="absolute inset-0 bg-gradient-to-t from-[#041512]/95 via-[#041512]/35 to-transparent"></div>
+          <div class="absolute inset-x-0 bottom-0 p-5">
+            <span class="block font-display text-6xl font-bold leading-none text-transparent [-webkit-text-stroke:1.2px_rgba(167,212,138,0.85)]">05</span>
+            <h3 class="mt-1 font-display text-2xl font-bold leading-tight text-[#fff]">Speak with our team.</h3>
+            <p class="mt-2 text-[15px] leading-relaxed text-[#fff]/85">Book a slot for a detailed, customised session. Together we plan your crop cycle for the seasons ahead.</p>
+          </div>
+        </div>
+        <div class="mt-3">
+          {% include "website/partials/home/_how_we_work_card.html" with kind="book" %}
+        </div>
+      </li>
+      <li class="rv">
+        <div class="relative aspect-[4/5] overflow-hidden rounded-3xl sm:aspect-[16/11]">
+          <img alt="A smiling woman farmer holding a healthy paddy harvest" loading="lazy" decoding="async" class="object-cover" style="position:absolute;height:100%;width:100%;inset:0;object-position:35% 30%" src="{% static 'website/images/journey/05-farmer-harvest.webp' %}">
+          <div class="absolute inset-0 bg-gradient-to-t from-[#041512]/95 via-[#041512]/35 to-transparent"></div>
+          <div class="absolute inset-x-0 bottom-0 p-5">
+            <span class="block font-display text-6xl font-bold leading-none text-transparent [-webkit-text-stroke:1.2px_rgba(167,212,138,0.85)]">06</span>
+            <h3 class="mt-1 font-display text-2xl font-bold leading-tight text-[#fff]">Soil Amendment Playbook.</h3>
+            <p class="mt-2 text-[15px] leading-relaxed text-[#fff]/85">A week-by-week plan to rebuild the soil, so every crop grows stronger than the last.</p>
+          </div>
+        </div>
+        <div class="mt-3">
+          {% include "website/partials/home/_how_we_work_card.html" with kind="playbook" %}
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
